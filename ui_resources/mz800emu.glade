@@ -1,0 +1,797 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkAboutDialog" id="emulator_aboutdialog">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="resizable">False</property>
+    <property name="type_hint">dialog</property>
+    <property name="program_name">Sharp MZ-800 - Emulator</property>
+    <property name="version">{version_is_inserted_automaticly}</property>
+    <property name="copyright" translatable="yes">© 2015 - Michal Hučík - ORDOZ
+2b||^2b?
+
+Here is a special thanks to Zdeněk Ádler, Roman Dolejší,
+Petr Odehnal, Martin Veverka and more  "Sharp's Men", who explored and  
+documented many hidden secrets of the computer Sharp MZ-800.
+</property>
+    <property name="comments" translatable="yes">Come closer my friend. Sit down and listen the story from a very old days.
+From time when data were real zeros and ones and computers were
+ still real computers ...</property>
+    <property name="website">http://ordoz.com/mz800emu</property>
+    <property name="website_label" translatable="yes">www.ordoz.com/mz800emu</property>
+    <property name="logo">mz800emu_logo.png</property>
+    <property name="license_type">gpl-3-0</property>
+    <signal name="delete-event" handler="on_emulator_aboutdialog_delete_event" swapped="no"/>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="aboutdialog-vbox1">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="aboutdialog-action_area1">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkWindow" id="main_window">
+    <property name="can_focus">False</property>
+    <property name="resizable">False</property>
+    <property name="window_position">mouse</property>
+    <property name="type_hint">popup-menu</property>
+    <property name="skip_taskbar_hint">True</property>
+    <property name="skip_pager_hint">True</property>
+    <property name="urgency_hint">True</property>
+    <property name="decorated">False</property>
+    <property name="has_resize_grip">False</property>
+    <property name="mnemonics_visible">False</property>
+    <child>
+      <object class="GtkMenuBar" id="menubar1">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="pack_direction">ttb</property>
+        <child>
+          <object class="GtkMenuItem" id="menuitem_emulation">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">_Emulator Menu</property>
+            <property name="use_underline">True</property>
+            <child type="submenu">
+              <object class="GtkMenu" id="menu_emulator_setup">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkMenuItem" id="menuitem_fdc">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">_FD Controller</property>
+                    <property name="use_underline">True</property>
+                    <child type="submenu">
+                      <object class="GtkMenu" id="menu5">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkRadioMenuItem" id="menuitem_fdc_not_connected">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_Not Connected</property>
+                            <property name="use_underline">True</property>
+                            <property name="active">True</property>
+                            <property name="draw_as_radio">True</property>
+                            <property name="group">radiogrp_fdc</property>
+                            <signal name="toggled" handler="on_fdc_changed" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem2">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkRadioMenuItem" id="menuitem_fdc_wd279x">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_WD279x (HD patch)</property>
+                            <property name="use_underline">True</property>
+                            <property name="draw_as_radio">True</property>
+                            <property name="group">radiogrp_fdc</property>
+                            <signal name="toggled" handler="on_fdc_changed" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem3">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_fdc_fdd0">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">FDD _0</property>
+                            <property name="use_underline">True</property>
+                            <child type="submenu">
+                              <object class="GtkMenu" id="menu6">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_fdc_fdd0_dsk">
+                                    <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Empty</property>
+                                    <property name="use_underline">True</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkSeparatorMenuItem" id="separatormenuitem4">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_fdc_fdd0_mount">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_Mount...</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_fdc_fdd0_mount" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_fdc_fdd0_umount">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_Umount</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_fdc_fdd0_umount" swapped="no"/>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_fdc_fdd1">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">FDD _1</property>
+                            <property name="use_underline">True</property>
+                            <child type="submenu">
+                              <object class="GtkMenu" id="menu7">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_fdc_fdd1_dsk">
+                                    <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Empty</property>
+                                    <property name="use_underline">True</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkSeparatorMenuItem" id="separatormenuitem5">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_fdc_fdd1_mount">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_Mount...</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_fdc_fdd1_mount" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_fdc_fdd1_umount">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_Umount</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_fdc_fdd1_umount" swapped="no"/>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_fdc_fdd2">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">FDD _2</property>
+                            <property name="use_underline">True</property>
+                            <child type="submenu">
+                              <object class="GtkMenu" id="menu8">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_fdc_fdd2_dsk">
+                                    <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Empty</property>
+                                    <property name="use_underline">True</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkSeparatorMenuItem" id="separatormenuitem6">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_fdc_fdd2_mount">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_Mount...</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_fdc_fdd2_mount" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_fdc_fdd2_umount">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_Umount</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_fdc_fdd2_umount" swapped="no"/>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_fdc_fdd3">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">FDD _3</property>
+                            <property name="use_underline">True</property>
+                            <child type="submenu">
+                              <object class="GtkMenu" id="menu9">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_fdc_fdd3_dsk">
+                                    <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Empty</property>
+                                    <property name="use_underline">True</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkSeparatorMenuItem" id="separatormenuitem7">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_fdc_fdd3_mount">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_Mount...</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_fdc_fdd3_mount" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_fdc_fdd3_umount">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_Umount</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_fdc_fdd3_umount" swapped="no"/>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="menuitem_cmt">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">_CMT</property>
+                    <property name="use_underline">True</property>
+                    <child type="submenu">
+                      <object class="GtkMenu" id="menu4">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="menuitem_cmt_hack">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_Use CMT hack</property>
+                            <property name="use_underline">True</property>
+                            <signal name="toggled" handler="on_menuitem_cmt_hack" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem10">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_cmt_speed">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Set Default CMT _Speed</property>
+                            <property name="use_underline">True</property>
+                            <child type="submenu">
+                              <object class="GtkMenu" id="menu10">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_1200">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">1200 Bd</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="active">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiogrp_cmt_speed</property>
+                                    <signal name="toggled" handler="on_menuitem_cmt_speed_1200" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_2400">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">2400 Bd</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiogrp_cmt_speed</property>
+                                    <signal name="toggled" handler="on_menuitem_cmt_speed_2400" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_3600">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">3600 Bd</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiogrp_cmt_speed</property>
+                                    <signal name="toggled" handler="on_menuitem_cmt_speed_3600" swapped="no"/>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem11">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_cmt_open_and_play">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_Fast Open CMT File &amp; Play...</property>
+                            <property name="use_underline">True</property>
+                            <signal name="activate" handler="on_menuitem_cmt_open_and_play" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_cmt_show_window">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Show / Hide Virtual _CMT</property>
+                            <property name="use_underline">True</property>
+                            <accelerator key="c" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                            <signal name="activate" handler="on_menuitem_cmt_show_window" swapped="no"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="menuitem_ramdisk">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">_Memory Disc</property>
+                    <property name="use_underline">True</property>
+                    <child type="submenu">
+                      <object class="GtkMenu" id="menu1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="menuitem_ramdisk_not_connected">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_Not Connected</property>
+                            <property name="use_underline">True</property>
+                            <property name="active">True</property>
+                            <property name="draw_as_radio">True</property>
+                            <signal name="toggled" handler="on_ramdisk_not_connected" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem1">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="menuitem_ramdisk_pezik_e8">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Pezik 512 KB (0x_e8 - 0xef)</property>
+                            <property name="use_underline">True</property>
+                            <signal name="toggled" handler="on_ramdisk_pezik_e8" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="menuitem_ramdisk_pezik_68">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Pezik 512 KB (0x_68 - 0x6f)</property>
+                            <property name="use_underline">True</property>
+                            <signal name="toggled" handler="on_ramdisk_pezik_68" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem8">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="menuitem_ramdisk_std">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_MR-1R18 Compatibile</property>
+                            <property name="use_underline">True</property>
+                            <signal name="toggled" handler="on_ramdisk_std" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_ramdisk_size">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_Size</property>
+                            <property name="use_underline">True</property>
+                            <child type="submenu">
+                              <object class="GtkMenu" id="menu2">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_ramdisk_size_64">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_64 KB</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiogrp_ramdisk_size</property>
+                                    <signal name="toggled" handler="on_ramdisk_size_64" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_ramdisk_size_256">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_256 KB</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="group">radiogrp_ramdisk_size</property>
+                                    <signal name="toggled" handler="on_ramdisk_size_256" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_ramdisk_size_512">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_512 KB</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="active">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiogrp_ramdisk_size</property>
+                                    <signal name="toggled" handler="on_ramdisk_size_512" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_ramdisk_size_1mb">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_1 MB </property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiogrp_ramdisk_size</property>
+                                    <signal name="toggled" handler="on_ramdisk_size_1mb" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_ramdisk_size_16mb">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">16 _MB</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiogrp_ramdisk_size</property>
+                                    <signal name="toggled" handler="on_ramdisk_size_16mb" swapped="no"/>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_ramdisk_type">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_Type</property>
+                            <property name="use_underline">True</property>
+                            <child type="submenu">
+                              <object class="GtkMenu" id="menu3">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_ramdisk_type_std">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">S_tandard RAM File</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="active">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiogrp_ramdisk_type</property>
+                                    <signal name="toggled" handler="on_ramdisk_type_std" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_ramdisk_type_sram">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_SRAM Emulation</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiogrp_ramdisk_type</property>
+                                    <signal name="toggled" handler="on_ramdisk_type_sram" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_ramdisk_type_rom">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_ROM Disc</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiogrp_ramdisk_type</property>
+                                    <signal name="toggled" handler="on_ramdisk_type_rom" swapped="no"/>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_ramdisk_file">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_File...</property>
+                            <property name="use_underline">True</property>
+                            <signal name="activate" handler="on_ramdisk_file" swapped="no"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="menuitem_display">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">_Display</property>
+                    <property name="use_underline">True</property>
+                    <child type="submenu">
+                      <object class="GtkMenu" id="menu11">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_display_window_size">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Window _Size</property>
+                            <property name="use_underline">True</property>
+                            <child type="submenu">
+                              <object class="GtkMenu" id="menu13">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_display_window_size_normal">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Set _Normal Window Size</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_menuitem_display_window_size_normal_activate" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_display_window_size_bigger">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Set _Bigger Window Size</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_menuitem_display_window_size_bigger_activate" swapped="no"/>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_display_color_schema">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_Color Schema</property>
+                            <property name="use_underline">True</property>
+                            <child type="submenu">
+                              <object class="GtkMenu" id="menu12">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_display_colors_normal">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_Normal</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="active">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiogrp_dispcolors</property>
+                                    <signal name="toggled" handler="on_menuitem_display_colors_normal" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_display_colors_grayscale">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">G_rayscale</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiogrp_dispcolors</property>
+                                    <signal name="toggled" handler="on_menuitem_display_colors_grayscale" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_display_colors_green">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_Green</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiogrp_dispcolors</property>
+                                    <signal name="toggled" handler="on_menuitem_display_colors_green" swapped="no"/>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSeparatorMenuItem" id="separatormenuitem9">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="menuitem_reset">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">_Reset</property>
+                    <property name="use_underline">True</property>
+                    <accelerator key="F12" signal="activate"/>
+                    <signal name="activate" handler="on_reset" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkCheckMenuItem" id="menuitem_max_cpu_speed">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">_Max CPU Speed</property>
+                    <property name="use_underline">True</property>
+                    <accelerator key="M" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                    <signal name="toggled" handler="on_max_cpu_speed" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkCheckMenuItem" id="menuitem_pause_emulation">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">_Pause Emulation</property>
+                    <property name="use_underline">True</property>
+                    <accelerator key="P" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                    <signal name="toggled" handler="on_pause_emulation" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSeparatorMenuItem" id="separatormenuitem12">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="menuitem_open_debugger">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">MZ-800 _Debugger...</property>
+                    <property name="use_underline">True</property>
+                    <accelerator key="d" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                    <signal name="activate" handler="on_open_debugger" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSeparatorMenuItem" id="separatormenuitem14">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="about_menuitem">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">_About...</property>
+                    <property name="use_underline">True</property>
+                    <signal name="activate" handler="on_about_menuitem_activate" swapped="no"/>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_cmt_speed">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
+  </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_dispcolors">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
+  </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_fdc">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
+  </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_ramdisk_size">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
+  </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_ramdisk_type">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
+  </object>
+</interface>
