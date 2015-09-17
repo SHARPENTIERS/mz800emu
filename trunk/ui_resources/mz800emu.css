@@ -1,0 +1,116 @@
+
+/*
+
+
+Here is space for you games :)
+
+Selectory:
+
+    GtkButton   - class
+    GtkButton#jmeno_widgetu - element
+    #jmeno_widgetu - element
+    GtkWindow GtkLabel - vsechny labely uvnitr GtkWindow
+    GtkNotebook tab GtkLabel - vsechny labely uvnitr tab uvnitr notebooku
+    GtkNotebook > GtkEntry - jen primy potomek
+    GtkBin * - vsechny widgety uvnitr GtkBin
+    .jmeno_tridy - style class
+
+Ruzne pseudo tridy (prefix :) :
+
+    GtkNotebook tab:nth-child(first) GtkLabel
+    GtkNotebook tab:first-child GtkLabel
+    GtkButton:active 
+    GtkButton:hover
+    GtkButton:prelight
+    :insensitive,
+    *:insensitive 
+    GtkEntry:selected 
+    GtkLabel:focused 
+    GtkCheckButton:inconsistent 
+
+
+@ Rules:
+
+    @import url ("path/to/common.css");
+
+    @define-color bg_color #f9a039;     - nasledne vsude kde je to potreba se misto kodu barvy uvede @bg_color
+
+
+Barvy:
+
+@define-color entry-color shade (@bg_color, 0.7);
+
+GtkEntry {
+    background-color: @entry-color;
+}
+
+GtkEntry:focused {
+    background-color: mix (@entry-color,
+                           shade (#fff, 0.5),
+                           0.8);
+}
+
+
+color: rgb(128, 10, 54);
+background-color: rgb(20%, 30%, 0%);
+
+color: rgba(128, 10, 54, 0.5);
+
+
+Fonty:
+
+    font-family: Sans, Cantarell;
+    font-style: [normal|oblique|italic];
+    font-variant: [normal|small-caps];
+    font-weight: [normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900];
+    font-size: [absolute-size|relative-size|percentage];
+        
+        • absolute-size: The size in normal size units like px, pt, and em. Or symbolic sizes like xx-small, x-small, small, medium, large, x-large, xx-large.
+        • relative-size: larger or smaller relative to the parent.
+        • percentage: A percentage difference from the nominal size.
+
+    
+
+*/
+
+/*
+GtkWindow {
+    
+}
+*/
+
+/*
+GtkButton, GtkEntry {
+    color: #ff00ea;
+    font: "Comic Sans 12";
+}
+
+GtkWindow GtkLabel {
+    background-color: #ff0099
+}*/
+
+GtkMenu GtkLabel {
+	font-family: Segoe UI;
+        
+        /* font-style: [normal|oblique|italic]; */
+        font-style: normal;
+        
+        /* font-variant: [normal|small-caps]; */
+        font-variant: normal;
+        
+        /* font-weight: [normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900]; */
+        font-weight: normal;
+        
+        /* font-size: [absolute-size|relative-size|percentage]; */
+        /* font-size: 10; */
+        
+        /*neznama polozka:*/
+        /* font-stretch: [face] */
+        /*font-stretch: normal;*/
+        
+        margin-top: 50px;
+        margin-right: 50px;
+        margin-bottom: 50px;
+        margin-left: 50px;
+}
+
