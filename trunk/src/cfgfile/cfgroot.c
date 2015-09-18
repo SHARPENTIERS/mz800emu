@@ -145,7 +145,7 @@ void cfgroot_save ( st_CFGROOT *r ) {
     printf ( "Save config into: %s\n", r->filename );
 
 
-    if ( !( r->ini_fp = fopen ( r->filename, "w+" ) ) ) {
+    if ( !( r->ini_fp = fopen ( r->filename, "w" ) ) ) {
         ui_show_error ( "%s() - Can't open file '%s' to write: %s", __FUNCTION__, r->filename, strerror ( errno ) );
         return;
     };

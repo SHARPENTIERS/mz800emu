@@ -311,6 +311,21 @@ void ui_show_error_dialog ( char *error_message ) {
  */
 
 
+#ifdef UI_USE_ERRORLOG
+
+
+void ui_write_errorlog ( char *lvl, char *msg ) {
+    FILE *fp;
+    if ( NULL == ( fp = fopen ( UI_ERRORLOG_FILE, "a" ) ) ) {
+        fprintf ( stderr, "%s():%d - '%s' - fopen error: %s", __FUNCTION__, __LINE__, UI_ERRORLOG_FILE, strerror ( errno ) );
+    } else {
+        fprintf ( fp, "%s %s:\t%s\n", cfgmain_create_timestamp ( ), lvl, msg );
+        fclose ( fp );
+    };
+}
+#endif
+
+
 /* modalni okno s chybou */
 void ui_show_error ( char *format, ... ) {
 
@@ -334,6 +349,11 @@ void ui_show_error ( char *format, ... ) {
 #ifndef W32NAT
     fprintf ( stderr, "\nUI_ERROR: %s\n", msg );
 #endif
+
+#ifdef UI_USE_ERRORLOG
+    ui_write_errorlog ( "ERROR", msg );
+#endif
+
     free ( msg );
 
     if ( g_ui_is_initialised == 1 ) {
@@ -367,6 +387,11 @@ void ui_show_warning ( char *format, ... ) {
 #ifndef W32NAT
     fprintf ( stderr, "\nUI_WARNING: %s\n", msg );
 #endif
+
+#ifdef UI_USE_ERRORLOG
+    ui_write_errorlog ( "WARNING", msg );
+#endif
+
     free ( msg );
 
     if ( g_ui_is_initialised == 1 ) {
@@ -595,13 +620,14 @@ G_MODULE_EXPORT void on_open_debugger ( GtkMenuItem *menuitem, gpointer data ) {
 
 
 #ifdef WIN32
+
+
 /* BUGFIX: ve win32 nefunguje spravne gtk_show_uri() */
 void on_aboutdialog_activate_link_event ( GtkMenuItem *menuitem, gpointer user_data ) {
     GtkWidget *window = ui_get_widget ( "emulator_aboutdialog" );
     ShellExecute ( NULL, "open", gtk_about_dialog_get_website ( GTK_ABOUT_DIALOG ( window ) ), NULL, NULL, SW_SHOWNORMAL );
 }
 #endif
-
 
 
 G_MODULE_EXPORT void on_about_menuitem_activate ( GtkMenuItem *menuitem, gpointer data ) {
@@ -616,16 +642,16 @@ G_MODULE_EXPORT void on_about_menuitem_activate ( GtkMenuItem *menuitem, gpointe
 
         unsigned version_length = 0;
         char *version_format = "version: %s\nbuild: %s"; /* verze, build time */
-        
+
         version_length += strlen ( CFGMAIN_EMULATOR_VERSION_TEXT );
         version_length += strlen ( build_time_get ( ) );
         version_length += strlen ( version_format ) + 1;
-        
+
         gchar *version_txt = malloc ( version_length );
         sprintf ( version_txt, version_format, CFGMAIN_EMULATOR_VERSION_TEXT, build_time_get ( ) );
-        
+
         gtk_about_dialog_set_version ( GTK_ABOUT_DIALOG ( window ), version_txt );
-        
+
         free ( version_txt );
 
         g_signal_connect ( GTK_DIALOG ( window ), "response", G_CALLBACK ( gtk_widget_hide ), window );
