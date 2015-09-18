@@ -40,6 +40,11 @@ extern "C" {
 #define UIRET_OK        0
 #define UIRET_FAILED    1
 
+#define UI_USE_ERRORLOG 
+    
+#ifdef UI_USE_ERRORLOG
+#define UI_ERRORLOG_FILE    "error.log"
+#endif    
 
 #define LOCK_UICALLBACKS()         g_ui.calback_lock = 1
 #define UNLOCK_UICALLBACKS()       g_ui.calback_lock = 0

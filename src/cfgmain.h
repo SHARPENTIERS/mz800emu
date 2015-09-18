@@ -50,6 +50,7 @@ extern "C" {
 
     extern void cfgmain_init ( void );
     extern void cfgmain_exit ( void );
+    extern char* cfgmain_create_timestamp ( void );
 
 
 #ifdef	__cplusplus

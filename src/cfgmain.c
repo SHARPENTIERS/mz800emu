@@ -47,12 +47,11 @@ struct st_CFGROOT *g_cfgmain;
 #endif
 
 
-#define CFGMAIN_CREATION_TIMESTAMP_MAXLEN   20
+#define CFGMAIN_TIMESTAMP_MAXLEN   20
 
 
-void cfgmain_savecfg ( void *m, void *data ) {
-
-    char timestamp [ CFGMAIN_CREATION_TIMESTAMP_MAXLEN ];
+char* cfgmain_create_timestamp ( void ) {
+    static char timestamp [ CFGMAIN_TIMESTAMP_MAXLEN ];
     time_t t;
     struct tm *tmp;
 
@@ -68,18 +67,22 @@ void cfgmain_savecfg ( void *m, void *data ) {
         fprintf ( stderr, "%s():%d - strftime error: %s\n", __FUNCTION__, __LINE__, strerror ( errno ) );
         main_app_quit ( EXIT_FAILURE );
     };
+    return timestamp;
+}
 
+
+void cfgmain_savecfg ( void *m, void *data ) {
     cfgelement_set_text_value ( cfgmodule_get_element_by_name ( (CFGMOD *) m, "This_is_Config_File_for" ), "MZ-800 Emulator" );
     cfgelement_set_text_value ( cfgmodule_get_element_by_name ( (CFGMOD *) m, "config_version" ), "1.0" );
     cfgelement_set_text_value ( cfgmodule_get_element_by_name ( (CFGMOD *) m, "emulator_version" ), CFGMAIN_EMULATOR_VERSION_TEXT );
     cfgelement_set_text_value ( cfgmodule_get_element_by_name ( (CFGMOD *) m, "emulator_build_time" ), build_time_get ( ) );
-    cfgelement_set_text_value ( cfgmodule_get_element_by_name ( (CFGMOD *) m, "config_creation_timestamp" ), timestamp );
+    cfgelement_set_text_value ( cfgmodule_get_element_by_name ( (CFGMOD *) m, "config_creation_timestamp" ), cfgmain_create_timestamp ( ) );
     cfgelement_set_text_value ( cfgmodule_get_element_by_name ( (CFGMOD *) m, "config_creation_platform" ), CFGMAIN_PLATFORM );
 }
 
 
 void cfgmain_init ( void ) {
-    
+
     g_cfgmain = cfgroot_new ( CFGFILE_INI_FILENAME );
 
     CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "CFGMAIN" );
