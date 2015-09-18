@@ -61,6 +61,8 @@ void cfgroot_destroy ( st_CFGROOT *r ) {
         st_CFGMODULE *m = r->modules[i];
         cfgcommon_destroy_module ( m );
     };
+    
+    free ( r );
 }
 
 
