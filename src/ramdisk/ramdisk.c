@@ -77,6 +77,7 @@
 
 #include "cfgmain.h"
 
+#include "ui/ui_utils.h"
 
 
 //#define DBGLEVEL        ( DBGNON /* | DBGERR | DBGWAR | DBGINF */ )
@@ -94,7 +95,7 @@ void ramdisk_std_save ( void ) {
 
     if ( ( g_ramdisk.std.connected ) && ( g_ramdisk.std.memory != NULL ) ) {
         if ( g_ramdisk.std.type == RAMDISK_TYPE_SRAM ) {
-            if ( ( fp = fopen ( g_ramdisk.std.filepath, "wb" ) ) ) {
+            if ( ( fp = ui_utils_fopen ( g_ramdisk.std.filepath, "wb" ) ) ) {
                 unsigned ramdisksize = ( g_ramdisk.std.size + 1 ) * 0x10000;
                 unsigned filesize = fwrite ( g_ramdisk.std.memory, 1, ramdisksize, fp );
                 if ( filesize != ramdisksize ) {
@@ -168,8 +169,8 @@ void ramdisk_std_init ( int connect, en_RAMDISK_TYPE type, en_RAMDISK_BANKMASK s
             };
             g_ramdisk.std.filepath [ sizeof ( g_ramdisk.std.filepath ) - 1 ] = 0x00;
 
-            if ( access ( g_ramdisk.std.filepath, F_OK ) != -1 ) {
-                if ( ( fp = fopen ( g_ramdisk.std.filepath, "rb" ) ) ) {
+            if ( ui_utils_access ( g_ramdisk.std.filepath, F_OK ) != -1 ) {
+                if ( ( fp = ui_utils_fopen ( g_ramdisk.std.filepath, "rb" ) ) ) {
                     unsigned ramdisksize = ( g_ramdisk.std.size + 1 ) * 0x10000;
                     unsigned filesize = fread ( g_ramdisk.std.memory, 1, ( g_ramdisk.std.size + 1 ) * 0x10000, fp );
                     if ( filesize != ramdisksize ) {

@@ -77,6 +77,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/ui_fdc.o \
 	${OBJECTDIR}/src/ui/ui_main.o \
 	${OBJECTDIR}/src/ui/ui_ramdisk.o \
+	${OBJECTDIR}/src/ui/ui_utils.o \
 	${OBJECTDIR}/src/z80ex/z80ex.o \
 	${OBJECTDIR}/src/z80ex/z80ex_dasm.o
 
@@ -317,6 +318,11 @@ ${OBJECTDIR}/src/ui/ui_ramdisk.o: src/ui/ui_ramdisk.c
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_ramdisk.o src/ui/ui_ramdisk.c
+
+${OBJECTDIR}/src/ui/ui_utils.o: src/ui/ui_utils.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_utils.o src/ui/ui_utils.c
 
 ${OBJECTDIR}/src/z80ex/z80ex.o: src/z80ex/z80ex.c 
 	${MKDIR} -p ${OBJECTDIR}/src/z80ex
