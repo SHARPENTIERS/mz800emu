@@ -1,11 +1,26 @@
 
 
-2015-09-17:
+2015-09-17
 
 	Released version 1.0
 
-2015-09-18:
+2015-09-18
 
 	- trivial bugfix in memory allocation
 	- added loging into error.log
+
+2015-09-20
+
+	Released version 1.0.1
+
+	Bugfix: localized file names and paths are now fully supported.
+
+	This is tested only in my Czech localization of Windows 7.
+
+	Is it works in other codepages? For example in the Japanese localization of Windows? 
+
+	PLEASE anybody: can you send me any report about this? 
+	To discusions on the SF, or to my email hucik@ordoz.com
+
+
 

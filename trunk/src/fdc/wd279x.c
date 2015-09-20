@@ -142,10 +142,13 @@ int win32_FTRUNCATE ( FILE **fh ) {
 #define FILE_MODE_RO   "rb"
 #define FILE_MODE_RW  "r+b"
 
+#include "ui/ui_utils.h"
+
 
 int std_FOPEN ( FILE **fh, char *path, char *mode ) {
     int retval;
-    *fh = fopen ( path, mode );
+//    *fh = fopen ( path, mode );
+    *fh = ui_utils_fopen ( path, mode );
     if ( *fh != NULL ) {
         retval = FR_OK;
     } else {

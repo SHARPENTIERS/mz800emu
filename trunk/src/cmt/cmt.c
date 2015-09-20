@@ -119,6 +119,8 @@
 
 #include "cfgmain.h"
 
+#include "ui/ui_utils.h"
+
 
 mz800_cmt_t g_cmt;
 
@@ -217,7 +219,7 @@ int cmt_open_mzf_file ( char *filename ) {
     int i, found;
 
     /* TODO: zatim podporujeme jen cteni */
-    if ( !( g_cmt.fh = fopen ( filename, "rb" ) ) ) {
+    if ( !( g_cmt.fh = ui_utils_fopen ( filename, "rb" ) ) ) {
         ui_show_error ( "Can't open MZF file '%s': %s\n", filename, strerror ( errno ) );
         return RET_CMT_ERROR;
     };

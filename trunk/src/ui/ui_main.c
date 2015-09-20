@@ -50,6 +50,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <locale.h>
 
 
 
@@ -121,17 +122,12 @@ void ui_savecfg_folder_dat ( void *e, void *data ) {
 
 void ui_init ( void ) {
 
-
-
-#if GTK_VER_2
-    gtk_set_locale ( );
-#endif
-    /*
         setlocale ( LC_ALL, "" );
+/*
         bindtextdomain ( GETTEXT_PACKAGE, DATADIR "/locale" );
         bind_textdomain_codeset ( GETTEXT_PACKAGE, "UTF-8" );
         textdomain ( GETTEXT_PACKAGE );
-     */
+*/
 
     //gtk_init ( &argc, &argv );
     gtk_init ( 0, NULL );
@@ -513,6 +509,15 @@ void ui_show_hide_main_menu ( void ) {
     gtk_menu_popup ( GTK_MENU ( main_menu ), NULL, NULL, NULL, NULL, 0, 0 );
 #endif
 }
+
+
+
+
+/*
+ * 
+ * Callbacky main menu
+ * 
+ */
 
 
 G_MODULE_EXPORT void on_reset ( GtkMenuItem *menuitem, gpointer data ) {

@@ -41,6 +41,7 @@
 
 #include "cfgmain.h"
 
+#include "ui/ui_utils.h"
 
 st_CMTHACK g_cmthack;
 
@@ -209,7 +210,7 @@ void cmthack_load_header ( void ) {
     };
 
 
-    if ( !( g_cmthack.fp = fopen ( filename, "rb" ) ) ) {
+    if ( !( g_cmthack.fp = ui_utils_fopen ( filename, "rb" ) ) ) {
         /* Nejde otevrit soubor: nastavit Err + Break */
         ui_show_error ( "Can't open MZF file '%s': %s\n", filename, strerror ( errno ) );
         cmthack_result ( LOADRET_BREAK );
