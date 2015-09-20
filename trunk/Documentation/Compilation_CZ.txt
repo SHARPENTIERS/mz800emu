@@ -6,6 +6,7 @@ Kompilacni volby preprocesoru:
 	WIN32 - pokud touzite po tomto cili
 
 	W32NAT - pokud projekt kompilujete v nativnim prostredi windows
+		(v nativnim mingw32 chybi fce vasprintf a musime ji bypasovat)
 
 	MZ800_DEBUGGER - kompilovany emulator bude obsahovat i debugger
 

@@ -1,0 +1,11 @@
+
+
+2015-09-17:
+
+	Released version 1.0
+
+2015-09-18:
+
+	- trivial bugfix in memory allocation
+	- added loging into error.log
+
