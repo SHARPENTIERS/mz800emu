@@ -122,12 +122,12 @@ void ui_savecfg_folder_dat ( void *e, void *data ) {
 
 void ui_init ( void ) {
 
-        setlocale ( LC_ALL, "" );
-/*
-        bindtextdomain ( GETTEXT_PACKAGE, DATADIR "/locale" );
-        bind_textdomain_codeset ( GETTEXT_PACKAGE, "UTF-8" );
-        textdomain ( GETTEXT_PACKAGE );
-*/
+    setlocale ( LC_ALL, "" );
+    /*
+            bindtextdomain ( GETTEXT_PACKAGE, DATADIR "/locale" );
+            bind_textdomain_codeset ( GETTEXT_PACKAGE, "UTF-8" );
+            textdomain ( GETTEXT_PACKAGE );
+     */
 
     //gtk_init ( &argc, &argv );
     gtk_init ( 0, NULL );
@@ -342,8 +342,12 @@ void ui_show_error ( char *format, ... ) {
     if ( g_ui_is_initialised == 1 ) {
         dialog = gtk_message_dialog_new ( NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, msg );
     };
+    
 #ifndef W32NAT
-    fprintf ( stderr, "\nUI_ERROR: %s\n", msg );
+    char *msg_in_locale;
+    msg_in_locale = g_locale_from_utf8 ( msg, -1, NULL, NULL, NULL );
+    fprintf ( stderr, "\nUI_ERROR: %s\n", msg_in_locale );
+    g_free ( msg_in_locale );
 #endif
 
 #ifdef UI_USE_ERRORLOG
@@ -380,8 +384,13 @@ void ui_show_warning ( char *format, ... ) {
     if ( g_ui_is_initialised == 1 ) {
         dialog = gtk_message_dialog_new ( NULL, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, msg );
     };
+
+
 #ifndef W32NAT
-    fprintf ( stderr, "\nUI_WARNING: %s\n", msg );
+    char *msg_in_locale;
+    msg_in_locale = g_locale_from_utf8 ( msg, -1, NULL, NULL, NULL );
+    fprintf ( stderr, "\nUI_WARNING: %s\n", msg_in_locale );
+    g_free ( msg_in_locale );
 #endif
 
 #ifdef UI_USE_ERRORLOG
@@ -509,8 +518,6 @@ void ui_show_hide_main_menu ( void ) {
     gtk_menu_popup ( GTK_MENU ( main_menu ), NULL, NULL, NULL, NULL, 0, 0 );
 #endif
 }
-
-
 
 
 /*
