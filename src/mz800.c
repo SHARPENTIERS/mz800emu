@@ -77,7 +77,12 @@ struct st_mz800 g_mz800;
 
 
 void mz800_reset ( void ) {
-    printf ( "\nMZ800 Reset!\n\n" );
+    
+    printf ( "\nMZ800 Reset!\n" );    
+    if ( TEST_EMULATION_PAUSED ) {
+        printf ( "Emulation is still PAUSED!\n" );
+    };
+    printf ( "\n" );
 
     memory_reset ( );
     gdg_reset ( );
@@ -92,7 +97,7 @@ void mz800_reset ( void ) {
 #ifdef MZ800_DEBUGGER
     debugger_update_all ( );
 #endif
-
+    
 }
 
 
