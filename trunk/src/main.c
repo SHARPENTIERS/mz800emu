@@ -95,7 +95,7 @@ int main ( int argc, char** argv ) {
 #endif
 
     IFACE_DBG ( "Application start!" );
-
+  
     /* cfgmain musi byt prvni init funkce !!! */
     cfgmain_init ( );
 
@@ -105,6 +105,7 @@ int main ( int argc, char** argv ) {
     //ui_init ( argc, argv );
     ui_init ( );
 
+    printf ( "\nTip: Use right-click mouse button on the emulator window to show the menu.\n\n" );
 
     mz800_init ( );
 
