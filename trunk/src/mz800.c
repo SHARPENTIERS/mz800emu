@@ -77,8 +77,8 @@ struct st_mz800 g_mz800;
 
 
 void mz800_reset ( void ) {
-    
-    printf ( "\nMZ800 Reset!\n" );    
+
+    printf ( "\nMZ800 Reset!\n" );
     if ( TEST_EMULATION_PAUSED ) {
         printf ( "Emulation is still PAUSED!\n" );
     };
@@ -97,7 +97,7 @@ void mz800_reset ( void ) {
 #ifdef MZ800_DEBUGGER
     debugger_update_all ( );
 #endif
-    
+
 }
 
 
@@ -531,9 +531,19 @@ void mz800_sync_inside_cpu ( en_INSIDEOP insideop ) {
 
     g_mz800.event_locked = 1;
 
+    int flag_high_priority_event = 0;
+
+    st_EVENT hpr_event;
+
     if ( g_mz800.event.event_name >= EVENT_MZ800_INTERRUPT ) {
+        if ( g_mz800.event.event_name > EVENT_MZ800_INTERRUPT ) {
+            flag_high_priority_event = 1;
+            hpr_event.event_name = g_mz800.event.event_name;
+            hpr_event.ticks = g_mz800.event.ticks;
+        };
         g_mz800.event.event_name = g_gdg.event.event_name;
         g_mz800.event.ticks = g_gdg.event.ticks;
+
     };
 
     unsigned insideop_ticks = 0;
@@ -611,6 +621,9 @@ void mz800_sync_inside_cpu ( en_INSIDEOP insideop ) {
     if ( g_mz800.interrupt ) {
         g_mz800.event.event_name = EVENT_MZ800_INTERRUPT;
         g_mz800.event.ticks = 0;
+    } else if ( flag_high_priority_event == 1 ) {
+        g_mz800.event.event_name = hpr_event.event_name;
+        g_mz800.event.ticks = hpr_event.ticks;
     };
 
     g_mz800.event_locked = 0;
