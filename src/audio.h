@@ -36,7 +36,12 @@ extern "C" {
     typedef uint16_t AUDIO_BUF_t;
 
     typedef struct st_AUDIO {
+#ifdef USE_LINUX_AUDIO_DOUBLE_BUFFER
+        AUDIO_BUF_t buffer [ 2 ] [ IFACE_AUDIO_20MS_SAMPLES ];
+        unsigned active_buffer;
+#else
         AUDIO_BUF_t buffer [ IFACE_AUDIO_20MS_SAMPLES ];
+#endif
         unsigned buffer_position;
         unsigned last_update;
         unsigned resample_timer;
@@ -46,8 +51,7 @@ extern "C" {
     extern st_AUDIO g_audio;
 
     extern void audio_init ( void );
-    extern void audio_buffer_fill ( void );
-    extern void audio_changed ( unsigned event_ticks );
+    extern void audio_fill_buffer ( unsigned event_ticks );
     extern void audio_ctc0_changed ( unsigned value, unsigned event_ticks );
 
 

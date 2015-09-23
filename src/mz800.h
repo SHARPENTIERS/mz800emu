@@ -43,6 +43,11 @@ extern "C" {
     typedef enum en_MZEVENT {
         //        EVENT_GDG_STS_HSYNC_END,
         EVENT_GDG_HBLN_END,
+#if 0
+#ifdef LINUX
+        EVENT_GDG_HALF_SCREEN,
+#endif
+#endif
         EVENT_GDG_HBLN_START,
         EVENT_GDG_STS_VSYNC_END,
         EVENT_GDG_STS_VSYNC_START,
@@ -80,7 +85,7 @@ extern "C" {
 
         unsigned debug_pc;
 
-        unsigned event_locked;  /* Pokud je 1, tak se prave nachazime v miste, kde neni vhodne prepisovat eventy */
+        unsigned event_locked; /* Pokud je 1, tak se prave nachazime v miste, kde neni vhodne prepisovat eventy */
         st_EVENT event;
 
         unsigned status_changed;
@@ -93,7 +98,7 @@ extern "C" {
     extern struct st_mz800 g_mz800;
 
 #define TEST_EMULATION_PAUSED       ( g_mz800.emulation_paused != 0 )
-    
+
     /* Pokud to bude nutne, tak tady je misto, kde by mohla vzniknout fronta cekajicich eventu */
 #define SET_MZ800_EVENT(e,t)        {\
     if ( ! g_mz800.event_locked ) {\
@@ -101,7 +106,7 @@ extern "C" {
         g_mz800.event.ticks = t;\
     };\
 }
-    
+
     typedef enum en_INSIDEOP {
         INSIDEOP_IORQ_WR = ( 0 << 1 | 0 ),
         INSIDEOP_IORQ_RD = ( 0 << 1 | 1 ),

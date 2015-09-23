@@ -105,7 +105,7 @@ int main ( int argc, char** argv ) {
     //ui_init ( argc, argv );
     ui_init ( );
 
-    printf ( "\nTip: Use right-click mouse button on the emulator window to show the main menu.\n\n" );
+    printf ( "\nTip: Use right-click mouse button on the emulator window to show the MAIN MENU.\n\n" );
 
     mz800_init ( );
 
