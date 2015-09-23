@@ -29,7 +29,7 @@
 #ifdef MZ800_DEBUGGER
 
 
-#define DBG_PRINT 0
+#define DBG_PRINT 1
 
 #include "inline_asm.h"
 #include "inline_asm_opcodes.h"
@@ -578,7 +578,7 @@ unsigned debugger_iasm_assemble_line ( Z80EX_WORD addr, const char *assemble_txt
                     };
                     break;
                 case '%':
-                    rel_addr = var [ variables_count ] - addr;
+                    rel_addr = var [ variables_count ] - ( addr + 2 ); /* Vsechny instrukce s relativni hodnotou maji 2 bajty */
                     if ( ( rel_addr >= -128 ) && ( ( rel_addr <= 127 ) ) ) {
                         compiled.byte[ compiled_position++ ] = (Z80EX_BYTE) rel_addr;
                     } else {
