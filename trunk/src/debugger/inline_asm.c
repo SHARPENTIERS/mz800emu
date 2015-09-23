@@ -29,7 +29,7 @@
 #ifdef MZ800_DEBUGGER
 
 
-#define DBG_PRINT 1
+#define DBG_PRINT 0
 
 #include "inline_asm.h"
 #include "inline_asm_opcodes.h"
