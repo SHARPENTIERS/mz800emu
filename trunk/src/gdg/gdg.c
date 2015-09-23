@@ -81,6 +81,12 @@ const struct st_GDGEVENT g_gdgevent [] = {
     /* row: ALL, col: 150 */
     { EVENT_GDG_HBLN_END, 0, BEAM_TOTAL_ROWS, DISPLAY_SCREEN_FIRST_COLUMN - 4 },
 
+#if 0
+#ifdef LINUX
+    { EVENT_GDG_HALF_SCREEN, ( BEAM_TOTAL_ROWS - 1 ) / 2, 1, ( BEAM_TOTAL_COLS - 1 ) / 2 },
+#endif
+#endif
+    
     /* row: ALL, col: 790 */
     /* + row: 45, col: 790 - VBLN_END */
     /* + row: 245, col: 790 - VBLN_START */

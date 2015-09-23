@@ -133,7 +133,7 @@ void psg_write_byte ( Z80EX_BYTE value ) {
     if ( attn ) {
         en_ATTENUATOR new_attn = value & 0x0f;
         if ( new_attn != channel->attn ) {
-            audio_changed ( g_gdg.screen_ticks_elapsed );
+            audio_fill_buffer ( g_gdg.screen_ticks_elapsed );
             channel->attn = new_attn;
         };
     } else if ( ( latch ) && ( channel->type == PSG_CHTYPE_TONE ) ) {
@@ -142,14 +142,14 @@ void psg_write_byte ( Z80EX_BYTE value ) {
         if ( channel->type == PSG_CHTYPE_TONE ) {
             unsigned new_divider = ( value << 4 ) | channel->tone.latch_divider;
             if ( new_divider != channel->tone.divider ) {
-                audio_changed ( g_gdg.screen_ticks_elapsed );
+                audio_fill_buffer ( g_gdg.screen_ticks_elapsed );
                 channel->tone.divider = new_divider;
             };
         } else {
             en_NOISE_DIV_TYPE new_div_type = value & 0x03;
             en_NOISE_TYPE new_type = ( value >> 2 ) & 1;
             if ( ( new_div_type != channel->noise.div_type ) || ( new_type != channel->noise.type ) ) {
-                audio_changed ( g_gdg.screen_ticks_elapsed );
+                audio_fill_buffer ( g_gdg.screen_ticks_elapsed );
                 channel->noise.div_type = new_div_type;
                 channel->noise.type = new_type;
             };

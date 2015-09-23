@@ -346,6 +346,15 @@ static inline void mz800_sync ( void ) {
                 };
                 break;
 
+#if 0                
+#ifdef LINUX
+            case EVENT_GDG_HALF_SCREEN:
+                //printf ( "half\n" );
+                audio_fill_buffer ( g_mz800.event.ticks );
+                audio_sdl_wait_to_cycle_done ( );
+                break;
+#endif
+#endif           
 
             case EVENT_GDG_HBLN_START:
                 g_gdg.hbln = HBLN_ACTIVE;
@@ -480,8 +489,13 @@ static inline void mz800_sync ( void ) {
                             iface_sdl_render_status_line ( );
 #endif
                         };
-                        audio_buffer_fill ( );
+
+                        audio_fill_buffer ( g_mz800.event.ticks );
                         audio_sdl_wait_to_cycle_done ( );
+
+                        g_audio.last_update = 0;
+                        g_audio.buffer_position = 0;
+
                         //make_picture_time = 0;
                     };
 
@@ -489,7 +503,7 @@ static inline void mz800_sync ( void ) {
                     g_gdg.screen_ticks_elapsed -= ( PICTURE_TICKS - 1 );
                     g_gdg.beam_row = 0;
 
-                    audio_sdl_start_cycle ( );
+                    //audio_sdl_start_cycle ( );
 
                 };
                 break;
@@ -525,23 +539,22 @@ static inline void mz800_sync ( void ) {
 #if SLOW_CTC0_v1
 
 
-static inline unsigned mz800_ctc0_and_cmt_clk ( unsigned instruction_ticks ) {
-    g_gdg.screen_ticks_elapsed -= g_gdg.ctc0clk;
-    instruction_ticks += g_gdg.ctc0clk;
-    while ( instruction_ticks > GDGCLK_1M1_DIVIDER - 1 ) {
-        g_gdg.screen_ticks_elapsed += GDGCLK_1M1_DIVIDER;
-        instruction_ticks -= GDGCLK_1M1_DIVIDER;
-
-        ctc8253_clkfall ( CTC_CS0, g_gdg.screen_ticks_elapsed );
-
-        /* TODO: prozatim si sem povesime i pomaly cmt_step() */
-        if ( TEST_CMT_PLAYING ) {
-            cmt_step ( );
-        };
-    };
-    g_gdg.ctc0clk = instruction_ticks;
-
-    return instruction_ticks;
+#define mz800_sync_ctc0_and_cmt( instruction_ticks ) {\
+    g_gdg.screen_ticks_elapsed -= g_gdg.ctc0clk;\
+    instruction_ticks += g_gdg.ctc0clk;\
+    while ( instruction_ticks > GDGCLK_1M1_DIVIDER - 1 ) {\
+        g_gdg.screen_ticks_elapsed += GDGCLK_1M1_DIVIDER;\
+        instruction_ticks -= GDGCLK_1M1_DIVIDER;\
+\
+        ctc8253_clkfall ( CTC_CS0, g_gdg.screen_ticks_elapsed );\
+\
+        /* TODO: prozatim si sem povesime i pomaly cmt_step() */\
+        if ( TEST_CMT_PLAYING ) {\
+            cmt_step ( );\
+        };\
+    };\
+    g_gdg.ctc0clk = instruction_ticks;\
+    g_gdg.screen_ticks_elapsed += instruction_ticks;\
 }
 #endif
 
@@ -621,7 +634,7 @@ void mz800_sync_inside_cpu ( en_INSIDEOP insideop ) {
 
 
 #if SLOW_CTC0_v1
-    g_gdg.screen_ticks_elapsed += mz800_ctc0_and_cmt_clk ( insideop_ticks );
+    mz800_sync_ctc0_and_cmt ( insideop_ticks );
 #else
     g_gdg.screen_ticks_elapsed += insideop_ticks;
 #endif
@@ -695,7 +708,7 @@ void mz800_main ( void ) {
 
 
 #if SLOW_CTC0_v1
-        g_gdg.screen_ticks_elapsed += mz800_ctc0_and_cmt_clk ( instruction_ticks );
+        mz800_sync_ctc0_and_cmt ( instruction_ticks );
 #else
         g_gdg.screen_ticks_elapsed += instruction_ticks;
 #endif
@@ -729,7 +742,7 @@ void mz800_main ( void ) {
                     instruction_ticks = interrupt_ticks * GDGCLK2CPU_DIVIDER;
 
 #if SLOW_CTC0_v1
-                    g_gdg.screen_ticks_elapsed += mz800_ctc0_and_cmt_clk ( instruction_ticks );
+                    mz800_sync_ctc0_and_cmt ( instruction_ticks );
 #else
                     g_gdg.screen_ticks_elapsed += instruction_ticks;
 #endif

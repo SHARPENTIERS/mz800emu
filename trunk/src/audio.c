@@ -23,6 +23,12 @@
  * ---------------------------------------------------------------------------
  */
 
+
+#ifdef LINUX
+//#define USE_LINUX_AUDIO_DOUBLE_BUFFER
+#endif
+
+
 #include <math.h>
 
 #include "audio.h"
@@ -44,6 +50,9 @@ st_AUDIO g_audio;
 
 
 void audio_init ( void ) {
+#ifdef USE_LINUX_AUDIO_DOUBLE_BUFFER
+    g_audio.active_buffer = 0;
+#endif
     g_audio.last_update = 0;
     g_audio.resample_timer = PSG_RESAMPLE_PERIOD;
     g_audio.buffer_position = 0;
@@ -73,9 +82,13 @@ AUDIO_BUF_t audio_scan ( void ) {
 }
 
 
-void audio_changed ( unsigned event_ticks ) {
+void audio_fill_buffer ( unsigned event_ticks ) {
     static AUDIO_BUF_t last_value = 0;
 
+    if ( event_ticks > ( BEAM_SCREEN_TICKS - 2 ) ) {
+        event_ticks = ( BEAM_SCREEN_TICKS - 2 );
+    };
+    
     if ( ( event_ticks - g_audio.last_update ) < PSG_DIVIDER ) return;
 
     do {
@@ -94,7 +107,11 @@ void audio_changed ( unsigned event_ticks ) {
         
         if ( g_audio.resample_timer <= PSG_DIVIDER ) {
             if ( g_audio.buffer_position < IFACE_AUDIO_20MS_SAMPLES ) {
+#ifdef USE_LINUX_AUDIO_DOUBLE_BUFFER
+                g_audio.buffer [ ( ~g_audio.active_buffer ) & 1 ] [ g_audio.buffer_position++ ] = last_value;
+#else
                 g_audio.buffer [ g_audio.buffer_position++ ] = last_value;
+#endif
             };
             g_audio.resample_timer += PSG_RESAMPLE_PERIOD;
         };
@@ -108,13 +125,7 @@ void audio_changed ( unsigned event_ticks ) {
 
 void audio_ctc0_changed ( unsigned value, unsigned event_ticks ) {
     if ( g_audio.ctc0_output == value ) return;
-    audio_changed ( event_ticks );
+    audio_fill_buffer ( event_ticks );
     g_audio.ctc0_output = value;
 }
 
-
-void audio_buffer_fill ( void ) {
-    audio_changed ( BEAM_SCREEN_TICKS );
-    g_audio.last_update = 0;
-    g_audio.buffer_position = 0;
-}
