@@ -32,3 +32,5 @@
 2015-09-23
 
 	- a little improved emulation speed
+	- inline assembler bugfix: fixed instructions with relative
+	- inline assembler: bug fixed of generating instruction with relative value (JR $, DJNZ %, etc.)
