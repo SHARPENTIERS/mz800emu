@@ -113,6 +113,8 @@ extern "C" {
 
     extern mz800_cmt_t g_cmt;
 
+#define TEST_CMT_PLAYING ( ( g_cmt.fh != NULL ) && ( CMT_PLAY_NONE != g_cmt.state ) )
+    
     extern void cmt_init ( void );
     extern void cmt_exit ( void );
 

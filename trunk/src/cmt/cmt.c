@@ -406,6 +406,7 @@ void cmt_player_send_log1 ( void ) {
 
 void cmt_step ( void ) {
 
+    /*
     if ( g_cmt.fh == NULL ) {
         return;
     };
@@ -413,7 +414,7 @@ void cmt_step ( void ) {
     if ( CMT_PLAY_NONE == g_cmt.state ) {
         return;
     };
-
+    */ 
 
     /* uz skoncil pultakt? */
     if ( 0 == g_cmt.tick_counter ) {

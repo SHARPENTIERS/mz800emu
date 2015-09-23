@@ -314,7 +314,7 @@ uint32_t screens_counter_flush ( uint32_t interval, void* param ) {
 }
 
 
-void mz800_sync ( void ) {
+static inline void mz800_sync ( void ) {
 
     while ( g_gdg.screen_ticks_elapsed >= g_mz800.event.ticks ) {
 
@@ -522,7 +522,34 @@ void mz800_sync ( void ) {
 }
 
 
+#if SLOW_CTC0_v1
+
+
+static inline unsigned mz800_ctc0_and_cmt_clk ( unsigned instruction_ticks ) {
+    g_gdg.screen_ticks_elapsed -= g_gdg.ctc0clk;
+    instruction_ticks += g_gdg.ctc0clk;
+    while ( instruction_ticks > GDGCLK_1M1_DIVIDER - 1 ) {
+        g_gdg.screen_ticks_elapsed += GDGCLK_1M1_DIVIDER;
+        instruction_ticks -= GDGCLK_1M1_DIVIDER;
+
+        ctc8253_clkfall ( CTC_CS0, g_gdg.screen_ticks_elapsed );
+
+        /* TODO: prozatim si sem povesime i pomaly cmt_step() */
+        if ( TEST_CMT_PLAYING ) {
+            cmt_step ( );
+        };
+    };
+    g_gdg.ctc0clk = instruction_ticks;
+
+    return instruction_ticks;
+}
+#endif
+
+
 /* TODO: casovani (MZ700 VRAM casovani) neni jeste uplne OK - viz FX soundtrack 3 - border pri zmacknute klavese je v trochu jine poloze, nez na realnem HW */
+
+
+/* To by mohlo byt zpusobeno tim jak a kdy se scanuje klavesnice - tedy zase az tak velikou haluz zrejme nemame */
 void mz800_sync_inside_cpu ( en_INSIDEOP insideop ) {
 
 #ifdef MZ800_DEBUGGER
@@ -594,21 +621,7 @@ void mz800_sync_inside_cpu ( en_INSIDEOP insideop ) {
 
 
 #if SLOW_CTC0_v1
-    g_gdg.screen_ticks_elapsed -= g_gdg.ctc0clk;
-    insideop_ticks += g_gdg.ctc0clk;
-    while ( insideop_ticks > GDGCLK_1M1_DIVIDER - 1 ) {
-
-        g_gdg.screen_ticks_elapsed += GDGCLK_1M1_DIVIDER;
-        insideop_ticks -= GDGCLK_1M1_DIVIDER;
-
-        ctc8253_clkfall ( CTC_CS0, g_gdg.screen_ticks_elapsed );
-
-        /* TODO: prozatim si sem povesime i pomaly cmt_step() */
-        cmt_step ( );
-
-    };
-    g_gdg.ctc0clk = insideop_ticks;
-    g_gdg.screen_ticks_elapsed += insideop_ticks;
+    g_gdg.screen_ticks_elapsed += mz800_ctc0_and_cmt_clk ( insideop_ticks );
 #else
     g_gdg.screen_ticks_elapsed += insideop_ticks;
 #endif
@@ -682,20 +695,7 @@ void mz800_main ( void ) {
 
 
 #if SLOW_CTC0_v1
-        g_gdg.screen_ticks_elapsed -= g_gdg.ctc0clk;
-        instruction_ticks += g_gdg.ctc0clk;
-        while ( instruction_ticks > GDGCLK_1M1_DIVIDER - 1 ) {
-            g_gdg.screen_ticks_elapsed += GDGCLK_1M1_DIVIDER;
-            instruction_ticks -= GDGCLK_1M1_DIVIDER;
-
-            ctc8253_clkfall ( CTC_CS0, g_gdg.screen_ticks_elapsed );
-
-            /* TODO: prozatim si sem povesime i pomaly cmt_step() */
-            cmt_step ( );
-
-        };
-        g_gdg.ctc0clk = instruction_ticks;
-        g_gdg.screen_ticks_elapsed += instruction_ticks;
+        g_gdg.screen_ticks_elapsed += mz800_ctc0_and_cmt_clk ( instruction_ticks );
 #else
         g_gdg.screen_ticks_elapsed += instruction_ticks;
 #endif
@@ -729,16 +729,7 @@ void mz800_main ( void ) {
                     instruction_ticks = interrupt_ticks * GDGCLK2CPU_DIVIDER;
 
 #if SLOW_CTC0_v1
-                    g_gdg.screen_ticks_elapsed -= g_gdg.ctc0clk;
-                    instruction_ticks += g_gdg.ctc0clk;
-                    while ( instruction_ticks > GDGCLK_1M1_DIVIDER - 1 ) {
-                        g_gdg.screen_ticks_elapsed += GDGCLK_1M1_DIVIDER;
-                        instruction_ticks -= GDGCLK_1M1_DIVIDER;
-
-                        ctc8253_clkfall ( CTC_CS0, g_gdg.screen_ticks_elapsed );
-                    };
-                    g_gdg.ctc0clk = instruction_ticks;
-                    g_gdg.screen_ticks_elapsed += instruction_ticks;
+                    g_gdg.screen_ticks_elapsed += mz800_ctc0_and_cmt_clk ( instruction_ticks );
 #else
                     g_gdg.screen_ticks_elapsed += instruction_ticks;
 #endif
@@ -805,13 +796,8 @@ void mz800_main ( void ) {
                 //                update_debugger_time = 0;
                 //                debugger_update_all ( );
             };
-
-
-
-
         };
     };
-
 }
 
 

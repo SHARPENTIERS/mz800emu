@@ -28,3 +28,7 @@
 
 	- trivial bugfix: locale encoded errors and warning messages in console
 	- trivial bugxix: step mode in debugger sometime stepped over multiple lines
+
+2015-09-23
+
+	- a little improved emulation speed
