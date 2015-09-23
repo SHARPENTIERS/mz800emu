@@ -33,7 +33,7 @@ extern "C" {
 #include "cfgfile/cfgroot.h"
 
 
-#define EMULATOR_VERSION "1.0.1"
+#define EMULATOR_VERSION "1.0.2"
 
 #define CFGFILE_INI_FILENAME    "mz800emu.ini"
 
