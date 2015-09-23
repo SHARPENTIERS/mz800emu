@@ -32,4 +32,7 @@
 
 	- a little improved emulation speed
 	- inline assembler bugfix: fixed instructions with relative
-	- inline assembler: bug fixed of generating instruction with relative value (JR %, DJNZ %, etc.)
+	- inline assembler bug fixed of generating instruction with relative value (JR %, DJNZ %, etc.)
+
+	Released version 1.0.2
+
