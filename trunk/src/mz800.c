@@ -878,9 +878,9 @@ void mz800_set_cpu_speed ( unsigned value ) {
 
     g_mz800.emulation_speed = value;
     if ( g_mz800.emulation_speed ) {
-        printf ( "Fast emulation sped.\n" );
+        printf ( "Fast emulation speed.\n" );
     } else {
-        printf ( "Slow emulation sped.\n" );
+        printf ( "Slow emulation speed.\n" );
     };
     ui_main_update_cpu_speed_menu ( g_mz800.emulation_speed );
 }
