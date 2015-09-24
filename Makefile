@@ -109,7 +109,6 @@ build: .build-post
 	@echo "Actual platform:          ${CND_PLATFORM_${CONF}}"
 	@echo "Build host OS:            ${BUILD_HOST_OS}"
 	@echo -e "\n\n"
-	
 	./tools/create_buildtime.sh > src/build_time.c
 
 
@@ -117,8 +116,8 @@ build: .build-post
 	@# Add your post 'build' code here...
 	@#echo ${CND_ARTIFACT_PATH_${CONF}}
 	@# Zkopirujeme vysledek do adresare sdileneho s windows
-	@./tools/copy_win32_exe_to_sharedir.sh
 
+	@./tools/copy_win32_exe_to_sharedir.sh "${CONF}"
 
 # clean
 clean: .clean-post
@@ -197,4 +196,8 @@ src/windows_icon/app.o: src/windows_icon/app.rc src/windows_icon/mz800emu.ico
 	${MKDIR} -p ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/src/windows_icon
 	$(WINDRES) src/windows_icon/app.rc -o ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/$@
 
-                
+
+package: build
+	tools/create_package-Release-Win32.sh "${CONF}"
+	
+	                
