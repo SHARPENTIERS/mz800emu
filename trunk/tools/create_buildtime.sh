@@ -12,3 +12,4 @@ char* build_time_get ( void ) { return "${BUILD_TIME}"; }
 
 ENDOFFILE
 
+exit $?
