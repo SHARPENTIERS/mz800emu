@@ -105,10 +105,12 @@ int main ( int argc, char** argv ) {
     //ui_init ( argc, argv );
     ui_init ( );
 
-    printf ( "\nTip: Use right-click mouse button on the emulator window to show the MAIN MENU.\n\n" );
+    printf ( "\nTips:\n" );
+    printf ( "   - use right-click mouse button on the emulator window to show the MAIN MENU.\n" );
+    printf ( "   - edit the file ./ui_resources/mz800emu.css, if you need change menu fonts, colors, etc...\n" );
+    printf ( "\n" );
 
     mz800_init ( );
-
 
     mz800_main ( );
 
