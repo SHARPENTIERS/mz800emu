@@ -115,8 +115,11 @@ build: .build-post
 .build-post: .build-impl
 	@# Add your post 'build' code here...
 	@#echo ${CND_ARTIFACT_PATH_${CONF}}
-	@# Zkopirujeme vysledek do adresare sdileneho s windows
-
+	
+	@# Linuxakum pro jistotu nakopirujeme ui_resources do adresare s binarkou
+	@./tools/copy_ui_resources-Release-Linux.sh "${CONF}"
+	
+	@# Zkopirujeme vysledek do adresare sdileneho s windows - jen na mem desktopu
 	@./tools/copy_win32_exe_to_sharedir.sh "${CONF}"
 
 # clean
@@ -198,6 +201,6 @@ src/windows_icon/app.o: src/windows_icon/app.rc src/windows_icon/mz800emu.ico
 
 
 package: build
-	tools/create_package-Release-Win32.sh "${CONF}"
+	./tools/create_package-Release-Win32.sh "${CONF}"
 	
 	                
