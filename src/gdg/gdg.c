@@ -134,6 +134,7 @@ void gdg_init ( void ) {
 
     g_gdg.screen_ticks_elapsed = 0;
     g_gdg.beam_row = 0;
+    g_gdg.screen_is_already_rendered_at_beam_pos = 0;
 
     g_gdg.screens_counter = 0;
 

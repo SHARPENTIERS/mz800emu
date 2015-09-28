@@ -176,6 +176,8 @@ extern "C" {
 
 #define BEAM_ROW(ticks) ( ticks / BEAM_TOTAL_COLS )
 #define BEAM_COL(ticks) ( ticks % BEAM_TOTAL_COLS )
+    
+#define BEAM_TICKS(row,col) ( ( row * DISPLAY_VISIBLE_WIDTH ) + col )
 
 
 #ifdef	__cplusplus
