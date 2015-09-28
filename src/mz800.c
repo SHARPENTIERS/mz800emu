@@ -811,7 +811,7 @@ void mz800_main ( void ) {
 #else // MZ800_DEBUGGER
 
                 iface_sdl_render_status_line ( );
-                iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos,, g_gdg.screen_ticks_elapsed );
+                iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos, g_gdg.screen_ticks_elapsed );
 
 
                 while ( TEST_EMULATION_PAUSED ) {
