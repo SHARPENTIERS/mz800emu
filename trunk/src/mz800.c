@@ -330,6 +330,8 @@ static inline void mz800_sync ( void ) {
             case EVENT_GDG_HBLN_END:
                 g_gdg.hbln = HBLN_OFF;
 
+                g_gdg.screen_is_already_rendered_at_beam_pos = g_mz800.event.ticks;
+
                 /* V rezimu MZ-700 aktualizujeme screen framebuffer jakmile skonci HBLN. */
                 if ( ( DMD_TEST_MZ700 ) && ( ( g_gdg.beam_row >= DISPLAY_SCREEN_FIRST_ROW ) && ( g_gdg.beam_row <= DISPLAY_SCREEN_LAST_ROW ) ) ) {
                     if ( g_gdg.screen_changes ) {
@@ -483,6 +485,9 @@ static inline void mz800_sync ( void ) {
                         if ( g_gdg.framebuffer_state || g_iface_sdl.redraw_full_screen_request ) {
                             iface_sdl_update_window ( );
                             g_gdg.framebuffer_state = FB_STATE_NOT_CHANGED;
+
+
+                            g_gdg.screen_is_already_rendered_at_beam_pos = g_mz800.event.ticks;
 #if 0
 
                         } else if ( g_mz800.status_changed ) {
@@ -776,19 +781,21 @@ void mz800_main ( void ) {
 
                 //printf ( "Emulation paused - PC: 0x%04x.\n", z80ex_get_reg ( g_mz800.cpu, regPC ) );
 
-                /* TODO: nastavit framebuffer a display tak, aby to odpovidalo aktualni pozici paprsku */
-
 #ifdef MZ800_DEBUGGER
+
                 debugger_update_all ( );
                 debugger_step_call ( 0 );
 
                 iface_sdl_render_status_line ( );
 
-                while ( TEST_EMULATION_PAUSED && ( !TEST_DEBUGGER_STEP_CALL ) ) {
-#else          
-                while ( TEST_EMULATION_PAUSED ) {
-#endif
+                framebuffer_border_changed ( );
+                if ( !DMD_TEST_MZ700 ) {
+                    framebuffer_MZ800_screen_changed ( );
+                };
+                iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos, g_gdg.screen_ticks_elapsed );
+                g_gdg.screen_is_already_rendered_at_beam_pos = g_gdg.screen_ticks_elapsed;
 
+                while ( TEST_EMULATION_PAUSED && ( !TEST_DEBUGGER_STEP_CALL ) ) {
                     iface_sdl_pool_all_events ( );
                     ui_iteration ( );
 
@@ -797,17 +804,30 @@ void mz800_main ( void ) {
                     };
                 };
 
-#ifdef MZ800_DEBUGGER
                 if ( TEST_DEBUGGER_STEP_CALL ) {
                     SET_MZ800_EVENT ( EVENT_USER_INTERFACE, 0 );
                 };
-#endif                
+
+#else // MZ800_DEBUGGER
+
+                iface_sdl_render_status_line ( );
+                iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos,, g_gdg.screen_ticks_elapsed );
+
+
+                while ( TEST_EMULATION_PAUSED ) {
+                    iface_sdl_pool_all_events ( );
+                    ui_iteration ( );
+
+                    if ( g_iface_sdl.redraw_full_screen_request ) {
+                        iface_sdl_update_window ( );
+                    };
+
+                };
+#endif
+
 
                 /* Konec pauzy */
 
-                //            } else if ( update_debugger_time == 1 ) {
-                //                update_debugger_time = 0;
-                //                debugger_update_all ( );
             };
         };
     };

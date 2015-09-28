@@ -37,7 +37,7 @@ extern "C" {
         SDL_Window *window;
         SDL_Renderer *renderer;
         SDL_Surface *active_surface;
-        SDL_Surface *old_surface;
+        //SDL_Surface *old_surface;
         int redraw_full_screen_request;
     } st_iface_sdl;
 
@@ -48,6 +48,7 @@ extern "C" {
     //extern void iface_sdl_pool_window_events ( void );
     extern void iface_sdl_pool_all_events ( void );
     extern void iface_sdl_update_window ( void );
+    extern void iface_sdl_update_window_in_beam_interval ( unsigned beam_start, unsigned beam_end );
     extern void iface_sdl_render_status_line ( void );
     extern void iface_sdl_set_colors ( uint32_t *colormap );
     extern void iface_sdl_set_window_size ( float scale );

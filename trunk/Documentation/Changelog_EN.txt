@@ -36,3 +36,8 @@
 
 	Released version 1.0.2
 
+2015-09-28
+
+	Litle improvement in debugger stepping: screen is updated only in
+	part, that correspondents to the actual position of the beam.
+

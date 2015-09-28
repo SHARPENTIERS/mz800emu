@@ -378,6 +378,7 @@ void iface_sdl_init ( void ) {
         main_app_quit ( EXIT_FAILURE );
     };
 
+#if 0
     /* Inicializace zalozniho surface s 8 bitovou barevnou hloubkou (4 bitova hloubka neni podporovana) */
     g_iface_sdl.old_surface = SDL_CreateRGBSurface ( 0, DISPLAY_VISIBLE_WIDTH, DISPLAY_VISIBLE_HEIGHT, 8, 0, 0, 0, 0 );
 
@@ -385,6 +386,7 @@ void iface_sdl_init ( void ) {
         fprintf ( stderr, "Could not create backup surface: %s\n", SDL_GetError ( ) );
         main_app_quit ( EXIT_FAILURE );
     };
+#endif
 
     /* Nastavit preddefinovane barvy */
     iface_sdl_set_colors ( display_get_default_color_schema ( ) );
@@ -395,12 +397,13 @@ void iface_sdl_init ( void ) {
         main_app_quit ( EXIT_FAILURE );
     };
 
-
+#if 0
     /* Zkopirujeme active surface do old */
     if ( SDL_BlitSurface ( g_iface_sdl.active_surface, NULL, g_iface_sdl.old_surface, NULL ) ) {
         fprintf ( stderr, "Error SDL_BlitSurface(): %s\n", SDL_GetError ( ) );
         main_app_quit ( EXIT_FAILURE );
     };
+#endif
 
     g_iface_sdl.redraw_full_screen_request = 1;
 
@@ -450,7 +453,7 @@ void iface_sdl_pool_all_events ( void ) {
                     printf ( "SIZE CHANGED - X = %d, Y = %d\n", event.window.data1, event.window.data2 );
                      */
                 } else if ( event.window.event == SDL_WINDOWEVENT_RESIZED ) {
-//                    printf ( "RESIZED - X = %d, Y = %d\n", event.window.data1, event.window.data2 );
+                    //                    printf ( "RESIZED - X = %d, Y = %d\n", event.window.data1, event.window.data2 );
                     //printf ( "RESIZED - New scale: %f x %f\n", (float) event.window.data1 / DISPLAY_VISIBLE_WIDTH, (float) event.window.data2 / DISPLAY_VISIBLE_HEIGHT );
                     if ( SDL_RenderSetScale ( g_iface_sdl.renderer, (float) event.window.data1 / DISPLAY_VISIBLE_WIDTH, (float) ( event.window.data2 - IFACE_STATUS_LINE_HEIGHT ) / DISPLAY_VISIBLE_HEIGHT ) ) {
                         fprintf ( stderr, "Could not set render scale: %s\n", SDL_GetError ( ) );
@@ -1023,5 +1026,100 @@ void iface_sdl_update_window ( void ) {
 #endif
     SDL_RenderPresent ( g_iface_sdl.renderer );
 
+}
+
+
+/*
+ * 
+ * Provedeme aktualizaci obrazu jen v intervalu < beam_start, beam_end >
+ * 
+ */
+void iface_sdl_update_window_in_beam_interval ( unsigned beam_start, unsigned beam_end ) {
+
+
+    if ( beam_start >= BEAM_TICKS ( DISPLAY_VISIBLE_LAST_ROW, DISPLAY_VISIBLE_LAST_COLUMN ) ) return;
+
+    if ( beam_end > BEAM_TICKS ( DISPLAY_VISIBLE_LAST_ROW, DISPLAY_VISIBLE_LAST_COLUMN ) ) {
+        beam_end = BEAM_TICKS ( DISPLAY_VISIBLE_LAST_ROW, DISPLAY_VISIBLE_LAST_COLUMN );
+    };
+
+
+    SDL_Texture *texture = SDL_CreateTextureFromSurface ( g_iface_sdl.renderer, g_iface_sdl.active_surface );
+
+    if ( NULL == texture ) {
+        fprintf ( stderr, "%s():%d - SDL_CreateTextureFromSurface(): %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+        main_app_quit ( EXIT_FAILURE );
+    };
+
+    SDL_RenderPresent ( g_iface_sdl.renderer );
+
+    SDL_Rect update_box;
+
+    unsigned row1 = BEAM_ROW ( beam_start );
+    unsigned col1 = BEAM_COL ( beam_start );
+    if ( col1 >= DISPLAY_VISIBLE_LAST_COLUMN ) {
+        row1++;
+        col1 = 0;
+    };
+
+    unsigned row2 = BEAM_ROW ( beam_end );
+    unsigned col2 = BEAM_COL ( beam_end );
+
+    
+    if ( col2 > DISPLAY_VISIBLE_LAST_COLUMN ) {
+        col2 = DISPLAY_VISIBLE_LAST_COLUMN;
+    };
+
+    if ( BEAM_TICKS ( row1, col1 ) >= BEAM_TICKS ( row2, col2 ) ) return;
+
+    //printf ( "Update interval: %d, %d - %d, %d\n", row1, col1, row2, col2 );
+
+    update_box.x = col1;
+    update_box.y = row1;
+
+    if ( row1 == row2 ) {
+        update_box.w = col2 - col1;
+    } else {
+        update_box.w = DISPLAY_VISIBLE_LAST_COLUMN - col1;
+    };
+    update_box.h = 1;
+
+    if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
+        fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+        main_app_quit ( EXIT_FAILURE );
+    };
+
+    col1 = 0;
+    update_box.y++;
+
+    if ( BEAM_TICKS ( update_box.y, col1 ) < BEAM_TICKS ( row2, col2 ) ) {
+
+        update_box.x = 0;
+
+        if ( update_box.y != row2 ) {
+            update_box.w = DISPLAY_VISIBLE_LAST_COLUMN;
+            update_box.h = row2 - update_box.y;
+
+            if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
+                fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+                main_app_quit ( EXIT_FAILURE );
+            };
+        };
+
+        if ( col2 != 0 ) {
+            update_box.y = row2;
+            update_box.w = col2;
+            update_box.h = 1;
+
+            if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
+                fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+                main_app_quit ( EXIT_FAILURE );
+            };
+        };
+    };
+
+    SDL_DestroyTexture ( texture );
+
+    SDL_RenderPresent ( g_iface_sdl.renderer );
 }
 

@@ -99,6 +99,7 @@ extern "C" {
         unsigned screens_counter; /* citac celkoveho poctu vykonanych snimku */
 
         unsigned beam_row;
+        unsigned screen_is_already_rendered_at_beam_pos; /* pokud byla pauza a probehnul render obrazovky, tak tady mame posledmi pozici paprsku, ktera uz je zobrazena */
 
         unsigned framebuffer_state; /* 1, pokud je potreba zobrazit novy obsah framebufferu */
 
