@@ -85,7 +85,14 @@ gboolean ui_debugger_update_register ( GtkTreeModel *model, GtkTreePath *path, G
     if ( row != 6 ) {
         sprintf ( value_txt, "%04X", z80ex_get_reg ( g_mz800.cpu, g_value_get_uint ( &gv ) ) );
     } else {
-        sprintf ( value_txt, "%02X", z80ex_get_reg ( g_mz800.cpu, g_value_get_uint ( &gv ) ) & 0xff );
+        Z80EX_BYTE value = 0;
+        if ( regR == g_value_get_uint ( &gv ) ) {
+            value = z80ex_get_reg ( g_mz800.cpu, regR ) & 0x7f;
+            value |= z80ex_get_reg ( g_mz800.cpu, regR7 ) & 0x80;
+        } else {
+            value = z80ex_get_reg ( g_mz800.cpu, g_value_get_uint ( &gv ) ) & 0xff;
+        }
+        sprintf ( value_txt, "%02X", value );
     };
     gtk_list_store_set ( (GtkListStore*) model, iter, DBG_REG_VALUE, value_txt, -1 );
     return FALSE;

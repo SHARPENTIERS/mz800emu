@@ -155,8 +155,13 @@ void debugger_change_z80_register ( Z80_REG_T reg, Z80EX_WORD value ) {
         return;
     };
 
-    z80ex_set_reg ( g_mz800.cpu, reg, value );
-
+    if ( reg == regR ) {
+        z80ex_set_reg ( g_mz800.cpu, regR, value & 0x7f );
+        z80ex_set_reg ( g_mz800.cpu, regR7, value & 0x80 );
+    } else {
+        z80ex_set_reg ( g_mz800.cpu, reg, value );
+    };
+    
     ui_debugger_update_registers ( );
 
     if ( reg == regAF ) {
