@@ -41,3 +41,7 @@
 	Litle improvement in debugger stepping: screen is updated only in
 	part, that correspondents to the actual position of the beam.
 
+
+2015-09-29
+
+	trivial bugfix - debugger: incorrectly displayed value of 7. bit in the refresh register
