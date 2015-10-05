@@ -170,7 +170,7 @@ done
 
 
 # Docs
-for filename in Changelog_EN.txt Readme_CZ.txt Runtime_libs_CZ.txt Runtime_libs_EN.txt
+for filename in Changelog_EN.txt Readme_CZ.txt Readme_EN.txt Runtime_libs_CZ.txt Runtime_libs_EN.txt
 do
 	copyFileToTmpDir "Documentation/${filename}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}/Documentation/${filename}" 0644
 done
