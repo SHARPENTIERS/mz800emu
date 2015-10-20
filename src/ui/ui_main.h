@@ -62,6 +62,7 @@ extern "C" {
 #define ui_get_range(name) GTK_RANGE ( ui_get_object ( name ) )
 #define ui_get_window(name) GTK_WINDOW ( ui_get_object ( name ) )
 #define ui_get_entry(name) GTK_ENTRY ( ui_get_object ( name ) )
+#define ui_get_toggle(name) GTK_TOGGLE_BUTTON ( ui_get_object ( name ) )
     
     typedef enum en_FILETYPE {
         FILETYPE_MZF,

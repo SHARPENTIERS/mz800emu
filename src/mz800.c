@@ -62,6 +62,8 @@
 
 #ifdef MZ800_DEBUGGER
 #include "debugger/debugger.h"
+#include "debugger/breakpoints.h"
+#include "ui/debugger/ui_breakpoints.h"
 #endif
 
 
@@ -661,6 +663,57 @@ void mz800_sync_inside_cpu ( en_INSIDEOP insideop ) {
 }
 
 
+static inline void mz800_do_emulation_paused ( void ) {
+
+    //printf ( "Emulation paused - PC: 0x%04x.\n", z80ex_get_reg ( g_mz800.cpu, regPC ) );
+
+#ifdef MZ800_DEBUGGER
+
+    debugger_update_all ( );
+    debugger_step_call ( 0 );
+
+    iface_sdl_render_status_line ( );
+
+    framebuffer_border_changed ( );
+    if ( !DMD_TEST_MZ700 ) {
+        framebuffer_MZ800_screen_changed ( );
+    };
+    iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos, g_gdg.screen_ticks_elapsed );
+    g_gdg.screen_is_already_rendered_at_beam_pos = g_gdg.screen_ticks_elapsed;
+
+    while ( TEST_EMULATION_PAUSED && ( !TEST_DEBUGGER_STEP_CALL ) ) {
+        iface_sdl_pool_all_events ( );
+        ui_iteration ( );
+
+        if ( g_iface_sdl.redraw_full_screen_request ) {
+            iface_sdl_update_window ( );
+        };
+    };
+
+    if ( TEST_DEBUGGER_STEP_CALL ) {
+        SET_MZ800_EVENT ( EVENT_USER_INTERFACE, 0 );
+    };
+
+#else // MZ800_DEBUGGER
+
+    iface_sdl_render_status_line ( );
+    iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos, g_gdg.screen_ticks_elapsed );
+
+
+    while ( TEST_EMULATION_PAUSED ) {
+        iface_sdl_pool_all_events ( );
+        ui_iteration ( );
+
+        if ( g_iface_sdl.redraw_full_screen_request ) {
+            iface_sdl_update_window ( );
+        };
+
+    };
+#endif
+
+}
+
+
 void mz800_main ( void ) {
 
     //            FILE *fp;
@@ -707,10 +760,6 @@ void mz800_main ( void ) {
             //            instruction_ticks += ticks * BASE2CPU_DIVIDER;
         } while ( z80ex_last_op_type ( g_mz800.cpu ) != 0 );
 
-        //        instruction_ticks -=  - g_mz800.synchronised_insideop_GDG_ticks;
-
-        //        g_gdg.screen_ticks_elapsed += instruction_ticks;
-
 
 #if SLOW_CTC0_v1
         mz800_sync_ctc0_and_cmt ( instruction_ticks );
@@ -719,10 +768,25 @@ void mz800_main ( void ) {
 #endif
 
 
-
+#ifdef MZ800_DEBUGGER
+        /*
+         * 
+         * Implementace zakladnich breakpointu
+         * 
+         */
+        int breakpoint_id = g_breakpoints.bpmap [ z80ex_get_reg ( g_mz800.cpu, regPC ) ];
+        if ( breakpoint_id != -1 ) {
+            printf ( "Activated breakpoint - addr: 0x%04x\n", z80ex_get_reg ( g_mz800.cpu, regPC ) );
+            mz800_pause_emulation ( 1 );
+            debugger_show_main_window ( );
+            ui_breakpoints_show_window ( );
+            ui_breakpoints_select_id ( breakpoint_id );
+        };
+#endif
+        
 
         if ( g_gdg.screen_ticks_elapsed >= g_mz800.event.ticks ) {
-
+            /* Pokud ceka ve fronte nejaky gdg event, interrupt, ci uzivatelem volana pauza */
 
             g_mz800.event_locked = 1;
             mz800_sync ( );
@@ -774,60 +838,9 @@ void mz800_main ( void ) {
             /* Konec obsluhy interruptu */
 
 
-
-
             /* jsme v pauze? */
             if ( TEST_EMULATION_PAUSED ) {
-
-                //printf ( "Emulation paused - PC: 0x%04x.\n", z80ex_get_reg ( g_mz800.cpu, regPC ) );
-
-#ifdef MZ800_DEBUGGER
-
-                debugger_update_all ( );
-                debugger_step_call ( 0 );
-
-                iface_sdl_render_status_line ( );
-
-                framebuffer_border_changed ( );
-                if ( !DMD_TEST_MZ700 ) {
-                    framebuffer_MZ800_screen_changed ( );
-                };
-                iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos, g_gdg.screen_ticks_elapsed );
-                g_gdg.screen_is_already_rendered_at_beam_pos = g_gdg.screen_ticks_elapsed;
-
-                while ( TEST_EMULATION_PAUSED && ( !TEST_DEBUGGER_STEP_CALL ) ) {
-                    iface_sdl_pool_all_events ( );
-                    ui_iteration ( );
-
-                    if ( g_iface_sdl.redraw_full_screen_request ) {
-                        iface_sdl_update_window ( );
-                    };
-                };
-
-                if ( TEST_DEBUGGER_STEP_CALL ) {
-                    SET_MZ800_EVENT ( EVENT_USER_INTERFACE, 0 );
-                };
-
-#else // MZ800_DEBUGGER
-
-                iface_sdl_render_status_line ( );
-                iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos, g_gdg.screen_ticks_elapsed );
-
-
-                while ( TEST_EMULATION_PAUSED ) {
-                    iface_sdl_pool_all_events ( );
-                    ui_iteration ( );
-
-                    if ( g_iface_sdl.redraw_full_screen_request ) {
-                        iface_sdl_update_window ( );
-                    };
-
-                };
-#endif
-
-
-                /* Konec pauzy */
-
+                mz800_do_emulation_paused ( );
             };
         };
     };

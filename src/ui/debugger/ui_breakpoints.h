@@ -1,8 +1,8 @@
 /* 
- * File:   cfgmain.h
+ * File:   ui_breakpoints.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 15. září 2015, 13:58
+ * Created on 1. října 2015, 11:42
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -23,39 +23,21 @@
  * ---------------------------------------------------------------------------
  */
 
-#ifndef CFGMAIN_H
-#define	CFGMAIN_H
+#ifndef UI_BREAKPOINTS_H
+#define	UI_BREAKPOINTS_H
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
 
-#include "cfgfile/cfgroot.h"
-
-
-#define EMULATOR_VERSION "1.0.2 devel"
-
-#define CFGFILE_INI_FILENAME    "mz800emu.ini"
-
-#ifdef EMULATOR_VERSION
-#define CFGMAIN_EMULATOR_VERSION EMULATOR_VERSION
-#else
-#define CFGMAIN_EMULATOR_VERSION "unknown"
-#endif
-
-#define CFGMAIN_EMULATOR_VERSION_TEXT CFGMAIN_EMULATOR_VERSION
-
-
-    extern struct st_CFGROOT *g_cfgmain;
-
-    extern void cfgmain_init ( void );
-    extern void cfgmain_exit ( void );
-    extern char* cfgmain_create_timestamp ( void );
-
-
+    extern void ui_breakpoints_show_window ( void );
+    extern void ui_breakpoints_show_hide_window ( void );
+    extern int ui_breakpoints_simple_add_event ( unsigned addr );
+    extern void ui_breakpoints_select_id ( int id );
+    
 #ifdef	__cplusplus
 }
 #endif
 
-#endif	/* CFGMAIN_H */
+#endif	/* UI_BREAKPOINTS_H */
 

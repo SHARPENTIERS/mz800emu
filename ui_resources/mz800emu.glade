@@ -11,7 +11,7 @@
     <property name="copyright" translatable="yes">© 2015 - Michal Hučík - ORDOZ
 2b||^2b?
 
-Here is a special thanks to Zdeněk Ádler, Roman Dolejší,
+Special thanks to Zdeněk Ádler, Roman Dolejší,
 Petr Odehnal, Martin Veverka and more  "Sharp's Men", who explored and  
 documented many hidden secrets of the computer Sharp MZ-800.
 </property>
@@ -26,7 +26,6 @@ From time when data were real zeros and ones and computers were
     <child internal-child="vbox">
       <object class="GtkBox" id="aboutdialog-vbox1">
         <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox" id="aboutdialog-action_area1">
@@ -738,13 +737,37 @@ From time when data were real zeros and ones and computers were
                   </object>
                 </child>
                 <child>
-                  <object class="GtkMenuItem" id="menuitem_open_debugger">
+                  <object class="GtkMenuItem" id="menuitem_debugger">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">MZ-800 _Debugger...</property>
+                    <property name="label" translatable="yes">MZ-800 _Debugger</property>
                     <property name="use_underline">True</property>
-                    <accelerator key="d" signal="activate" modifiers="GDK_MOD1_MASK"/>
-                    <signal name="activate" handler="on_open_debugger" swapped="no"/>
+                    <child type="submenu">
+                      <object class="GtkMenu" id="menu14">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_open_debugger">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_Open Debugger...</property>
+                            <property name="use_underline">True</property>
+                            <accelerator key="d" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                            <signal name="activate" handler="on_open_debugger" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_open_breakpoints">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_Breakpoints...</property>
+                            <property name="use_underline">True</property>
+                            <accelerator key="b" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                            <signal name="activate" handler="on_menuitem_open_breakpoints_activate" swapped="no"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>

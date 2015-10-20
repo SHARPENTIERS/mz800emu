@@ -15,7 +15,7 @@
 
 	This is tested only in my Czech localization of Windows 7.
 
-	Is it works in other codepages? For example in the Japanese localization of Windows? 
+	Does it work in other codepages? For example in the Japanese localization of Windows? 
 
 	PLEASE anybody: can you send me any report about this? 
 	To discusions on the SF, or to my email hucik@ordoz.com
@@ -39,9 +39,13 @@
 2015-09-28
 
 	Litle improvement in debugger stepping: screen is updated only in
-	part, that correspondents to the actual position of the beam.
+	part, that corresponds to the actual position of the beam.
 
 
 2015-09-29
 
 	trivial bugfix - debugger: incorrectly displayed value of 7. bit in the refresh register
+
+2015-10-20
+
+	First version with the basic breakpoints.
