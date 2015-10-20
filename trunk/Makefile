@@ -174,6 +174,9 @@ test: .test-post
 
 # help
 help: .help-post
+	@echo "Targets available only for WIN32:"
+	@echo -e "\tpackage"
+	@echo -e "\n"
 
 .help-pre:
 # Add your pre 'help' code here...

@@ -34,6 +34,7 @@
 #include "mz800.h"
 #include "z80ex/include/z80ex.h"
 #include "memory/memory.h"
+#include "breakpoints.h"
 
 st_DEBUGGER g_debugger;
 
@@ -66,17 +67,31 @@ void debugger_init ( void ) {
     g_debugger.active = 0;
     g_debugger.memop_call = 0;
     debugger_step_call ( 0 );
+
+    breakpoints_init ( );
+}
+
+
+void debugger_show_main_window ( void ) {
+    ui_debugger_show_main_window ( );
+    debugger_step_call ( 0 );
+    g_debugger.active = 1;
+}
+
+
+void debugger_hide_main_window ( void ) {
+    ui_debugger_hide_main_window ( );
+    debugger_step_call ( 0 );
+    g_debugger.active = 1;
 }
 
 
 void debugger_show_hide_main_window ( void ) {
     if ( g_debugger.active == 0 ) {
-        ui_debugger_show_main_window ( );
+        debugger_show_main_window ( );
     } else {
-        ui_debugger_hide_main_window ( );
+        debugger_hide_main_window ( );
     };
-    debugger_step_call ( 0 );
-    g_debugger.active = ~g_debugger.active & 1;    
 }
 
 
@@ -161,7 +176,7 @@ void debugger_change_z80_register ( Z80_REG_T reg, Z80EX_WORD value ) {
     } else {
         z80ex_set_reg ( g_mz800.cpu, reg, value );
     };
-    
+
     ui_debugger_update_registers ( );
 
     if ( reg == regAF ) {

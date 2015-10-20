@@ -44,6 +44,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/cmt/cmt.o \
 	${OBJECTDIR}/src/cmt/cmt_hack.o \
 	${OBJECTDIR}/src/ctc8253/ctc8253.o \
+	${OBJECTDIR}/src/debugger/breakpoints.o \
 	${OBJECTDIR}/src/debugger/debugger.o \
 	${OBJECTDIR}/src/debugger/inline_asm.o \
 	${OBJECTDIR}/src/display.o \
@@ -69,6 +70,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/psg/psg.o \
 	${OBJECTDIR}/src/ramdisk/ramdisk.o \
 	${OBJECTDIR}/src/sharpmz_ascii.o \
+	${OBJECTDIR}/src/ui/debugger/ui_breakpoints.o \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger.o \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger_callbacks.o \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger_iasm.o \
@@ -150,6 +152,11 @@ ${OBJECTDIR}/src/ctc8253/ctc8253.o: src/ctc8253/ctc8253.c
 	${MKDIR} -p ${OBJECTDIR}/src/ctc8253
 	${RM} "$@.d"
 	$(COMPILE.c) -g -Wall -DLINUX -DMZ800_DEBUGGER -D_XOPEN_SOURCE=500 -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ctc8253/ctc8253.o src/ctc8253/ctc8253.c
+
+${OBJECTDIR}/src/debugger/breakpoints.o: src/debugger/breakpoints.c 
+	${MKDIR} -p ${OBJECTDIR}/src/debugger
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -DLINUX -DMZ800_DEBUGGER -D_XOPEN_SOURCE=500 -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/debugger/breakpoints.o src/debugger/breakpoints.c
 
 ${OBJECTDIR}/src/debugger/debugger.o: src/debugger/debugger.c 
 	${MKDIR} -p ${OBJECTDIR}/src/debugger
@@ -275,6 +282,11 @@ ${OBJECTDIR}/src/sharpmz_ascii.o: src/sharpmz_ascii.c
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} "$@.d"
 	$(COMPILE.c) -g -Wall -DLINUX -DMZ800_DEBUGGER -D_XOPEN_SOURCE=500 -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/sharpmz_ascii.o src/sharpmz_ascii.c
+
+${OBJECTDIR}/src/ui/debugger/ui_breakpoints.o: src/ui/debugger/ui_breakpoints.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -DLINUX -DMZ800_DEBUGGER -D_XOPEN_SOURCE=500 -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_breakpoints.o src/ui/debugger/ui_breakpoints.c
 
 ${OBJECTDIR}/src/ui/debugger/ui_debugger.o: src/ui/debugger/ui_debugger.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger

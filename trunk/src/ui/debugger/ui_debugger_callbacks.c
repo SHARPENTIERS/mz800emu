@@ -35,6 +35,7 @@
 #include "ui_debugger.h"
 #include "ui_debugger_iasm.h"
 #include "memory/memory.h"
+#include "ui_breakpoints.h"
 
 
 G_MODULE_EXPORT gboolean on_debugger_main_window_delete ( GtkWidget *widget, GdkEvent *event, gpointer user_data ) {
@@ -401,6 +402,11 @@ G_MODULE_EXPORT void on_dbg_step_toolbutton_clicked ( GtkToolButton *toolbutton,
 }
 
 
+G_MODULE_EXPORT void on_dbg_breakpoints_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+    ui_breakpoints_show_hide_window ( );
+}
+
+
 G_MODULE_EXPORT gboolean on_dbg_disassembled_treeview_key_press_event ( GtkWidget *widget, GdkEventKey *event, gpointer user_data ) {
 
     if ( !TEST_EMULATION_PAUSED ) {
@@ -465,7 +471,7 @@ G_MODULE_EXPORT void on_dbg_disassembled_treeview_row_activated ( GtkTreeView *t
 
 
 G_MODULE_EXPORT void on_dbg_set_as_breakpoint_menuitem_activate ( GtkMenuItem *menuitem, gpointer user_data ) {
-#if 0
+
     GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_disassembled_liststore" ) );
     GtkTreeSelection *selection = gtk_tree_view_get_selection ( ui_get_tree_view ( "dbg_disassembled_treeview" ) );
     GtkTreeIter iter;
@@ -473,8 +479,10 @@ G_MODULE_EXPORT void on_dbg_set_as_breakpoint_menuitem_activate ( GtkMenuItem *m
     GValue gv = G_VALUE_INIT;
     gtk_tree_model_get_value ( model, &iter, DBG_DIS_ADDR, &gv );
     Z80EX_WORD addr = (Z80EX_WORD) g_value_get_uint ( &gv );
-#endif
-    printf ( "not implemented %s()\n", __FUNCTION__ );
+    ui_breakpoints_show_window ();
+    int id = ui_breakpoints_simple_add_event ( addr );
+    if ( id == -1 ) return;
+    ui_breakpoints_select_id ( id );
 }
 
 

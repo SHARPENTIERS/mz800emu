@@ -1,8 +1,8 @@
 /* 
- * File:   cfgmain.h
+ * File:   breakpoints.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 15. září 2015, 13:58
+ * Created on 30. září 2015, 10:17
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -23,39 +23,33 @@
  * ---------------------------------------------------------------------------
  */
 
-#ifndef CFGMAIN_H
-#define	CFGMAIN_H
+#ifndef BREAKPOINTS_H
+#define	BREAKPOINTS_H
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
 
-#include "cfgfile/cfgroot.h"
+    #include "z80ex/include/z80ex.h"
 
+    typedef struct st_BREAPOINTS {
+        int bpmap [ 0x10000 ];
+    } st_BREAPOINTS;
 
-#define EMULATOR_VERSION "1.0.2 devel"
+    extern st_BREAPOINTS g_breakpoints;
 
-#define CFGFILE_INI_FILENAME    "mz800emu.ini"
-
-#ifdef EMULATOR_VERSION
-#define CFGMAIN_EMULATOR_VERSION EMULATOR_VERSION
-#else
-#define CFGMAIN_EMULATOR_VERSION "unknown"
-#endif
-
-#define CFGMAIN_EMULATOR_VERSION_TEXT CFGMAIN_EMULATOR_VERSION
-
-
-    extern struct st_CFGROOT *g_cfgmain;
-
-    extern void cfgmain_init ( void );
-    extern void cfgmain_exit ( void );
-    extern char* cfgmain_create_timestamp ( void );
+    extern void breakpoints_init ( void );
+    extern int breakpoints_event_add ( Z80EX_WORD addr, unsigned id );
+    extern int breakpoints_event_clear ( Z80EX_WORD addr, int id );
+    extern void breakpoints_event_clear_addr ( Z80EX_WORD addr );
+    extern void breakpoints_event_clear_id ( int id );
+    extern int breakpoints_event_get_addr_by_id ( int id );
+    extern int breakpoints_event_get_id_by_addr ( Z80EX_WORD addr );
 
 
 #ifdef	__cplusplus
 }
 #endif
 
-#endif	/* CFGMAIN_H */
+#endif	/* BREAKPOINTS_H */
 

@@ -68,6 +68,7 @@
 
 #ifdef MZ800_DEBUGGER
 #include "debugger/debugger.h"
+#include "ui/debugger/ui_breakpoints.h"
 #endif
 
 st_UI g_ui;
@@ -172,7 +173,7 @@ void ui_init ( void ) {
         printf ( "GtkBuilder error: %s\n", err->message );
     };
 #else
-    gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_open_debugger" ), FALSE );
+    gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_debugger" ), FALSE );
 #endif
 
 
@@ -342,7 +343,7 @@ void ui_show_error ( char *format, ... ) {
     if ( g_ui_is_initialised == 1 ) {
         dialog = gtk_message_dialog_new ( NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, msg );
     };
-    
+
 #ifndef W32NAT
     char *msg_in_locale;
     msg_in_locale = g_locale_from_utf8 ( msg, -1, NULL, NULL, NULL );
@@ -619,11 +620,28 @@ G_MODULE_EXPORT void on_open_debugger ( GtkMenuItem *menuitem, gpointer data ) {
     debugger_show_hide_main_window ( );
 }
 
+
+G_MODULE_EXPORT void on_menuitem_open_breakpoints_activate ( GtkMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+    ui_breakpoints_show_hide_window ( );
+}
+
 #else
 
 
 /* Tohle zde musi byt, aby se nevypisoval warning, ze nebyl nalezen callback */
+
 G_MODULE_EXPORT void on_open_debugger ( GtkMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+}
+
+
+G_MODULE_EXPORT void on_menuitem_open_breakpoints_activate ( GtkMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
 }

@@ -45,6 +45,7 @@
 
 #ifdef MZ800_DEBUGGER
 #include "debugger/debugger.h"
+#include "ui/debugger/ui_breakpoints.h"
 #endif
 
 
@@ -512,6 +513,7 @@ void iface_sdl_pool_all_events ( void ) {
                          * Max speed: Alt + M
                          */
                         mz800_set_cpu_speed ( ( ~g_mz800.emulation_speed ) & 0x01 );
+
                     } else if ( event.key.keysym.scancode == SDL_SCANCODE_P ) {
                         /*
                          * Pause emulation: Alt + P
@@ -523,6 +525,12 @@ void iface_sdl_pool_all_events ( void ) {
                          * Debugger window: Alt + D
                          */
                         debugger_show_hide_main_window ( );
+
+                    } else if ( event.key.keysym.scancode == SDL_SCANCODE_B ) {
+                        /*
+                         * Breakpoints window: Alt + B
+                         */
+                        ui_breakpoints_show_hide_window ( );
 #endif
                     };
 

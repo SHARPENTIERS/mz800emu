@@ -46,6 +46,8 @@ extern "C" {
     
     extern void debugger_step_call ( unsigned value );
     extern void debugger_init ( void );
+    extern void debugger_show_main_window ( void );
+    extern void debugger_hide_main_window ( void );
     extern void debugger_show_hide_main_window ( void );
     extern void debugger_update_all ( void );
     extern void debugger_animation ( void );
