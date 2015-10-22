@@ -203,7 +203,7 @@ void cmthack_load_header ( void ) {
 
     char window_title[] = "Select MZF file to open";
     filename[0] = 0x00;
-    if ( UIRET_OK != ui_open_fille ( filename, g_cmthack.filename, sizeof ( filename ), FILETYPE_MZF, window_title, OPENMODE_READ ) ) {
+    if ( UIRET_OK != ui_open_file ( filename, g_cmthack.filename, sizeof ( filename ), FILETYPE_MZF, window_title, OPENMODE_READ ) ) {
         /* Zruseno: nastavit Err + Break */
         cmthack_result ( LOADRET_BREAK );
         return;

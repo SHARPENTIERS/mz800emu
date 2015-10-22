@@ -51,6 +51,7 @@
 #include <string.h>
 #include <errno.h>
 #include <locale.h>
+#include <gtk-2.0/gtk/gtkwindow.h>
 
 
 
@@ -75,6 +76,22 @@ st_UI g_ui;
 static int g_ui_is_initialised = 0;
 
 #define UI_RESOURCES_DIR    "ui_resources/"
+
+void ui_main_setpos ( st_UIWINPOS *wpos, gint x, gint y ) {
+    wpos->x = x;
+    wpos->y = y;
+}
+
+
+void ui_main_win_move_to_pos ( GtkWindow *w, st_UIWINPOS *wpos ) {
+    if ( ( wpos->x == -1 ) || ( wpos->y == -1 ) ) return;
+    gtk_window_move ( w, wpos->x, wpos->y );
+}
+
+
+void ui_main_win_get_pos ( GtkWindow *w, st_UIWINPOS *wpos ) {
+    gtk_window_get_position ( w, &wpos->x, &wpos->y );
+}
 
 
 void ui_update_last_folder_value ( en_FILETYPE file_type, char *value ) {
@@ -259,8 +276,10 @@ void ui_init ( void ) {
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );
 
-    g_ui_is_initialised = 1;
+    ui_main_setpos ( &g_ui.filebrowser_pos, -1, -1 );
 
+    g_ui_is_initialised = 1;
+    
     /* display bylo nacteno jeste pred inicializaci ui, proto udelame update_menu nyni */
     ui_display_update_menu ( );
 }
@@ -407,7 +426,7 @@ void ui_show_warning ( char *format, ... ) {
 }
 
 
-unsigned ui_open_fille ( char *filename, char *predefined_filename, unsigned max_filename_size, en_FILETYPE filetype, char *window_title, en_OPENMODE openmode ) {
+unsigned ui_open_file ( char *filename, char *predefined_filename, unsigned max_filename_size, en_FILETYPE filetype, char *window_title, en_OPENMODE openmode ) {
 
     GtkWidget *filechooserdialog;
     GtkFileFilter *filter;
@@ -461,6 +480,7 @@ unsigned ui_open_fille ( char *filename, char *predefined_filename, unsigned max
     };
 
     gtk_widget_show ( filechooserdialog );
+    ui_main_win_move_to_pos ( GTK_WINDOW ( filechooserdialog ), &g_ui.filebrowser_pos );
 
     unsigned uiret = UIRET_FAILED;
 
@@ -480,6 +500,8 @@ unsigned ui_open_fille ( char *filename, char *predefined_filename, unsigned max
         };
     };
 
+    ui_main_win_get_pos ( GTK_WINDOW ( filechooserdialog ), &g_ui.filebrowser_pos );
+    
     gtk_widget_destroy ( filechooserdialog );
 
     //    ui_iteration ( );

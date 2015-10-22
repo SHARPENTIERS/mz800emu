@@ -209,6 +209,7 @@ void cmt_init ( void ) {
     g_cmt.fh = NULL;
     g_cmt.output_signal = 0;
     cmt_eject ( );
+    ui_cmt_init ( );
     ui_cmt_window_update ( );
 }
 
@@ -308,7 +309,7 @@ int cmt_open ( void ) {
     filename[0] = 0x00;
 
     /* TODO: zatim podporujeme jen mzf */
-    if ( UIRET_OK == ui_open_fille ( filename, g_cmt.filename, sizeof ( filename ), FILETYPE_MZF, window_title, OPENMODE_READ ) ) {
+    if ( UIRET_OK == ui_open_file ( filename, g_cmt.filename, sizeof ( filename ), FILETYPE_MZF, window_title, OPENMODE_READ ) ) {
 
         cmt_eject ( );
 
@@ -414,7 +415,7 @@ void cmt_step ( void ) {
     if ( CMT_PLAY_NONE == g_cmt.state ) {
         return;
     };
-    */ 
+     */
 
     /* uz skoncil pultakt? */
     if ( 0 == g_cmt.tick_counter ) {

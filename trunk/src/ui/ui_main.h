@@ -63,7 +63,12 @@ extern "C" {
 #define ui_get_window(name) GTK_WINDOW ( ui_get_object ( name ) )
 #define ui_get_entry(name) GTK_ENTRY ( ui_get_object ( name ) )
 #define ui_get_toggle(name) GTK_TOGGLE_BUTTON ( ui_get_object ( name ) )
-    
+
+    typedef struct st_UIWINPOS {
+        gint x;
+        gint y;
+    } st_UIWINPOS;
+
     typedef enum en_FILETYPE {
         FILETYPE_MZF,
         FILETYPE_DSK,
@@ -81,6 +86,8 @@ extern "C" {
         unsigned calback_lock;
         char *last_folder [ FILETYPES_COUNT ];
         en_FILETYPE last_filetype;
+        
+        st_UIWINPOS filebrowser_pos;
     } st_UI;
 
     extern st_UI g_ui;
@@ -88,8 +95,12 @@ extern "C" {
     //extern void ui_init ( int argc, char *argv[] );
     extern void ui_init ( void );
     extern void ui_exit ( void );
+
+    extern void ui_main_setpos ( st_UIWINPOS *wpos, gint x, gint y );
+    extern void ui_main_win_move_to_pos ( GtkWindow *w, st_UIWINPOS *wpos );
+    extern void ui_main_win_get_pos ( GtkWindow *w, st_UIWINPOS *wpos );
     
-    extern unsigned ui_open_fille ( char *filename, char *predefined_filename, unsigned filename_size, en_FILETYPE filetype, char *window_title, en_OPENMODE mode );
+    extern unsigned ui_open_file ( char *filename, char *predefined_filename, unsigned filename_size, en_FILETYPE filetype, char *window_title, en_OPENMODE mode );
 
     extern void ui_iteration ( void );
     extern void ui_show_hide_main_menu ( void );

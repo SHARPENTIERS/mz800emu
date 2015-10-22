@@ -49,3 +49,7 @@
 2015-10-20
 
 	First version with the basic breakpoints.
+
+2015-10-22
+
+	Small improvements in UI - remember the position of windows in session.

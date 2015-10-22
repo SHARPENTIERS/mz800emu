@@ -201,10 +201,10 @@ void ramdisk_std_open_file ( void ) {
     filename[0] = 0x00;
     if ( g_ramdisk.std.type == RAMDISK_TYPE_SRAM ) {
         char window_title[] = "Select SRAM disk DAT file to open";
-        ui_open_fille ( filename, g_ramdisk.std.filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_SAVE );
+        ui_open_file ( filename, g_ramdisk.std.filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_SAVE );
     } else {
         char window_title[] = "Select ROM disk DAT file to open";
-        ui_open_fille ( filename, g_ramdisk.std.filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_READ );
+        ui_open_file ( filename, g_ramdisk.std.filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_READ );
     };
 
     if ( filename[0] != 0x00 ) {

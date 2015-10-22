@@ -30,6 +30,7 @@
 extern "C" {
 #endif
 
+    extern void ui_cmt_init ( void );
     extern void ui_cmt_window_show_hide ( void );
     extern void ui_cmt_hack_menu_update ( void );
     extern void ui_cmt_window_update ( void );

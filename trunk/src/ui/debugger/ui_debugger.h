@@ -31,7 +31,8 @@ extern "C" {
 #endif
 
 #include "z80ex/include/z80ex.h"
-
+#include "ui/ui_main.h"
+    
     typedef enum en_DBGREGLSTORE {
         DBG_REG_ID = 0,
         DBG_REG_NAME,
@@ -62,6 +63,7 @@ extern "C" {
     typedef struct st_UIDEBUGGER {
         unsigned accelerators_locked; /* pri editaci zasobniku a registru blokujeme nektere akceleratory, protoze jinak by ESC zavrel cele okno */
         Z80EX_WORD last_focus_addr;
+        st_UIWINPOS pos;
     } st_UIDEBUGGER;
 
     extern struct st_UIDEBUGGER g_uidebugger;
