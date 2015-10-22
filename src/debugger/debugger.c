@@ -82,7 +82,7 @@ void debugger_show_main_window ( void ) {
 void debugger_hide_main_window ( void ) {
     ui_debugger_hide_main_window ( );
     debugger_step_call ( 0 );
-    g_debugger.active = 1;
+    g_debugger.active = 0;
 }
 
 
