@@ -27,7 +27,7 @@
 /*
  * Popis chovani radice WD279x: http://www.scav.ic.cz/sharp_mz-800/sharp_mz-800_8_FDC-WD2793.htm
  *
- * Popis struktury DSK souboru: http://www.kjthacker.f2s.com/docs/extdsk.html
+ * Popis struktury DSK souboru: http://cpctech.cpc-live.com/docs/extdsk.html
  *
  */
 
@@ -147,7 +147,7 @@ int win32_FTRUNCATE ( FILE **fh ) {
 
 int std_FOPEN ( FILE **fh, char *path, char *mode ) {
     int retval;
-//    *fh = fopen ( path, mode );
+    //    *fh = fopen ( path, mode );
     *fh = ui_utils_fopen ( path, mode );
     if ( *fh != NULL ) {
         retval = FR_OK;
@@ -482,6 +482,27 @@ int wd279x_open_dsk ( st_WD279X *FDC, uint8_t drive_id, char *DSK_filename ) {
 #endif
         return ( WD279X_RET_ERR );
     };
+
+    /* Provedeme kontrolu hlavicky DSK souboru */
+    uint8_t buffer [ 35 ];
+    unsigned int readlen;
+    FILE_FREAD ( FDC->drive[ drive_id ].fh, &buffer, 34, &readlen );
+    if ( 34 != readlen ) {
+        DBGPRINTF ( DBGERR, "fopen(), FDC = %s, drive_id = %d, DSK_filename = %s, when read DSK header\n", FDC->name, drive_id, DSK_filename );
+#if COMPILE_FOR_EMULATOR
+        ui_show_error ( "%s():%d - '%s' - read error: %s", __FUNCTION__, __LINE__, DSK_filename, strerror ( errno ) );
+#endif
+        return ( WD279X_RET_ERR );
+    };
+    buffer [ 34 ] = 0x00;
+    if ( 0 != strcmp ( (char*) buffer, "EXTENDED CPC DSK File\r\nDisk-Info\r\n" ) ) {
+        DBGPRINTF ( DBGERR, "This is not valid DSK file! FDC = %s, drive_id = %d, DSK_filename = %s\n", FDC->name, drive_id, DSK_filename );
+#if COMPILE_FOR_EMULATOR
+        ui_show_error ( "This is not valid DSK file! FDC = %s, drive_id = %d, DSK_filename = %s\n", FDC->name, drive_id, DSK_filename );
+#endif
+        return ( WD279X_RET_ERR );
+    };
+
 
     FDC->drive[drive_id].TRACK = 0;
     FDC->drive[drive_id].SIDE = 0;
@@ -1921,6 +1942,8 @@ int wd279x_read_byte ( st_WD279X *FDC, int i_addroffset, unsigned int *io_data )
 
 
 #if COMPILE_FOR_EMULATOR
+
+
 void wd279x_reset ( st_WD279X *FDC ) {
     FDC->EINT = FDC->COMMAND = FDC->MOTOR = FDC->DENSITY = FDC->DATA_COUNTER = FDC->MULTIBLOCK_RW = 0x00;
 }

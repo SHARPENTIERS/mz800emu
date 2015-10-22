@@ -52,4 +52,5 @@
 
 2015-10-22
 
-	Small improvements in UI - remember the position of windows in session.
+	- small improvements in UI - remember the position of windows in session
+	- WD279x: added check of DSK header
