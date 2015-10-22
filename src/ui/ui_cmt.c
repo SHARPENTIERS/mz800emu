@@ -26,13 +26,21 @@
 #include <gtk/gtk.h>
 #include <stdio.h>
 
-#include "ui_cmt.h"
 #include "ui_main.h"
+#include "ui_cmt.h"
 
 #include "cmt/cmt.h"
 #include "cmt/cmt_hack.h"
 
+typedef struct st_UICMT {
+    st_UIWINPOS pos;
+} st_UICMT;
 
+static st_UICMT g_uicmt;
+
+void ui_cmt_init ( void ) {
+    ui_main_setpos ( &g_uicmt.pos, -1, -1 );
+}
 
 G_MODULE_EXPORT gboolean on_cmt_window_key_press_event ( GtkWidget *widget, GdkEventKey *event, gpointer user_data ) {
     if ( event->keyval == GDK_KEY_Escape ) {
@@ -133,9 +141,11 @@ G_MODULE_EXPORT void on_menuitem_cmt_open_and_play ( GtkMenuItem *menuitem, gpoi
 void ui_cmt_window_show_hide ( void ) {
     GtkWidget *window = ui_get_widget ( "cmt_window" );
     if ( gtk_widget_get_visible ( window ) ) {
+        ui_main_win_get_pos ( GTK_WINDOW ( window ), &g_uicmt.pos );
         gtk_widget_hide ( window );
     } else {
         gtk_widget_show ( window );
+        ui_main_win_move_to_pos ( GTK_WINDOW ( window ), &g_uicmt.pos );
         ui_cmt_window_update ( );
     };
 }

@@ -29,8 +29,8 @@
 #ifdef MZ800_DEBUGGER
 
 
-#include "ui_debugger.h"
 #include "ui/ui_main.h"
+#include "ui_debugger.h"
 #include "debugger/debugger.h"
 
 #include "mz800.h"
@@ -531,8 +531,11 @@ void ui_debugger_show_main_window ( void ) {
                 NULL );
 
         g_uidebugger.last_focus_addr = 0x0000;
-
+        
+        ui_main_setpos ( &g_uidebugger.pos, -1, -1 );
     };
+    
+    ui_main_win_move_to_pos ( GTK_WINDOW ( window ), &g_uidebugger.pos );
 
     ui_debugger_update_all ( );
 
@@ -542,6 +545,7 @@ void ui_debugger_show_main_window ( void ) {
 
 void ui_debugger_hide_main_window ( void ) {
     GtkWidget *window = ui_get_widget ( "debugger_main_window" );
+    ui_main_win_get_pos ( GTK_WINDOW ( window ), &g_uidebugger.pos );
     gtk_widget_hide ( window );
 }
 

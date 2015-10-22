@@ -34,6 +34,13 @@
 #include "debugger/inline_asm.h"
 #include "debugger/inline_asm_opcodes.h"
 
+typedef struct st_UIIASM {
+    //st_UIWINPOS main_pos;
+    st_UIWINPOS help_pos;
+} st_UIIASM;
+
+static st_UIIASM g_uiiasm;
+
 
 void ui_debugger_iasm_show_main_window ( gchar *instruction, unsigned select_text, char *addr_txt ) {
 
@@ -52,19 +59,33 @@ void ui_debugger_iasm_show_main_window ( gchar *instruction, unsigned select_tex
     if ( select_text ) {
         gtk_editable_select_region ( GTK_EDITABLE ( entry_instruction ), 0, -1 );
     };
+
+    static int initialised = 0;
+    if ( !initialised ) {
+        initialised = 1;
+        //ui_main_setpos ( &g_uiiasm.main_pos, -1, -1 );
+        ui_main_setpos ( &g_uiiasm.help_pos, -1, -1 );
+    };
+    //ui_main_win_move_to_pos ( GTK_WINDOW ( window ), &g_uiiasm.main_pos );
+
+}
+
+
+void ui_debugger_iasm_hide_main_window ( void ) {
+    GtkWidget *w = ui_get_widget ( "dbg_inline_assembler_window" );
+    //ui_main_win_get_pos ( GTK_WINDOW ( w ), &g_uiiasm.main_pos );
+    gtk_widget_hide ( w );
 }
 
 
 G_MODULE_EXPORT gboolean on_dbg_inline_assembler_window_delete_event ( GtkWidget *widget, GdkEvent *event, gpointer user_data ) {
-    GtkWidget *window = ui_get_widget ( "dbg_inline_assembler_window" );
-    gtk_widget_hide ( window );
+    ui_debugger_iasm_hide_main_window ( );
     return TRUE;
 }
 
 
 G_MODULE_EXPORT void dbg_inline_assembler_cancel ( GtkButton *button, gpointer user_data ) {
-    GtkWidget *window = ui_get_widget ( "dbg_inline_assembler_window" );
-    gtk_widget_hide ( window );
+    ui_debugger_iasm_hide_main_window ( );
 }
 
 
@@ -135,24 +156,32 @@ G_MODULE_EXPORT void dbg_inline_assembler_ok ( GtkButton *button, gpointer user_
         ui_debugger_update_disassembled ( addr, 0 );
     };
 
-    GtkWidget *window = ui_get_widget ( "dbg_inline_assembler_window" );
-    gtk_widget_hide ( window );
+    ui_debugger_iasm_hide_main_window ( );
+}
+
+
+void ui_debugger_iasm_hide_help_window ( void ) {
+    GtkWidget *w = ui_get_widget ( "debugger_iasm_help_window" );
+    ui_main_win_get_pos ( GTK_WINDOW ( w ), &g_uiiasm.help_pos );
+    gtk_widget_hide ( w );
 }
 
 
 G_MODULE_EXPORT gboolean on_debugger_iasm_help_window_delete_event ( GtkWidget *widget, GdkEvent *event, gpointer user_data ) {
-    GtkWidget *window = ui_get_widget ( "debugger_iasm_help_window" );
-    gtk_widget_hide ( window );
+    ui_debugger_iasm_hide_help_window ( );
     return TRUE;
 }
 
 
 G_MODULE_EXPORT void dbg_inline_assembler_help ( GtkButton *button, gpointer user_data ) {
-    GtkWidget *window;
     
+    GtkWidget *help_window = ui_get_widget ( "debugger_iasm_help_window" );
+    if ( gtk_widget_get_visible ( help_window ) ) return;
+        
     /* asm window chceme mit modalni, takze jej radeji zavreme, aby bylo mozne pouzivat napovedu */
-    window = ui_get_widget ( "dbg_inline_assembler_window" );
-    gtk_widget_hide ( window );
+    GtkWidget *iasm_window;
+    iasm_window = ui_get_widget ( "dbg_inline_assembler_window" );
+    gtk_widget_hide ( iasm_window );
 
 
     GtkWidget *view;
@@ -262,10 +291,8 @@ G_MODULE_EXPORT void dbg_inline_assembler_help ( GtkButton *button, gpointer use
         i++;
     };
 
-    window = ui_get_widget ( "debugger_iasm_help_window" );
-    gtk_widget_show ( window );
-
-
+    gtk_widget_show ( help_window );
+    ui_main_win_move_to_pos ( GTK_WINDOW ( help_window ), &g_uiiasm.help_pos );
 }
 
 

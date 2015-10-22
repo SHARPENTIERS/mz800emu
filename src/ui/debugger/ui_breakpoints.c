@@ -88,6 +88,9 @@ typedef struct st_UIBPOINTS {
 
     int add_event_focus;
 
+    st_UIWINPOS main_pos;
+    st_UIWINPOS settings_pos;
+
 } st_UIBPOINTS;
 
 
@@ -173,6 +176,8 @@ int ui_breakpoints_simple_add_event ( unsigned addr ) {
 }
 
 #if 0
+
+
 void ui_breakpoints_experiments ( ) {
 
 
@@ -205,6 +210,7 @@ void ui_breakpoints_experiments ( ) {
 }
 #endif
 
+
 void ui_breakpoints_show_window ( void ) {
 
     GtkWidget *window = ui_get_widget ( "dbg_breakpoints_window" );
@@ -212,6 +218,14 @@ void ui_breakpoints_show_window ( void ) {
 
     g_uibpoints.add_event_focus = 0;
     gtk_widget_show ( window );
+
+    static int initialised = 0;
+    if ( initialised == 0 ) {
+        initialised = 1;
+        ui_main_setpos ( &g_uibpoints.main_pos, -1, -1 );
+        ui_main_setpos ( &g_uibpoints.settings_pos, -1, -1 );
+    };
+    ui_main_win_move_to_pos ( GTK_WINDOW ( window ), &g_uibpoints.main_pos );
 
 #if 0
     static int firstrun = 1;
@@ -223,11 +237,17 @@ void ui_breakpoints_show_window ( void ) {
 }
 
 
+void ui_breakpoints_hide_window ( void ) {
+    GtkWidget *window = ui_get_widget ( "dbg_breakpoints_window" );
+    ui_main_win_get_pos ( GTK_WINDOW ( window ), &g_uibpoints.main_pos );
+    gtk_widget_hide ( window );
+}
+
+
 void ui_breakpoints_show_hide_window ( void ) {
     GtkWidget *window = ui_get_widget ( "dbg_breakpoints_window" );
     if ( gtk_widget_get_visible ( window ) ) {
-        gtk_widget_hide ( window );
-        return;
+        ui_breakpoints_hide_window ( );
     } else {
         ui_breakpoints_show_window ( );
     };
@@ -469,6 +489,7 @@ void ui_breakpoints_edit_row ( GtkTreeModel *model, GtkTreeIter *iter, int paren
     };
 
     gtk_widget_show ( window );
+    ui_main_win_move_to_pos ( GTK_WINDOW ( window ), &g_uibpoints.settings_pos );
 }
 
 
@@ -674,7 +695,7 @@ G_MODULE_EXPORT void on_dbg_breakpoints_treestore_row_inserted ( GtkTreeModel *t
  */
 
 G_MODULE_EXPORT gboolean on_dbg_breakpoints_window_delete_event ( GtkWidget *widget, GdkEvent *event, gpointer user_data ) {
-    ui_breakpoints_show_hide_window ( );
+    ui_breakpoints_hide_window ( );
     return TRUE;
 }
 
@@ -682,7 +703,7 @@ G_MODULE_EXPORT gboolean on_dbg_breakpoints_window_delete_event ( GtkWidget *wid
 G_MODULE_EXPORT gboolean on_dbg_breakpoints_window_key_press_event ( GtkWidget *widget, GdkEventKey *event, gpointer user_data ) {
 
     if ( event->keyval == GDK_KEY_Escape ) {
-        ui_breakpoints_show_hide_window ( );
+        ui_breakpoints_hide_window ( );
         return TRUE;
     } else if ( g_uibpoints.add_event_focus == 1 ) {
         if ( event->keyval == GDK_KEY_Return ) {
@@ -696,7 +717,7 @@ G_MODULE_EXPORT gboolean on_dbg_breakpoints_window_key_press_event ( GtkWidget *
 G_MODULE_EXPORT void on_bpt_hide_menuitem_activate ( GtkCheckMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
-    ui_breakpoints_show_hide_window ( );
+    ui_breakpoints_hide_window ( );
 }
 
 
@@ -907,10 +928,21 @@ G_MODULE_EXPORT void on_dbg_breakpoints_treeview_row_activated ( GtkTreeView *tr
 }
 
 
+/*
+ * 
+ * Udalosti btp_settings
+ * 
+ */
+
+void bpt_settings_hide_window ( void ) {
+    GtkWidget *w = ui_get_widget ( "bpt_settings_window" );
+    ui_main_win_get_pos ( GTK_WINDOW ( w ), &g_uibpoints.settings_pos );
+    gtk_widget_hide ( w );
+}
+
+
 G_MODULE_EXPORT gboolean on_bpt_settings_window_delete_event ( GtkWidget *widget, GdkEvent *event, gpointer user_data ) {
-    gtk_widget_hide ( widget );
-
-
+    bpt_settings_hide_window ( );
     return TRUE;
 }
 
@@ -918,9 +950,7 @@ G_MODULE_EXPORT gboolean on_bpt_settings_window_delete_event ( GtkWidget *widget
 G_MODULE_EXPORT gboolean on_bpt_settings_window_key_press_event ( GtkWidget *widget, GdkEventKey *event, gpointer user_data ) {
 
     if ( event->keyval == GDK_KEY_Escape ) {
-        gtk_widget_hide ( widget );
-
-
+        bpt_settings_hide_window ( );
         return TRUE;
     };
 
@@ -929,8 +959,7 @@ G_MODULE_EXPORT gboolean on_bpt_settings_window_key_press_event ( GtkWidget *wid
 
 
 G_MODULE_EXPORT void on_bpt_settings_close_button_clicked ( GtkButton *button, gpointer user_data ) {
-    GtkWidget *window = ui_get_widget ( "bpt_settings_window" );
-    gtk_widget_hide ( window );
+    bpt_settings_hide_window ( );
 }
 
 
@@ -1065,8 +1094,7 @@ G_MODULE_EXPORT void on_bpt_settings_ok_button_clicked ( GtkButton *button, gpoi
 
     //printf ( "r: %lf\nr: %lf\nr: %lf\n\n", fg_color.red, fg_color.green, fg_color.blue );
 
-    GtkWidget *window = ui_get_widget ( "bpt_settings_window" );
-    gtk_widget_hide ( window );
+    bpt_settings_hide_window ( );
 
     ui_breakpoints_select_iter ( &iter );
 }
