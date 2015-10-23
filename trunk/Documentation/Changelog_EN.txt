@@ -54,3 +54,7 @@
 
 	- small improvements in UI - remember the position of windows in session
 	- WD279x: added check of DSK header
+
+2015-10-22
+
+	Debugger: added option to turn off the animated updates.

@@ -36,12 +36,14 @@ extern "C" {
         unsigned active;
         unsigned step_call;
         unsigned memop_call;
+        unsigned animated_updates;
     } st_DEBUGGER;
 
     extern st_DEBUGGER g_debugger;
 
 #define TEST_DEBUGGER_MEMOP_CALL        ( g_debugger.memop_call != 0 )
 #define TEST_DEBUGGER_STEP_CALL         ( g_debugger.step_call != 0 )
+#define TEST_DEBUGGER_ACTIVE            ( g_debugger.active != 0 )
 
     
     extern void debugger_step_call ( unsigned value );

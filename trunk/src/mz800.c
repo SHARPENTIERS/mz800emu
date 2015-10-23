@@ -70,6 +70,7 @@
 #define DBGLEVEL (DBGNON /* | DBGERR | DBGWAR | DBGINF*/)
 //#define DBGLEVEL (DBGNON | DBGERR | DBGWAR | DBGINF )
 #include "debug.h"
+#include "ui/debugger/ui_debugger.h"
 
 
 struct st_mz800 g_mz800;
@@ -267,7 +268,7 @@ uint32_t screens_counter_flush ( uint32_t interval, void* param ) {
     static unsigned debugger_update_counter = 0;
 
     if ( !TEST_EMULATION_PAUSED ) {
-        if ( g_debugger.active != 0 ) {
+        if ( TEST_DEBUGGER_ACTIVE ) {
             if ( update_debugger_time != 1 ) {
                 if ( debugger_update_counter++ >= 2 ) {
                     debugger_update_counter = 0;
@@ -286,7 +287,7 @@ uint32_t screens_counter_flush ( uint32_t interval, void* param ) {
     if ( call_counter == 0 ) {
 #if 0
         if ( !TEST_EMULATION_PAUSED ) {
-            if ( g_debugger.active != 0 ) {
+            if ( TEST_DEBUGGER_ACTIVE ) {
                 if ( update_debugger_time != 1 ) {
                     update_debugger_time = 1;
                     SET_MZ800_EVENT ( EVENT_USER_INTERFACE, 0 );
@@ -472,7 +473,7 @@ static inline void mz800_sync ( void ) {
                     if ( ( g_mz800.emulation_speed == 0 ) || ( last_make_picture_time != make_picture_time ) ) {
                         last_make_picture_time = make_picture_time;
 
-                        debugger_animation ( );
+                        if ( g_debugger.animated_updates ) debugger_animation ( );
 
                         if ( update_status_time ) {
                             update_status_time = 0;
@@ -783,7 +784,7 @@ void mz800_main ( void ) {
             ui_breakpoints_select_id ( breakpoint_id );
         };
 #endif
-        
+
 
         if ( g_gdg.screen_ticks_elapsed >= g_mz800.event.ticks ) {
             /* Pokud ceka ve fronte nejaky gdg event, interrupt, ci uzivatelem volana pauza */
@@ -930,6 +931,17 @@ void mz800_pause_emulation ( unsigned value ) {
         //} else if ( value != g_mz800.emulation_paused ) {
         //printf ( "Continue in emulation - PC: 0x%04x.\n", z80ex_get_reg ( g_mz800.cpu, regPC ) );
     };
+
     g_mz800.emulation_paused = value;
     ui_main_update_emulation_state ( g_mz800.emulation_paused );
+
+#if MZ800_DEBUGGER
+    if ( TEST_DEBUGGER_ACTIVE ) {
+        if ( value ) {
+            ui_debugger_hide_spinner_window ( );
+        } else {
+            ui_debugger_show_spinner_window ( );
+        };
+    };
+#endif
 }
