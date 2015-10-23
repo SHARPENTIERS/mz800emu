@@ -36,6 +36,8 @@
 #include "memory/memory.h"
 #include "breakpoints.h"
 
+#include "cfgmain.h"
+
 st_DEBUGGER g_debugger;
 
 
@@ -67,8 +69,21 @@ void debugger_init ( void ) {
     g_debugger.active = 0;
     g_debugger.memop_call = 0;
     debugger_step_call ( 0 );
-
+    g_debugger.animated_updates = 0;
     breakpoints_init ( );
+
+    CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "DEBUGGER" );
+
+    CFGELM *elm;
+    elm = cfgmodule_register_new_element ( cmod, "animated_updates", CFGENTYPE_KEYWORD, 0,
+            0, "DISABLED",
+            1, "ENABLED",
+            -1 );
+    cfgelement_set_handlers ( elm, (void*) &g_debugger.animated_updates, (void*) &g_debugger.animated_updates );
+
+    cfgmodule_parse ( cmod );
+    cfgmodule_propagate ( cmod );
+
 }
 
 
@@ -87,7 +102,7 @@ void debugger_hide_main_window ( void ) {
 
 
 void debugger_show_hide_main_window ( void ) {
-    if ( g_debugger.active == 0 ) {
+    if ( !TEST_DEBUGGER_ACTIVE ) {
         debugger_show_main_window ( );
     } else {
         debugger_hide_main_window ( );
@@ -96,13 +111,13 @@ void debugger_show_hide_main_window ( void ) {
 
 
 void debugger_update_all ( void ) {
-    if ( g_debugger.active == 0 ) return;
+    if ( !TEST_DEBUGGER_ACTIVE ) return;
     ui_debugger_update_all ( );
 }
 
 
 void debugger_animation ( void ) {
-    if ( g_debugger.active == 0 ) return;
+    if ( !TEST_DEBUGGER_ACTIVE ) return;
     ui_debugger_update_animated ( );
 }
 

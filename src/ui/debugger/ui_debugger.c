@@ -25,6 +25,8 @@
 
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
+#include <gtk-2.0/gtk/gtkwidget.h>
+#include <gtk-2.0/gtk/gtkwindow.h>
 
 #ifdef MZ800_DEBUGGER
 
@@ -400,8 +402,8 @@ void ui_debugger_update_disassembled ( Z80EX_WORD addr, int row ) {
         if ( i == select_row ) {
             GtkTreeSelection *selection = gtk_tree_view_get_selection ( ui_get_tree_view ( "dbg_disassembled_treeview" ) );
             gtk_tree_selection_select_iter ( selection, &iter );
-            
-            
+
+
             /* 
              * TODO: tady je nejaka chybka
              *      1) provedu editaci 15. radku na nejake vysoke adrese a ulozim jej na adresu 0x0000
@@ -495,11 +497,75 @@ gboolean on_dbg_disassembled_addr_vscale_button_press_event ( GtkWidget *widget,
 }
 
 
+void ui_debugger_show_spinner_window ( void ) {
+    
+    if ( g_debugger.animated_updates != 0 ) return;
+    if ( TEST_EMULATION_PAUSED ) return;
+
+    GtkWidget *w_main = ui_get_widget ( "debugger_main_window" );
+    if ( !gtk_widget_get_visible ( w_main ) ) return;
+
+    gint wx, wy;
+    gint x, y;
+    gint wox, woy;
+    
+    gint width;
+    gint height;
+
+    GtkWidget *disassembled = ui_get_widget ( "dbg_disassembled_frame" );
+    gtk_window_get_position ( GTK_WINDOW ( w_main ), &wx, &wy );
+    gtk_widget_translate_coordinates ( disassembled, w_main, 0, 0, &x, &y );
+    
+    //gtk_window_get_size ( GTK_WINDOW ( w_main ), &with, &height );
+        
+    if ( GDK_IS_WINDOW ( gtk_widget_get_window ( disassembled ) ) ) {
+        gdk_window_get_origin ( gtk_widget_get_window ( disassembled ), &wox, &woy );
+    } else {
+        wox = 0;
+        woy = 0;
+    };
+
+    
+    width = gtk_widget_get_allocated_width ( ui_get_widget ( "dbg_grid" ) );
+    height = gtk_widget_get_allocated_height ( disassembled );
+    
+    GtkWidget *spinner_window = ui_get_widget ( "dbg_spinner_window" );
+    gtk_window_move ( GTK_WINDOW ( spinner_window ), wox + x, woy + y );
+    gtk_window_resize ( GTK_WINDOW ( spinner_window ), width, height );
+
+    
+    if ( gtk_widget_get_visible ( spinner_window ) ) return;
+    
+    gtk_widget_show_all ( spinner_window );
+    gtk_widget_set_opacity ( spinner_window, 0.60 );
+    
+    gtk_spinner_start ( GTK_SPINNER ( ui_get_widget ( "dbg_spinner" ) ) );
+    //gtk_widget_grab_focus ( w_main );
+    gtk_window_set_transient_for ( GTK_WINDOW ( spinner_window ), GTK_WINDOW ( w_main ) );
+    
+//#ifdef LINUX
+    //gtk_window_set_keep_above ( GTK_WINDOW ( w ), TRUE );
+    gtk_widget_set_sensitive ( disassembled, FALSE );
+    gtk_widget_set_sensitive ( ui_get_widget ( "dbg_right_grid" ), FALSE );
+//#endif
+}
+
+
+void ui_debugger_hide_spinner_window ( void ) {
+    gtk_spinner_stop ( GTK_SPINNER ( ui_get_widget ( "dbg_spinner" ) ) );
+    gtk_widget_hide ( ui_get_widget ( "dbg_spinner_window" ) );
+//#ifdef LINUX
+    gtk_widget_set_sensitive ( ui_get_widget ( "dbg_disassembled_frame" ), TRUE );
+    gtk_widget_set_sensitive ( ui_get_widget ( "dbg_right_grid" ), TRUE );
+//#endif
+}
+
+
 void ui_debugger_show_main_window ( void ) {
 
-    g_uidebugger.accelerators_locked = 0;
-
     GtkWidget *window = ui_get_widget ( "debugger_main_window" );
+    
+    ui_main_win_move_to_pos ( GTK_WINDOW ( window ), &g_uidebugger.pos );
     gtk_widget_show ( window );
     gtk_widget_grab_focus ( window );
 
@@ -531,19 +597,29 @@ void ui_debugger_show_main_window ( void ) {
                 NULL );
 
         g_uidebugger.last_focus_addr = 0x0000;
-        
+
         ui_main_setpos ( &g_uidebugger.pos, -1, -1 );
     };
     
-    ui_main_win_move_to_pos ( GTK_WINDOW ( window ), &g_uidebugger.pos );
+    g_uidebugger.accelerators_locked = 1;
+    
+    if ( g_debugger.animated_updates == 0 ) {
+        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "dbg_animated_disabled_radiomenuitem" ), TRUE );
+        ui_debugger_show_spinner_window ( );
+    } else {
+        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "dbg_animated_enabled_radiomenuitem" ), TRUE );
+        ui_debugger_hide_spinner_window ( );
+    };
+    
+    g_uidebugger.accelerators_locked = 0;
 
     ui_debugger_update_all ( );
-
 
 }
 
 
 void ui_debugger_hide_main_window ( void ) {
+    ui_debugger_hide_spinner_window ( );
     GtkWidget *window = ui_get_widget ( "debugger_main_window" );
     ui_main_win_get_pos ( GTK_WINDOW ( window ), &g_uidebugger.pos );
     gtk_widget_hide ( window );

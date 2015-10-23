@@ -38,6 +38,18 @@
 #include "ui_breakpoints.h"
 
 
+G_MODULE_EXPORT void on_debugger_main_window_size_allocate ( GtkWidget *widget, GdkRectangle *allocation, gpointer user_data ) {
+    if ( g_debugger.animated_updates != 0 ) return;
+    ui_debugger_show_spinner_window ( );
+}
+
+
+G_MODULE_EXPORT gboolean on_debugger_main_window_configure_event ( GtkWidget *widget, GdkEventConfigure *event ) {
+    if ( g_debugger.animated_updates == 0 ) ui_debugger_show_spinner_window ( );
+    return FALSE;
+}
+
+
 G_MODULE_EXPORT gboolean on_debugger_main_window_delete ( GtkWidget *widget, GdkEvent *event, gpointer user_data ) {
     g_uidebugger.accelerators_locked = 0;
     debugger_show_hide_main_window ( );
@@ -111,6 +123,27 @@ G_MODULE_EXPORT void on_dbg_step_menuitem_activate ( GtkCheckMenuItem *menuitem,
     (void) menuitem;
     (void) data;
     debugger_step_call ( 1 );
+}
+
+
+G_MODULE_EXPORT void on_dbg_animated_enabled_radiomenuitem_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+
+    if ( g_uidebugger.accelerators_locked != 0 ) return;
+    g_debugger.animated_updates = 1;
+    ui_debugger_hide_spinner_window ( );
+    debugger_step_call ( 0 );
+}
+
+
+G_MODULE_EXPORT void on_dbg_animated_disabled_radiomenuitem_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+
+    if ( g_uidebugger.accelerators_locked != 0 ) return;
+    g_debugger.animated_updates = 0;
+    ui_debugger_show_spinner_window ( );
 }
 
 
@@ -479,7 +512,7 @@ G_MODULE_EXPORT void on_dbg_set_as_breakpoint_menuitem_activate ( GtkMenuItem *m
     GValue gv = G_VALUE_INIT;
     gtk_tree_model_get_value ( model, &iter, DBG_DIS_ADDR, &gv );
     Z80EX_WORD addr = (Z80EX_WORD) g_value_get_uint ( &gv );
-    ui_breakpoints_show_window ();
+    ui_breakpoints_show_window ( );
     int id = ui_breakpoints_simple_add_event ( addr );
     if ( id == -1 ) return;
     ui_breakpoints_select_id ( id );
@@ -549,6 +582,12 @@ G_MODULE_EXPORT void on_dbg_focus_to_ok_button_clicked ( GtkButton *button, gpoi
         GtkWidget *window = ui_get_widget ( "dbg_focus_to_window" );
         gtk_widget_hide ( window );
     };
+}
+
+
+G_MODULE_EXPORT gboolean on_dbg_spinner_window_press_event ( GtkWidget *widget, GdkEventButton *event, gpointer user_data ) {
+    ui_debugger_pause_emulation ( );
+    return FALSE;
 }
 
 
