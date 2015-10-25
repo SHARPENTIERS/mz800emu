@@ -39,6 +39,7 @@ extern "C" {
     extern st_BREAPOINTS g_breakpoints;
 
     extern void breakpoints_init ( void );
+    extern void breakpoints_clear_all ( void );
     extern int breakpoints_event_add ( Z80EX_WORD addr, unsigned id );
     extern int breakpoints_event_clear ( Z80EX_WORD addr, int id );
     extern void breakpoints_event_clear_addr ( Z80EX_WORD addr );
