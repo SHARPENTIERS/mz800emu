@@ -338,6 +338,8 @@ void cfgmodule_parse ( st_CFGMODULE *m ) {
 
 
                 } else {
+                    
+                    if ( *word0 == '[' ) break; /* Koncime! zacina tu dalsi modul */
 
                     char *element_name = word0;
                     /* Jiz jsme v pozadovanem modulu - provedeme analyzu celeho radku */
