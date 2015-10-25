@@ -30,6 +30,7 @@
 extern "C" {
 #endif
 
+#include <errno.h>
 #include "main.h"
 
 #define CFGCOMMON_MALLOC_ERROR(expr) {\
