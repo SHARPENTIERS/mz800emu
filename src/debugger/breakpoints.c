@@ -29,11 +29,18 @@
 #ifdef MZ800_DEBUGGER
 
 #include "breakpoints.h"
+#include "ui/debugger/ui_breakpoints.h"
 
 st_BREAPOINTS g_breakpoints;
 
 
 void breakpoints_init ( void ) {
+    breakpoints_clear_all ( );
+    ui_breakpoints_init ( );
+}
+
+
+void breakpoints_clear_all ( void ) {
     memset ( g_breakpoints.bpmap, -1, sizeof ( g_breakpoints.bpmap ) );
 }
 
@@ -76,6 +83,7 @@ int breakpoints_event_get_addr_by_id ( int id ) {
     };
     return -1;
 }
+
 
 int breakpoints_event_get_id_by_addr ( Z80EX_WORD addr ) {
     return g_breakpoints.bpmap [ addr ];

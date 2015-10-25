@@ -777,7 +777,7 @@ void mz800_main ( void ) {
          */
         int breakpoint_id = g_breakpoints.bpmap [ z80ex_get_reg ( g_mz800.cpu, regPC ) ];
         if ( breakpoint_id != -1 ) {
-            printf ( "Activated breakpoint - addr: 0x%04x\n", z80ex_get_reg ( g_mz800.cpu, regPC ) );
+            printf ( "INFO - activated breakpoint on addr: 0x%04x\n", z80ex_get_reg ( g_mz800.cpu, regPC ) );
             mz800_pause_emulation ( 1 );
             debugger_show_main_window ( );
             ui_breakpoints_show_window ( );

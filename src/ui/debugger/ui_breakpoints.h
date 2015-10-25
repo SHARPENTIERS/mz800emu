@@ -30,11 +30,14 @@
 extern "C" {
 #endif
 
+#define BREAKPOINTS_INI_FILENAME    "breakpoints.ini"
+
+    extern void ui_breakpoints_init ( void );
     extern void ui_breakpoints_show_window ( void );
     extern void ui_breakpoints_show_hide_window ( void );
     extern int ui_breakpoints_simple_add_event ( unsigned addr );
     extern void ui_breakpoints_select_id ( int id );
-    
+
 #ifdef	__cplusplus
 }
 #endif

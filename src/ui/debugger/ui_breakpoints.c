@@ -28,6 +28,7 @@
 #include <glib/gprintf.h>
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 
 #ifdef MZ800_DEBUGGER
@@ -38,6 +39,8 @@
 #include "debugger/debugger.h"
 #include "z80ex/include/z80ex.h"
 
+#include "cfgfile/cfgroot.h"
+#include "cfgfile/cfgcommon.h"
 
 #define BPT_DEFAULT_GROUP   "Breakpoint Group"
 #define BPT_DEFAULT_EVENT   "Addr: 0x"
@@ -290,11 +293,13 @@ void ui_breakpoints_copy_iter ( GtkTreeModel *model, GtkTreeIter *dst_iter, GtkT
     fg_color.red = g_value_get_double ( &gv_fg_r );
     fg_color.green = g_value_get_double ( &gv_fg_g );
     fg_color.blue = g_value_get_double ( &gv_fg_b );
+    fg_color.alpha = 0xffff;
 
     GdkRGBA bg_color;
     bg_color.red = g_value_get_double ( &gv_bg_r );
     bg_color.green = g_value_get_double ( &gv_bg_g );
     bg_color.blue = g_value_get_double ( &gv_bg_b );
+    bg_color.alpha = 0xffff;
 
     gtk_tree_store_set ( GTK_TREE_STORE ( model ), dst_iter,
             BRK_ID, g_value_get_uint ( &gv_id ),
@@ -428,10 +433,12 @@ void ui_breakpoints_edit_row ( GtkTreeModel *model, GtkTreeIter *iter, int paren
         fg_color.red = g_value_get_double ( &gv_fg_r );
         fg_color.green = g_value_get_double ( &gv_fg_g );
         fg_color.blue = g_value_get_double ( &gv_fg_b );
+        fg_color.alpha = 0xffff;
 
         bg_color.red = g_value_get_double ( &gv_bg_r );
         bg_color.green = g_value_get_double ( &gv_bg_g );
         bg_color.blue = g_value_get_double ( &gv_bg_b );
+        bg_color.alpha = 0xffff;
 
         enabled = g_value_get_boolean ( &gv_enabled );
         type = g_value_get_uint ( &gv_type );
@@ -556,6 +563,258 @@ void ui_breakpoints_remove_item_from_bptable ( GtkTreeModel *model, GtkTreeIter 
 }
 
 
+void ui_breakpoints_prepare_cfgfile ( st_CFGROOT *cfgroot, GtkTreeModel *model, GtkTreeIter *parent, char **childs_poi ) {
+
+    GtkTreeIter iter;
+
+    if ( !gtk_tree_model_iter_children ( model, &iter, parent ) ) return;
+
+    do {
+        GValue gv_id = G_VALUE_INIT;
+        GValue gv_type = G_VALUE_INIT;
+        GValue gv_name = G_VALUE_INIT;
+        GValue gv_enabled = G_VALUE_INIT;
+        GValue gv_addr = G_VALUE_INIT;
+        GValue gv_fg_r = G_VALUE_INIT;
+        GValue gv_fg_g = G_VALUE_INIT;
+        GValue gv_fg_b = G_VALUE_INIT;
+        GValue gv_bg_r = G_VALUE_INIT;
+        GValue gv_bg_g = G_VALUE_INIT;
+        GValue gv_bg_b = G_VALUE_INIT;
+
+        GdkRGBA fg_color;
+        GdkRGBA bg_color;
+
+        gtk_tree_model_get_value ( model, &iter, BRK_ID, &gv_id );
+        gtk_tree_model_get_value ( model, &iter, BRK_TYPE, &gv_type );
+        gtk_tree_model_get_value ( model, &iter, BRK_NAME, &gv_name );
+        gtk_tree_model_get_value ( model, &iter, BRK_ENABLED, &gv_enabled );
+        gtk_tree_model_get_value ( model, &iter, BRK_ADDR, &gv_addr );
+
+        gtk_tree_model_get_value ( model, &iter, BRK_FG_R, &gv_fg_r );
+        gtk_tree_model_get_value ( model, &iter, BRK_FG_G, &gv_fg_g );
+        gtk_tree_model_get_value ( model, &iter, BRK_FG_B, &gv_fg_b );
+
+        gtk_tree_model_get_value ( model, &iter, BRK_BG_R, &gv_bg_r );
+        gtk_tree_model_get_value ( model, &iter, BRK_BG_G, &gv_bg_g );
+        gtk_tree_model_get_value ( model, &iter, BRK_BG_B, &gv_bg_b );
+
+        fg_color.red = g_value_get_double ( &gv_fg_r );
+        fg_color.green = g_value_get_double ( &gv_fg_g );
+        fg_color.blue = g_value_get_double ( &gv_fg_b );
+        fg_color.alpha = 0xffff;
+
+        bg_color.red = g_value_get_double ( &gv_bg_r );
+        bg_color.green = g_value_get_double ( &gv_bg_g );
+        bg_color.blue = g_value_get_double ( &gv_bg_b );
+        bg_color.alpha = 0xffff;
+
+        unsigned id = g_value_get_uint ( &gv_id );
+        unsigned id_digits = 1;
+        unsigned size = 10;
+        while ( id > ( size - 1 ) ) {
+            id_digits++;
+            size *= 10;
+        };
+
+        char *modulename = malloc ( 4 + id_digits );
+        CFGCOMMON_MALLOC_ERROR ( modulename == NULL );
+        sprintf ( modulename, "ID_%d", id );
+
+        CFGMOD *cmod = cfgroot_register_new_module ( cfgroot, modulename );
+        free ( modulename );
+
+        unsigned old_len = strlen ( *childs_poi );
+
+        if ( old_len == 0 ) {
+            *childs_poi = realloc ( *childs_poi, id_digits );
+            CFGCOMMON_MALLOC_ERROR ( *childs_poi == NULL );
+            sprintf ( *childs_poi, "%d", id );
+        } else {
+            *childs_poi = realloc ( *childs_poi, old_len + 1 + id_digits + 1 );
+            CFGCOMMON_MALLOC_ERROR ( *childs_poi == NULL );
+            sprintf ( *childs_poi, "%s %d", *childs_poi, id );
+        };
+
+
+        en_BRKTYPE type = g_value_get_uint ( &gv_type );
+
+        cfgmodule_register_new_element ( cmod, "type", CFGENTYPE_KEYWORD, type,
+                BRKTYPE_GROUP, "GROUP",
+                BRKTYPE_EVENT, "EVENT",
+                -1 );
+        cfgmodule_register_new_element ( cmod, "enabled", CFGENTYPE_BOOL, g_value_get_boolean ( &gv_enabled ) );
+        cfgmodule_register_new_element ( cmod, "name", CFGENTYPE_TEXT, g_value_get_string ( &gv_name ) );
+
+        gchar *fg_colortxt = gdk_rgba_to_string ( &fg_color );
+        cfgmodule_register_new_element ( cmod, "fg_color", CFGENTYPE_TEXT, fg_colortxt );
+        g_free ( fg_colortxt );
+
+        gchar *bg_colortxt = gdk_rgba_to_string ( &bg_color );
+        cfgmodule_register_new_element ( cmod, "bg_color", CFGENTYPE_TEXT, bg_colortxt );
+        g_free ( bg_colortxt );
+
+        if ( type == BRKTYPE_GROUP ) {
+
+            GtkTreeIter child_iter;
+            if ( gtk_tree_model_iter_children ( model, &child_iter, &iter ) ) {
+
+                char *childs = malloc ( 1 );
+                CFGCOMMON_MALLOC_ERROR ( childs == NULL );
+                childs [ 0 ] = 0x00;
+
+                ui_breakpoints_prepare_cfgfile ( cfgroot, model, &iter, &childs );
+
+                cfgmodule_register_new_element ( cmod, "childs", CFGENTYPE_TEXT, childs );
+
+                free ( childs );
+            };
+
+        } else {
+            char addr_txt [ 7 ];
+            sprintf ( addr_txt, "0x%04x", g_value_get_uint ( &gv_addr ) );
+            cfgmodule_register_new_element ( cmod, "address", CFGENTYPE_TEXT, addr_txt );
+        };
+
+    } while ( gtk_tree_model_iter_next ( model, &iter ) );
+}
+
+
+void ui_breakpoints_save ( void ) {
+
+    st_CFGROOT *cfgroot = cfgroot_new ( BREAKPOINTS_INI_FILENAME );
+
+    CFGMOD *cmod = cfgroot_register_new_module ( cfgroot, "BREAKPOINTS" );
+
+    GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_breakpoints_treestore" ) );
+
+    char *childs = malloc ( 1 );
+    CFGCOMMON_MALLOC_ERROR ( childs == NULL );
+    childs [ 0 ] = 0x00;
+
+    ui_breakpoints_prepare_cfgfile ( cfgroot, model, NULL, &childs );
+
+    cfgmodule_register_new_element ( cmod, "childs", CFGENTYPE_TEXT, childs );
+
+    free ( childs );
+
+    cfgroot_save ( cfgroot );
+    cfgroot_destroy ( cfgroot );
+}
+
+
+void ui_breakpoints_parse_cfg ( st_CFGROOT *cfgroot, GtkTreeModel *model, GtkTreeIter *parent, char *childs ) {
+
+    while ( strlen ( childs ) ) {
+        while ( *childs == ' ' ) {
+            childs++;
+        };
+        if ( *childs == 0x00 ) break;
+        unsigned id_digits = 0;
+        unsigned value = 0;
+        do {
+            id_digits++;
+            if ( value == 0 ) {
+                value = 1;
+            } else {
+                value *= 10;
+            };
+        } while ( ( childs [ id_digits ] >= '0' ) && ( childs [ id_digits ] <= '9' ) );
+
+
+        char *modulename = malloc ( 4 + id_digits );
+        CFGCOMMON_MALLOC_ERROR ( modulename == NULL );
+
+        unsigned id = 0;
+        while ( id_digits-- ) {
+            id += ( *childs - '0' ) * value;
+            childs++;
+            value /= 10;
+        };
+
+        sprintf ( modulename, "ID_%d", id );
+
+        CFGMOD *cmod = cfgroot_register_new_module ( cfgroot, modulename );
+
+
+        CFGELM *elm_type = cfgmodule_register_new_element ( cmod, "type", CFGENTYPE_KEYWORD, BRKTYPE_GROUP,
+                BRKTYPE_GROUP, "GROUP",
+                BRKTYPE_EVENT, "EVENT",
+                -1 );
+        CFGELM *elm_enabled = cfgmodule_register_new_element ( cmod, "enabled", CFGENTYPE_BOOL, 0 );
+        CFGELM *elm_name = cfgmodule_register_new_element ( cmod, "name", CFGENTYPE_TEXT, "Default Name" );
+        CFGELM *elm_fg_color = cfgmodule_register_new_element ( cmod, "fg_color", CFGENTYPE_TEXT, "rgba(0,0,0,255)" );
+        CFGELM *elm_bg_color = cfgmodule_register_new_element ( cmod, "bg_color", CFGENTYPE_TEXT, "rgba(255,255,255,255)" );
+        CFGELM *elm_childs = cfgmodule_register_new_element ( cmod, "childs", CFGENTYPE_TEXT, "" );
+        CFGELM *elm_address = cfgmodule_register_new_element ( cmod, "address", CFGENTYPE_TEXT, "0x0000" );
+        
+        cfgmodule_parse ( cmod );
+
+        GdkRGBA bg_color_cfg;
+        GdkRGBA fg_color_cfg;
+        GdkRGBA *bg_color;
+        GdkRGBA *fg_color;
+
+        if ( gdk_rgba_parse ( &bg_color_cfg, cfgelement_get_text_value ( elm_bg_color ) ) ) {
+            bg_color = &bg_color_cfg;
+            
+        } else {
+            bg_color = NULL;
+        };
+
+        if ( gdk_rgba_parse ( &fg_color_cfg, cfgelement_get_text_value ( elm_fg_color ) ) ) {
+            fg_color = &fg_color_cfg;
+        } else {
+            fg_color = NULL;
+        };
+        
+        GtkTreeIter iter;
+
+        if ( BRKTYPE_GROUP == cfgelement_get_keyword_value ( elm_type ) ) {
+            ui_breakpoints_add_group ( model, &iter, parent, g_uibpoints.id++, cfgelement_get_text_value ( elm_name ), cfgelement_get_bool_value ( elm_enabled ), fg_color, bg_color );
+            ui_breakpoints_parse_cfg ( cfgroot, model, &iter, cfgelement_get_text_value ( elm_childs ) );
+        } else {
+            
+            char *addr_txt = cfgelement_get_text_value ( elm_address );
+            
+            if ( strncmp ( addr_txt, "0x", 2 ) ) {
+                addr_txt += 2;
+            } else if ( strncmp ( addr_txt, "0X", 2 ) ) {
+                addr_txt += 2;
+            } else if ( *addr_txt == '#' ) {
+                addr_txt++;
+            };
+            
+            unsigned addr = debuger_text_to_z80_word ( addr_txt );
+            ui_breakpoints_add_event ( model, &iter, parent, g_uibpoints.id++, cfgelement_get_text_value ( elm_name ), cfgelement_get_bool_value ( elm_enabled ), addr, fg_color, bg_color );
+        };
+
+        free ( modulename );
+    };
+}
+
+
+void ui_breakpoints_init ( void ) {
+
+    g_uibpoints.id = 0;
+
+    st_CFGROOT *cfgroot = cfgroot_new ( BREAKPOINTS_INI_FILENAME );
+
+    CFGMOD *cmod = cfgroot_register_new_module ( cfgroot, "BREAKPOINTS" );
+    CFGELM *elm = cfgmodule_register_new_element ( cmod, "childs", CFGENTYPE_TEXT, "" );
+
+    cfgmodule_parse ( cmod );
+
+    GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_breakpoints_treestore" ) );
+
+    char *childs = cfgelement_get_text_value ( elm );
+
+    ui_breakpoints_parse_cfg ( cfgroot, model, NULL, childs );
+
+    cfgroot_destroy ( cfgroot );
+}
+
+
 /*
  * 
  * Udalosti datoveho modelu
@@ -609,14 +868,14 @@ G_MODULE_EXPORT void on_dbg_breakpoints_treestore_row_changed ( GtkTreeModel *tr
         if ( FALSE == ( g_value_get_boolean ( &gv_enabled ) & this_may_be_enabled ) ) {
             if ( -1 != addr ) {
                 /* bpt je zakazan - pokud je v bptable, tak ho odstranime */
-                printf ( "BPT info - remove addr: 0x%04x\n", (Z80EX_WORD) addr );
+                printf ( "INFO - remove breakpoint on addr: 0x%04x\n", (Z80EX_WORD) addr );
                 breakpoints_event_clear_addr ( (Z80EX_WORD) addr );
             };
         } else {
             /* bpt je povolen */
             if ( -1 != addr ) { /* nachazi se v bptable? */
                 if ( addr != g_value_get_uint ( &gv_addr ) ) { /* zustava na stejne adrese? pokud ne, tak ho odstranime */
-                    printf ( "BPT info - clear addr: 0x%04x\n", (Z80EX_WORD) addr );
+                    printf ( "INFO - remove breakpoint on addr: 0x%04x\n", (Z80EX_WORD) addr );
                     breakpoints_event_clear_addr ( (Z80EX_WORD) addr );
                 };
             };
@@ -626,13 +885,13 @@ G_MODULE_EXPORT void on_dbg_breakpoints_treestore_row_changed ( GtkTreeModel *tr
                 int id = breakpoints_event_get_id_by_addr ( (Z80EX_WORD) g_value_get_uint ( &gv_addr ) );
                 if ( -1 != id ) {
                     /* tohle misto v pameti uz obsadil jiny bpt */
-                    printf ( "BPT warning - address: 0x%04x is already used by another breakpoint!\n", (Z80EX_WORD) g_value_get_uint ( &gv_addr ) );
+                    printf ( "WARNING - duplicate breakpoint on addr: 0x%04x\n", (Z80EX_WORD) g_value_get_uint ( &gv_addr ) );
                     lock = 1;
                     gtk_tree_store_set ( GTK_TREE_STORE ( tree_model ), iter, BRK_ENABLED, FALSE, -1 );
                     lock = 0;
                 } else {
                     /* neni v bptable - vlozime novy zaznam */
-                    printf ( "BPT info - add addr: 0x%04x\n", (Z80EX_WORD) g_value_get_uint ( &gv_addr ) );
+                    printf ( "INFO - add breakpoint on addr: 0x%04x\n", (Z80EX_WORD) g_value_get_uint ( &gv_addr ) );
                     breakpoints_event_add ( (Z80EX_WORD) g_value_get_uint ( &gv_addr ), g_value_get_uint ( &gv_id ) );
                 };
             };
@@ -718,6 +977,13 @@ G_MODULE_EXPORT void on_bpt_hide_menuitem_activate ( GtkCheckMenuItem *menuitem,
     (void) menuitem;
     (void) data;
     ui_breakpoints_hide_window ( );
+}
+
+
+G_MODULE_EXPORT void on_bpt_save_menuitem_activate ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+    ui_breakpoints_save ( );
 }
 
 
@@ -913,7 +1179,7 @@ G_MODULE_EXPORT void on_bpt_delete_all_menuitem_activate ( GtkMenuItem *menuitem
         gtk_tree_store_remove ( GTK_TREE_STORE ( model ), &iter );
     };
 
-    breakpoints_init ( );
+    breakpoints_clear_all ( );
 }
 
 
@@ -1124,6 +1390,11 @@ G_MODULE_EXPORT gboolean on_bpt_add_event_entry_focus_out_event ( GtkWidget *wid
     //    printf ( "focus out\n" );
     g_uibpoints.add_event_focus = 0;
     return FALSE;
+}
+
+
+G_MODULE_EXPORT void on_bpt_save_button_clicked ( GtkButton *button, gpointer user_data ) {
+    ui_breakpoints_save ( );
 }
 
 #endif
