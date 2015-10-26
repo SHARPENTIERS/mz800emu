@@ -77,6 +77,16 @@ static int g_ui_is_initialised = 0;
 
 #define UI_RESOURCES_DIR    "ui_resources/"
 
+
+GObject* ui_get_object_safely ( gchar *name ) {
+    GObject *gobj = gtk_builder_get_object ( g_ui.builder, name );
+    if ( gobj == NULL ) {
+        ui_show_error ( "Object '%s' not found!\nDo you have fresh files in ./%s directory?", name, UI_RESOURCES_DIR );
+    };
+    return gobj;
+}
+
+
 void ui_main_setpos ( st_UIWINPOS *wpos, gint x, gint y ) {
     wpos->x = x;
     wpos->y = y;
