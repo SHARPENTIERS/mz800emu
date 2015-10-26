@@ -35,13 +35,13 @@ extern "C" {
 #ifdef LINUX
 #define UI_TOPMENU_IS_WINDOW
 #endif
-    
-    
+
+
 #define UIRET_OK        0
 #define UIRET_FAILED    1
 
 #define UI_USE_ERRORLOG 
-    
+
 #ifdef UI_USE_ERRORLOG
 #define UI_ERRORLOG_FILE    "error.log"
 #endif    
@@ -50,7 +50,8 @@ extern "C" {
 #define UNLOCK_UICALLBACKS()       g_ui.calback_lock = 0
 #define TEST_UICALLBACKS_LOCKED    ( g_ui.calback_lock )
 
-#define ui_get_object(name) gtk_builder_get_object ( g_ui.builder, name )
+    //#define ui_get_object(name) gtk_builder_get_object ( g_ui.builder, name )
+#define ui_get_object(name) ui_get_object_safely ( name )
 #define ui_get_widget(name) GTK_WIDGET ( ui_get_object ( name ) )
 #define ui_get_label(name) GTK_LABEL ( ui_get_object ( name ) )
 #define ui_get_menu_item(name) GTK_MENU_ITEM ( ui_get_object ( name ) )
@@ -86,12 +87,15 @@ extern "C" {
         unsigned calback_lock;
         char *last_folder [ FILETYPES_COUNT ];
         en_FILETYPE last_filetype;
-        
+
         st_UIWINPOS filebrowser_pos;
     } st_UI;
 
     extern st_UI g_ui;
 
+    
+    extern GObject* ui_get_object_safely ( gchar *name );
+    
     //extern void ui_init ( int argc, char *argv[] );
     extern void ui_init ( void );
     extern void ui_exit ( void );
@@ -99,7 +103,7 @@ extern "C" {
     extern void ui_main_setpos ( st_UIWINPOS *wpos, gint x, gint y );
     extern void ui_main_win_move_to_pos ( GtkWindow *w, st_UIWINPOS *wpos );
     extern void ui_main_win_get_pos ( GtkWindow *w, st_UIWINPOS *wpos );
-    
+
     extern unsigned ui_open_file ( char *filename, char *predefined_filename, unsigned filename_size, en_FILETYPE filetype, char *window_title, en_OPENMODE mode );
 
     extern void ui_iteration ( void );
@@ -107,7 +111,7 @@ extern "C" {
 
     extern void ui_show_error ( char *format, ... );
     extern void ui_show_warning ( char *format, ... );
-    
+
     extern void ui_main_update_cpu_speed_menu ( unsigned state );
     extern void ui_main_update_emulation_state ( unsigned state );
 
