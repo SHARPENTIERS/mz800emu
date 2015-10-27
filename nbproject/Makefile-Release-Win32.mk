@@ -74,6 +74,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger.o \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger_callbacks.o \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger_iasm.o \
+	${OBJECTDIR}/src/ui/debugger/ui_memdump.o \
 	${OBJECTDIR}/src/ui/ui_cmt.o \
 	${OBJECTDIR}/src/ui/ui_display.o \
 	${OBJECTDIR}/src/ui/ui_fdc.o \
@@ -305,6 +306,11 @@ ${OBJECTDIR}/src/ui/debugger/ui_debugger_iasm.o: src/ui/debugger/ui_debugger_ias
 	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_debugger_iasm.o src/ui/debugger/ui_debugger_iasm.c
+
+${OBJECTDIR}/src/ui/debugger/ui_memdump.o: src/ui/debugger/ui_memdump.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_memdump.o src/ui/debugger/ui_memdump.c
 
 ${OBJECTDIR}/src/ui/ui_cmt.o: src/ui/ui_cmt.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui

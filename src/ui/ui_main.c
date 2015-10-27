@@ -51,8 +51,6 @@
 #include <string.h>
 #include <errno.h>
 #include <locale.h>
-#include <gtk-2.0/gtk/gtkwindow.h>
-
 
 
 #include "main.h"
@@ -70,6 +68,7 @@
 #ifdef MZ800_DEBUGGER
 #include "debugger/debugger.h"
 #include "ui/debugger/ui_breakpoints.h"
+#include "ui/debugger/ui_memdump.h"
 #endif
 
 st_UI g_ui;
@@ -667,6 +666,16 @@ G_MODULE_EXPORT void on_menuitem_open_breakpoints_activate ( GtkMenuItem *menuit
     ui_breakpoints_show_hide_window ( );
 }
 
+
+G_MODULE_EXPORT void on_menuitem_open_memdump_activate ( GtkMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+    ui_memdump_show_hide_window ( );
+}
+
 #else
 
 
@@ -679,6 +688,12 @@ G_MODULE_EXPORT void on_open_debugger ( GtkMenuItem *menuitem, gpointer data ) {
 
 
 G_MODULE_EXPORT void on_menuitem_open_breakpoints_activate ( GtkMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+}
+
+
+G_MODULE_EXPORT void on_menuitem_open_memdump_activate ( GtkMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
 }

@@ -36,6 +36,7 @@
 #include "ui_debugger_iasm.h"
 #include "memory/memory.h"
 #include "ui_breakpoints.h"
+#include "ui_memdump.h"
 
 
 G_MODULE_EXPORT void on_debugger_main_window_size_allocate ( GtkWidget *widget, GdkRectangle *allocation, gpointer user_data ) {
@@ -437,6 +438,11 @@ G_MODULE_EXPORT void on_dbg_step_toolbutton_clicked ( GtkToolButton *toolbutton,
 
 G_MODULE_EXPORT void on_dbg_breakpoints_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
     ui_breakpoints_show_hide_window ( );
+}
+
+
+G_MODULE_EXPORT void on_dbg_memdump_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+    ui_memdump_show_hide_window ( );
 }
 
 

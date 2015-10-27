@@ -58,3 +58,7 @@
 2015-10-22
 
 	Debugger: added option to turn off the animated updates.
+
+2015-10-27
+
+	Created memory dump viewer.
