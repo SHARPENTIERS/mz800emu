@@ -143,8 +143,6 @@ void ui_memdump_load ( void ) {
 
     GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_memdump_liststore" ) );
 
-    gtk_list_store_clear ( GTK_LIST_STORE ( model ) );
-
     unsigned addr = 0x0000;
     unsigned addr_end = 0x10000;
 
@@ -190,6 +188,16 @@ void ui_memdump_load ( void ) {
             break;
     };
 
+    static int last_dump_src = -1;
+    
+    GtkTreeIter iter;
+    
+    if ( last_dump_src != g_uimemdump.memsrc ) {
+        if ( ( last_dump_src == -1 ) || ( g_uimemdump.memsrc == MEMSRC_VRAM ) || ( last_dump_src == MEMSRC_VRAM ) ) {
+            gtk_list_store_clear ( GTK_LIST_STORE ( model ) );
+            last_dump_src = -1;
+        };
+    };
 
     do {
         char addr_txt [ 6 ];
@@ -231,9 +239,16 @@ void ui_memdump_load ( void ) {
         };
 
         //printf ( "%s: %s\n", addr_txt, values_row );
-
-        GtkTreeIter iter;
-        gtk_list_store_append ( GTK_LIST_STORE ( model ), &iter );
+        
+        if ( last_dump_src == -1 ) {
+            gtk_list_store_append ( GTK_LIST_STORE ( model ), &iter );
+        } else {
+            if ( addr == 0 ) {
+                gtk_tree_model_get_iter_first ( model, &iter );
+            } else {
+                gtk_tree_model_iter_next ( model, &iter );
+            };
+        };
 
         gtk_list_store_set ( GTK_LIST_STORE ( model ), &iter,
                 DBG_MEMDUMP_ADDR, addr,
@@ -243,6 +258,8 @@ void ui_memdump_load ( void ) {
                 -1 );
         addr += i;
     } while ( addr != addr_end );
+    
+    last_dump_src = g_uimemdump.memsrc;
 }
 
 
