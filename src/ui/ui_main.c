@@ -81,7 +81,12 @@ static int g_ui_is_initialised = 0;
 GObject* ui_get_object_safely ( gchar *name ) {
     GObject *gobj = gtk_builder_get_object ( g_ui.builder, name );
     if ( gobj == NULL ) {
-        ui_show_error ( "Object '%s' not found!\nDo you have fresh files in ./%s directory?", name, UI_RESOURCES_DIR );
+        ui_show_error ( "Object '%s' not found!\nYou have fresh files in ./%s directory.", name, UI_RESOURCES_DIR );
+        gchar *msg = "Do you want kill this application immediatly?";
+        GtkWidget *dialog = gtk_message_dialog_new ( NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, msg );
+        if ( gtk_dialog_run ( GTK_DIALOG ( dialog ) ) == GTK_RESPONSE_YES ) {
+            main_app_quit ( EXIT_FAILURE );
+        };
     };
     return gobj;
 }
