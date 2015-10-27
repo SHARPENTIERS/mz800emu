@@ -766,6 +766,15 @@ From time when data were real zeros and ones and computers were
                             <signal name="activate" handler="on_menuitem_open_breakpoints_activate" swapped="no"/>
                           </object>
                         </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_open_memdump">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_Memory Dump...</property>
+                            <property name="use_underline">True</property>
+                            <signal name="activate" handler="on_menuitem_open_memdump_activate" swapped="no"/>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>

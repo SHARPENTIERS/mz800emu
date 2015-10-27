@@ -25,8 +25,6 @@
 
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
-#include <gtk-2.0/gtk/gtkwidget.h>
-#include <gtk-2.0/gtk/gtkwindow.h>
 
 #ifdef MZ800_DEBUGGER
 
