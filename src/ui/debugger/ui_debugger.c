@@ -40,13 +40,6 @@
 #include "memory/memory.h"
 
 
-#define DEBUGGER_MMAP_COLOR_RAM        "green"
-#define DEBUGGER_MMAP_COLOR_ROM        "red"
-#define DEBUGGER_MMAP_COLOR_CGROM      "black"
-#define DEBUGGER_MMAP_COLOR_CGRAM      "white"
-#define DEBUGGER_MMAP_COLOR_VRAM       "pink"
-#define DEBUGGER_MMAP_COLOR_PORTS      "blue"
-
 #define DEBUGGER_STACK_ROWS             20
 #define DEBUGGER_DISASSEMBLED_ROWS      30
 #define DEBUGGER_MNEMONIC_MAXLEN        20
@@ -133,7 +126,6 @@ void ui_debugger_update_mmap ( void ) {
 
     static int last_map = -1;
     static int last_dmd = -1;
-    GdkRGBA rgba_color;
 
     if ( ( g_gdg.regDMD == last_dmd ) && ( g_memory.map == last_map ) ) {
         return;
@@ -142,77 +134,117 @@ void ui_debugger_update_mmap ( void ) {
     last_map = g_memory.map;
     last_dmd = g_gdg.regDMD;
 
+    GtkStyleContext *context;
+    GtkStyleContext *context1;
+
+    context = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingarea0" ) );
     if ( MEMORY_MAP_TEST_ROM_0000 ) {
-        gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_ROM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_RAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_ROM" );
     } else {
-        gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_RAM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_ROM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_RAM" );
     };
-    gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingarea0" ), GTK_STATE_NORMAL, &rgba_color );
 
+    context = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingarea1" ) );
     if ( MEMORY_MAP_TEST_ROM_1000 ) {
-        gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_CGROM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_RAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_CGROM" );
     } else {
-        gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_RAM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_CGROM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_RAM" );
     };
-    gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingarea1" ), GTK_STATE_NORMAL, &rgba_color );
 
+    context = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingarea8" ) );
+    context1 = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingarea9" ) );
     if ( MEMORY_MAP_TEST_VRAM_8000 ) {
-        gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_VRAM );
-        gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingarea8" ), GTK_STATE_NORMAL, &rgba_color );
-        gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingarea9" ), GTK_STATE_NORMAL, &rgba_color );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_RAM" );
+        gtk_style_context_remove_class ( context1, "class_dbg_mmap_RAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_VRAM" );
+        gtk_style_context_add_class ( context1, "class_dbg_mmap_VRAM" );
     } else {
-        gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_RAM );
-        gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingarea8" ), GTK_STATE_NORMAL, &rgba_color );
-        gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingarea9" ), GTK_STATE_NORMAL, &rgba_color );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_VRAM" );
+        gtk_style_context_remove_class ( context1, "class_dbg_mmap_VRAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_RAM" );
+        gtk_style_context_add_class ( context1, "class_dbg_mmap_RAM" );
     };
 
+    context = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingareaA" ) );
+    context1 = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingareaB" ) );
     if ( MEMORY_MAP_TEST_VRAM_A000 ) {
-        gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_VRAM );
-        gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaA" ), GTK_STATE_NORMAL, &rgba_color );
-        gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaB" ), GTK_STATE_NORMAL, &rgba_color );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_RAM" );
+        gtk_style_context_remove_class ( context1, "class_dbg_mmap_RAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_VRAM" );
+        gtk_style_context_add_class ( context1, "class_dbg_mmap_VRAM" );
     } else {
-        gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_RAM );
-        gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaA" ), GTK_STATE_NORMAL, &rgba_color );
-        gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaB" ), GTK_STATE_NORMAL, &rgba_color );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_VRAM" );
+        gtk_style_context_remove_class ( context1, "class_dbg_mmap_VRAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_RAM" );
+        gtk_style_context_add_class ( context1, "class_dbg_mmap_RAM" );
     };
 
+    context = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingareaC" ) );
     if ( MEMORY_MAP_TEST_CGRAM ) {
-        gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_CGRAM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_RAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_CGRAM" );
     } else {
-        gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_RAM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_CGRAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_RAM" );
     };
-    gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaC" ), GTK_STATE_NORMAL, &rgba_color );
 
+    GtkStyleContext *contextD = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingareaD" ) );
+    GtkStyleContext *contextE_ports = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingareaE_ports" ) );
+    GtkStyleContext *contextE = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingareaE" ) );
+    GtkStyleContext *contextF = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingareaF" ) );
     if ( DMD_TEST_MZ700 ) {
         if ( MEMORY_MAP_TEST_ROM_E000 ) {
-            gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_VRAM );
-            gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaD" ), GTK_STATE_NORMAL, &rgba_color );
-            gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_PORTS );
-            gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaE_ports" ), GTK_STATE_NORMAL, &rgba_color );
-            gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_ROM );
-            gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaE" ), GTK_STATE_NORMAL, &rgba_color );
-            gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaF" ), GTK_STATE_NORMAL, &rgba_color );
+            gtk_style_context_remove_class ( contextD, "class_dbg_mmap_RAM" );
+            gtk_style_context_add_class ( contextD, "class_dbg_mmap_VRAM" );
+
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_RAM" );
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_ROM" );
+            gtk_style_context_add_class ( contextE_ports, "class_dbg_mmap_PORTS" );
+
+            gtk_style_context_remove_class ( contextE, "class_dbg_mmap_RAM" );
+            gtk_style_context_remove_class ( contextF, "class_dbg_mmap_RAM" );
+            gtk_style_context_add_class ( contextE, "class_dbg_mmap_ROM" );
+            gtk_style_context_add_class ( contextF, "class_dbg_mmap_ROM" );
+
         } else {
-            gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_RAM );
-            gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaD" ), GTK_STATE_NORMAL, &rgba_color );
-            gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaE_ports" ), GTK_STATE_NORMAL, &rgba_color );
-            gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaE" ), GTK_STATE_NORMAL, &rgba_color );
-            gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaF" ), GTK_STATE_NORMAL, &rgba_color );
+            gtk_style_context_remove_class ( contextD, "class_dbg_mmap_VRAM" );
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_PORTS" );
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_ROM" );
+            gtk_style_context_remove_class ( contextE, "class_dbg_mmap_ROM" );
+            gtk_style_context_remove_class ( contextF, "class_dbg_mmap_ROM" );
+
+            gtk_style_context_add_class ( contextD, "class_dbg_mmap_RAM" );
+            gtk_style_context_add_class ( contextE_ports, "class_dbg_mmap_RAM" );
+            gtk_style_context_add_class ( contextE, "class_dbg_mmap_RAM" );
+            gtk_style_context_add_class ( contextF, "class_dbg_mmap_RAM" );
         };
     } else {
-        gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_RAM );
-        gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaD" ), GTK_STATE_NORMAL, &rgba_color );
+
+        gtk_style_context_remove_class ( contextD, "class_dbg_mmap_VRAM" );
+        gtk_style_context_add_class ( contextD, "class_dbg_mmap_RAM" );
 
         if ( MEMORY_MAP_TEST_ROM_E000 ) {
-            gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_ROM );
-            gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaE_ports" ), GTK_STATE_NORMAL, &rgba_color );
-            gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaE" ), GTK_STATE_NORMAL, &rgba_color );
-            gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaF" ), GTK_STATE_NORMAL, &rgba_color );
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_PORTS" );
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_RAM" );
+            gtk_style_context_remove_class ( contextE, "class_dbg_mmap_RAM" );
+            gtk_style_context_remove_class ( contextF, "class_dbg_mmap_RAM" );
+
+            gtk_style_context_add_class ( contextE_ports, "class_dbg_mmap_ROM" );
+            gtk_style_context_add_class ( contextE, "class_dbg_mmap_ROM" );
+            gtk_style_context_add_class ( contextF, "class_dbg_mmap_ROM" );
         } else {
-            gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_RAM );
-            gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaE_ports" ), GTK_STATE_NORMAL, &rgba_color );
-            gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaE" ), GTK_STATE_NORMAL, &rgba_color );
-            gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingareaF" ), GTK_STATE_NORMAL, &rgba_color );
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_PORTS" );
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_ROM" );
+            gtk_style_context_remove_class ( contextE, "class_dbg_mmap_ROM" );
+            gtk_style_context_remove_class ( contextF, "class_dbg_mmap_ROM" );
+
+            gtk_style_context_add_class ( contextE_ports, "class_dbg_mmap_RAM" );
+            gtk_style_context_add_class ( contextE, "class_dbg_mmap_RAM" );
+            gtk_style_context_add_class ( contextF, "class_dbg_mmap_RAM" );
         };
     };
 }
@@ -467,18 +499,6 @@ void ui_debugger_update_animated ( void ) {
 }
 
 
-void ui_debugger_mmap_init ( void ) {
-    GdkRGBA rgba_color;
-    gdk_rgba_parse ( &rgba_color, DEBUGGER_MMAP_COLOR_RAM );
-    gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingarea2" ), GTK_STATE_NORMAL, &rgba_color );
-    gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingarea3" ), GTK_STATE_NORMAL, &rgba_color );
-    gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingarea4" ), GTK_STATE_NORMAL, &rgba_color );
-    gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingarea5" ), GTK_STATE_NORMAL, &rgba_color );
-    gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingarea6" ), GTK_STATE_NORMAL, &rgba_color );
-    gtk_widget_override_background_color ( ui_get_widget ( "dbg_mmap_drawingarea7" ), GTK_STATE_NORMAL, &rgba_color );
-}
-
-
 /* Tyto callbacky jsou zde proto, ze glade momentalne neumi spravne vyrobit scale, takze jej produkujeme cely zde */
 void on_dbg_disassembled_addr_vscale_adjust_bounds ( GtkRange *range, gdouble value, gpointer user_data ) {
     //printf ( "new addr: 0x%04X\n", (unsigned int) gtk_range_get_value ( GTK_RANGE ( dbg_disassembled_addr_vscale ) ) );
@@ -496,7 +516,7 @@ gboolean on_dbg_disassembled_addr_vscale_button_press_event ( GtkWidget *widget,
 
 
 void ui_debugger_show_spinner_window ( void ) {
-    
+
     if ( g_debugger.animated_updates != 0 ) return;
     if ( TEST_EMULATION_PAUSED ) return;
 
@@ -506,16 +526,16 @@ void ui_debugger_show_spinner_window ( void ) {
     gint wx, wy;
     gint x, y;
     gint wox, woy;
-    
+
     gint width;
     gint height;
 
     GtkWidget *disassembled = ui_get_widget ( "dbg_disassembled_frame" );
     gtk_window_get_position ( GTK_WINDOW ( w_main ), &wx, &wy );
     gtk_widget_translate_coordinates ( disassembled, w_main, 0, 0, &x, &y );
-    
+
     //gtk_window_get_size ( GTK_WINDOW ( w_main ), &with, &height );
-        
+
     if ( GDK_IS_WINDOW ( gtk_widget_get_window ( disassembled ) ) ) {
         gdk_window_get_origin ( gtk_widget_get_window ( disassembled ), &wox, &woy );
     } else {
@@ -523,46 +543,46 @@ void ui_debugger_show_spinner_window ( void ) {
         woy = 0;
     };
 
-    
+
     width = gtk_widget_get_allocated_width ( ui_get_widget ( "dbg_grid" ) );
     height = gtk_widget_get_allocated_height ( disassembled );
-    
+
     GtkWidget *spinner_window = ui_get_widget ( "dbg_spinner_window" );
     gtk_window_move ( GTK_WINDOW ( spinner_window ), wox + x, woy + y );
     gtk_window_resize ( GTK_WINDOW ( spinner_window ), width, height );
 
-    
+
     if ( gtk_widget_get_visible ( spinner_window ) ) return;
-    
+
     gtk_widget_show_all ( spinner_window );
     gtk_widget_set_opacity ( spinner_window, 0.60 );
-    
+
     gtk_spinner_start ( GTK_SPINNER ( ui_get_widget ( "dbg_spinner" ) ) );
     //gtk_widget_grab_focus ( w_main );
     gtk_window_set_transient_for ( GTK_WINDOW ( spinner_window ), GTK_WINDOW ( w_main ) );
-    
-//#ifdef LINUX
+
+    //#ifdef LINUX
     //gtk_window_set_keep_above ( GTK_WINDOW ( w ), TRUE );
     gtk_widget_set_sensitive ( disassembled, FALSE );
     gtk_widget_set_sensitive ( ui_get_widget ( "dbg_right_grid" ), FALSE );
-//#endif
+    //#endif
 }
 
 
 void ui_debugger_hide_spinner_window ( void ) {
     gtk_spinner_stop ( GTK_SPINNER ( ui_get_widget ( "dbg_spinner" ) ) );
     gtk_widget_hide ( ui_get_widget ( "dbg_spinner_window" ) );
-//#ifdef LINUX
+    //#ifdef LINUX
     gtk_widget_set_sensitive ( ui_get_widget ( "dbg_disassembled_frame" ), TRUE );
     gtk_widget_set_sensitive ( ui_get_widget ( "dbg_right_grid" ), TRUE );
-//#endif
+    //#endif
 }
 
 
 void ui_debugger_show_main_window ( void ) {
 
     GtkWidget *window = ui_get_widget ( "debugger_main_window" );
-    
+
     ui_main_win_move_to_pos ( GTK_WINDOW ( window ), &g_uidebugger.pos );
     gtk_widget_show ( window );
     gtk_widget_grab_focus ( window );
@@ -571,8 +591,6 @@ void ui_debugger_show_main_window ( void ) {
     static unsigned initialised = 0;
     if ( !initialised ) {
         initialised = 1;
-
-        ui_debugger_mmap_init ( );
 
         /* Tyto vlastnosti se mi nepovedlo nastavit pomoci glade */
         g_object_set ( ui_get_object ( "dbg_reg0_value_cellrenderertext" ), "editable", TRUE, "xalign", 1.0, NULL );
@@ -598,9 +616,9 @@ void ui_debugger_show_main_window ( void ) {
 
         ui_main_setpos ( &g_uidebugger.pos, -1, -1 );
     };
-    
+
     g_uidebugger.accelerators_locked = 1;
-    
+
     if ( g_debugger.animated_updates == 0 ) {
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "dbg_animated_disabled_radiomenuitem" ), TRUE );
         ui_debugger_show_spinner_window ( );
@@ -608,7 +626,7 @@ void ui_debugger_show_main_window ( void ) {
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "dbg_animated_enabled_radiomenuitem" ), TRUE );
         ui_debugger_hide_spinner_window ( );
     };
-    
+
     g_uidebugger.accelerators_locked = 0;
 
     ui_debugger_update_all ( );

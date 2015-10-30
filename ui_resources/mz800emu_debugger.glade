@@ -1533,40 +1533,6 @@
       </row>
     </data>
   </object>
-  <object class="GtkWindow" id="dbg_spinner_window">
-    <property name="width_request">200</property>
-    <property name="height_request">200</property>
-    <property name="can_focus">False</property>
-    <property name="window_position">center-on-parent</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="hide_titlebar_when_maximized">True</property>
-    <property name="type_hint">splashscreen</property>
-    <property name="skip_taskbar_hint">True</property>
-    <property name="skip_pager_hint">True</property>
-    <property name="decorated">False</property>
-    <property name="deletable">False</property>
-    <property name="transient_for">debugger_main_window</property>
-    <property name="has_resize_grip">False</property>
-    <property name="mnemonics_visible">False</property>
-    <signal name="button-press-event" handler="on_dbg_spinner_window_press_event" swapped="no"/>
-    <child>
-      <object class="GtkEventBox" id="eventbox1">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <child>
-          <object class="GtkSpinner" id="dbg_spinner">
-            <property name="width_request">40</property>
-            <property name="height_request">40</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="halign">center</property>
-            <property name="valign">center</property>
-            <property name="active">True</property>
-          </object>
-        </child>
-      </object>
-    </child>
-  </object>
   <object class="GtkListStore" id="dbg_stack_liststore">
     <columns>
       <!-- column-name addr -->
@@ -1594,6 +1560,9 @@
             <property name="can_focus">True</property>
             <property name="editable">False</property>
             <property name="wrap_mode">word</property>
+            <style>
+              <class name="class_iasm_help_textview"/>
+            </style>
           </object>
         </child>
       </object>
@@ -2975,6 +2944,9 @@
                             <property name="width_request">40</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <style>
+                              <class name="class_dbg_mmap_RAM"/>
+                            </style>
                           </object>
                           <packing>
                             <property name="left_attach">3</property>
@@ -2988,6 +2960,9 @@
                             <property name="width_request">40</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <style>
+                              <class name="class_dbg_mmap_RAM"/>
+                            </style>
                           </object>
                           <packing>
                             <property name="left_attach">3</property>
@@ -3001,6 +2976,9 @@
                             <property name="width_request">40</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <style>
+                              <class name="class_dbg_mmap_RAM"/>
+                            </style>
                           </object>
                           <packing>
                             <property name="left_attach">3</property>
@@ -3014,6 +2992,9 @@
                             <property name="width_request">40</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <style>
+                              <class name="class_dbg_mmap_RAM"/>
+                            </style>
                           </object>
                           <packing>
                             <property name="left_attach">3</property>
@@ -3027,6 +3008,9 @@
                             <property name="width_request">40</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <style>
+                              <class name="class_dbg_mmap_RAM"/>
+                            </style>
                           </object>
                           <packing>
                             <property name="left_attach">3</property>
@@ -3040,6 +3024,9 @@
                             <property name="width_request">40</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <style>
+                              <class name="class_dbg_mmap_RAM"/>
+                            </style>
                           </object>
                           <packing>
                             <property name="left_attach">3</property>
@@ -3805,6 +3792,40 @@ instruction to open inline assembler, or right click for menu</property>
             <property name="width">1</property>
             <property name="height">1</property>
           </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkWindow" id="dbg_spinner_window">
+    <property name="width_request">200</property>
+    <property name="height_request">200</property>
+    <property name="can_focus">False</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="hide_titlebar_when_maximized">True</property>
+    <property name="type_hint">splashscreen</property>
+    <property name="skip_taskbar_hint">True</property>
+    <property name="skip_pager_hint">True</property>
+    <property name="decorated">False</property>
+    <property name="deletable">False</property>
+    <property name="transient_for">debugger_main_window</property>
+    <property name="has_resize_grip">False</property>
+    <property name="mnemonics_visible">False</property>
+    <signal name="button-press-event" handler="on_dbg_spinner_window_press_event" swapped="no"/>
+    <child>
+      <object class="GtkEventBox" id="eventbox1">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <child>
+          <object class="GtkSpinner" id="dbg_spinner">
+            <property name="width_request">40</property>
+            <property name="height_request">40</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <property name="active">True</property>
+          </object>
         </child>
       </object>
     </child>
