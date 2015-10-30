@@ -190,7 +190,7 @@ G_MODULE_EXPORT void dbg_inline_assembler_help ( GtkButton *button, gpointer use
         GtkTextIter start, end;
      */
     GtkTextIter start;
-    PangoFontDescription *font_desc;
+    //PangoFontDescription *font_desc;
 
     GtkTextTag *tag;
     int i, j, k;
@@ -201,6 +201,8 @@ G_MODULE_EXPORT void dbg_inline_assembler_help ( GtkButton *button, gpointer use
 
 
     view = ui_get_widget ( "iasm_help_textview" );
+    //gtk_widget_set_name ( view, "iasm_help_textview" );
+
     /*    
         gtk_text_buffer_set_text ( gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( view ) ), "\n\ninLine Assembler", -1 );
      */
@@ -213,15 +215,21 @@ G_MODULE_EXPORT void dbg_inline_assembler_help ( GtkButton *button, gpointer use
      */
     /* Change default font throughout the widget */
 
-    font_desc = pango_font_description_from_string ( "Arial 16" );
-    gtk_widget_override_font ( view, font_desc );
-    pango_font_description_free ( font_desc );
+    
+//    font_desc = pango_font_description_from_string ( "Arial 16" );
+//    gtk_widget_override_font ( view, font_desc );
+//    pango_font_description_free ( font_desc );
+//
+//
+//    GdkRGBA rgba_color;
+//    gdk_rgba_parse ( &rgba_color, "black" );
+//    gtk_widget_override_color ( view, GTK_STATE_NORMAL, &rgba_color );
 
-
-    GdkRGBA rgba_color;
-    gdk_rgba_parse ( &rgba_color, "black" );
-    gtk_widget_override_color ( view, GTK_STATE_NORMAL, &rgba_color );
-
+    
+//    GtkCssProvider *provider = gtk_css_provider_new ();
+//    gtk_css_provider_load_from_data ( provider )
+    
+    
     /* Change left margin throughout the widget */
     gtk_text_view_set_left_margin ( GTK_TEXT_VIEW ( view ), 30 );
 
