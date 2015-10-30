@@ -146,7 +146,7 @@ void cfgroot_save ( st_CFGROOT *r ) {
 
 
     if ( !( r->ini_fp = fopen ( r->filename, "w" ) ) ) {
-        ui_show_error ( "%s() - Can't open file '%s' to write: %s", __FUNCTION__, r->filename, strerror ( errno ) );
+        ui_show_error ( "%s() - Can't open file '%s' to write: %s", __func__, r->filename, strerror ( errno ) );
         return;
     };
 

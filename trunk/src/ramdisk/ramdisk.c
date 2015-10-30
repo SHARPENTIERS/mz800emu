@@ -99,12 +99,12 @@ void ramdisk_std_save ( void ) {
                 unsigned ramdisksize = ( g_ramdisk.std.size + 1 ) * 0x10000;
                 unsigned filesize = fwrite ( g_ramdisk.std.memory, 1, ramdisksize, fp );
                 if ( filesize != ramdisksize ) {
-                    ui_show_error ( "%s() - saved only %d bytes of %d - file '%s': %s", __FUNCTION__, filesize, ramdisksize, g_ramdisk.std.filepath, strerror ( errno ) );
+                    ui_show_error ( "%s() - saved only %d bytes of %d - file '%s': %s", __func__, filesize, ramdisksize, g_ramdisk.std.filepath, strerror ( errno ) );
                 };
                 fclose ( fp );
 
             } else {
-                ui_show_error ( "%s() - Can't open file '%s': %s", __FUNCTION__, g_ramdisk.std.filepath, strerror ( errno ) );
+                ui_show_error ( "%s() - Can't open file '%s': %s", __func__, g_ramdisk.std.filepath, strerror ( errno ) );
             };
         };
     };
@@ -142,7 +142,7 @@ void ramdisk_std_init ( int connect, en_RAMDISK_TYPE type, en_RAMDISK_BANKMASK s
             g_ramdisk.std.memory = malloc ( ( size + 1 ) * 0x10000 );
 
             if ( g_ramdisk.std.memory == NULL ) {
-                fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __FUNCTION__, __LINE__, strerror ( errno ) );
+                fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __func__, __LINE__, strerror ( errno ) );
                 main_app_quit ( EXIT_FAILURE );
             };
 
@@ -153,7 +153,7 @@ void ramdisk_std_init ( int connect, en_RAMDISK_TYPE type, en_RAMDISK_BANKMASK s
             g_ramdisk.std.memory = realloc ( g_ramdisk.std.memory, ( size + 1 ) * 0x10000 );
 
             if ( g_ramdisk.std.memory == NULL ) {
-                fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __FUNCTION__, __LINE__, strerror ( errno ) );
+                fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __func__, __LINE__, strerror ( errno ) );
                 main_app_quit ( EXIT_FAILURE );
             };
         };
@@ -177,7 +177,7 @@ void ramdisk_std_init ( int connect, en_RAMDISK_TYPE type, en_RAMDISK_BANKMASK s
                         ui_show_warning ( "Your RD file has only %d bytes of requested %d bytes. Peace, this is not problem ... this is only warning :)", filesize, ramdisksize );
                     };
                 } else {
-                    ui_show_error ( "%s() - Can't open file '%s': %s", __FUNCTION__, g_ramdisk.std.filepath, strerror ( errno ) );
+                    ui_show_error ( "%s() - Can't open file '%s': %s", __func__, g_ramdisk.std.filepath, strerror ( errno ) );
                 };
                 fclose ( fp );
             };
@@ -232,7 +232,7 @@ void ramdisk_pezik_init ( int pezik_type, int connect ) {
             g_ramdisk.pezik [ pezik_type ].memory = malloc ( 8 * 0x10000 );
 
             if ( g_ramdisk.pezik [ pezik_type ].memory == NULL ) {
-                fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __FUNCTION__, __LINE__, strerror ( errno ) );
+                fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __func__, __LINE__, strerror ( errno ) );
                 main_app_quit ( EXIT_FAILURE );
             };
 

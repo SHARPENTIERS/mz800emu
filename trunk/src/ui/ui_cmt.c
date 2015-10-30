@@ -228,7 +228,7 @@ G_MODULE_EXPORT void on_cmt_record_button_clicked ( GtkButton *button, gpointer 
     (void) button;
     (void) data;
 
-    printf ( "%s()\n", __FUNCTION__ );
+    printf ( "%s()\n", __func__ );
 }
 
 
@@ -244,7 +244,7 @@ G_MODULE_EXPORT void on_cmt_pause_button_clicked ( GtkButton *button, gpointer d
     (void) button;
     (void) data;
 
-    printf ( "%s()\n", __FUNCTION__ );
+    printf ( "%s()\n", __func__ );
 }
 
 

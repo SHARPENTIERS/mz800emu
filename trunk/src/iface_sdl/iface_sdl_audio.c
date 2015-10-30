@@ -79,7 +79,7 @@ void audio_sdl_cb ( void *userdata, Uint8 *stream, int len ) {
 void iface_sdl_audio_init ( void ) {
 
     if ( SDL_InitSubSystem ( SDL_INIT_AUDIO ) ) {
-        fprintf ( stderr, "%s():%d - Can not initialise audio subsystem: %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+        fprintf ( stderr, "%s():%d - Can not initialise audio subsystem: %s\n", __func__, __LINE__, SDL_GetError ( ) );
     };
 
 #if 1
@@ -88,7 +88,7 @@ void iface_sdl_audio_init ( void ) {
         const char *driver_name = SDL_GetAudioDriver ( i );
 
         if ( SDL_AudioInit ( driver_name ) ) {
-            fprintf ( stderr, "%s():%d - Audio driver failed to initialize '%s': %s\n", __FUNCTION__, __LINE__, driver_name, SDL_GetError ( ) );
+            fprintf ( stderr, "%s():%d - Audio driver failed to initialize '%s': %s\n", __func__, __LINE__, driver_name, SDL_GetError ( ) );
         } else {
             fprintf ( stdout, "Audio driver OK: %s\n", driver_name );
 #if 0
@@ -122,7 +122,7 @@ void iface_sdl_audio_init ( void ) {
 #endif
 
     if ( dev == 0 ) {
-        fprintf ( stderr, "%s():%d - Failed to open audio: %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+        fprintf ( stderr, "%s():%d - Failed to open audio: %s\n", __func__, __LINE__, SDL_GetError ( ) );
     } else {
 
 #ifdef USE_LINUX_AUDIO_BUGFIX
@@ -137,7 +137,7 @@ void iface_sdl_audio_init ( void ) {
 #endif
 
         if ( dev == 0 ) {
-            fprintf ( stderr, "%s():%d - Failed to open audio: %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+            fprintf ( stderr, "%s():%d - Failed to open audio: %s\n", __func__, __LINE__, SDL_GetError ( ) );
         } else {
 #ifdef USE_LINUX_AUDIO_BUGFIX
             if ( use_bugfix == 1 ) {

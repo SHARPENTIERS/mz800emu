@@ -822,7 +822,7 @@ void ui_breakpoints_init ( void ) {
  */
 
 G_MODULE_EXPORT void on_dbg_breakpoints_treestore_row_changed ( GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data ) {
-    //    printf ( "%s()\n", __FUNCTION__ );
+    //    printf ( "%s()\n", __func__ );
 
     static int lock = 0;
 
@@ -927,7 +927,7 @@ G_MODULE_EXPORT void on_dbg_breakpoints_treestore_row_changed ( GtkTreeModel *tr
 
 
 G_MODULE_EXPORT void on_dbg_breakpoints_treestore_row_inserted ( GtkTreeModel *tree_model, GtkTreePath *path, GtkTreeIter *iter, gpointer user_data ) {
-    //    printf ( "%s()\n", __FUNCTION__ );
+    //    printf ( "%s()\n", __func__ );
 
     GtkTreeIter new_parent_iter;
     if ( gtk_tree_model_iter_parent ( tree_model, &new_parent_iter, iter ) ) {
@@ -1009,14 +1009,14 @@ G_MODULE_EXPORT void on_bpt_enabled_cellrenderertoggle_toggled ( GtkCellRenderer
  */
 
 G_MODULE_EXPORT void on_dbg_breakpoints_treeview_drag_begin ( GtkWidget *widget, GdkDragContext *context, gpointer user_data ) {
-    //printf ( "%s()\n", __FUNCTION__ );
+    //printf ( "%s()\n", __func__ );
     g_uibpoints.dnd_action = UIPBDND_ACTION;
     g_uibpoints.dnd_moved_id = -1;
 }
 
 
 G_MODULE_EXPORT void on_dbg_breakpoints_treeview_drag_data_received ( GtkWidget *widget, GdkDragContext *context, gint x, gint y, GtkSelectionData *data, guint info, guint time, gpointer user_data ) {
-    //    printf ( "%s()\n", __FUNCTION__ );
+    //    printf ( "%s()\n", __func__ );
 
     if ( g_uibpoints.dnd_moved_id == -1 ) {
         //GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_breakpoints_treestore" ) );
@@ -1053,7 +1053,7 @@ G_MODULE_EXPORT void on_dbg_breakpoints_treeview_drag_data_received ( GtkWidget 
 
 
 G_MODULE_EXPORT void on_dbg_breakpoints_treeview_drag_end ( GtkWidget *widget, GdkDragContext *context, gpointer user_data ) {
-    //    printf ( "%s()\n", __FUNCTION__ );
+    //    printf ( "%s()\n", __func__ );
 
     GtkTreeModel *model = gtk_tree_view_get_model ( GTK_TREE_VIEW ( widget ) );
     GtkTreeIter moved_iter;
