@@ -278,7 +278,7 @@ void cfgmodule_parse ( st_CFGMODULE *m ) {
     if ( access ( r->filename, F_OK ) == -1 ) return; /* Konfiguracni soubor neexistuje */
     
     if ( !( r->ini_fp = fopen ( r->filename, "r" ) ) ) {
-        ui_show_error ( "%s() - Can't open file '%s' to read: %s", __FUNCTION__, r->filename, strerror ( errno ) );
+        ui_show_error ( "%s() - Can't open file '%s' to read: %s", __func__, r->filename, strerror ( errno ) );
         return;
     };
 

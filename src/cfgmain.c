@@ -59,12 +59,12 @@ char* cfgmain_create_timestamp ( void ) {
     tmp = localtime ( &t );
 
     if ( tmp == NULL ) {
-        fprintf ( stderr, "%s():%d - localtime error: %s\n", __FUNCTION__, __LINE__, strerror ( errno ) );
+        fprintf ( stderr, "%s():%d - localtime error: %s\n", __func__, __LINE__, strerror ( errno ) );
         main_app_quit ( EXIT_FAILURE );
     };
 
     if ( strftime ( timestamp, sizeof ( timestamp ), "%Y-%m-%d %H:%M:%S", tmp ) == 0 ) {
-        fprintf ( stderr, "%s():%d - strftime error: %s\n", __FUNCTION__, __LINE__, strerror ( errno ) );
+        fprintf ( stderr, "%s():%d - strftime error: %s\n", __func__, __LINE__, strerror ( errno ) );
         main_app_quit ( EXIT_FAILURE );
     };
     return timestamp;

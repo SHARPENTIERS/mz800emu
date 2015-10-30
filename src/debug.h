@@ -55,7 +55,7 @@ extern "C" {
 #define DBGNON__DEBUGPRINTF__(...)
     
 
-#define __DEBUGPRINTF__X(level,...)  { USE_DBG_PRN( "%s: %s():%d - ", #level, __FUNCTION__, __LINE__); USE_DBG_PRN(__VA_ARGS__); }
+#define __DEBUGPRINTF__X(level,...)  { USE_DBG_PRN( "%s: %s():%d - ", #level, __func__, __LINE__); USE_DBG_PRN(__VA_ARGS__); }
 
 
 #if (DBGLEVEL & DBGERR)

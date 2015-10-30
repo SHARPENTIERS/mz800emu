@@ -112,7 +112,7 @@ void ui_update_last_folder_value ( en_FILETYPE file_type, char *value ) {
     unsigned new_length = strlen ( value ) + 1;
     g_ui.last_folder[file_type] = realloc ( g_ui.last_folder[file_type], new_length );
     if ( g_ui.last_folder[file_type] == NULL ) {
-        fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __FUNCTION__, __LINE__, strerror ( errno ) );
+        fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __func__, __LINE__, strerror ( errno ) );
         main_app_quit ( EXIT_FAILURE );
     };
     strcpy ( g_ui.last_folder[file_type], (char*) value );
@@ -176,7 +176,7 @@ void ui_init ( void ) {
     for ( i = 0; i < FILETYPES_COUNT; i++ ) {
         g_ui.last_folder[i] = malloc ( 1 );
         if ( g_ui.last_folder[i] == NULL ) {
-            fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __FUNCTION__, __LINE__, strerror ( errno ) );
+            fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __func__, __LINE__, strerror ( errno ) );
             main_app_quit ( EXIT_FAILURE );
         };
         strcpy ( g_ui.last_folder[i], "" );
@@ -347,7 +347,7 @@ void ui_show_error_dialog ( char *error_message ) {
 void ui_write_errorlog ( char *lvl, char *msg ) {
     FILE *fp;
     if ( NULL == ( fp = fopen ( UI_ERRORLOG_FILE, "a" ) ) ) {
-        fprintf ( stderr, "%s():%d - '%s' - fopen error: %s", __FUNCTION__, __LINE__, UI_ERRORLOG_FILE, strerror ( errno ) );
+        fprintf ( stderr, "%s():%d - '%s' - fopen error: %s", __func__, __LINE__, UI_ERRORLOG_FILE, strerror ( errno ) );
     } else {
         fprintf ( fp, "%s %s:\t%s\n", cfgmain_create_timestamp ( ), lvl, msg );
         fclose ( fp );

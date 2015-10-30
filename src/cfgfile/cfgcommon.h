@@ -35,7 +35,7 @@ extern "C" {
 
 #define CFGCOMMON_MALLOC_ERROR(expr) {\
     if ( expr ) {\
-        fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __FUNCTION__, __LINE__, strerror ( errno ) );\
+        fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __func__, __LINE__, strerror ( errno ) );\
         main_app_quit ( EXIT_FAILURE );\
     };\
 }

@@ -768,7 +768,7 @@ void iface_sdl_update_status_line ( void ) {
 
     TTF_Font *font = TTF_OpenFont ( fontpath, 10 );
     if ( font == NULL ) {
-        fprintf ( stderr, "%s():%d - TTF_OpenFont(): %s\n", __FUNCTION__, __LINE__, TTF_GetError ( ) );
+        fprintf ( stderr, "%s():%d - TTF_OpenFont(): %s\n", __func__, __LINE__, TTF_GetError ( ) );
         main_app_quit ( EXIT_FAILURE );
     };
 
@@ -780,7 +780,7 @@ void iface_sdl_update_status_line ( void ) {
 
     SDL_Surface *surface = TTF_RenderText_Solid ( font, statusline_txt, fg_col );
     if ( surface == NULL ) {
-        fprintf ( stderr, "%s():%d - TTF_RenderText_Solid(): %s\n", __FUNCTION__, __LINE__, TTF_GetError ( ) );
+        fprintf ( stderr, "%s():%d - TTF_RenderText_Solid(): %s\n", __func__, __LINE__, TTF_GetError ( ) );
         main_app_quit ( EXIT_FAILURE );
     };
 
@@ -788,7 +788,7 @@ void iface_sdl_update_status_line ( void ) {
 
     SDL_Texture *texture = SDL_CreateTextureFromSurface ( g_iface_sdl.renderer, surface );
     if ( NULL == texture ) {
-        fprintf ( stderr, "%s():%d - SDL_CreateTextureFromSurface(): %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+        fprintf ( stderr, "%s():%d - SDL_CreateTextureFromSurface(): %s\n", __func__, __LINE__, SDL_GetError ( ) );
         main_app_quit ( EXIT_FAILURE );
     };
 
@@ -817,7 +817,7 @@ void iface_sdl_update_status_line ( void ) {
     SDL_FreeSurface ( surface );
 
     if ( SDL_RenderCopy ( g_iface_sdl.renderer, texture, &src_text_rect, &last_text_rect ) ) {
-        fprintf ( stderr, "%s():%d - SDL_RenderCopy(): %s\n", __FUNCTION__, __LINE__, TTF_GetError ( ) );
+        fprintf ( stderr, "%s():%d - SDL_RenderCopy(): %s\n", __func__, __LINE__, TTF_GetError ( ) );
         main_app_quit ( EXIT_FAILURE );
     };
     SDL_DestroyTexture ( texture );
@@ -867,7 +867,7 @@ void iface_sdl_update_window ( void ) {
     /* bud to zapiseme do surface */
     SDL_Rect txt_rect_sur = { 100, 100, 0, 0 };
     if ( SDL_BlitSurface ( txt_surface, NULL, g_iface_sdl.active_surface, &txt_rect_sur ) ) {
-        fprintf ( stderr, "%s():%d - SDL_CreateTextureFromSurface(): %s\n", __FUNCTION__, __LINE__, TTF_GetError ( ) );
+        fprintf ( stderr, "%s():%d - SDL_CreateTextureFromSurface(): %s\n", __func__, __LINE__, TTF_GetError ( ) );
         main_app_quit ( EXIT_FAILURE );
     };
 #endif
@@ -875,7 +875,7 @@ void iface_sdl_update_window ( void ) {
 
     /* TODO: surface by se mel zamykat, ale takhle mi to akosi nechodi! */
     //    if ( SDL_LockSurface ( g_iface_sdl.active_surface ) ) {
-    //        fprintf ( stderr, "%s():%d - Could not lock surface: %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+    //        fprintf ( stderr, "%s():%d - Could not lock surface: %s\n", __func__, __LINE__, SDL_GetError ( ) );
     //        main_app_quit ( EXIT_FAILURE );
     //    };
 
@@ -883,7 +883,7 @@ void iface_sdl_update_window ( void ) {
     SDL_Texture *texture = SDL_CreateTextureFromSurface ( g_iface_sdl.renderer, g_iface_sdl.active_surface );
 
     if ( NULL == texture ) {
-        fprintf ( stderr, "%s():%d - SDL_CreateTextureFromSurface(): %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+        fprintf ( stderr, "%s():%d - SDL_CreateTextureFromSurface(): %s\n", __func__, __LINE__, SDL_GetError ( ) );
         main_app_quit ( EXIT_FAILURE );
     };
 
@@ -895,7 +895,7 @@ void iface_sdl_update_window ( void ) {
 
         /* Rendrujeme cely framebuffer */
         if ( SDL_RenderCopy ( g_iface_sdl.renderer, texture, &mzdisplay_rect, &mzdisplay_rect ) ) {
-            fprintf ( stderr, "%s():%d - SDL_RenderCopy(): %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+            fprintf ( stderr, "%s():%d - SDL_RenderCopy(): %s\n", __func__, __LINE__, SDL_GetError ( ) );
             main_app_quit ( EXIT_FAILURE );
         };
 #if 0
@@ -907,7 +907,7 @@ void iface_sdl_update_window ( void ) {
 #if 0
         /* Zkopirujeme active surface do old */
         if ( SDL_BlitSurface ( g_iface_sdl.active_surface, NULL, g_iface_sdl.old_surface, NULL ) ) {
-            fprintf ( stderr, "%s():%d - SDL_BlitSurface: %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+            fprintf ( stderr, "%s():%d - SDL_BlitSurface: %s\n", __func__, __LINE__, SDL_GetError ( ) );
             main_app_quit ( EXIT_FAILURE );
         };
 #endif
@@ -924,7 +924,7 @@ void iface_sdl_update_window ( void ) {
             update_box.w = DISPLAY_BORDER_TOP_WIDTH;
             update_box.h = DISPLAY_BORDER_TOP_HEIGHT;
             if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
-                fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+                fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __func__, __LINE__, SDL_GetError ( ) );
                 main_app_quit ( EXIT_FAILURE );
             };
 
@@ -933,7 +933,7 @@ void iface_sdl_update_window ( void ) {
             update_box.w = DISPLAY_BORDER_LEFT_WIDTH;
             update_box.h = DISPLAY_BORDER_LEFT_HEIGHT;
             if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
-                fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+                fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __func__, __LINE__, SDL_GetError ( ) );
                 main_app_quit ( EXIT_FAILURE );
             };
 
@@ -942,7 +942,7 @@ void iface_sdl_update_window ( void ) {
             update_box.w = DISPLAY_BORDER_RIGHT_WIDTH;
             update_box.h = DISPLAY_BORDER_RIGHT_HEIGHT;
             if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
-                fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+                fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __func__, __LINE__, SDL_GetError ( ) );
                 main_app_quit ( EXIT_FAILURE );
             };
 
@@ -951,7 +951,7 @@ void iface_sdl_update_window ( void ) {
             update_box.w = DISPLAY_BORDER_BOTOM_WIDTH;
             update_box.h = DISPLAY_BORDER_BOTOM_HEIGHT;
             if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
-                fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+                fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __func__, __LINE__, SDL_GetError ( ) );
                 main_app_quit ( EXIT_FAILURE );
             };
 
@@ -963,7 +963,7 @@ void iface_sdl_update_window ( void ) {
             update_box.w = DISPLAY_SCREEN_WIDTH;
             update_box.h = DISPLAY_SCREEN_HEIGHT;
             if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
-                fprintf ( stderr, "%s():%d - Could not copy from texture: %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+                fprintf ( stderr, "%s():%d - Could not copy from texture: %s\n", __func__, __LINE__, SDL_GetError ( ) );
                 main_app_quit ( EXIT_FAILURE );
             };
             SDL_RenderPresent ( g_iface_sdl.renderer );
@@ -991,7 +991,7 @@ void iface_sdl_update_window ( void ) {
                         update_box.x = px_start;
                         update_box.w = px_end - px_start;
                         if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
-                            fprintf ( stderr, "%s():%d - Could not copy from texture: %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+                            fprintf ( stderr, "%s():%d - Could not copy from texture: %s\n", __func__, __LINE__, SDL_GetError ( ) );
                             main_app_quit ( EXIT_FAILURE );
                         };
 #if 1
@@ -999,7 +999,7 @@ void iface_sdl_update_window ( void ) {
 #elif 0
                         /* Zkopirujeme active surface do old */
                         if ( SDL_BlitSurface ( g_iface_sdl.active_surface, &update_box, g_iface_sdl.old_surface, &update_box ) ) {
-                            fprintf ( stderr, "%s():%d - SDL_BlitSurface: %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+                            fprintf ( stderr, "%s():%d - SDL_BlitSurface: %s\n", __func__, __LINE__, SDL_GetError ( ) );
                             main_app_quit ( EXIT_FAILURE );
                         };
 #endif
@@ -1013,7 +1013,7 @@ void iface_sdl_update_window ( void ) {
 #if 0
             /* Zkopirujeme active surface do old */
             if ( SDL_BlitSurface ( g_iface_sdl.active_surface, NULL, g_iface_sdl.old_surface, NULL ) ) {
-                fprintf ( stderr, "%s():%d - SDL_BlitSurface: %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+                fprintf ( stderr, "%s():%d - SDL_BlitSurface: %s\n", __func__, __LINE__, SDL_GetError ( ) );
                 main_app_quit ( EXIT_FAILURE );
             };
 #endif
@@ -1055,7 +1055,7 @@ void iface_sdl_update_window_in_beam_interval ( unsigned beam_start, unsigned be
     SDL_Texture *texture = SDL_CreateTextureFromSurface ( g_iface_sdl.renderer, g_iface_sdl.active_surface );
 
     if ( NULL == texture ) {
-        fprintf ( stderr, "%s():%d - SDL_CreateTextureFromSurface(): %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+        fprintf ( stderr, "%s():%d - SDL_CreateTextureFromSurface(): %s\n", __func__, __LINE__, SDL_GetError ( ) );
         main_app_quit ( EXIT_FAILURE );
     };
 
@@ -1093,7 +1093,7 @@ void iface_sdl_update_window_in_beam_interval ( unsigned beam_start, unsigned be
     update_box.h = 1;
 
     if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
-        fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+        fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __func__, __LINE__, SDL_GetError ( ) );
         main_app_quit ( EXIT_FAILURE );
     };
 
@@ -1109,7 +1109,7 @@ void iface_sdl_update_window_in_beam_interval ( unsigned beam_start, unsigned be
             update_box.h = row2 - update_box.y;
 
             if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
-                fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+                fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __func__, __LINE__, SDL_GetError ( ) );
                 main_app_quit ( EXIT_FAILURE );
             };
         };
@@ -1120,7 +1120,7 @@ void iface_sdl_update_window_in_beam_interval ( unsigned beam_start, unsigned be
             update_box.h = 1;
 
             if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
-                fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __FUNCTION__, __LINE__, SDL_GetError ( ) );
+                fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __func__, __LINE__, SDL_GetError ( ) );
                 main_app_quit ( EXIT_FAILURE );
             };
         };
