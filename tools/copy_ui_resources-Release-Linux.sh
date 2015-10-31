@@ -11,18 +11,18 @@ CND_CONF="Release-Linux"
 #
 # EXE definitions
 #
-MKDIR_EXE=/usr/bin/mkdir
-CP_EXE=/bin/cp
-FIND_EXE=/usr/bin/find
-BASENAME_EXE=/usr/bin/basename
+MKDIR_EXE=mkdir
+CP_EXE=cp
+FIND_EXE=find
+BASENAME_EXE=basename
 
 
-for exe_tool in ${SED_EXE} ${WC_EXE} ${EGREP_EXE}; do
-	if [ ! -x ${exe_tool} ]; then
-		echo "ERROR: tool not found '${exe_tool}' !"
-		exit 1
-	fi
-done
+#for exe_tool in ${SED_EXE} ${WC_EXE} ${EGREP_EXE}; do
+#	if [ ! -x ${exe_tool} ]; then
+#		echo "ERROR: tool not found '${exe_tool}' !"
+#		exit 1
+#	fi
+#done
 
 
 DIST_DIR=./dist/Release-Linux/GNU-Linux-x86
@@ -33,8 +33,7 @@ if [ ! -e ${DIST_DIR} ]; then
 	exit 1
 fi
 
-function checkReturnCode
-{
+checkReturnCode () {
     rc=$?
     if [ $rc != 0 ]
     then

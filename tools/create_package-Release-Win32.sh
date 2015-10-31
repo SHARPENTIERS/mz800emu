@@ -1,8 +1,6 @@
 #!/bin/sh
 
 
-
-
 PROJECT_NAME="mz800emu"
 
 if [ "${1}" != "Release-Win32" ]; then
@@ -21,24 +19,61 @@ echo -e "\n\nCreate package for: ${CND_CONF}"
 #
 # EXE definitions
 #
-SED_EXE=/bin/sed
-WC_EXE=/usr/bin/wc
-EGREP_EXE=/bin/egrep
-RAR_EXE=/usr/bin/rar
-FIND_EXE=/usr/bin/find
-RM_EXE=/usr/bin/rm
-MKDIR_EXE=/usr/bin/mkdir
-CP_EXE=/bin/cp
-CHMOD_EXE=/bin/chmod
-UNAME_EXE=/usr/bin/uname
+SED_EXE=sed
+WC_EXE=wc
+EGREP_EXE=egrep
+RAR_EXE=rar
+FIND_EXE=find
+RM_EXE=rm
+MKDIR_EXE=mkdir
+CP_EXE=cp
+CHMOD_EXE=chmod
+UNAME_EXE=uname
 
 
-for exe_tool in ${SED_EXE} ${WC_EXE} ${EGREP_EXE}; do
-	if [ ! -x ${exe_tool} ]; then
-		echo "ERROR: tool not found '${exe_tool}' !"
-		exit 1
-	fi
-done
+# Functions
+checkReturnCode () {
+    rc=$?
+    if [ $rc != 0 ]
+    then
+        exit $rc
+    fi
+}
+
+
+makeDirectory () {
+# $1 directory path   
+# $2 permission (optional)
+    ${MKDIR_EXE} -p "$1"
+    checkReturnCode
+    if [ "$2" != "" ]
+    then
+      ${CHMOD_EXE} $2 "$1"
+      checkReturnCode
+    fi
+}
+
+
+copyFileToTmpDir () {
+# $1 from-file path
+# $2 to-file path  
+# $3 permission    
+    ${CP_EXE} "$1" "$2"
+    checkReturnCode
+    if [ "$3" != "" ]
+    then
+        ${CHMOD_EXE} $3 "$2"
+        checkReturnCode
+    fi
+}
+
+
+#for exe_tool in ${SED_EXE} ${WC_EXE} ${EGREP_EXE}; do
+#	if [ ! -x ${exe_tool} ]; then
+#		echo "ERROR: tool not found '${exe_tool}' !"
+#		exit 1
+#	fi
+#done
 
 
 EMULATOR_VERSION_DEF=`${EGREP_EXE} "^#define\s+EMULATOR_VERSION\s+\".*\"" src/cfgmain.h`
@@ -49,6 +84,7 @@ if [ $? -ne 0 ]; then
 fi
 
 let LINES=`echo "${EMULATOR_VERSION_DEF}" | ${WC_EXE} -l`
+checkReturnCode
 
 if [ ${LINES} -ne 1 ]; then
 	echo -e "ERROR: definition the  EMULATOR_VERSION has multiple lines:\n"
@@ -57,8 +93,11 @@ if [ ${LINES} -ne 1 ]; then
 fi
 
 EMULATOR_VERSION_TXT=`echo "${EMULATOR_VERSION_DEF}" | ${SED_EXE} --regexp-extended -e 's/#define\s+EMULATOR_VERSION\s+\"//' -e 's/".*//'`
+checkReturnCode
 EMULATOR_VERSION_TXT=`echo ${EMULATOR_VERSION_TXT} | ${SED_EXE} --regexp-extended -e 's/^\s+//'`
+checkReturnCode
 EMULATOR_VERSION_TXT=`echo ${EMULATOR_VERSION_TXT} | ${SED_EXE} --regexp-extended -e 's/\s/_/g'`
+checkReturnCode
 
 if [ -z "${EMULATOR_VERSION_TXT}" ]; then
 	echo "ERROR: definition the  EMULATOR_VERSION is empty !"
@@ -84,48 +123,11 @@ OUTPUT_BASENAME=mz800emu.exe
 PACKAGE_TOP_DIR=${PROJECT_NAME}-${EMULATOR_VERSION_TXT}-${PACKAGE_PLATFORM}/
 PACKAGE_ARCHIVE_NAME=${PROJECT_NAME}-${EMULATOR_VERSION_TXT}-${PACKAGE_PLATFORM}-${PACKAGE_SURFIX}
 
-# Functions
-function checkReturnCode
-{
-    rc=$?
-    if [ $rc != 0 ]
-    then
-        exit $rc
-    fi
-}
-
-
-function makeDirectory
-# $1 directory path   
-# $2 permission (optional)
-{
-    ${MKDIR_EXE} -p "$1"
-    checkReturnCode
-    if [ "$2" != "" ]
-    then
-      ${CHMOD_EXE} $2 "$1"
-      checkReturnCode
-    fi
-}
-
-
-function copyFileToTmpDir
-# $1 from-file path
-# $2 to-file path  
-# $3 permission    
-{
-    ${CP_EXE} "$1" "$2"
-    checkReturnCode
-    if [ "$3" != "" ]
-    then
-        ${CHMOD_EXE} $3 "$2"
-        checkReturnCode
-    fi
-}
  
 
 # Setup
 cd "${TOP}"
+checkReturnCode
 ${MKDIR_EXE} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package
 ${RM_EXE} -rf ${NBTMPDIR}
 ${MKDIR_EXE} -p ${NBTMPDIR}
@@ -189,13 +191,18 @@ done
 
 # Generate tar file
 cd "${TOP}"
+checkReturnCode
 
 #${RM_EXE} -f ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/${PACKAGE_ARCHIVE_NAME}.tar
 #cd ${NBTMPDIR}
 #tar -vcf ../../../../${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/${PACKAGE_ARCHIVE_NAME}.tar *
 
 ${RM_EXE} -f ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/${PACKAGE_ARCHIVE_NAME}.rar
+checkReturnCode
+
 cd ${NBTMPDIR}
+checkReturnCode
+
 ${RAR_EXE} a ../../../../${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/${PACKAGE_ARCHIVE_NAME}.rar *
 checkReturnCode
 
@@ -209,6 +216,7 @@ FULL_HOSTNAME=`${UNAME_EXE} -n`
 if [ "${FULL_HOSTNAME}" = "${DESKTOP_NAME}" ]; then
 	echo -e "\n\nCopy ${PACKAGE_ARCHIVE_NAME}.rar to WIN32 share directory...\n"
 	cd "${TOP}"
+	checkReturnCode
 	${CP_EXE} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/package/${PACKAGE_ARCHIVE_NAME}.rar ~/share/
 	checkReturnCode
 fi
@@ -216,6 +224,8 @@ fi
 
 # Cleanup
 cd "${TOP}"
+checkReturnCode
 ${RM_EXE} -rf ${NBTMPDIR}
+checkReturnCode
 
 exit 0
