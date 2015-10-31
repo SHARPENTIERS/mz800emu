@@ -10,14 +10,19 @@ SRC_FILE="dist/Release-Win32/i686-w64-mingw32-Linux-x86/mz800emu.exe"
 DST_DIR=~/share/mz800emu/
 
 
-UNAME_EXE=/usr/bin/uname
+UNAME_EXE=uname
 
-if [ ! -x ${UNAME_EXE} ]; then
+#if [ ! -x ${UNAME_EXE} ]; then
+#	echo -e "$0 - ERROR\nUNAME_EXE not found '${UNAME_EXE}'\n"
+#	exit 0
+#fi
+
+FULL_HOSTNAME=`${UNAME_EXE} -n`
+
+if [ $? -ne 0 ]; then
 	echo -e "$0 - ERROR\nUNAME_EXE not found '${UNAME_EXE}'\n"
 	exit 0
 fi
-
-FULL_HOSTNAME=`${UNAME_EXE} -n`
 
 if [ "${1}" != "Release-Win32" ]; then exit 0; fi
 
