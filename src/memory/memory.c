@@ -125,6 +125,7 @@ void memory_init ( void ) {
     ROM += sizeof (Z80EX_BYTE ) * MEMORY_SIZE_ROM_CGROM;
     memcpy ( ROM, c_ROM_MZ800, MEMORY_SIZE_ROM_MZ800 );
 
+#if 0
     //    g_memory.RAM [ 0x2000 ] = 0x3e;
     //    g_memory.RAM [ 0x2001 ] = 0x01;
     g_memory.RAM [ 0x2000 ] = 0x3c;
@@ -138,6 +139,7 @@ void memory_init ( void ) {
     g_memory.RAM [ 0x2007 ] = 0xc3;
     g_memory.RAM [ 0x2008 ] = 0x00;
     g_memory.RAM [ 0x2009 ] = 0x20;
+#endif
 }
 
 
