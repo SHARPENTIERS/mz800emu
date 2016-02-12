@@ -112,6 +112,9 @@ void mz800_exit ( void ) {
     ramdisc_exit ( );
     cmthack_exit ( );
     cmt_exit ( );
+#ifdef MZ800_DEBUGGER
+    debugger_exit();
+#endif
 }
 
 

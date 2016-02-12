@@ -31,6 +31,7 @@
 
 #include "debugger.h"
 #include "ui/debugger/ui_debugger.h"
+#include "ui/debugger/ui_breakpoints.h"
 #include "mz800.h"
 #include "z80ex/include/z80ex.h"
 #include "memory/memory.h"
@@ -65,6 +66,13 @@ void debugger_step_call ( unsigned value ) {
 }
 
 
+void debugger_exit ( void ) {
+    if ( g_debugger.auto_save_breakpoints ) {
+        ui_breakpoints_save ( );
+    };
+}
+
+
 void debugger_init ( void ) {
     g_debugger.active = 0;
     g_debugger.memop_call = 0;
@@ -80,6 +88,9 @@ void debugger_init ( void ) {
             1, "ENABLED",
             -1 );
     cfgelement_set_handlers ( elm, (void*) &g_debugger.animated_updates, (void*) &g_debugger.animated_updates );
+
+    elm = cfgmodule_register_new_element ( cmod, "auto_save_breakpoints", CFGENTYPE_BOOL, 1 );
+    cfgelement_set_handlers ( elm, (void*) &g_debugger.auto_save_breakpoints, (void*) &g_debugger.auto_save_breakpoints );
 
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );

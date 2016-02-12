@@ -37,6 +37,7 @@ extern "C" {
         unsigned step_call;
         unsigned memop_call;
         unsigned animated_updates;
+        unsigned auto_save_breakpoints;
     } st_DEBUGGER;
 
     extern st_DEBUGGER g_debugger;
@@ -48,6 +49,7 @@ extern "C" {
     
     extern void debugger_step_call ( unsigned value );
     extern void debugger_init ( void );
+    extern void debugger_exit ( void );
     extern void debugger_show_main_window ( void );
     extern void debugger_hide_main_window ( void );
     extern void debugger_show_hide_main_window ( void );
@@ -61,7 +63,7 @@ extern "C" {
     extern void debugger_change_z80_register ( Z80_REG_T reg, Z80EX_WORD value );
     extern void debugger_change_dmd ( Z80EX_BYTE value );
     extern Z80EX_WORD debuger_text_to_z80_word ( const char *txt );
-
+    
 #define debugger_memory_read_byte(addr) debugger_dasm_read_cb ( addr, NULL )
 
 #ifdef	__cplusplus
