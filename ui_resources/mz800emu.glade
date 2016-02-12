@@ -145,7 +145,7 @@ From time when data were real zeros and ones and computers were
                                   <object class="GtkMenuItem" id="menuitem_fdc_fdd0_mount">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">_Mount...</property>
+                                    <property name="label" translatable="yes">_Mount Image...</property>
                                     <property name="use_underline">True</property>
                                     <signal name="activate" handler="on_fdc_fdd0_mount" swapped="no"/>
                                   </object>
@@ -192,7 +192,7 @@ From time when data were real zeros and ones and computers were
                                   <object class="GtkMenuItem" id="menuitem_fdc_fdd1_mount">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">_Mount...</property>
+                                    <property name="label" translatable="yes">_Mount Image...</property>
                                     <property name="use_underline">True</property>
                                     <signal name="activate" handler="on_fdc_fdd1_mount" swapped="no"/>
                                   </object>
@@ -239,7 +239,7 @@ From time when data were real zeros and ones and computers were
                                   <object class="GtkMenuItem" id="menuitem_fdc_fdd2_mount">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">_Mount...</property>
+                                    <property name="label" translatable="yes">_Mount Image...</property>
                                     <property name="use_underline">True</property>
                                     <signal name="activate" handler="on_fdc_fdd2_mount" swapped="no"/>
                                   </object>
@@ -286,7 +286,7 @@ From time when data were real zeros and ones and computers were
                                   <object class="GtkMenuItem" id="menuitem_fdc_fdd3_mount">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">_Mount...</property>
+                                    <property name="label" translatable="yes">_Mount Image...</property>
                                     <property name="use_underline">True</property>
                                     <signal name="activate" handler="on_fdc_fdd3_mount" swapped="no"/>
                                   </object>
@@ -601,6 +601,122 @@ From time when data were real zeros and ones and computers were
                   </object>
                 </child>
                 <child>
+                  <object class="GtkMenuItem" id="menuitem_qdisk">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">_Quick Disk</property>
+                    <property name="use_underline">True</property>
+                    <child type="submenu">
+                      <object class="GtkMenu" id="menu15">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkRadioMenuItem" id="menuitem_qdisk_not_connected">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_Not Connected</property>
+                            <property name="use_underline">True</property>
+                            <property name="active">True</property>
+                            <property name="draw_as_radio">True</property>
+                            <property name="group">radiogrp_qdisk</property>
+                            <signal name="toggled" handler="on_qdisk_changed" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem13">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkRadioMenuItem" id="menuitem_qdisk_std">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_MZ 1F11</property>
+                            <property name="use_underline">True</property>
+                            <property name="draw_as_radio">True</property>
+                            <property name="group">radiogrp_qdisk</property>
+                            <signal name="toggled" handler="on_qdisk_changed" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkRadioMenuItem" id="menuitem_qdisk_virtual">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_Virtual</property>
+                            <property name="use_underline">True</property>
+                            <property name="draw_as_radio">True</property>
+                            <property name="group">radiogrp_qdisk</property>
+                            <signal name="toggled" handler="on_qdisk_changed" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem_qdisk">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_qdisk_drive">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_QD Drive</property>
+                            <property name="use_underline">True</property>
+                            <child type="submenu">
+                              <object class="GtkMenu" id="menu16">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_qdisk_path">
+                                    <property name="visible">True</property>
+                                    <property name="sensitive">False</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Empty</property>
+                                    <property name="use_underline">True</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkSeparatorMenuItem" id="separatormenuitem16">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_qdisk_mount">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_Mount...</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_menuitem_qdisk_mount" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_qdisk_umount">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">_Umount</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_menuitem_qdisk_umount" swapped="no"/>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="menuitem_qdisk_write_protected">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Write _Protected</property>
+                            <property name="use_underline">True</property>
+                            <signal name="toggled" handler="on_menuitem_qdisk_write_protected" swapped="no"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
                   <object class="GtkMenuItem" id="menuitem_display">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
@@ -812,6 +928,11 @@ From time when data were real zeros and ones and computers were
     <property name="draw_as_radio">True</property>
   </object>
   <object class="GtkRadioMenuItem" id="radiogrp_fdc">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
+  </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_qdisk">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="draw_as_radio">True</property>

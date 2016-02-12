@@ -31,26 +31,29 @@ extern "C" {
 #endif
 
 
-#define COMPILE_FOR_UNICARD         0
-#define COMPILE_FOR_EMULATOR        1    
-
-
-#if COMPILE_FOR_UNICARD
-#define FDC_USE_FATFS   0
+#ifdef WIN32
+#define COMPILE_FOR_EMULATOR
+#undef COMPILE_FOR_UNICARD
+#undef FS_LAYER_FATFS
+#elif LINUX
+#define COMPILE_FOR_EMULATOR
+#undef COMPILE_FOR_UNICARD
+#undef FS_LAYER_FATFS
 #else
+#undef COMPILE_FOR_EMULATOR
+#define COMPILE_FOR_UNICARD
+#define FS_LAYER_FATFS
 #endif
 
 
-#if FDC_USE_FATFS
+#ifdef FS_LAYER_FATFS
 
 #include "ff.h"
-
 #define DSK_FILENAME_LENGTH 32
 
 #else
 
 #include <stdio.h>
-
 #define DSK_FILENAME_LENGTH 1024
 
 #endif
@@ -70,7 +73,7 @@ extern "C" {
 #define WD279X_BUFFER_SIZE  0x100
 
     typedef struct st_FDDrive {
-#if FDC_USE_FATFS
+#ifdef FS_LAYER_FATFS
         char path [ 3 * DSK_FILENAME_LENGTH + 3 ]; /* cesta k DSK souboru */
         FIL fh; /* filehandle otevreneho DSK souboru */
 #else
@@ -181,7 +184,7 @@ extern "C" {
 #define WD279X_RET_OK   0
 
 
-#if COMPILE_FOR_EMULATOR
+#ifdef COMPILE_FOR_EMULATOR
     extern void wd279x_reset ( st_WD279X *FDC );
 #endif
 

@@ -119,35 +119,14 @@ void ui_update_last_folder_value ( en_FILETYPE file_type, char *value ) {
 }
 
 
-void ui_propagatecfg_folder_mzf ( void *e, void *data ) {
-    ui_update_last_folder_value ( FILETYPE_MZF, cfgelement_get_text_value ( (CFGELM *) e ) );
+void ui_propagatecfg_folder ( void *e, void *data ) {
+    ui_update_last_folder_value ( (en_FILETYPE) data, cfgelement_get_text_value ( (CFGELM *) e ) );
 }
 
 
-void ui_propagatecfg_folder_dsk ( void *e, void *data ) {
-    ui_update_last_folder_value ( FILETYPE_DSK, cfgelement_get_text_value ( (CFGELM *) e ) );
+void ui_savecfg_folder ( void *e, void *data ) {
+    cfgelement_set_text_value ( (CFGELM *) e, g_ui.last_folder [ (en_FILETYPE) data ] );
 }
-
-
-void ui_propagatecfg_folder_dat ( void *e, void *data ) {
-    ui_update_last_folder_value ( FILETYPE_DAT, cfgelement_get_text_value ( (CFGELM *) e ) );
-}
-
-
-void ui_savecfg_folder_mzf ( void *e, void *data ) {
-    cfgelement_set_text_value ( (CFGELM *) e, g_ui.last_folder[FILETYPE_MZF] );
-}
-
-
-void ui_savecfg_folder_dsk ( void *e, void *data ) {
-    cfgelement_set_text_value ( (CFGELM *) e, g_ui.last_folder[FILETYPE_DSK] );
-}
-
-
-void ui_savecfg_folder_dat ( void *e, void *data ) {
-    cfgelement_set_text_value ( (CFGELM *) e, g_ui.last_folder[FILETYPE_DAT] );
-}
-
 
 //void ui_init ( int argc, char *argv[] ) {
 
@@ -269,21 +248,26 @@ void ui_init ( void ) {
 
     CFGELM *elm;
     elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_folder_mzf", CFGENTYPE_TEXT, "" );
-    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder_mzf, NULL );
-    cfgelement_set_save_cb ( elm, ui_savecfg_folder_mzf, NULL );
+    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_MZF );
+    cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_MZF );
 
     elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_folder_dsk", CFGENTYPE_TEXT, "" );
-    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder_dsk, NULL );
-    cfgelement_set_save_cb ( elm, ui_savecfg_folder_dsk, NULL );
+    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_DSK );
+    cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_DSK );
 
     elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_folder_dat", CFGENTYPE_TEXT, "" );
-    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder_dat, NULL );
-    cfgelement_set_save_cb ( elm, ui_savecfg_folder_dat, NULL );
+    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_DAT );
+    cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_DAT );
+
+    elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_folder_mzq", CFGENTYPE_TEXT, "" );
+    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_MZQ );
+    cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_MZQ );
 
     elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_filetype", CFGENTYPE_KEYWORD, FILETYPE_MZF,
             FILETYPE_MZF, "MZF",
             FILETYPE_DSK, "DSK",
             FILETYPE_DAT, "DAT",
+            FILETYPE_MZQ, "MZQ",
             -1 );
     cfgelement_set_handlers ( elm, (void*) &g_ui.last_filetype, (void*) &g_ui.last_filetype );
 
@@ -293,7 +277,7 @@ void ui_init ( void ) {
     ui_main_setpos ( &g_ui.filebrowser_pos, -1, -1 );
 
     g_ui_is_initialised = 1;
-    
+
     /* display bylo nacteno jeste pred inicializaci ui, proto udelame update_menu nyni */
     ui_display_update_menu ( );
 }
@@ -445,12 +429,16 @@ unsigned ui_open_file ( char *filename, char *predefined_filename, unsigned max_
     GtkWidget *filechooserdialog;
     GtkFileFilter *filter;
 
-    GtkFileChooserAction fcaction;
-    if ( openmode == OPENMODE_READ ) {
-        fcaction = GTK_FILE_CHOOSER_ACTION_OPEN;
-    } else {
-        fcaction = GTK_FILE_CHOOSER_ACTION_SAVE;
+    GtkFileChooserAction fcaction = 0;
+
+    if ( openmode & OPENMODE_READ ) {
+        fcaction |= GTK_FILE_CHOOSER_ACTION_OPEN;
     };
+
+    if ( openmode & OPENMODE_SAVE ) {
+        fcaction |= GTK_FILE_CHOOSER_ACTION_SAVE;
+    };
+
     filechooserdialog = gtk_file_chooser_dialog_new ( window_title, NULL,
             fcaction,
             "_Cancel", GTK_RESPONSE_CANCEL,
@@ -470,15 +458,19 @@ unsigned ui_open_file ( char *filename, char *predefined_filename, unsigned max_
     if ( filetype == FILETYPE_MZF ) {
         gtk_file_filter_add_pattern ( filter, "*.mzf" );
         gtk_file_filter_add_pattern ( filter, "*.MZF" );
-        gtk_file_filter_set_name ( filter, "MZ-800 Tape file" );
+        gtk_file_filter_set_name ( filter, "MZ-800 Tape File" );
     } else if ( filetype == FILETYPE_DSK ) {
         gtk_file_filter_add_pattern ( filter, "*.dsk" );
         gtk_file_filter_add_pattern ( filter, "*.DSK" );
-        gtk_file_filter_set_name ( filter, "MZ-800 Disc file" );
+        gtk_file_filter_set_name ( filter, "MZ-800 Disc File" );
     } else if ( filetype == FILETYPE_DAT ) {
         gtk_file_filter_add_pattern ( filter, "*.dat" );
         gtk_file_filter_add_pattern ( filter, "*.DAT" );
-        gtk_file_filter_set_name ( filter, "Ramdisk DAT file" );
+        gtk_file_filter_set_name ( filter, "Ramdisk DAT File" );
+    } else if ( filetype == FILETYPE_MZQ ) {
+        gtk_file_filter_add_pattern ( filter, "*.mzq" );
+        gtk_file_filter_add_pattern ( filter, "*.MZQ" );
+        gtk_file_filter_set_name ( filter, "MZ - Quick Disk Image File" );
     };
 
     gtk_file_chooser_add_filter ( (GtkFileChooser*) filechooserdialog, filter );
@@ -515,7 +507,7 @@ unsigned ui_open_file ( char *filename, char *predefined_filename, unsigned max_
     };
 
     ui_main_win_get_pos ( GTK_WINDOW ( filechooserdialog ), &g_ui.filebrowser_pos );
-    
+
     gtk_widget_destroy ( filechooserdialog );
 
     //    ui_iteration ( );
