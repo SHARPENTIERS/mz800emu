@@ -48,7 +48,9 @@
 #include "ramdisk/ramdisk.h"
 #include "cmt/cmt.h"
 #include "cmt/cmt_hack.h"
+#include "qdisk/qdisk.h"
 
+#include "qdisk/qdisk.h"
 
 #include "iface_sdl/iface_sdl.h"
 #include "iface_sdl/iface_sdl_audio.h"
@@ -106,6 +108,7 @@ void mz800_reset ( void ) {
 
 void mz800_exit ( void ) {
     fdc_exit ( );
+    qdisk_exit ( );
     ramdisc_exit ( );
     cmthack_exit ( );
     cmt_exit ( );
@@ -218,6 +221,7 @@ void mz800_init ( void ) {
     ramdisk_init ( );
     cmthack_init ( );
     cmt_init ( );
+    qdisk_init ( );
 
 #ifdef MZ800_DEBUGGER
     debugger_init ( );

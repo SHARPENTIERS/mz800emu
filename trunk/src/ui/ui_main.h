@@ -74,12 +74,14 @@ extern "C" {
         FILETYPE_MZF,
         FILETYPE_DSK,
         FILETYPE_DAT,
+        FILETYPE_MZQ,
         FILETYPES_COUNT
     } en_FILETYPE;
 
     typedef enum en_OPENMODE {
-        OPENMODE_READ,
-        OPENMODE_SAVE,
+        OPENMODE_READ = 1,
+        OPENMODE_SAVE = 2,
+        OPENMODE_READ_OR_NEW = 3, /* OPENMODE_READ | OPENMODE_SAVE */
     } en_OPENMODE;
 
     typedef struct st_UI {

@@ -38,6 +38,7 @@
 #include "psg/psg.h"
 #include "fdc/fdc.h"
 #include "ramdisk/ramdisk.h"
+#include "qdisk/qdisk.h"
 
 
 
@@ -92,7 +93,7 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
             };
             break;
 
-            
+
         case 0xd4:
         case 0xd5:
         case 0xd6:
@@ -110,7 +111,7 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
         case 0xdb:
             /* cteme do WDC: 0xd8 - 0xdf */
             if ( g_fdc.connected ) {
-                  fdc_read_byte ( port_lsb, &retval );
+                fdc_read_byte ( port_lsb, &retval );
             };
             break;
 
@@ -141,6 +142,18 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
                 retval = ramdisk_pezik_read_byte ( port );
             } else if ( g_ramdisk.std.connected ) {
                 retval = ramdisk_std_read_byte ( port_lsb );
+            } else {
+                retval = g_mz800.regDBUS_latch;
+            };
+            break;
+
+        case 0xf4:
+        case 0xf5:
+        case 0xf6:
+        case 0xf7:
+            /* cteme QDISC: 0xf4 - 0xf7 */
+            if ( g_qdisk.connected ) {
+                retval = qdisk_read_byte ( port_lsb & 0x03 );
             } else {
                 retval = g_mz800.regDBUS_latch;
             };
@@ -289,6 +302,16 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
 
         case 0xf2:
             psg_write_byte ( value );
+            break;
+
+        case 0xf4:
+        case 0xf5:
+        case 0xf6:
+        case 0xf7:
+            /* zapisujeme do QDISC: 0xf4 - 0xf7 */
+            if ( g_qdisk.connected ) {
+                qdisk_write_byte ( port_lsb & 0x03, value );
+            };
             break;
 
         case 0xfc:

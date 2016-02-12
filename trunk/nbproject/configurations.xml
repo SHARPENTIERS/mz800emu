@@ -57,6 +57,9 @@
         <logicalFolder name="f9" displayName="PSG" projectFiles="true">
           <itemPath>src/psg/psg.h</itemPath>
         </logicalFolder>
+        <logicalFolder name="f12" displayName="QDISK" projectFiles="true">
+          <itemPath>src/qdisk/qdisk.h</itemPath>
+        </logicalFolder>
         <logicalFolder name="f10" displayName="Ramdisk" projectFiles="true">
           <itemPath>src/ramdisk/ramdisk.h</itemPath>
         </logicalFolder>
@@ -75,6 +78,7 @@
         <itemPath>src/ui/ui_display.h</itemPath>
         <itemPath>src/ui/ui_fdc.h</itemPath>
         <itemPath>src/ui/ui_main.h</itemPath>
+        <itemPath>src/ui/ui_qdisk.h</itemPath>
         <itemPath>src/ui/ui_ramdisk.h</itemPath>
         <itemPath>src/ui/ui_utils.h</itemPath>
       </logicalFolder>
@@ -82,6 +86,7 @@
       <itemPath>src/cfgmain.h</itemPath>
       <itemPath>src/debug.h</itemPath>
       <itemPath>src/display.h</itemPath>
+      <itemPath>src/fs_layer.h</itemPath>
       <itemPath>src/main.h</itemPath>
       <itemPath>src/sharpmz_ascii.h</itemPath>
     </logicalFolder>
@@ -147,6 +152,9 @@
         <logicalFolder name="f9" displayName="PSG" projectFiles="true">
           <itemPath>src/psg/psg.c</itemPath>
         </logicalFolder>
+        <logicalFolder name="f12" displayName="QDISK" projectFiles="true">
+          <itemPath>src/qdisk/qdisk.c</itemPath>
+        </logicalFolder>
         <logicalFolder name="f10" displayName="Ramdisk" projectFiles="true">
           <itemPath>src/ramdisk/ramdisk.c</itemPath>
         </logicalFolder>
@@ -166,12 +174,14 @@
         <itemPath>src/ui/ui_display.c</itemPath>
         <itemPath>src/ui/ui_fdc.c</itemPath>
         <itemPath>src/ui/ui_main.c</itemPath>
+        <itemPath>src/ui/ui_qdisk.c</itemPath>
         <itemPath>src/ui/ui_ramdisk.c</itemPath>
         <itemPath>src/ui/ui_utils.c</itemPath>
       </logicalFolder>
       <itemPath>src/build_time.c</itemPath>
       <itemPath>src/cfgmain.c</itemPath>
       <itemPath>src/display.c</itemPath>
+      <itemPath>src/fs_layer.c</itemPath>
       <itemPath>src/main.c</itemPath>
       <itemPath>src/sharpmz_ascii.c</itemPath>
     </logicalFolder>
@@ -297,6 +307,10 @@
       </item>
       <item path="src/fdc/wd279x.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/fs_layer.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/fs_layer.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/gdg/framebuffer.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/gdg/framebuffer.h" ex="false" tool="3" flavor2="0">
@@ -368,6 +382,10 @@
       </item>
       <item path="src/psg/psg.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/qdisk/qdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/qdisk/qdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ramdisk/ramdisk.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ramdisk/ramdisk.h" ex="false" tool="3" flavor2="0">
@@ -412,6 +430,10 @@
       <item path="src/ui/ui_main.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/ui_main.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_qdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_qdisk.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_ramdisk.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -526,6 +548,10 @@
       </item>
       <item path="src/fdc/wd279x.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/fs_layer.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/fs_layer.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/gdg/framebuffer.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/gdg/framebuffer.h" ex="false" tool="3" flavor2="0">
@@ -594,6 +620,10 @@
       </item>
       <item path="src/psg/psg.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/qdisk/qdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/qdisk/qdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ramdisk/ramdisk.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ramdisk/ramdisk.h" ex="false" tool="3" flavor2="0">
@@ -638,6 +668,10 @@
       <item path="src/ui/ui_main.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_main.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_qdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_qdisk.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_ramdisk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -761,6 +795,10 @@
       </item>
       <item path="src/fdc/wd279x.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/fs_layer.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/fs_layer.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/gdg/framebuffer.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/gdg/framebuffer.h" ex="false" tool="3" flavor2="0">
@@ -829,6 +867,10 @@
       </item>
       <item path="src/psg/psg.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/qdisk/qdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/qdisk/qdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ramdisk/ramdisk.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ramdisk/ramdisk.h" ex="false" tool="3" flavor2="0">
@@ -873,6 +915,10 @@
       <item path="src/ui/ui_main.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_main.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_qdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_qdisk.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_ramdisk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -999,6 +1045,10 @@
       </item>
       <item path="src/fdc/wd279x.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/fs_layer.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/fs_layer.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/gdg/framebuffer.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/gdg/framebuffer.h" ex="false" tool="3" flavor2="0">
@@ -1070,6 +1120,10 @@
       </item>
       <item path="src/psg/psg.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/qdisk/qdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/qdisk/qdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ramdisk/ramdisk.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ramdisk/ramdisk.h" ex="false" tool="3" flavor2="0">
@@ -1114,6 +1168,10 @@
       <item path="src/ui/ui_main.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/ui_main.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_qdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_qdisk.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_ramdisk.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -1241,6 +1299,10 @@
       </item>
       <item path="src/fdc/wd279x.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/fs_layer.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/fs_layer.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/gdg/framebuffer.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/gdg/framebuffer.h" ex="false" tool="3" flavor2="0">
@@ -1312,6 +1374,10 @@
       </item>
       <item path="src/psg/psg.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/qdisk/qdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/qdisk/qdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ramdisk/ramdisk.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ramdisk/ramdisk.h" ex="false" tool="3" flavor2="0">
@@ -1356,6 +1422,10 @@
       <item path="src/ui/ui_main.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/ui_main.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_qdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_qdisk.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_ramdisk.c" ex="false" tool="0" flavor2="10">
       </item>

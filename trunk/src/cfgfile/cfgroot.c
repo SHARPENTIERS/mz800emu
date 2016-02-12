@@ -169,6 +169,11 @@ void cfgroot_save ( st_CFGROOT *r ) {
  */
 
 void cfgcommon_set_text ( char **mem_point, char *txt ) {
+    
+    if ( *mem_point == txt ) {
+        return;
+    };
+    
     unsigned length = strlen ( txt ) + 1;
     if ( *mem_point == NULL ) {
         *mem_point = malloc ( length );

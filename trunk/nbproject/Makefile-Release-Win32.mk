@@ -50,6 +50,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/display.o \
 	${OBJECTDIR}/src/fdc/fdc.o \
 	${OBJECTDIR}/src/fdc/wd279x.o \
+	${OBJECTDIR}/src/fs_layer.o \
 	${OBJECTDIR}/src/gdg/framebuffer.o \
 	${OBJECTDIR}/src/gdg/gdg.o \
 	${OBJECTDIR}/src/gdg/hwscroll.o \
@@ -68,6 +69,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/pioz80/pioz80.o \
 	${OBJECTDIR}/src/port.o \
 	${OBJECTDIR}/src/psg/psg.o \
+	${OBJECTDIR}/src/qdisk/qdisk.o \
 	${OBJECTDIR}/src/ramdisk/ramdisk.o \
 	${OBJECTDIR}/src/sharpmz_ascii.o \
 	${OBJECTDIR}/src/ui/debugger/ui_breakpoints.o \
@@ -79,6 +81,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/ui_display.o \
 	${OBJECTDIR}/src/ui/ui_fdc.o \
 	${OBJECTDIR}/src/ui/ui_main.o \
+	${OBJECTDIR}/src/ui/ui_qdisk.o \
 	${OBJECTDIR}/src/ui/ui_ramdisk.o \
 	${OBJECTDIR}/src/ui/ui_utils.o \
 	${OBJECTDIR}/src/z80ex/z80ex.o \
@@ -187,6 +190,11 @@ ${OBJECTDIR}/src/fdc/wd279x.o: src/fdc/wd279x.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/fdc/wd279x.o src/fdc/wd279x.c
 
+${OBJECTDIR}/src/fs_layer.o: src/fs_layer.c 
+	${MKDIR} -p ${OBJECTDIR}/src
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/fs_layer.o src/fs_layer.c
+
 ${OBJECTDIR}/src/gdg/framebuffer.o: src/gdg/framebuffer.c 
 	${MKDIR} -p ${OBJECTDIR}/src/gdg
 	${RM} "$@.d"
@@ -277,6 +285,11 @@ ${OBJECTDIR}/src/psg/psg.o: src/psg/psg.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/psg/psg.o src/psg/psg.c
 
+${OBJECTDIR}/src/qdisk/qdisk.o: src/qdisk/qdisk.c 
+	${MKDIR} -p ${OBJECTDIR}/src/qdisk
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/qdisk/qdisk.o src/qdisk/qdisk.c
+
 ${OBJECTDIR}/src/ramdisk/ramdisk.o: src/ramdisk/ramdisk.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ramdisk
 	${RM} "$@.d"
@@ -331,6 +344,11 @@ ${OBJECTDIR}/src/ui/ui_main.o: src/ui/ui_main.c
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_main.o src/ui/ui_main.c
+
+${OBJECTDIR}/src/ui/ui_qdisk.o: src/ui/ui_qdisk.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_qdisk.o src/ui/ui_qdisk.c
 
 ${OBJECTDIR}/src/ui/ui_ramdisk.o: src/ui/ui_ramdisk.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui
