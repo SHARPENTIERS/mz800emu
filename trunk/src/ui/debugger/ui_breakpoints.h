@@ -37,6 +37,7 @@ extern "C" {
     extern void ui_breakpoints_show_hide_window ( void );
     extern int ui_breakpoints_simple_add_event ( unsigned addr );
     extern void ui_breakpoints_select_id ( int id );
+    extern void ui_breakpoints_save ( void );
 
 #ifdef	__cplusplus
 }

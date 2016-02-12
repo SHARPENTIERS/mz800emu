@@ -29,6 +29,8 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <gtk-3.0/gtk/deprecated/gtktoggleaction.h>
+#include <gtk-3.0/gtk/gtktogglebutton.h>
 
 
 #ifdef MZ800_DEBUGGER
@@ -221,6 +223,12 @@ void ui_breakpoints_show_window ( void ) {
 
     g_uibpoints.add_event_focus = 0;
     gtk_widget_show ( window );
+
+    if ( g_debugger.auto_save_breakpoints ) {
+        gtk_toggle_button_set_active ( ui_get_toggle ( "bpt_autosave_checkbutton" ), TRUE );
+    } else {
+        gtk_toggle_button_set_active ( ui_get_toggle ( "bpt_autosave_checkbutton" ), FALSE );
+    };
 
     static int initialised = 0;
     if ( initialised == 0 ) {
@@ -747,7 +755,7 @@ void ui_breakpoints_parse_cfg ( st_CFGROOT *cfgroot, GtkTreeModel *model, GtkTre
         CFGELM *elm_bg_color = cfgmodule_register_new_element ( cmod, "bg_color", CFGENTYPE_TEXT, "rgba(255,255,255,255)" );
         CFGELM *elm_childs = cfgmodule_register_new_element ( cmod, "childs", CFGENTYPE_TEXT, "" );
         CFGELM *elm_address = cfgmodule_register_new_element ( cmod, "address", CFGENTYPE_TEXT, "0x0000" );
-        
+
         cfgmodule_parse ( cmod );
 
         GdkRGBA bg_color_cfg;
@@ -757,7 +765,7 @@ void ui_breakpoints_parse_cfg ( st_CFGROOT *cfgroot, GtkTreeModel *model, GtkTre
 
         if ( gdk_rgba_parse ( &bg_color_cfg, cfgelement_get_text_value ( elm_bg_color ) ) ) {
             bg_color = &bg_color_cfg;
-            
+
         } else {
             bg_color = NULL;
         };
@@ -767,16 +775,16 @@ void ui_breakpoints_parse_cfg ( st_CFGROOT *cfgroot, GtkTreeModel *model, GtkTre
         } else {
             fg_color = NULL;
         };
-        
+
         GtkTreeIter iter;
 
         if ( BRKTYPE_GROUP == cfgelement_get_keyword_value ( elm_type ) ) {
             ui_breakpoints_add_group ( model, &iter, parent, g_uibpoints.id++, cfgelement_get_text_value ( elm_name ), cfgelement_get_bool_value ( elm_enabled ), fg_color, bg_color );
             ui_breakpoints_parse_cfg ( cfgroot, model, &iter, cfgelement_get_text_value ( elm_childs ) );
         } else {
-            
+
             char *addr_txt = cfgelement_get_text_value ( elm_address );
-            
+
             if ( strncmp ( addr_txt, "0x", 2 ) ) {
                 addr_txt += 2;
             } else if ( strncmp ( addr_txt, "0X", 2 ) ) {
@@ -784,7 +792,7 @@ void ui_breakpoints_parse_cfg ( st_CFGROOT *cfgroot, GtkTreeModel *model, GtkTre
             } else if ( *addr_txt == '#' ) {
                 addr_txt++;
             };
-            
+
             unsigned addr = debuger_text_to_z80_word ( addr_txt );
             ui_breakpoints_add_event ( model, &iter, parent, g_uibpoints.id++, cfgelement_get_text_value ( elm_name ), cfgelement_get_bool_value ( elm_enabled ), addr, fg_color, bg_color );
         };
@@ -1395,6 +1403,11 @@ G_MODULE_EXPORT gboolean on_bpt_add_event_entry_focus_out_event ( GtkWidget *wid
 
 G_MODULE_EXPORT void on_bpt_save_button_clicked ( GtkButton *button, gpointer user_data ) {
     ui_breakpoints_save ( );
+}
+
+
+G_MODULE_EXPORT void on_bpt_autosave_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+    g_debugger.auto_save_breakpoints = gtk_toggle_button_get_active ( togglebutton );
 }
 
 #endif
