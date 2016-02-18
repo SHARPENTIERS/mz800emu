@@ -263,11 +263,16 @@ void ui_init ( void ) {
     cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_MZQ );
     cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_MZQ );
 
+    elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_folder_dir", CFGENTYPE_TEXT, "" );
+    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_DIR );
+    cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_DIR );
+
     elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_filetype", CFGENTYPE_KEYWORD, FILETYPE_MZF,
             FILETYPE_MZF, "MZF",
             FILETYPE_DSK, "DSK",
             FILETYPE_DAT, "DAT",
             FILETYPE_MZQ, "MZQ",
+            FILETYPE_DIR, "DIR",
             -1 );
     cfgelement_set_handlers ( elm, (void*) &g_ui.last_filetype, (void*) &g_ui.last_filetype );
 
@@ -427,16 +432,20 @@ void ui_show_warning ( char *format, ... ) {
 unsigned ui_open_file ( char *filename, char *predefined_filename, unsigned max_filename_size, en_FILETYPE filetype, char *window_title, en_OPENMODE openmode ) {
 
     GtkWidget *filechooserdialog;
-    GtkFileFilter *filter;
+    GtkFileFilter *filter = NULL;
 
     GtkFileChooserAction fcaction = 0;
 
-    if ( openmode & OPENMODE_READ ) {
-        fcaction |= GTK_FILE_CHOOSER_ACTION_OPEN;
-    };
+    if ( openmode & OPENMODE_DIRECTORY ) {
+        fcaction = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER | GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER;
+    } else {
+        if ( openmode & OPENMODE_READ ) {
+            fcaction |= GTK_FILE_CHOOSER_ACTION_OPEN;
+        };
 
-    if ( openmode & OPENMODE_SAVE ) {
-        fcaction |= GTK_FILE_CHOOSER_ACTION_SAVE;
+        if ( openmode & OPENMODE_SAVE ) {
+            fcaction |= GTK_FILE_CHOOSER_ACTION_SAVE;
+        };
     };
 
     filechooserdialog = gtk_file_chooser_dialog_new ( window_title, NULL,
@@ -452,6 +461,7 @@ unsigned ui_open_file ( char *filename, char *predefined_filename, unsigned max_
     gtk_window_set_skip_pager_hint ( GTK_WINDOW ( filechooserdialog ), TRUE );
     gtk_window_set_type_hint ( GTK_WINDOW ( filechooserdialog ), GDK_WINDOW_TYPE_HINT_DIALOG );
     gtk_window_set_urgency_hint ( GTK_WINDOW ( filechooserdialog ), TRUE );
+
 
     filter = gtk_file_filter_new ( );
 
@@ -471,6 +481,9 @@ unsigned ui_open_file ( char *filename, char *predefined_filename, unsigned max_
         gtk_file_filter_add_pattern ( filter, "*.mzq" );
         gtk_file_filter_add_pattern ( filter, "*.MZQ" );
         gtk_file_filter_set_name ( filter, "MZ - Quick Disk Image File" );
+    } else if ( filetype == FILETYPE_DIR ) {
+        gtk_file_filter_add_pattern ( filter, "*" );
+        gtk_file_filter_set_name ( filter, "Directory" );
     };
 
     gtk_file_chooser_add_filter ( (GtkFileChooser*) filechooserdialog, filter );

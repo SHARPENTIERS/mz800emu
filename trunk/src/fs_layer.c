@@ -34,38 +34,38 @@
 
 #include "ui/ui_utils.h"
 
-int std_FOPEN ( FILE **fh, char *path, char *mode ) {
+int fs_layer_fopen ( FILE **fh, char *path, char *mode ) {
     int retval;
     //    *fh = fopen ( path, mode );
     *fh = ui_utils_fopen ( path, mode );
     if ( *fh != NULL ) {
-        retval = FR_OK;
+        retval = FS_LAYER_FR_OK;
     } else {
-        retval = FR_DISK_ERR;
+        retval = FS_LAYER_DISK_ERR;
     };
     return retval;
 }
 
 
-int std_FREAD ( FILE **fh, void *buffer, int count_bytes, unsigned int *readlen ) {
+int fs_layer_fread ( FILE **fh, void *buffer, int count_bytes, unsigned int *readlen ) {
     char retval;
     *readlen = fread ( buffer, 1, count_bytes, *fh );
     if ( *readlen == count_bytes ) {
-        retval = FR_OK;
+        retval = FS_LAYER_FR_OK;
     } else {
-        retval = FR_DISK_ERR;
+        retval = FS_LAYER_DISK_ERR;
     };
     return retval;
 }
 
 
-int std_FWRITE ( FILE **fh, void *buffer, int count_bytes, unsigned int *writelen ) {
+int fs_layer_fwrite ( FILE **fh, void *buffer, int count_bytes, unsigned int *writelen ) {
     char retval;
     *writelen = fwrite ( buffer, 1, count_bytes, *fh );
     if ( *writelen == count_bytes ) {
-        retval = FR_OK;
+        retval = FS_LAYER_FR_OK;
     } else {
-        retval = FR_DISK_ERR;
+        retval = FS_LAYER_DISK_ERR;
     };
     return retval;
 }
@@ -74,12 +74,12 @@ int std_FWRITE ( FILE **fh, void *buffer, int count_bytes, unsigned int *writele
 #ifdef WIN32
 #include <windows.h>
 
-int win32_FTRUNCATE ( FILE **fh ) {
+int fs_layer_win32_truncate ( FILE **fh ) {
     int retval = SetEndOfFile ( *fh );
     if ( retval ) {
-        retval = FR_DISK_ERR;
+        retval = FS_LAYER_DISK_ERR;
     } else {
-        retval = FR_OK;
+        retval = FS_LAYER_FR_OK;
     };
     return retval;
 }

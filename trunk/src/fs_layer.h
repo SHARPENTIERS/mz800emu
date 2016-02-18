@@ -35,20 +35,20 @@ extern "C" {
 
 #include "ff.h"
 
-#define FILE_FOPEN(fh,path,mode) f_open ( &fh, path, mode )
-#define FILE_FCLOSE(fh) f_close ( &fh )
+#define FS_LAYER_FOPEN(fh,path,mode) f_open ( &fh, path, mode )
+#define FS_LAYER_FCLOSE(fh) f_close ( &fh )
 
-#define FILE_FSEEK(fh,offset)    f_lseek ( &fh, offset )
+#define FS_LAYER_FSEEK(fh,offset)    f_lseek ( &fh, offset )
 
-#define FILE_FREAD(fh,buffer,count_bytes,readlen) f_read( &fh, buffer, count_bytes, readlen )
-#define FILE_FWRITE(fh,buffer,count_bytes,writelen) f_write( &fh, buffer, count_bytes, writelen )
+#define FS_LAYER_FREAD(fh,buffer,count_bytes,readlen) f_read( &fh, buffer, count_bytes, readlen )
+#define FS_LAYER_FWRITE(fh,buffer,count_bytes,writelen) f_write( &fh, buffer, count_bytes, writelen )
 
-#define FILE_FSYNC(fh) f_sync ( &fh )
-#define FILE_FTRUNCATE(fh) f_truncate ( &fh )
+#define FS_LAYER_FSYNC(fh) f_sync ( &fh )
+#define FS_LAYER_FTRUNCATE(fh) f_truncate ( &fh )
 
-#define FILE_MODE_RO    ( FA_READ )
-#define FILE_MODE_RW    ( FA_READ | FA_WRITE )
-#define FILE_MODE_W     ( FA_CREATE_NEW | FA_WRITE )
+#define FS_LAYER_FMODE_RO    ( FA_READ )
+#define FS_LAYER_FMODE_RW    ( FA_READ | FA_WRITE )
+#define FS_LAYER_FMODE_W     ( FA_CREATE_NEW | FA_WRITE )
 
 #else /* FS_LAYER_FATFS */
 
@@ -58,42 +58,54 @@ extern "C" {
 
 #include "ui/ui_utils.h"
 
-    extern int std_FOPEN ( FILE **fh, char *path, char *mode );
-    extern int std_FREAD ( FILE **fh, void *buffer, int count_bytes, unsigned int *readlen );
-    extern int std_FWRITE ( FILE **fh, void *buffer, int count_bytes, unsigned int *writelen );
+    typedef UI_UTILS_DIR_HANDLE FS_LAYER_DIR_HANDLE;
+    typedef UI_UTILS_DIR_ITEM FS_LAYER_DIR_ITEM;
 
-#define FR_OK           0
-#define FR_DISK_ERR     1
+    extern int fs_layer_fopen ( FILE **fh, char *path, char *mode );
+    extern int fs_layer_fread ( FILE **fh, void *buffer, int count_bytes, unsigned int *readlen );
+    extern int fs_layer_fwrite ( FILE **fh, void *buffer, int count_bytes, unsigned int *writelen );
 
-#define FILE_FOPEN(fh,path,mode) std_FOPEN ( &fh, path, mode )
-#define FILE_FCLOSE(fh) fclose ( fh )
+#define FS_LAYER_FR_OK           0
+#define FS_LAYER_DISK_ERR     1
 
-#define FILE_FSEEK(fh,offset)    fseek ( fh, offset, SEEK_SET )
+#define FS_LAYER_FOPEN(fh,path,mode) fs_layer_fopen ( &fh, path, mode )
+#define FS_LAYER_FCLOSE(fh) fclose ( fh )
 
-#define FILE_FREAD(fh,buffer,count_bytes,readlen) std_FREAD( &fh, buffer, count_bytes, readlen )
-#define FILE_FWRITE(fh,buffer,count_bytes,writelen) std_FWRITE( &fh, buffer, count_bytes, writelen )
+#define FS_LAYER_FSEEK(fh,offset)    fseek ( fh, offset, SEEK_SET )
 
-#define FILE_FSYNC(fh) fflush ( fh )
+#define FS_LAYER_FREAD(fh,buffer,count_bytes,readlen) fs_layer_fread( &fh, buffer, count_bytes, readlen )
+#define FS_LAYER_FWRITE(fh,buffer,count_bytes,writelen) fs_layer_fwrite( &fh, buffer, count_bytes, writelen )
 
+#define FS_LAYER_FSYNC(fh) fflush ( fh )
+
+#define FS_LAYER_DIR_OPEN(path) ui_utils_dir_open ( path )
+#define FS_LAYER_DIR_CLOSE(dh) ui_utils_dir_close ( dh )
+#define FS_LAYER_DIR_READ(dh) ui_utils_dir_read ( dh )
+#define FS_LAYER_DITEM_IS_FILE(path, ditem) ui_utils_ditem_is_file ( path, ditem )
+#define FS_LAYER_DITEM_GET_NAME(ditem) ui_utils_ditem_get_name ( ditem )
+#define FS_LAYER_GET_ERROR_MESSAGE() ui_utils_get_error_message ( )
+#define FS_LAYER_DITEM_GET_FILEPATH(path, ditem) ui_utils_ditem_get_filepath ( path, ditem )
+#define FS_LAYER_DITEM_FREE_FILEPATH(filepath) ui_utils_free ( (void*) filepath )
+    
 #ifdef WIN32
 
 #include <windows.h>
 
-    extern int win32_FTRUNCATE ( FILE **fh );
+    extern int fs_layer_win32_truncate ( FILE **fh );
 
-#define FILE_FTRUNCATE(fh) win32_FTRUNCATE ( &fh )
+#define FS_LAYER_FTRUNCATE(fh) fs_layer_win32_truncate ( &fh )
 
 #elif LINUX
 
     /* pri kompilaci pridat -D_XOPEN_SOURCE=500 */
 #include <unistd.h>
-#define FILE_FTRUNCATE(fh) ftruncate ( fileno ( fh ), ftell ( fh ) )
+#define FS_LAYER_FTRUNCATE(fh) ftruncate ( fileno ( fh ), ftell ( fh ) )
 
 #endif
 
-#define FILE_MODE_RO   "rb"
-#define FILE_MODE_RW  "r+b"
-#define FILE_MODE_W   "w"
+#define FS_LAYER_FMODE_RO   "rb"
+#define FS_LAYER_FMODE_RW   "r+b"
+#define FS_LAYER_FMODE_W    "w+b"
 
 #endif /* ! FS_LAYER_FATFS */
 

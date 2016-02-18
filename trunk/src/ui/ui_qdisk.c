@@ -52,8 +52,6 @@ void ui_qdisk_set_path ( char *path ) {
 
 void ui_qdisk_menu_update ( void ) {
     
-    gtk_widget_set_visible ( ui_get_widget ( "menuitem_qdisk_virtual" ), FALSE );
-    
     LOCK_UICALLBACKS ( );
     if ( g_qdisk.connected == QDISK_DISCONNECTED ) {
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_qdisk_not_connected" ), TRUE );
@@ -135,7 +133,7 @@ G_MODULE_EXPORT void on_menuitem_qdisk_mount ( GtkMenuItem *menuitem, gpointer d
     ui_hide_main_menu ( );
 #endif
 
-    qdisk_mount_image ( );
+    qdisk_mount ( );
 }
 
 
@@ -146,7 +144,7 @@ G_MODULE_EXPORT void on_menuitem_qdisk_umount ( GtkMenuItem *menuitem, gpointer 
     ui_hide_main_menu ( );
 #endif
 
-    qdisk_umount_image ( );
+    qdisk_umount ( );
 }
 
 
