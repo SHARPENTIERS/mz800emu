@@ -374,7 +374,7 @@ void qdisk_open_image ( char *filepath ) {
 
         qdisk_drive_reset ( );
         qdisk_close ( );
-
+      
         if ( strlen ( filepath ) != 0 ) {
 
             char *open_file_mode;
@@ -396,8 +396,8 @@ void qdisk_open_image ( char *filepath ) {
 #endif
             } else {
 #ifdef COMPILE_FOR_EMULATOR
-                cfgelement_set_text_value ( g_elm_std_fp, "" );
                 ui_show_error ( "%s() - Can't open file '%s': %s", __func__, filepath, strerror ( errno ) );
+                cfgelement_set_text_value ( g_elm_std_fp, "" );
 #endif
             };
         } else {
@@ -542,7 +542,7 @@ void qdisk_init ( void ) {
             -1 );
     cfgelement_set_handlers ( elm, (void*) &g_qdisk.type, (void*) &g_qdisk.type );
 
-    g_elm_std_fp = cfgmodule_register_new_element ( cmod, "mz1f11_std_filepath", CFGENTYPE_TEXT, "empty.mzq" );
+    g_elm_std_fp = cfgmodule_register_new_element ( cmod, "mz1f11_std_filepath", CFGENTYPE_TEXT, "" );
     g_elm_virt_fp = cfgmodule_register_new_element ( cmod, "mz1f11_virtual_filepath", CFGENTYPE_TEXT, "" );
     g_elm_wrprt = cfgmodule_register_new_element ( cmod, "mz1f11_write_protected", CFGENTYPE_BOOL, 0 );
 
