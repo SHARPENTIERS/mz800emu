@@ -70,6 +70,11 @@ extern "C" {
 #define QDISKK_FILENAME_LENGTH 1024
 #endif
 
+    
+#define QDISK_VIRT_TEMP_FNAME   "qd_temp.tmp"
+    
+#define QDISK_MZF_FILENAME_LENGTH   17
+    
     typedef enum en_QDSIO_ADDR {
         QDSIO_ADDR_DATA_A = 0,
         QDSIO_ADDR_DATA_B,
@@ -106,14 +111,64 @@ extern "C" {
         Z80EX_BYTE Rreg [ 3 ];
     } st_QDSIO_CHANNEL;
 
+    typedef enum st_QDISK_VRTSTS {
+        QDISK_VRTSTS_QDHEADER,
+        QDISK_VRTSTS_MZFHEAD,
+        QDISK_VRTSTS_MZFBODY,
+        QDISK_VRTSTS_FREE_FILEAREA,
+        QDISK_VRTSTS_WR_MZFHEAD,
+        QDISK_VRTSTS_WR_MZFBODY,
+        QDISK_VRTSTS_FORMATING,
+    } st_QDISK_VRTSTS;
+
+    /* 0x0000 - 0x0007 ( 8 bajtu ) */
+    typedef struct st_QDISK_HEADER {
+        Z80EX_BYTE start_sign [ 4 ]; /* 0x00, 0x16, 0x16, 0xa5 */
+        Z80EX_BYTE file_blocks_count; /* pocet souboru << 1 */
+        Z80EX_BYTE crc [ 3 ]; /* C, R, C */
+    } st_QDSTRT_BLOCK;
+
+    /* 0x0008 - 0x00051 ( 10 + 64 = 74 bajtu ) */
+    typedef struct st_QDISK_MZF_HEADER {
+        Z80EX_BYTE start_sign [ 4 ]; /* 0x00, 0x16, 0x16, 0xa5 */
+        Z80EX_BYTE mzf_header_sign; /* 0x00 */
+        Z80EX_WORD data_size; /* 0x40, 0x00 - tzn: 64 bajtu */
+        Z80EX_BYTE mzf_ftype;
+        Z80EX_BYTE mzf_fname [ 16 ];
+        Z80EX_BYTE mzf_fname_end; /* 0x0d */
+        Z80EX_BYTE unused1 [ 2 ]; /* 0x00 */
+        Z80EX_WORD mzf_size;
+        Z80EX_WORD mzf_start;
+        Z80EX_WORD mzf_exec;
+        Z80EX_BYTE mzf_header_description [ 38 ]; /* Prvnich 38 bajtu z mzf description */
+        Z80EX_BYTE crc [ 3 ]; /* C, R, C */
+    } st_QDISK_MZF_HEADER;
+
+    /* 0x0052 - 0x???? ( 10 + body_size bajtu ) */
+    typedef struct st_QDISK_MZF_BODY {
+        Z80EX_BYTE start_sign [ 4 ]; /* 0x00, 0x16, 0x16, 0xa5 */
+        Z80EX_BYTE mzf_body_sign; /* 0x05 */
+        Z80EX_WORD data_size; /* body_size */
+        Z80EX_BYTE mzf_body [ 65535 ]; /* body [ body_size ] */
+        Z80EX_BYTE crc [ 3 ]; /* C, R, C */
+    } st_QDISK_MZF_BODY;
+
     typedef struct st_QDISK {
         unsigned connected;
         unsigned type;
-        st_QDSIO_CHANNEL channel [ 2 ];
         unsigned status;
-        FILE *fp;
+
+        st_QDSIO_CHANNEL channel [ 2 ];
+        FILE *image_fp;
         Z80EX_WORD out_crc16;
         unsigned image_position;
+
+        unsigned virt_status;
+        unsigned virt_files_count;
+        unsigned virt_file_num;
+        char virt_saved_filename [ QDISK_MZF_FILENAME_LENGTH + 4 ];
+        Z80EX_WORD virt_mzfbody_size;
+        FILE *mzf_fp;
     } st_QDISK;
 
     extern st_QDISK g_qdisk;
@@ -124,8 +179,8 @@ extern "C" {
     extern void qdisk_write_byte ( en_QDSIO_ADDR SIO_addr, Z80EX_BYTE value );
     extern void qdisk_close ( void );
     extern void qdisk_open ( void );
-    extern void qdisk_mount_image ( void );
-    extern void qdisk_umount_image ( void );
+    extern void qdisk_mount ( void );
+    extern void qdisk_umount ( void );
     extern void qdisk_set_write_protected ( int value );
 
 

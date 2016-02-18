@@ -75,6 +75,7 @@ extern "C" {
         FILETYPE_DSK,
         FILETYPE_DAT,
         FILETYPE_MZQ,
+        FILETYPE_DIR,
         FILETYPES_COUNT
     } en_FILETYPE;
 
@@ -82,6 +83,7 @@ extern "C" {
         OPENMODE_READ = 1,
         OPENMODE_SAVE = 2,
         OPENMODE_READ_OR_NEW = 3, /* OPENMODE_READ | OPENMODE_SAVE */
+        OPENMODE_DIRECTORY = 4,
     } en_OPENMODE;
 
     typedef struct st_UI {
@@ -95,9 +97,9 @@ extern "C" {
 
     extern st_UI g_ui;
 
-    
+
     extern GObject* ui_get_object_safely ( gchar *name );
-    
+
     //extern void ui_init ( int argc, char *argv[] );
     extern void ui_init ( void );
     extern void ui_exit ( void );

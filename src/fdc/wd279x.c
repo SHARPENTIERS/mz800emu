@@ -101,13 +101,13 @@ static int32_t wd279x_get_DSK_track_offset ( st_WD279X *FDC, uint8_t drive_id, u
 
     seek_offset = 0x34; /* Nastavime se na zacatek tabulky stop */
 
-    if ( FR_OK != FILE_FSEEK ( FDC->drive[ drive_id ].fh, seek_offset ) ) {
+    if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( FDC->drive[ drive_id ].fh, seek_offset ) ) {
         DBGPRINTF ( DBGERR, "fseek() error: FDC = %s, drive_id = %d, track = 0x%02x, side = %d\n", FDC->name, drive_id, track, side );
         return ( 0 );
     };
 
     for ( i = 0; i < ( ( track * 2 ) + side ); i++ ) {
-        FILE_FREAD ( FDC->drive[ drive_id ].fh, &buffer, 1, &readlen );
+        FS_LAYER_FREAD ( FDC->drive[ drive_id ].fh, &buffer, 1, &readlen );
         if ( 1 != readlen ) {
             DBGPRINTF ( DBGERR, "fread() error: FDC = %s, drive_id = %d, track = 0x%02x, side = %d\n", FDC->name, drive_id, track, side );
             return ( 0 );
@@ -166,7 +166,7 @@ static int wd279x_seek_to_sector ( st_WD279X *FDC, uint8_t drive_id, uint8_t sec
 
     seek_offset = FDC->drive[drive_id].track_offset + 0x15;
 
-    if ( FR_OK != FILE_FSEEK ( FDC->drive[drive_id].fh, seek_offset ) ) {
+    if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( FDC->drive[drive_id].fh, seek_offset ) ) {
         DBGPRINTF ( DBGERR, "fseek() error: FDC = %s, drive_id = %d, sector = %d\n", FDC->name, drive_id, sector );
 #ifdef COMPILE_FOR_EMULATOR
         ui_show_error ( "%s():%d - fseek error: %s", __func__, __LINE__, strerror ( errno ) );
@@ -174,7 +174,7 @@ static int wd279x_seek_to_sector ( st_WD279X *FDC, uint8_t drive_id, uint8_t sec
         return ( WD279X_RET_ERR );
     };
 
-    FILE_FREAD ( FDC->drive[drive_id].fh, &sector_count, 1, &readlen );
+    FS_LAYER_FREAD ( FDC->drive[drive_id].fh, &sector_count, 1, &readlen );
     if ( 1 != readlen ) {
         DBGPRINTF ( DBGERR, "fread() error: FDC = %s, drive_id = %d, sector = %d\n", FDC->name, drive_id, sector );
 #ifdef COMPILE_FOR_EMULATOR
@@ -184,7 +184,7 @@ static int wd279x_seek_to_sector ( st_WD279X *FDC, uint8_t drive_id, uint8_t sec
     };
 
     seek_offset = FDC->drive[drive_id].track_offset + 0x18;
-    if ( FR_OK != FILE_FSEEK ( FDC->drive[drive_id].fh, seek_offset ) ) {
+    if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( FDC->drive[drive_id].fh, seek_offset ) ) {
         DBGPRINTF ( DBGERR, "fseek() error: FDC = %s, drive_id = %d, sector = %d\n", FDC->name, drive_id, sector );
 #ifdef COMPILE_FOR_EMULATOR
         ui_show_error ( "%s():%d - fseek error: %s", __func__, __LINE__, strerror ( errno ) );
@@ -193,7 +193,7 @@ static int wd279x_seek_to_sector ( st_WD279X *FDC, uint8_t drive_id, uint8_t sec
     };
 
     for ( i = 0; i < sector_count; i++ ) {
-        FILE_FREAD ( FDC->drive[drive_id].fh, buffer, 8, &readlen );
+        FS_LAYER_FREAD ( FDC->drive[drive_id].fh, buffer, 8, &readlen );
         if ( 8 != readlen ) {
             DBGPRINTF ( DBGERR, "fread() error: FDC = %s, drive_id = %d, sector = %d\n", FDC->name, drive_id, sector );
 #ifdef COMPILE_FOR_EMULATOR
@@ -215,7 +215,7 @@ static int wd279x_seek_to_sector ( st_WD279X *FDC, uint8_t drive_id, uint8_t sec
     };
 
     seek_offset = FDC->drive[ drive_id ].track_offset + offset + 0x100;
-    if ( FR_OK != FILE_FSEEK ( FDC->drive[ drive_id ].fh, seek_offset ) ) {
+    if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( FDC->drive[ drive_id ].fh, seek_offset ) ) {
         DBGPRINTF ( DBGERR, "fseek() error: FDC = %s, drive_id = %d, sector = %d\n", FDC->name, drive_id, sector );
 #ifdef COMPILE_FOR_EMULATOR
         ui_show_error ( "%s():%d - fseek error: %s", __func__, __LINE__, strerror ( errno ) );
@@ -259,22 +259,22 @@ int8_t FDC_setFDfromCFG ( uint8_t drive_id ) {
 
 
     if ( FDC->drive[drive_id].fh.fs ) {
-        if ( FR_OK != FILE_FSYNC ( FDC->drive[drive_id].fh ) ) return ( -1 ); // sync error
-        FILE_FCLOSE ( FDC->drive[drive_id].fh );
+        if ( FS_LAYER_FR_OK != FS_LAYER_FSYNC ( FDC->drive[drive_id].fh ) ) return ( -1 ); // sync error
+        FS_LAYER_FCLOSE ( FDC->drive[drive_id].fh );
     };
     memset ( &FDC->drive[ drive_id ], 0x00, sizeof ( FDC->drive[ drive_id ] ) ); //tohle bych asi radeji nedelal...
 
     filename [ sizeof ( filename ) - 6 ] = drive_id + 0x30;
 
     //XPRINTF ( filename );
-    if ( FR_OK != f_open ( &fh, filename, FILE_MODE_RO ) ) {
+    if ( FS_LAYER_FR_OK != f_open ( &fh, filename, FS_LAYER_FMODE_RO ) ) {
         return (-1 ); // open file error
     }
-    if ( FR_OK != FILE_FREAD ( fh, (uint8_t*) FDC->drive [ drive_id ].path, sizeof ( FDC->drive [ drive_id ].path ), ff_readlen ) ) {
-        FILE_FCLOSE ( fh );
+    if ( FS_LAYER_FR_OK != FS_LAYER_FREAD ( fh, (uint8_t*) FDC->drive [ drive_id ].path, sizeof ( FDC->drive [ drive_id ].path ), ff_readlen ) ) {
+        FS_LAYER_FCLOSE ( fh );
         return ( -1 ); // read error
     };
-    FILE_FCLOSE ( fh );
+    FS_LAYER_FCLOSE ( fh );
     FDC->drive [ drive_id ].path[ff_readlen] = 0x00;
 
     /*     while ( FDC->drive [ drive_id ].path [ strlen ( FDC->drive [ drive_id ].path ) - 1] < 0x20 ) { */
@@ -293,7 +293,7 @@ int8_t FDC_setFDfromCFG ( uint8_t drive_id ) {
     DBGPRINTF ( DBGINF, "FDC_setFDfromCFG(): New cfg: '%s' and file '%s', DRIVE: 0x%02x\n",
             FDC->drive [ drive_id ].path, FDC->drive[drive_id].filename, drive_id );
 
-    if ( FR_OK != f_open ( &( FDC->drive[drive_id].fh ), FDC->drive[drive_id].path, FILE_MODE_RW ) ) {
+    if ( FS_LAYER_FR_OK != f_open ( &( FDC->drive[drive_id].fh ), FDC->drive[drive_id].path, FS_LAYER_FMODE_RW ) ) {
 
         DBGPRINTF ( DBGERR, "FDC_setFDfromCFG(): error when opening path '%s' and file '%s', DRIVE: 0x%02x\n",
                 FDC->drive [ drive_id ].path, FDC->drive [ drive_id ].filename, drive_id );
@@ -310,7 +310,7 @@ int8_t FDC_setFDfromCFG ( uint8_t drive_id ) {
 
         DBGPRINTF ( DBGERR, "FDC_setFDfromCFG(): FDC_GetTrackOffset - returned error!\n" );
 
-        FILE_FCLOSE ( FDC->drive [ drive_id ].fh );
+        FS_LAYER_FCLOSE ( FDC->drive [ drive_id ].fh );
         FDC->drive [ drive_id ].path [ 0 ] = '\0';
         FDC->drive [ drive_id ].filename [ 0 ] = '\0';
 
@@ -341,13 +341,13 @@ void wd279x_close_dsk ( st_WD279X *FDC, uint8_t drive_id ) {
 #else
     if ( FDC->drive[drive_id].dsk_in_drive ) {
 #endif
-        if ( FR_OK != FILE_FSYNC ( FDC->drive[drive_id].fh ) ) {
+        if ( FS_LAYER_FR_OK != FS_LAYER_FSYNC ( FDC->drive[drive_id].fh ) ) {
             DBGPRINTF ( DBGERR, "fsync(), FDC = %s, drive_id = %d\n", FDC->name, drive_id );
 #ifdef COMPILE_FOR_EMULATOR
             ui_show_error ( "%s():%d - fsync error: %s", __func__, __LINE__, strerror ( errno ) );
 #endif
         };
-        FILE_FCLOSE ( FDC->drive[drive_id].fh );
+        FS_LAYER_FCLOSE ( FDC->drive[drive_id].fh );
     };
 
     memset ( &FDC->drive[drive_id], 0x00, sizeof ( st_FDDrive ) );
@@ -377,7 +377,7 @@ int wd279x_open_dsk ( st_WD279X *FDC, uint8_t drive_id, char *DSK_filename ) {
         wd279x_close_dsk ( FDC, drive_id );
     };
 
-    if ( FR_OK != FILE_FOPEN ( FDC->drive[drive_id].fh, DSK_filename, FILE_MODE_RW ) ) {
+    if ( FS_LAYER_FR_OK != FS_LAYER_FOPEN ( FDC->drive[drive_id].fh, DSK_filename, FS_LAYER_FMODE_RW ) ) {
         DBGPRINTF ( DBGERR, "fopen(), FDC = %s, drive_id = %d, DSK_filename = %s\n", FDC->name, drive_id, DSK_filename );
 #ifdef COMPILE_FOR_EMULATOR
         ui_show_error ( "%s():%d - '%s' - fopen error: %s", __func__, __LINE__, DSK_filename, strerror ( errno ) );
@@ -388,7 +388,7 @@ int wd279x_open_dsk ( st_WD279X *FDC, uint8_t drive_id, char *DSK_filename ) {
     /* Provedeme kontrolu hlavicky DSK souboru */
     uint8_t buffer [ 35 ];
     unsigned int readlen;
-    FILE_FREAD ( FDC->drive[ drive_id ].fh, &buffer, 34, &readlen );
+    FS_LAYER_FREAD ( FDC->drive[ drive_id ].fh, &buffer, 34, &readlen );
     if ( 34 != readlen ) {
         DBGPRINTF ( DBGERR, "fopen(), FDC = %s, drive_id = %d, DSK_filename = %s, when read DSK header\n", FDC->name, drive_id, DSK_filename );
 #ifdef COMPILE_FOR_EMULATOR
@@ -639,7 +639,7 @@ int wd279x_do_command ( st_WD279X *FDC ) {
                 };
 
                 unsigned int ff_readlen;
-                FILE_FREAD ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, fdd_io_size, &ff_readlen );
+                FS_LAYER_FREAD ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, fdd_io_size, &ff_readlen );
                 if ( ff_readlen != fdd_io_size ) {
                     DBGPRINTF ( DBGERR, "error when reading2 DSK file: FDC = %s, drive_id = %d, track: %d, sector: %d, side: %d, track_offset: 0x%x\n", FDC->name, FDC->MOTOR & 0x03, FDC->drive[ FDC->MOTOR & 0x03 ].TRACK, FDC->regSECTOR, FDC->drive[ FDC->MOTOR & 0x03 ].SIDE, FDC->drive[ FDC->MOTOR & 0x03 ].track_offset );
 #ifdef COMPILE_FOR_EMULATOR
@@ -763,7 +763,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
         for_name [10] = FDC->regTRACK + '0';
         for_name [15] = FDC->regSECTOR + '0';
         for_name [20] = FDC->SIDE + '0';
-        if ( FR_OK != f_open ( &format_fh, for_name, FA_WRITE | FA_OPEN_EXISTING ) ) {
+        if ( FS_LAYER_FR_OK != f_open ( &format_fh, for_name, FA_WRITE | FA_OPEN_EXISTING ) ) {
             f_open ( &format_fh, for_name, FA_WRITE | FA_CREATE_NEW );
         };
         f_lseek ( &format_fh, f_size ( &format_fh ) );
@@ -795,7 +795,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
             // a prepiseme tabulku stop
             if ( FDC->regTRACK == 0 && FDC->SIDE == 0 ) {
                 int32_t write_track_offset = 0x22;
-                if ( !FILE_FSEEK ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, write_track_offset ) ) {
+                if ( !FS_LAYER_FSEEK ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, write_track_offset ) ) {
 #ifdef COMPILE_FOR_EMULATOR
                     ui_show_error ( "%s():%d - fseek error: %s", __func__, __LINE__, strerror ( errno ) );
 #endif
@@ -805,7 +805,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
                     FDC->COMMAND = 0x00;
                     return WD279X_RET_ERR;
                 };
-                if ( FR_OK != FILE_FWRITE ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, ( uint8_t * ) &"Unicard v1.00\0\0\2\0\0", 18, &ff_readlen ) ) {
+                if ( FS_LAYER_FR_OK != FS_LAYER_FWRITE ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, ( uint8_t * ) &"Unicard v1.00\0\0\2\0\0", 18, &ff_readlen ) ) {
 #ifdef COMPILE_FOR_EMULATOR
                     ui_show_error ( "%s():%d - fwrite error: %s", __func__, __LINE__, strerror ( errno ) );
 #endif
@@ -837,7 +837,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
                         write_length = write_need;
                         write_need = 0;
                     };
-                    FILE_FWRITE ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, write_length, &ff_readlen );
+                    FS_LAYER_FWRITE ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, write_length, &ff_readlen );
                     if ( ff_readlen != write_length ) {
 #ifdef COMPILE_FOR_EMULATOR
                         ui_show_error ( "%s():%d - fwrite error: %s", __func__, __LINE__, strerror ( errno ) );
@@ -978,7 +978,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
             DBGPRINTF ( DBGINF, "new track offset: 0x%x\n", FDC->drive[ FDC->MOTOR & 0x03 ].track_offset );
 
 
-            if ( FR_OK != FILE_FSEEK ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->drive[ FDC->MOTOR & 0x03 ].track_offset ) ) {
+            if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->drive[ FDC->MOTOR & 0x03 ].track_offset ) ) {
 #ifdef COMPILE_FOR_EMULATOR
                 ui_show_error ( "%s():%d - fseek error: %s", __func__, __LINE__, strerror ( errno ) );
 #endif
@@ -986,7 +986,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
                 return WD279X_RET_ERR;
             };
 
-            FILE_FWRITE ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, ( uint8_t * ) &"Track-Info\x0d\x0a\0\0\0\0", 16, &ff_readlen );
+            FS_LAYER_FWRITE ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, ( uint8_t * ) &"Track-Info\x0d\x0a\0\0\0\0", 16, &ff_readlen );
             if ( ff_readlen != 16 ) {
 #ifdef COMPILE_FOR_EMULATOR
                 ui_show_error ( "%s():%d - fwrite error: %s", __func__, __LINE__, strerror ( errno ) );
@@ -994,7 +994,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
                 return WD279X_RET_ERR; // write error
             };
             // TODO: err status
-            FILE_FWRITE ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, 8, &ff_readlen );
+            FS_LAYER_FWRITE ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, 8, &ff_readlen );
             if ( ff_readlen != 8 ) {
 #ifdef COMPILE_FOR_EMULATOR
                 ui_show_error ( "%s():%d - fwrite error: %s", __func__, __LINE__, strerror ( errno ) );
@@ -1024,7 +1024,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
                         FDC->buffer_pos = 0;
                     };
                 };
-                FILE_FWRITE ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, 8, &ff_readlen );
+                FS_LAYER_FWRITE ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, 8, &ff_readlen );
                 if ( ff_readlen != 8 ) {
 #ifdef COMPILE_FOR_EMULATOR
                     ui_show_error ( "%s():%d - fwrite error: %s", __func__, __LINE__, strerror ( errno ) );
@@ -1048,7 +1048,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
                     write_length = write_need;
                     write_need = 0;
                 };
-                FILE_FWRITE ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, write_length, &ff_readlen );
+                FS_LAYER_FWRITE ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, write_length, &ff_readlen );
                 if ( ff_readlen != write_length ) {
 #ifdef COMPILE_FOR_EMULATOR
                     ui_show_error ( "%s():%d - fwrite error: %s", __func__, __LINE__, strerror ( errno ) );
@@ -1067,7 +1067,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
             /*                                 return RETURN_FDC_ERR; */
             /*                             }; */
 
-            if ( FR_OK != FILE_FSYNC ( FDC->drive[ FDC->MOTOR & 0x03].fh ) ) {
+            if ( FS_LAYER_FR_OK != FS_LAYER_FSYNC ( FDC->drive[ FDC->MOTOR & 0x03].fh ) ) {
 #ifdef COMPILE_FOR_EMULATOR
                 ui_show_error ( "%s():%d - fsync error: %s", __func__, __LINE__, strerror ( errno ) );
 #endif
@@ -1075,7 +1075,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
                 return WD279X_RET_ERR;
             };
 
-            if ( FR_OK != FILE_FTRUNCATE ( FDC->drive[ FDC->MOTOR & 0x03].fh ) ) {
+            if ( FS_LAYER_FR_OK != FS_LAYER_FTRUNCATE ( FDC->drive[ FDC->MOTOR & 0x03].fh ) ) {
 #ifdef COMPILE_FOR_EMULATOR
                 ui_show_error ( "%s():%d - ftruncate error: %s", __func__, __LINE__, strerror ( errno ) );
 #endif
@@ -1083,7 +1083,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
                 return WD279X_RET_ERR;
             };
 
-            if ( FR_OK != FILE_FSYNC ( FDC->drive[ FDC->MOTOR & 0x03].fh ) ) {
+            if ( FS_LAYER_FR_OK != FS_LAYER_FSYNC ( FDC->drive[ FDC->MOTOR & 0x03].fh ) ) {
 #ifdef COMPILE_FOR_EMULATOR
                 ui_show_error ( "%s():%d - fsync error: %s", __func__, __LINE__, strerror ( errno ) );
 #endif
@@ -1095,7 +1095,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
             // upravime tabulku stop
 
             int32_t offset = 0x30; // info o poctu stop
-            if ( FR_OK != FILE_FSEEK ( FDC->drive[FDC->MOTOR & 0x03].fh, offset ) ) {
+            if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( FDC->drive[FDC->MOTOR & 0x03].fh, offset ) ) {
 #ifdef COMPILE_FOR_EMULATOR
                 ui_show_error ( "%s():%d - fseek error: %s", __func__, __LINE__, strerror ( errno ) );
 #endif
@@ -1107,7 +1107,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
             } else {
                 FDC->buffer [ 0 ] = FDC->regTRACK;
             };
-            FILE_FWRITE ( FDC->drive[FDC->MOTOR & 0x03].fh, FDC->buffer, 1, &ff_readlen );
+            FS_LAYER_FWRITE ( FDC->drive[FDC->MOTOR & 0x03].fh, FDC->buffer, 1, &ff_readlen );
             if ( ff_readlen != 1 ) {
 #ifdef COMPILE_FOR_EMULATOR
                 ui_show_error ( "%s():%d - fwrite error: %s", __func__, __LINE__, strerror ( errno ) );
@@ -1118,14 +1118,14 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
             // velikost ulozene stopy
             FDC->buffer [ 0 ] = all_sec_size + 1;
             offset = 0x34 + ( FDC->regTRACK * 2 ) + FDC->SIDE;
-            if ( FR_OK != FILE_FSEEK ( FDC->drive[FDC->MOTOR & 0x03].fh, offset ) ) {
+            if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( FDC->drive[FDC->MOTOR & 0x03].fh, offset ) ) {
 #ifdef COMPILE_FOR_EMULATOR
                 ui_show_error ( "%s():%d - fseek error: %s", __func__, __LINE__, strerror ( errno ) );
 #endif
                 return WD279X_RET_ERR; // seek error
             };
             // TODO: err stat
-            FILE_FWRITE ( FDC->drive[FDC->MOTOR & 0x03].fh, FDC->buffer, 1, &ff_readlen );
+            FS_LAYER_FWRITE ( FDC->drive[FDC->MOTOR & 0x03].fh, FDC->buffer, 1, &ff_readlen );
             if ( ff_readlen != 1 ) {
 #ifdef COMPILE_FOR_EMULATOR
                 ui_show_error ( "%s():%d - fwrite error: %s", __func__, __LINE__, strerror ( errno ) );
@@ -1133,7 +1133,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
                 return WD279X_RET_ERR; // write error
             };
             // TODO: err status
-            if ( FR_OK != FILE_FSYNC ( FDC->drive[FDC->MOTOR & 0x03].fh ) ) {
+            if ( FS_LAYER_FR_OK != FS_LAYER_FSYNC ( FDC->drive[FDC->MOTOR & 0x03].fh ) ) {
 #ifdef COMPILE_FOR_EMULATOR
                 ui_show_error ( "%s():%d - fsync error: %s", __func__, __LINE__, strerror ( errno ) );
 #endif
@@ -1199,7 +1199,7 @@ int wd279x_do_write_sector ( st_WD279X *FDC, unsigned int *io_data ) {
     };
     if ( FDC->buffer_pos == fdd_io_size - 1 ) {
         FDC->buffer_pos = 0;
-        FILE_FWRITE ( FDC->drive[FDC->MOTOR & 0x03].fh, FDC->buffer, fdd_io_size, &wrlen );
+        FS_LAYER_FWRITE ( FDC->drive[FDC->MOTOR & 0x03].fh, FDC->buffer, fdd_io_size, &wrlen );
         if ( wrlen != fdd_io_size ) {
             DBGPRINTF ( DBGERR, "FDControllerMain(): error when writing DSK file! readlen: 0x%02x\n", wrlen );
 #ifdef COMPILE_FOR_EMULATOR
@@ -1220,7 +1220,7 @@ int wd279x_do_write_sector ( st_WD279X *FDC, unsigned int *io_data ) {
                 FDC->drive[ FDC->MOTOR & 0x03 ].track_offset );
 
 
-        if ( FR_OK != FILE_FSYNC ( FDC->drive[FDC->MOTOR & 0x03].fh ) ) {
+        if ( FS_LAYER_FR_OK != FS_LAYER_FSYNC ( FDC->drive[FDC->MOTOR & 0x03].fh ) ) {
 #ifdef COMPILE_FOR_EMULATOR
             ui_show_error ( "%s():%d - fssync error: %s", __func__, __LINE__, strerror ( errno ) );
 #endif
@@ -1502,7 +1502,7 @@ int wd279x_read_byte ( st_WD279X *FDC, int i_addroffset, unsigned int *io_data )
                                     fdd_io_size = sizeof ( FDC->buffer );
                                 };
 
-                                FILE_FREAD ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, fdd_io_size, &readlen );
+                                FS_LAYER_FREAD ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, fdd_io_size, &readlen );
                                 if ( readlen != fdd_io_size ) {
 
                                     DBGPRINTF ( DBGERR, "FDControllerMain(): error when reading2 DSK file! readsize = 0x%02x\n", readlen );
@@ -1746,7 +1746,7 @@ int wd279x_read_byte ( st_WD279X *FDC, int i_addroffset, unsigned int *io_data )
                     if ( FDC->buffer_pos == fdd_io_size - 1 ) {
                         FDC->buffer_pos = 0;
 
-                        FILE_FREAD ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, fdd_io_size, &readlen );
+                        FS_LAYER_FREAD ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, fdd_io_size, &readlen );
                         if ( readlen != fdd_io_size ) {
 
                             DBGPRINTF ( DBGERR, "FDControllerMain(): error when reading3 DSK file! readsize = 0x%02x\n", readlen );
@@ -1800,7 +1800,7 @@ int wd279x_read_byte ( st_WD279X *FDC, int i_addroffset, unsigned int *io_data )
                                 FDC->STATUS_SCRIPT = 4;
 
                             } else {
-                                FILE_FREAD ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, fdd_io_size, &readlen );
+                                FS_LAYER_FREAD ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, fdd_io_size, &readlen );
                                 if ( readlen != fdd_io_size ) {
                                     DBGPRINTF ( DBGERR, "FDControllerMain(): error when reading4 DSK file!\n" );
 #ifdef COMPILE_FOR_EMULATOR

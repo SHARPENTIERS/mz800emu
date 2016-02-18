@@ -51,6 +51,7 @@
 
 #include "mz800.h"
 #include "qdisk.h"
+#include "sharpmz_ascii.h"
 
 
 #ifdef COMPILE_FOR_UNICARD
@@ -76,23 +77,203 @@ CFGELM *g_elm_std_fp;
 CFGELM *g_elm_virt_fp;
 CFGELM *g_elm_wrprt;
 
-//#define QDIMAGE_FILENAME    "notinitialized.mzq"
-#define QDIMAGE_FILENAME    "empty.mzq"
-//#define QDIMAGE_FILENAME    "disk_flappy.mzq"
-//#define QDIMAGE_FILENAME    "3hry.mzq"
+
+uint8_t qdisk_virt_scan_directory ( void ) {
+
+    char *dirpath = cfgelement_get_text_value ( g_elm_virt_fp );
+
+    if ( strlen ( dirpath ) == 0 ) {
+        return 0x00;
+    };
+
+    FS_LAYER_DIR_HANDLE *dh = NULL;
+    FS_LAYER_DIR_ITEM *ditem;
+    unsigned mzf_files_count = 0;
+
+
+    dh = FS_LAYER_DIR_OPEN ( dirpath );
+    if ( dh == NULL ) {
+#ifdef COMPILE_FOR_EMULATOR
+        ui_show_error ( "%s() - Can't open dir '%s': %s", __func__, dirpath, FS_LAYER_GET_ERROR_MESSAGE ( ) );
+#endif
+        return 0x00;
+    };
+
+    while ( ( ditem = FS_LAYER_DIR_READ ( dh ) ) != NULL ) {
+        if ( FS_LAYER_DITEM_IS_FILE ( dirpath, ditem ) ) {
+
+            const char *fname = FS_LAYER_DITEM_GET_NAME ( ditem );
+            unsigned len = strlen ( fname );
+
+            if ( len > 4 ) {
+                if ( 0 == strcasecmp ( &fname [ len - 4 ], ".mzf" ) ) {
+                    //printf ( "QDISK VIRT FOUND: %d. [%s]\n", mzf_files_count, fname );
+                    mzf_files_count++;
+                };
+            };
+        };
+    };
+    FS_LAYER_DIR_CLOSE ( dh );
+
+    return mzf_files_count;
+}
+
+
+void qdisk_virt_close_mzf ( ) {
+    if ( g_qdisk.mzf_fp != NULL ) {
+        FS_LAYER_FSYNC ( g_qdisk.mzf_fp );
+        FS_LAYER_FCLOSE ( g_qdisk.mzf_fp );
+        g_qdisk.mzf_fp = NULL;
+    };
+}
+
+
+void qdisk_virt_open_mzf_for_read ( const char *dirpath, const char *filename ) {
+    const char *filepath = ui_utils_build_filepath ( dirpath, filename );
+    if ( !( g_qdisk.mzf_fp = ui_utils_fopen ( filepath, FS_LAYER_FMODE_RW ) ) ) {
+        DBGPRINTF ( DBGERR, "fopen()\n" );
+#ifdef COMPILE_FOR_EMULATOR
+        ui_show_error ( "%s() - Can't create open file '%s': %s", __func__, filepath, strerror ( errno ) );
+#endif
+    };
+    ui_utils_free_free_filepath ( filepath );
+}
+
+
+void qdisk_virt_prepare_mzf_head ( void ) {
+
+    qdisk_virt_close_mzf ( );
+
+    char *dirpath = cfgelement_get_text_value ( g_elm_virt_fp );
+
+    FS_LAYER_DIR_HANDLE *dh = NULL;
+    FS_LAYER_DIR_ITEM *ditem;
+    unsigned mzf_files_count = 0;
+
+    dh = FS_LAYER_DIR_OPEN ( dirpath );
+    if ( dh == NULL ) {
+#ifdef COMPILE_FOR_EMULATOR
+        ui_show_error ( "%s() - Can't open dir '%s': %s", __func__, dirpath, FS_LAYER_GET_ERROR_MESSAGE ( ) );
+#endif
+        return;
+    };
+
+    while ( ( ditem = FS_LAYER_DIR_READ ( dh ) ) != NULL ) {
+        if ( FS_LAYER_DITEM_IS_FILE ( dirpath, ditem ) ) {
+
+            const char *fname = FS_LAYER_DITEM_GET_NAME ( ditem );
+            unsigned len = strlen ( fname );
+
+            if ( 0 == strcasecmp ( &fname [ len - 4 ], ".mzf" ) ) {
+
+                if ( g_qdisk.virt_saved_filename[0] == 0x00 ) {
+
+                    if ( mzf_files_count == g_qdisk.virt_file_num ) {
+                        qdisk_virt_open_mzf_for_read ( (const char*) dirpath, FS_LAYER_DITEM_GET_NAME ( ditem ) );
+                        break;
+                    };
+
+                } else if ( mzf_files_count == ( g_qdisk.virt_files_count - 1 ) ) {
+                    /* po tom co jsme zapsali soubor, provadime kontrolu ctenim - zapsany soubor tedy potrebujeme cist jako posledni */
+                    qdisk_virt_open_mzf_for_read ( (const char*) dirpath, g_qdisk.virt_saved_filename );
+                    break;
+
+                } else if ( mzf_files_count == g_qdisk.virt_file_num ) {
+                    qdisk_virt_open_mzf_for_read ( (const char*) dirpath, FS_LAYER_DITEM_GET_NAME ( ditem ) );
+                    break;
+                };
+
+                mzf_files_count++;
+            };
+        };
+    };
+    FS_LAYER_DIR_CLOSE ( dh );
+
+    if ( g_qdisk.mzf_fp == NULL ) {
+#ifdef COMPILE_FOR_EMULATOR
+        ui_show_error ( "%s() - Can't prepare MZF file num '%d'", __func__, g_qdisk.virt_file_num );
+#endif        
+    }
+}
+
+
+void qdisk_virt_prepare_mzf_body ( void ) {
+
+    g_qdisk.virt_mzfbody_size = 0;
+
+    if ( g_qdisk.mzf_fp == NULL ) {
+        return;
+    };
+
+    /* precteme fsize z mzf */
+    if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( g_qdisk.mzf_fp, 18 ) ) {
+        DBGPRINTF ( DBGERR, "fseek() error\n" );
+        return;
+    };
+
+    unsigned int readlen;
+    Z80EX_BYTE rbuf;
+
+    FS_LAYER_FREAD ( g_qdisk.mzf_fp, &rbuf, 1, &readlen );
+    if ( 1 != readlen ) {
+        DBGPRINTF ( DBGERR, "fread() error\n" );
+        g_qdisk.virt_mzfbody_size = 0;
+        return;
+    };
+
+    g_qdisk.virt_mzfbody_size = rbuf;
+
+    FS_LAYER_FREAD ( g_qdisk.mzf_fp, &rbuf, 1, &readlen );
+    if ( 1 != readlen ) {
+        DBGPRINTF ( DBGERR, "fread() error\n" );
+        g_qdisk.virt_mzfbody_size = 0;
+        return;
+    };
+
+    g_qdisk.virt_mzfbody_size |= rbuf << 8;
+
+    /* nastavime se na pozici mzf body */
+    if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( g_qdisk.mzf_fp, 0x80 ) ) {
+        DBGPRINTF ( DBGERR, "fseek() error\n" );
+        g_qdisk.virt_mzfbody_size = 0;
+        return;
+    };
+}
+
+
+void qdisk_drive_reset ( void ) {
+    g_qdisk.image_position = 0;
+    g_qdisk.status |= QDSTS_HEAD_HOME;
+    if ( g_qdisk.type == QDISK_TYPE_VIRTUAL ) {
+        qdisk_virt_close_mzf ( );
+        g_qdisk.virt_status = QDISK_VRTSTS_QDHEADER;
+        g_qdisk.virt_files_count = 0;
+        g_qdisk.virt_file_num = 0;
+    };
+}
 
 
 void qdisk_close ( void ) {
     if ( g_qdisk.connected == QDISK_CONNECTED ) {
         if ( g_qdisk.status & QDSTS_IMG_READY ) {
-            g_qdisk.status &= ~QDSTS_IMG_READY;
-            if ( FR_OK != FILE_FSYNC ( g_qdisk.fp ) ) {
-                DBGPRINTF ( DBGERR, "fsync()\n" );
+
+            if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+                /* standard image */
+
+                if ( FS_LAYER_FR_OK != FS_LAYER_FSYNC ( g_qdisk.image_fp ) ) {
+                    DBGPRINTF ( DBGERR, "fsync()\n" );
 #ifdef COMPILE_FOR_EMULATOR
-                ui_show_error ( "%s():%d - fsync error: %s", __func__, __LINE__, strerror ( errno ) );
+                    ui_show_error ( "%s():%d - fsync error: %s", __func__, __LINE__, strerror ( errno ) );
 #endif
+                };
+                FS_LAYER_FCLOSE ( g_qdisk.image_fp );
+
+            } else {
+                /* virtual qdisk */
+                qdisk_virt_close_mzf ( );
             };
-            FILE_FCLOSE ( g_qdisk.fp );
+
+            g_qdisk.status &= ~QDSTS_IMG_READY;
         };
     };
 }
@@ -104,7 +285,7 @@ void qdisk_create_image ( char *filename ) {
 
     FILE *fp;
 
-    if ( !( fp = ui_utils_fopen ( filename, FILE_MODE_W ) ) ) {
+    if ( !( fp = ui_utils_fopen ( filename, FS_LAYER_FMODE_W ) ) ) {
         DBGPRINTF ( DBGERR, "fopen()\n" );
 #ifdef COMPILE_FOR_EMULATOR
         ui_show_error ( "%s() - Can't create file '%s': %s", __func__, filename, strerror ( errno ) );
@@ -117,69 +298,106 @@ void qdisk_create_image ( char *filename ) {
 
     unsigned i;
     unsigned len;
-    
+
     for ( i = QDISK_IMAGE_SIZE; i >= QDISK_CREATE_BLOCK_SIZE; i -= QDISK_CREATE_BLOCK_SIZE ) {
-        if ( FR_OK != FILE_FWRITE ( fp, &block, sizeof ( block ), &len ) ) {
+        if ( FS_LAYER_FR_OK != FS_LAYER_FWRITE ( fp, &block, sizeof ( block ), &len ) ) {
             DBGPRINTF ( DBGERR, "fwrite() error\n" );
         };
     };
 
     if ( i ) {
-        if ( FR_OK != FILE_FWRITE ( fp, &block, i, &len ) ) {
+        if ( FS_LAYER_FR_OK != FS_LAYER_FWRITE ( fp, &block, i, &len ) ) {
             DBGPRINTF ( DBGERR, "fwrite() error\n" );
-        };  
+        };
     };
-    
-    if ( FR_OK != FILE_FSYNC ( fp ) ) {
+
+    if ( FS_LAYER_FR_OK != FS_LAYER_FSYNC ( fp ) ) {
         DBGPRINTF ( DBGERR, "fsync()\n" );
 #ifdef COMPILE_FOR_EMULATOR
         ui_show_error ( "%s() - Can't sync file '%s': %s", __func__, filename, strerror ( errno ) );
 #endif        
     };
 
-    FILE_FCLOSE ( fp );
+    FS_LAYER_FCLOSE ( fp );
 }
 
 
-void qdisk_open_image ( char *path ) {
+void qdisk_virt_open_directory ( char *dirpath ) {
+
 
     if ( g_qdisk.connected == QDISK_CONNECTED ) {
 
         g_qdisk.status = QDSTS_NO_DISC;
-        g_qdisk.image_position = 0;
+
+        qdisk_drive_reset ( );
         qdisk_close ( );
 
-        if ( strlen ( path ) != 0 ) {
+        if ( strlen ( dirpath ) != 0 ) {
+
+            unsigned read_only_flag;
+            if ( 0 != cfgelement_get_bool_value ( g_elm_wrprt ) ) {
+                read_only_flag = QDSTS_IMG_READONLY;
+            } else {
+                read_only_flag = 0;
+            };
+
+            FS_LAYER_DIR_HANDLE *dh = FS_LAYER_DIR_OPEN ( dirpath );
+
+            if ( dh != NULL ) {
+                FS_LAYER_DIR_CLOSE ( dh );
+                g_qdisk.status = QDSTS_IMG_READY | QDSTS_HEAD_HOME | read_only_flag;
+                cfgelement_set_text_value ( g_elm_virt_fp, dirpath );
+
+            } else {
+                cfgelement_set_text_value ( g_elm_virt_fp, "" );
+#ifdef COMPILE_FOR_EMULATOR
+                ui_show_error ( "%s() - Can't open dir '%s': %s", __func__, dirpath, FS_LAYER_GET_ERROR_MESSAGE ( ) );
+#endif
+            };
+        } else {
+#ifdef COMPILE_FOR_EMULATOR
+            cfgelement_set_text_value ( g_elm_virt_fp, "" );
+#endif
+        };
+
+    } else {
+        g_qdisk.status = QDSTS_NO_DISC;
+    };
+}
+
+
+void qdisk_open_image ( char *filepath ) {
+
+    if ( g_qdisk.connected == QDISK_CONNECTED ) {
+
+        g_qdisk.status = QDSTS_NO_DISC;
+
+        qdisk_drive_reset ( );
+        qdisk_close ( );
+
+        if ( strlen ( filepath ) != 0 ) {
 
             char *open_file_mode;
             unsigned read_only_flag;
 
-            if ( ( 0 != cfgelement_get_bool_value ( g_elm_wrprt ) ) || ( ui_utils_access ( path, W_OK ) == -1 ) ) {
-                open_file_mode = FILE_MODE_RO;
+            if ( ( 0 != cfgelement_get_bool_value ( g_elm_wrprt ) ) || ( ui_utils_access ( filepath, W_OK ) == -1 ) ) {
+                open_file_mode = FS_LAYER_FMODE_RO;
                 read_only_flag = QDSTS_IMG_READONLY;
             } else {
-                open_file_mode = FILE_MODE_RW;
+                open_file_mode = FS_LAYER_FMODE_RW;
                 read_only_flag = 0;
             };
 
-            if ( ( g_qdisk.fp = ui_utils_fopen ( path, open_file_mode ) ) ) {
+            if ( ( g_qdisk.image_fp = ui_utils_fopen ( filepath, open_file_mode ) ) ) {
                 g_qdisk.status = QDSTS_IMG_READY | QDSTS_HEAD_HOME | read_only_flag;
 
 #ifdef COMPILE_FOR_EMULATOR
-#if 0
-                printf ( "QDISK open: '%s' in ", path );
-                if ( read_only_flag == 0 ) {
-                    printf ( "R/W mode\n" );
-                } else {
-                    printf ( "R/O mode\n" );
-                };
-#endif
-                cfgelement_set_text_value ( g_elm_std_fp, path );
+                cfgelement_set_text_value ( g_elm_std_fp, filepath );
 #endif
             } else {
 #ifdef COMPILE_FOR_EMULATOR
                 cfgelement_set_text_value ( g_elm_std_fp, "" );
-                ui_show_error ( "%s() - Can't open file '%s': %s", __func__, path, strerror ( errno ) );
+                ui_show_error ( "%s() - Can't open file '%s': %s", __func__, filepath, strerror ( errno ) );
 #endif
             };
         } else {
@@ -195,73 +413,95 @@ void qdisk_open_image ( char *path ) {
 
 
 void qdisk_open ( void ) {
+    char *filepath;
     if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
-        char *filepath = cfgelement_get_text_value ( g_elm_std_fp );
+        filepath = cfgelement_get_text_value ( g_elm_std_fp );
         qdisk_open_image ( filepath );
 #ifdef COMPILE_FOR_EMULATOR
+        filepath = cfgelement_get_text_value ( g_elm_std_fp );
         ui_qdisk_set_path ( filepath );
 #endif
     } else {
         /* TODO: */
+        filepath = cfgelement_get_text_value ( g_elm_virt_fp );
+        qdisk_virt_open_directory ( filepath );
+#ifdef COMPILE_FOR_EMULATOR
+        filepath = cfgelement_get_text_value ( g_elm_virt_fp );
+        ui_qdisk_set_path ( filepath );
+#endif
     };
+    g_qdisk.virt_saved_filename[0] = 0x00;
 }
 
 
-void qdisk_mount_image ( void ) {
-    char window_title[] = "Select MZQ file to open or type new image name";
-    char filename [ QDISKK_FILENAME_LENGTH ];
+void qdisk_mount ( void ) {
 
-    char *cfg_filename = cfgelement_get_text_value ( g_elm_std_fp );
-    if ( cfg_filename [ 0 ] == 0x00 ) {
-        cfg_filename = "new_image.mzq";
-    };
+    if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+        char window_title[] = "Select MZQ file to open or type new image name";
+        char filename [ QDISKK_FILENAME_LENGTH ];
 
-    unsigned err;
+        unsigned err;
 
-    do {
+        do {
 
-        err = 0;
+            err = 0;
 
-        filename[0] = 0x00;
-        ui_open_file ( filename, cfg_filename, sizeof ( filename ), FILETYPE_MZQ, window_title, OPENMODE_READ_OR_NEW );
+            filename[0] = 0x00;
+            ui_open_file ( filename, cfgelement_get_text_value ( g_elm_std_fp ), sizeof ( filename ), FILETYPE_MZQ, window_title, OPENMODE_READ_OR_NEW );
 
-        unsigned len = strlen ( filename );
+            unsigned len = strlen ( filename );
 
-        if ( len == 0 ) {
-            return;
-        };
-
-        if ( len < 5 ) {
-            err = 1;
-        } else {
-            char *surfix = &filename [ len - 4 ];
-
-            if ( 0 != strcasecmp ( surfix, ".mzq" ) ) {
-                err = 1;
+            if ( len == 0 ) {
+                return;
             };
+
+            if ( len < 5 ) {
+                err = 1;
+            } else {
+                char *surfix = &filename [ len - 4 ];
+
+                if ( 0 != strcasecmp ( surfix, ".mzq" ) ) {
+                    err = 1;
+                };
+            };
+
+            if ( err ) {
+                ui_show_error ( "%s() - Bad mzq image file name '%s'", __func__, filename );
+            };
+
+        } while ( err );
+
+        if ( ui_utils_access ( filename, F_OK ) == -1 ) {
+            /* soubor neexistuje - vyrobime novy */
+            //printf ( "create new: '%s'\n", filename );
+            qdisk_create_image ( filename );
         };
 
-        if ( err ) {
-            ui_show_error ( "%s() - Bad mzq image file name '%s'", __func__, filename );
+        //printf ( "open MZQ: '%s'\n", filename );
+        qdisk_open_image ( filename );
+        ui_qdisk_set_path ( cfgelement_get_text_value ( g_elm_std_fp ) );
+
+    } else {
+        /* virtual QDISK */
+        char window_title[] = "Select directory for virtual Quick Disk";
+        char dirpath [ QDISKK_FILENAME_LENGTH ];
+        dirpath[0] = 0x00;
+        ui_open_file ( dirpath, cfgelement_get_text_value ( g_elm_virt_fp ), sizeof ( dirpath ), FILETYPE_DIR, window_title, OPENMODE_DIRECTORY );
+        if ( dirpath[0] != 0x00 ) {
+            qdisk_virt_open_directory ( dirpath );
+            ui_qdisk_set_path ( cfgelement_get_text_value ( g_elm_virt_fp ) );
         };
-
-    } while ( err );
-
-    if ( ui_utils_access ( filename, F_OK ) == -1 ) {
-        /* soubor neexistuje - vyrobime novy */
-        //printf ( "create new: '%s'\n", filename );
-        qdisk_create_image ( filename );
     };
-
-    //printf ( "open MZQ: '%s'\n", filename );
-    qdisk_open_image ( filename );
-    ui_qdisk_set_path ( cfgelement_get_text_value ( g_elm_std_fp ) );
 }
 
 
-void qdisk_umount_image ( void ) {
+void qdisk_umount ( void ) {
     qdisk_close ( );
-    cfgelement_set_text_value ( g_elm_std_fp, "" );
+    if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+        cfgelement_set_text_value ( g_elm_std_fp, "" );
+    } else {
+        cfgelement_set_text_value ( g_elm_virt_fp, "" );
+    };
     ui_qdisk_menu_update ( );
     ui_qdisk_set_path ( "" );
 }
@@ -287,6 +527,8 @@ void qdisk_init ( void ) {
     memset ( &g_qdisk, 0x00, sizeof ( st_QDISK ) );
     g_qdisk.channel[0].name = 'A';
     g_qdisk.channel[1].name = 'B';
+    qdisk_drive_reset ( );
+    g_qdisk.mzf_fp = NULL;
 
     CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "QDISK" );
 
@@ -310,10 +552,12 @@ void qdisk_init ( void ) {
     qdisk_open ( );
 
     ui_qdisk_menu_update ( );
+
+    //printf ( "QDISK VIRT files = %d\n", qdisk_virt_scan_directory ( ) );
 }
 
 
-Z80EX_BYTE qdisk_read_byte_from_image ( void ) {
+Z80EX_BYTE qdisk_read_byte_from_drive ( void ) {
     unsigned int readlen;
     Z80EX_BYTE retval;
 
@@ -327,49 +571,275 @@ Z80EX_BYTE qdisk_read_byte_from_image ( void ) {
         return 0xff;
     };
 
-    FILE_FREAD ( g_qdisk.fp, &retval, 1, &readlen );
+    if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
 
-    if ( 1 != readlen ) {
-        DBGPRINTF ( DBGERR, "fread() error\n" );
+        FS_LAYER_FREAD ( g_qdisk.image_fp, &retval, 1, &readlen );
+
+        if ( 1 != readlen ) {
+            DBGPRINTF ( DBGERR, "fread() error\n" );
+        };
+
+        if ( QDISK_IMAGE_SIZE == g_qdisk.image_position++ ) {
+            g_qdisk.image_position = 0;
+        };
+
+    } else {
+
+        retval = 0xff;
+
+        static char CRC[] = "CRC";
+        static char *crc_ptr = CRC;
+
+        if ( g_qdisk.image_position < 3 ) {
+            printf ( "Err: read in sync area? (%d)\n", g_qdisk.image_position );
+
+        } else if ( g_qdisk.image_position == 3 ) {
+            /* konec synchronizacni znacky */
+            retval = 0xa5;
+            g_qdisk.image_position++;
+
+        } else if ( g_qdisk.virt_status == QDISK_VRTSTS_QDHEADER ) {
+
+            if ( g_qdisk.image_position == 4 ) {
+                /* probiha normalni cteni - razeni souboru bude takove, jak jsou ulozeny na disku (saved_filename nas nezajima) */
+                g_qdisk.virt_saved_filename[0] = 0x00;
+                g_qdisk.virt_files_count = qdisk_virt_scan_directory ( );
+                //printf ( "QDISK VIRT: scan ( 0x%02x)\n", g_qdisk.virt_files_count );
+                retval = g_qdisk.virt_files_count << 1;
+                g_qdisk.image_position++;
+                crc_ptr = CRC;
+
+            } else if ( g_qdisk.image_position <= 7 ) {
+                g_qdisk.image_position++;
+                retval = *crc_ptr++;
+            };
+            /* disk header je precten */
+
+        } else if ( g_qdisk.virt_status == QDISK_VRTSTS_FREE_FILEAREA ) {
+            if ( g_qdisk.image_position & 1 ) {
+                retval = 0xaa;
+                g_qdisk.image_position = 4;
+            } else {
+                retval = 0x55;
+                g_qdisk.image_position = 5;
+            };
+
+        } else if ( g_qdisk.virt_status == QDISK_VRTSTS_MZFHEAD ) {
+
+            if ( 4 == g_qdisk.image_position ) {
+                /* mzf header sign */
+                retval = 0x00;
+                g_qdisk.image_position++;
+
+            } else if ( 6 >= g_qdisk.image_position ) {
+                /* mzf header size 0x0040 */
+                retval = 0x40 * ( 6 - g_qdisk.image_position );
+                g_qdisk.image_position++;
+
+            } else if ( 24 >= g_qdisk.image_position ) {
+                /* mzf ftype, fname[16], 0x0d */
+                FS_LAYER_FREAD ( g_qdisk.mzf_fp, &retval, 1, &readlen );
+
+                if ( 1 != readlen ) {
+                    DBGPRINTF ( DBGERR, "fread() error\n" );
+                };
+
+                g_qdisk.image_position++;
+
+            } else if ( 26 >= g_qdisk.image_position ) {
+                /* 2 bajty unused */
+                retval = 0x00;
+                g_qdisk.image_position++;
+
+            } else if ( 70 >= g_qdisk.image_position ) {
+                /* size, start, exec, comment[38] */
+                FS_LAYER_FREAD ( g_qdisk.mzf_fp, &retval, 1, &readlen );
+
+                if ( 1 != readlen ) {
+                    DBGPRINTF ( DBGERR, "fread() error\n" );
+                };
+                g_qdisk.image_position++;
+                crc_ptr = CRC;
+
+            } else if ( 73 >= g_qdisk.image_position ) {
+                g_qdisk.image_position++;
+                retval = *crc_ptr++;
+            };
+            /* hlavicka je prectena */
+
+        } else if ( g_qdisk.virt_status == QDISK_VRTSTS_MZFBODY ) {
+
+            if ( 4 == g_qdisk.image_position ) {
+                /* mzf body sign */
+                retval = 0x05;
+                g_qdisk.image_position++;
+
+            } else if ( 5 == g_qdisk.image_position ) {
+                /* mzf body size + 10 */
+                retval = g_qdisk.virt_mzfbody_size & 0xff;
+                g_qdisk.image_position++;
+
+            } else if ( 6 == g_qdisk.image_position ) {
+                /* mzf body size + 10 */
+                retval = ( g_qdisk.virt_mzfbody_size >> 8 ) & 0xff;
+                g_qdisk.image_position++;
+
+            } else if ( 7 == g_qdisk.image_position ) {
+
+                FS_LAYER_FREAD ( g_qdisk.mzf_fp, &retval, 1, &readlen );
+
+                if ( 1 != readlen ) {
+                    DBGPRINTF ( DBGERR, "fread() error\n" );
+                };
+
+                g_qdisk.virt_mzfbody_size--;
+                if ( 0 == g_qdisk.virt_mzfbody_size ) {
+                    g_qdisk.image_position++;
+                    qdisk_virt_close_mzf ( );
+                    crc_ptr = CRC;
+                };
+
+            } else if ( 10 >= g_qdisk.image_position ) {
+
+                retval = *crc_ptr++;
+                g_qdisk.image_position++;
+            };
+            /* telo precteno */
+        };
     };
 
-    if ( QDISK_IMAGE_SIZE == g_qdisk.image_position++ ) {
-        g_qdisk.image_position = 0;
-    };
-
+    //printf ( "\tread: ( %d, %d) = 0x%02x\n", g_qdisk.virt_status, g_qdisk.image_position - 1, retval );
     return retval;
 }
 
 
-void qdisk_write_byte_into_image ( Z80EX_BYTE value ) {
-    unsigned len;
+int qdisk_test_disk_is_writeable ( void ) {
 
     /* pokud neni pripojen img - jdeme pryc */
     if ( 0 == ( g_qdisk.status & QDSTS_IMG_READY ) ) {
-        return;
+        return 0;
     };
 
     /* pokud je img write protected - jdeme pryc */
     if ( g_qdisk.status & QDSTS_IMG_READONLY ) {
-        return;
+        return 0;
     };
 
     /* pokud nebezi motor - jdeme pryc */
     if ( ( g_qdisk.channel[ QDSIO_CHANNEL_B ].Wreg[ QDSIO_REGADDR_5 ] & 0x80 ) == 0x00 ) {
-        return;
+        return 0;
     };
 
     /* pokud neni nastaven output mode - jdeme pryc */
     if ( ( g_qdisk.channel[ QDSIO_CHANNEL_A ].Wreg[ QDSIO_REGADDR_5 ] & 0x08 ) == 0x00 ) {
-        return;
+        return 0;
     };
 
-    if ( FR_OK != FILE_FWRITE ( g_qdisk.fp, &value, 1, &len ) ) {
-        DBGPRINTF ( DBGERR, "fwrite() error\n" );
-    }
+    return 1;
+}
 
-    if ( QDISK_IMAGE_SIZE == g_qdisk.image_position++ ) {
-        g_qdisk.image_position = 0;
+
+void qdisk_write_byte_into_drive ( Z80EX_BYTE value ) {
+    unsigned len;
+
+    if ( 0 == qdisk_test_disk_is_writeable ( ) ) return;
+
+    if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+
+        if ( FS_LAYER_FR_OK != FS_LAYER_FWRITE ( g_qdisk.image_fp, &value, 1, &len ) ) {
+            DBGPRINTF ( DBGERR, "fwrite() error\n" );
+        }
+
+        if ( QDISK_IMAGE_SIZE == g_qdisk.image_position++ ) {
+            g_qdisk.image_position = 0;
+        };
+
+    } else {
+
+        //printf ( "\twrite: ( %d, %d) = 0x%02x\n", g_qdisk.virt_status, g_qdisk.image_position, value );
+
+        if ( g_qdisk.virt_status == QDISK_VRTSTS_QDHEADER ) {
+            if ( g_qdisk.image_position == 4 ) {
+                if ( value == 0 ) {
+                    //printf ( "Formating...\n" );
+                    g_qdisk.virt_status = QDISK_VRTSTS_FORMATING;
+                } else {
+                    /* bude probihat kontrolni cteni - saved_filename musi byt precten vzdy jako posledni! (nenulujeme jej) */
+                    //printf ( "Write file done...\n" );
+                    g_qdisk.virt_files_count = qdisk_virt_scan_directory ( );
+                    //printf ( "QDISK VIRT: scan ( 0x%02x)\n", g_qdisk.virt_files_count );
+                };
+            };
+            g_qdisk.image_position++;
+
+        } else if ( g_qdisk.virt_status == QDISK_VRTSTS_WR_MZFHEAD ) {
+
+            if ( ( ( g_qdisk.image_position >= 7 ) && ( g_qdisk.image_position < 25 ) ) || ( ( g_qdisk.image_position >= 27 ) && ( g_qdisk.image_position < 71 ) ) ) {
+
+                if ( FS_LAYER_FR_OK != FS_LAYER_FWRITE ( g_qdisk.mzf_fp, &value, 1, &len ) ) {
+                    DBGPRINTF ( DBGERR, "fwrite() error\n" );
+                };
+
+            };
+            g_qdisk.image_position++;
+
+        } else if ( g_qdisk.virt_status == QDISK_VRTSTS_WR_MZFBODY ) {
+
+            if ( g_qdisk.image_position <= 6 ) {
+
+                if ( g_qdisk.image_position == 5 ) {
+                    g_qdisk.virt_mzfbody_size = value;
+
+                } else if ( g_qdisk.image_position == 6 ) {
+                    g_qdisk.virt_mzfbody_size |= value << 8;
+                };
+
+                g_qdisk.image_position++;
+
+            } else {
+
+                g_qdisk.virt_mzfbody_size--;
+
+                if ( FS_LAYER_FR_OK != FS_LAYER_FWRITE ( g_qdisk.mzf_fp, &value, 1, &len ) ) {
+                    DBGPRINTF ( DBGERR, "fwrite() error\n" );
+                };
+
+                if ( g_qdisk.virt_mzfbody_size == 0 ) {
+
+                    if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( g_qdisk.mzf_fp, 1 ) ) {
+                        DBGPRINTF ( DBGERR, "fseek() error\n" );
+                    };
+
+                    unsigned int readlen;
+                    uint8_t mzf_fname [ QDISK_MZF_FILENAME_LENGTH ];
+
+                    FS_LAYER_FREAD ( g_qdisk.mzf_fp, mzf_fname, sizeof ( mzf_fname ), &readlen );
+                    if ( sizeof ( mzf_fname ) != readlen ) {
+                        DBGPRINTF ( DBGERR, "fread() error\n" );
+                    };
+
+                    qdisk_virt_close_mzf ( );
+
+
+
+                    int i;
+                    for ( i = 0; i < sizeof ( g_qdisk.virt_saved_filename ) - 4; i++ ) {
+                        if ( mzf_fname [ i ] < 0x20 ) break;
+                        g_qdisk.virt_saved_filename [ i ] = sharpmz_cnv_from ( mzf_fname [ i ] );
+                    };
+                    g_qdisk.virt_saved_filename [ i ] = 0x00;
+                    strcat ( g_qdisk.virt_saved_filename, ".mzf" );
+
+                    char *dirpath = cfgelement_get_text_value ( g_elm_virt_fp );
+                    if ( 0 != ui_utils_rename_file ( dirpath, QDISK_VIRT_TEMP_FNAME, g_qdisk.virt_saved_filename ) ) {
+                        DBGPRINTF ( DBGERR, "rename() error\n" );
+                    };
+
+                    g_qdisk.virt_status = QDISK_VRTSTS_FREE_FILEAREA;
+                };
+            }
+        };
+
     };
 }
 
@@ -391,22 +861,83 @@ Z80EX_BYTE qdisk_read_byte ( en_QDSIO_ADDR SIO_addr ) {
                 channel->Rreg [ QDSIO_REGADDR_0 ] |= 0x10;
                 g_qdisk.status &= ~QDSTS_IMG_SYNC;
 
-                Z80EX_BYTE sync1, sync2;
+                if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
 
-                sync1 = qdisk_read_byte_from_image ( );
+                    Z80EX_BYTE sync1, sync2;
 
-                int i;
-                for ( i = 0; i < 8; i++ ) {
+                    sync1 = qdisk_read_byte_from_drive ( );
 
-                    sync2 = qdisk_read_byte_from_image ( );
+                    int i;
+                    for ( i = 0; i < 8; i++ ) {
 
-                    if ( ( sync1 == channel->Wreg [ QDSIO_REGADDR_6 ] ) && ( sync2 == channel->Wreg [ QDSIO_REGADDR_7 ] ) ) {
+                        sync2 = qdisk_read_byte_from_drive ( );
+
+                        if ( ( sync1 == channel->Wreg [ QDSIO_REGADDR_6 ] ) && ( sync2 == channel->Wreg [ QDSIO_REGADDR_7 ] ) ) {
+                            channel->Rreg [ QDSIO_REGADDR_0 ] &= 0xef; // inverze huntphase bitu a konec
+                            g_qdisk.status |= QDSTS_IMG_SYNC;
+                            break;
+                        }
+
+                        sync1 = sync2;
+                    };
+
+                } else {
+
+                    //printf ( "OK: hunt phase ( %d, %d)\n", g_qdisk.virt_status, g_qdisk.image_position );
+
+                    if ( g_qdisk.image_position == 0 ) {
+                        /* automaticky predpokladame g_qdisk.virt_status == QDISK_VRTSTS_MZFHEAD */
+
+                        g_qdisk.image_position = 3;
                         channel->Rreg [ QDSIO_REGADDR_0 ] &= 0xef; // inverze huntphase bitu a konec
                         g_qdisk.status |= QDSTS_IMG_SYNC;
-                        break;
-                    }
 
-                    sync1 = sync2;
+                    } else {
+
+                        if ( g_qdisk.virt_status != QDISK_VRTSTS_FREE_FILEAREA ) {
+
+                            if ( g_qdisk.virt_status == QDISK_VRTSTS_MZFHEAD ) {
+                                qdisk_virt_prepare_mzf_body ( );
+                                g_qdisk.virt_status = QDISK_VRTSTS_MZFBODY;
+
+                            } else {
+
+                                if ( g_qdisk.virt_status == QDISK_VRTSTS_QDHEADER ) {
+
+                                    if ( ( g_qdisk.image_position > 4 ) && ( g_qdisk.virt_files_count != 0 ) ) {
+
+                                        /* otevrit mzf a nastavit se na zacatek headeru */
+                                        qdisk_virt_prepare_mzf_head ( );
+                                        g_qdisk.virt_status = QDISK_VRTSTS_MZFHEAD;
+
+                                    } else {
+                                        /* zadne soubory na disku nemame */
+                                        g_qdisk.virt_status = QDISK_VRTSTS_FREE_FILEAREA;
+                                    };
+
+
+                                } else if ( g_qdisk.virt_status == QDISK_VRTSTS_MZFBODY ) {
+
+                                    if ( ( g_qdisk.virt_files_count - 1 ) > g_qdisk.virt_file_num ) {
+
+                                        /* otevrit dalsi mzf a nastavit se na zacatek headeru */
+                                        g_qdisk.virt_file_num++;
+                                        qdisk_virt_prepare_mzf_head ( );
+                                        g_qdisk.virt_status = QDISK_VRTSTS_MZFHEAD;
+
+                                    } else {
+                                        /* zadne dalsi soubory na disku nemame */
+                                        g_qdisk.virt_status = QDISK_VRTSTS_FREE_FILEAREA;
+                                    };
+                                };
+                            };
+
+                            g_qdisk.image_position = 3;
+                            channel->Rreg [ QDSIO_REGADDR_0 ] &= 0xef; // inverze huntphase bitu a konec
+                            g_qdisk.status |= QDSTS_IMG_SYNC;
+
+                        };
+                    };
                 };
             };
 
@@ -441,9 +972,9 @@ Z80EX_BYTE qdisk_read_byte ( en_QDSIO_ADDR SIO_addr ) {
 
             if ( ( g_qdisk.channel[ QDSIO_CHANNEL_A ].Wreg[ QDSIO_REGADDR_5 ] & 0x1a ) == 0x0a ) {
                 if ( g_qdisk.out_crc16 != 0 ) {
-                    qdisk_write_byte_into_image ( 'C' );
-                    qdisk_write_byte_into_image ( 'R' );
-                    qdisk_write_byte_into_image ( 'C' );
+                    qdisk_write_byte_into_drive ( 'C' );
+                    qdisk_write_byte_into_drive ( 'R' );
+                    qdisk_write_byte_into_drive ( 'C' );
                 };
             };
 
@@ -460,7 +991,7 @@ Z80EX_BYTE qdisk_read_byte ( en_QDSIO_ADDR SIO_addr ) {
             g_qdisk.status &= ~QDSTS_HEAD_HOME;
 
             if ( g_qdisk.status & QDSTS_IMG_READY ) {
-                retval = qdisk_read_byte_from_image ( );
+                retval = qdisk_read_byte_from_drive ( );
             };
             break;
 
@@ -541,26 +1072,82 @@ void qdisk_write_byte ( en_QDSIO_ADDR SIO_addr, Z80EX_BYTE value ) {
                             /* QD motor nenaktivni */
 
                             if ( g_qdisk.status & QDSTS_IMG_READY ) {
-                                if ( FR_OK != FILE_FSEEK ( g_qdisk.fp, 0 ) ) {
-                                    DBGPRINTF ( DBGERR, "fseek() error\n" );
+
+                                if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+
+                                    if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( g_qdisk.image_fp, 0 ) ) {
+                                        DBGPRINTF ( DBGERR, "fseek() error\n" );
+                                    };
+
                                 };
                             };
 
-                            g_qdisk.image_position = 0;
-                            g_qdisk.status |= QDSTS_HEAD_HOME;
+                            qdisk_drive_reset ( );
+
                         };
 
                     } else {
 
                         if ( ( channel->Wreg[ QDSIO_REGADDR_5 ] & 0x18 ) == 0x18 ) {
+
                             /* signal preruseni vysilani + povoleno odesilani dat */
-                            qdisk_write_byte_into_image ( 0x00 );
+
+                            if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+                                qdisk_write_byte_into_drive ( 0x00 );
+                            };
 
                         } else if ( ( channel->Wreg[ QDSIO_REGADDR_5 ] & 0x1a ) == 0x0a ) {
                             /* signal preruseni vysilani + povoleno odesilani dat + signal RTS */
                             /* zapis synchronizacni znacky */
-                            qdisk_write_byte_into_image ( channel->Wreg[ QDSIO_REGADDR_6 ] );
-                            qdisk_write_byte_into_image ( channel->Wreg[ QDSIO_REGADDR_7 ] );
+
+                            if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+                                qdisk_write_byte_into_drive ( channel->Wreg[ QDSIO_REGADDR_6 ] );
+                                qdisk_write_byte_into_drive ( channel->Wreg[ QDSIO_REGADDR_7 ] );
+                            } else {
+                                //printf ( "WR SYNC: ( %d, %d)\n", g_qdisk.virt_status, g_qdisk.image_position );
+
+                                if ( ( ( g_qdisk.virt_status == QDISK_VRTSTS_QDHEADER ) && ( g_qdisk.image_position == 0 ) ) || ( g_qdisk.virt_status == QDISK_VRTSTS_FORMATING ) ) {
+
+                                    g_qdisk.image_position = 3;
+                                } else {
+
+                                    g_qdisk.image_position = 3;
+
+                                    if ( 0 != qdisk_test_disk_is_writeable ( ) ) {
+
+                                        if ( g_qdisk.virt_status != QDISK_VRTSTS_WR_MZFHEAD ) {
+
+                                            qdisk_virt_close_mzf ( );
+
+                                            char *dirpath = cfgelement_get_text_value ( g_elm_virt_fp );
+                                            const char *filepath = ui_utils_build_filepath ( dirpath, QDISK_VIRT_TEMP_FNAME );
+
+                                            if ( !( g_qdisk.mzf_fp = ui_utils_fopen ( filepath, FS_LAYER_FMODE_W ) ) ) {
+                                                DBGPRINTF ( DBGERR, "fopen()\n" );
+#ifdef COMPILE_FOR_EMULATOR
+                                                ui_show_error ( "%s() - Can't create open file '%s': %s", __func__, filepath, strerror ( errno ) );
+#endif
+                                            } else {
+                                                ui_utils_free_free_filepath ( filepath );
+                                                g_qdisk.virt_status = QDISK_VRTSTS_WR_MZFHEAD;
+                                            };
+
+                                        } else {
+                                            g_qdisk.virt_status = QDISK_VRTSTS_WR_MZFBODY;
+
+                                            unsigned len;
+                                            uint8_t mzf_cmnt[ 104 - 38 ];
+
+                                            memset ( mzf_cmnt, 0x00, sizeof ( mzf_cmnt ) );
+                                            if ( FS_LAYER_FR_OK != FS_LAYER_FWRITE ( g_qdisk.mzf_fp, mzf_cmnt, sizeof ( mzf_cmnt ), &len ) ) {
+                                                DBGPRINTF ( DBGERR, "fwrite() error\n" );
+                                            };
+                                        };
+
+                                    };
+
+                                };
+                            }
                         };
 
                     };
@@ -581,7 +1168,7 @@ void qdisk_write_byte ( en_QDSIO_ADDR SIO_addr, Z80EX_BYTE value ) {
     } else {
         if ( channel->name == 'A' ) {
             g_qdisk.out_crc16 ^= value;
-            qdisk_write_byte_into_image ( value );
+            qdisk_write_byte_into_drive ( value );
         };
     };
 

@@ -31,9 +31,33 @@ extern "C" {
 #endif
 
 #include <stdio.h>
-    
+#include <gtk/gtk.h>
+
+
     extern FILE* ui_utils_fopen ( const char *filename_in_utf8, const char *mode );
-    int ui_utils_access ( const char *filename_in_utf8, int type );
+    extern int ui_utils_access ( const char *filename_in_utf8, int type );
+
+    typedef GDir UI_UTILS_DIR_HANDLE;
+    typedef const char UI_UTILS_DIR_ITEM;
+
+    extern UI_UTILS_DIR_HANDLE* ui_utils_dir_open ( char *path );
+    extern void ui_utils_dir_close ( UI_UTILS_DIR_HANDLE *dh );
+
+    extern UI_UTILS_DIR_ITEM* ui_utils_dir_read ( UI_UTILS_DIR_HANDLE *dh );
+
+    extern unsigned ui_utils_ditem_is_file ( char *path, UI_UTILS_DIR_ITEM *ditem );
+    extern const gchar* ui_utils_ditem_get_filepath ( const char *path, UI_UTILS_DIR_ITEM *ditem );
+
+    extern const gchar* ui_utils_ditem_get_name ( UI_UTILS_DIR_ITEM *ditem );
+
+    extern const gchar* ui_utils_get_error_message ( void );
+
+    extern void ui_utils_free ( void *ptr );
+    
+    extern int ui_utils_rename_file ( char *path, char *oldname, char *newname );
+
+#define ui_utils_build_filepath( path, filename ) ui_utils_ditem_get_filepath ( path, filename )
+#define ui_utils_free_free_filepath( filepath ) ui_utils_free ( (void *) filepath )
 
 #ifdef	__cplusplus
 }
