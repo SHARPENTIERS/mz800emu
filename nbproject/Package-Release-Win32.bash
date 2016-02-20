@@ -6,7 +6,7 @@
 
 # Macros
 TOP=`pwd`
-CND_PLATFORM=i686-w64-mingw32-Linux-x86
+CND_PLATFORM=i686-w64-mingw32-Linux
 CND_CONF=Release-Win32
 CND_DISTDIR=dist
 CND_BUILDDIR=build

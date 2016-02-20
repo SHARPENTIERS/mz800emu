@@ -21,7 +21,7 @@ FC=i686-w64-mingw32-gfortran
 AS=i686-w64-mingw32-as
 
 # Macros
-CND_PLATFORM=i686-w64-mingw32-Linux-x86
+CND_PLATFORM=i686-w64-mingw32-Linux
 CND_DLIB_EXT=so
 CND_CONF=Release-Win32
 CND_DISTDIR=dist

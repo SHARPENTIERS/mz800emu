@@ -124,7 +124,7 @@ extern "C" {
     /* 0x0000 - 0x0007 ( 8 bajtu ) */
     typedef struct st_QDISK_HEADER {
         Z80EX_BYTE start_sign [ 4 ]; /* 0x00, 0x16, 0x16, 0xa5 */
-        Z80EX_BYTE file_blocks_count; /* pocet souboru << 1 */
+        Z80EX_BYTE file_blocks_count; /* pocet pouzitych bloku (resp. pocet souboru * 2) */
         Z80EX_BYTE crc [ 3 ]; /* C, R, C */
     } st_QDSTRT_BLOCK;
 
