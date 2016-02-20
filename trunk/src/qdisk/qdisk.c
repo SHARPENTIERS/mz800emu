@@ -109,6 +109,7 @@ uint8_t qdisk_virt_scan_directory ( void ) {
                 if ( 0 == strcasecmp ( &fname [ len - 4 ], ".mzf" ) ) {
                     //printf ( "QDISK VIRT FOUND: %d. [%s]\n", mzf_files_count, fname );
                     mzf_files_count++;
+                    if ( mzf_files_count == 127 ) break; /* max pocet souboru (254 bloku) */
                 };
             };
         };
@@ -184,6 +185,7 @@ void qdisk_virt_prepare_mzf_head ( void ) {
                 };
 
                 mzf_files_count++;
+                if ( mzf_files_count == 127 ) break; /* max pocet souboru (254 bloku) */
             };
         };
     };
@@ -374,7 +376,7 @@ void qdisk_open_image ( char *filepath ) {
 
         qdisk_drive_reset ( );
         qdisk_close ( );
-      
+
         if ( strlen ( filepath ) != 0 ) {
 
             char *open_file_mode;
