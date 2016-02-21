@@ -120,6 +120,7 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
             /* cteme memory mapper: 0xe0 - 0xe1 */
             memory_map_set ( MEMORY_MAPRQ_IOOP_IN, port_lsb );
             retval = g_mz800.regDBUS_latch;
+            break;
 
         case 0xe8:
         case 0xe9:
@@ -131,6 +132,7 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
             /* cteme Pezik: 0xe8 - 0xef */
             if ( g_ramdisk.pezik [ RAMDISK_PEZIK_E8 ].connected ) {
                 retval = ramdisk_pezik_read_byte ( port );
+                printf ( "PREAD PEZ 0x%02x = 0x%02x\n", port_lsb, retval );
             } else {
                 retval = g_mz800.regDBUS_latch;
             };
@@ -286,15 +288,12 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
             break;
 
 
-        case 0xa8:
-        case 0xa9:
-        case 0xaa:
-        case 0xab:
-        case 0xac:
-        case 0xad:
-        case 0xae:
-        case 0xaf:
-            /* zapisujeme na posunuty Pezik: 0xe8 - 0xef */
+        case 0xe8:
+        case 0xec:
+        case 0xed:
+        case 0xee:
+        case 0xef:
+            /* zapisujeme na Pezik: 0xe8, 0xec - 0xef */
             if ( g_ramdisk.pezik [ RAMDISK_PEZIK_E8 ].connected ) {
                 ramdisk_pezik_write_byte ( port, value );
             };
@@ -325,12 +324,21 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
         case 0xe9:
         case 0xea:
         case 0xeb:
-        case 0xfa:
-            /* zapisujeme na std ramdisk: 0xe9 - 0xeb, 0xfa */
-            if ( g_ramdisk.std.connected ) {
+            if ( g_ramdisk.pezik [ RAMDISK_PEZIK_E8 ].connected ) {
+                /* zapisujeme na Pezik: 0xe9 - 0xeb */
+                ramdisk_pezik_write_byte ( port, value );
+
+            } else if ( g_ramdisk.std.connected ) {
+                /* zapisujeme na Pezik: 0xe9 - 0xeb */
                 ramdisk_std_write_byte ( port, value );
-            }
+            };
             break;
 
+        case 0xfa:
+            /* zapisujeme na std ramdisk: 0xfa */
+            if ( g_ramdisk.std.connected ) {
+                ramdisk_std_write_byte ( port, value );
+            };
+            break;
     };
 }

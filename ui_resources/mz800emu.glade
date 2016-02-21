@@ -428,6 +428,21 @@ From time when data were real zeros and ones and computers were
                           </object>
                         </child>
                         <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem15">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="menuitem_ramdisk_std">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_MR-1R18 Compatibile</property>
+                            <property name="use_underline">True</property>
+                            <signal name="toggled" handler="on_ramdisk_std" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
                           <object class="GtkSeparatorMenuItem" id="separatormenuitem1">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
@@ -446,7 +461,7 @@ From time when data were real zeros and ones and computers were
                           <object class="GtkCheckMenuItem" id="menuitem_ramdisk_pezik_68">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Pezik 512 KB (0x_68 - 0x6f)</property>
+                            <property name="label" translatable="yes">Pezik 512 KB (0x_68 - 0x6f) - experimental</property>
                             <property name="use_underline">True</property>
                             <signal name="toggled" handler="on_ramdisk_pezik_68" swapped="no"/>
                           </object>
@@ -455,15 +470,6 @@ From time when data were real zeros and ones and computers were
                           <object class="GtkSeparatorMenuItem" id="separatormenuitem8">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkCheckMenuItem" id="menuitem_ramdisk_std">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">_MR-1R18 Compatibile</property>
-                            <property name="use_underline">True</property>
-                            <signal name="toggled" handler="on_ramdisk_std" swapped="no"/>
                           </object>
                         </child>
                         <child>
