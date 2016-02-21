@@ -132,7 +132,6 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
             /* cteme Pezik: 0xe8 - 0xef */
             if ( g_ramdisk.pezik [ RAMDISK_PEZIK_E8 ].connected ) {
                 retval = ramdisk_pezik_read_byte ( port );
-                printf ( "PREAD PEZ 0x%02x = 0x%02x\n", port_lsb, retval );
             } else {
                 retval = g_mz800.regDBUS_latch;
             };
