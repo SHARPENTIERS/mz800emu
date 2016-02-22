@@ -34,6 +34,7 @@
 
 #include "z80ex/include/z80ex.h"
 #include "memory/memory.h"
+#include "memory/rom.h"
 #include "mz800.h"
 
 #include "ui/ui_main.h"
@@ -52,7 +53,7 @@ typedef enum en_LOADRET {
 } en_LOADRET;
 
 
-void cmthack_insert_rom_patch ( void ) {
+void cmthack_install_rom_patch ( void ) {
 
     /* ROM hack */
 
@@ -100,26 +101,42 @@ void cmthack_insert_rom_patch ( void ) {
     g_memory.ROM [ 0x0504 ] = 0xe1; /* pop BC */
     g_memory.ROM [ 0x0505 ] = 0xc9; /* ret */
 
+
+    /*
+     * 
+     * JSS 1.3 a 1.6A na adrese 0xf3bb (0xf3b8) provadi kontrolu horni a dolni ROM:
+     * 
+     * xor a, nasledne xor 0x0000 - 0x0xfff, 0xe010 - 0xffff
+     * 
+     * obsah porovna s tim co je na adrese 0xe840 ( == 0xed)
+     * 
+     * Bohuzel nikdo uz asi nikdy nezjisti na ktere adrese dela JSS korekci, aby 
+     * byl vysledny XOR = 0xed
+     * 
+     */
+
+    g_memory.ROM [ 0x0506 ] = 0x59; /* pokud zde dame 0x00, tak XOR vychazi 0xb4, proto: 0xb4 ^ 0xed = 0x59 */
+
+}
+
+
+void cmthack_reinstall_rom_patch ( void ) {
+    if ( g_cmthack.load_patch_installed ) {
+        cmthack_install_rom_patch ( );
+    };
 }
 
 
 void cmthack_load_rom_patch ( unsigned enabled ) {
 
-    static Z80EX_BYTE rom_area_04d8 [ 8 ];
-    static Z80EX_BYTE rom_area_04f8 [ 14 ];
-
-    if ( enabled != g_cmthack.load_patch_installed ) {
-        if ( enabled ) {
-            memcpy ( &rom_area_04d8, &g_memory.ROM [ 0x04d8 ], sizeof ( rom_area_04d8 ) );
-            memcpy ( &rom_area_04f8, &g_memory.ROM [ 0x04f8 ], sizeof ( rom_area_04f8 ) );
-            cmthack_insert_rom_patch ( );
-
-        } else {
-            memcpy ( &g_memory.ROM [ 0x04d8 ], &rom_area_04d8, sizeof ( rom_area_04d8 ) );
-            memcpy ( &g_memory.ROM [ 0x04f8 ], &rom_area_04f8, sizeof ( rom_area_04f8 ) );
-        };
-        g_cmthack.load_patch_installed = enabled & 1;
+    if ( enabled ) {
+        cmthack_install_rom_patch ( );
+    } else {
+        memcpy ( &g_memory.ROM [ 0x04d8 ], &g_rom.mz700rom [ 0x04d8 ], 8 );
+        memcpy ( &g_memory.ROM [ 0x04f8 ], &g_rom.mz700rom [ 0x04f8 ], 15 );
     };
+    g_cmthack.load_patch_installed = enabled & 1;
+
     ui_cmt_hack_menu_update ( );
 }
 

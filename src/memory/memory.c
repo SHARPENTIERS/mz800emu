@@ -29,7 +29,8 @@
 #include "z80ex/include/z80ex.h"
 
 #include "mz800.h"
-#include "memory/memory.h"
+#include "memory.h"
+#include "rom.h"
 #include "gdg/gdg.h"
 #include "gdg/vramctrl.h"
 #include "ctc8253/ctc8253.h"
@@ -77,10 +78,6 @@ Z80EX_BYTE *g_memoryVRAM_IV = &g_memory.EXVRAM [ MEMORY_SIZE_VRAM_BANK ];
 #define GDG_DMD_READ_BYTE               gdg_read_dmd_status ( )
 #define GDG_STS_WRITE_BYTE              gdg_write_byte ( addr, value )
 
-extern const Z80EX_BYTE c_ROM_MZ700 [];
-extern const Z80EX_BYTE c_ROM_CGROM [];
-extern const Z80EX_BYTE c_ROM_MZ800 [];
-
 
 /*
  * Studena inicializace pameti:
@@ -91,7 +88,6 @@ extern const Z80EX_BYTE c_ROM_MZ800 [];
 void memory_init ( void ) {
 
     uint32_t i;
-    Z80EX_BYTE *ROM;
     uint16_t *addr;
 
     for ( i = 0; i < 0xffff; i += 4 ) {
@@ -116,14 +112,7 @@ void memory_init ( void ) {
         };
     };
 
-    ROM = g_memory.ROM;
-    memcpy ( ROM, c_ROM_MZ700, MEMORY_SIZE_ROM_MZ700 );
-
-    ROM += sizeof (Z80EX_BYTE ) * MEMORY_SIZE_ROM_CGROM;
-    memcpy ( ROM, c_ROM_CGROM, MEMORY_SIZE_ROM_CGROM );
-
-    ROM += sizeof (Z80EX_BYTE ) * MEMORY_SIZE_ROM_CGROM;
-    memcpy ( ROM, c_ROM_MZ800, MEMORY_SIZE_ROM_MZ800 );
+    rom_init ( );
 
 #if 0
     //    g_memory.RAM [ 0x2000 ] = 0x3e;

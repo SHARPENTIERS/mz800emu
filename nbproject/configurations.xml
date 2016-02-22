@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="97">
+<configurationDescriptor version="95">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
@@ -41,6 +41,7 @@
         </logicalFolder>
         <logicalFolder name="f6" displayName="Memory" projectFiles="true">
           <itemPath>src/memory/memory.h</itemPath>
+          <itemPath>src/memory/rom.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f11" displayName="MZ-800 Debugger" projectFiles="true">
           <itemPath>src/debugger/breakpoints.h</itemPath>
@@ -80,6 +81,7 @@
         <itemPath>src/ui/ui_main.h</itemPath>
         <itemPath>src/ui/ui_qdisk.h</itemPath>
         <itemPath>src/ui/ui_ramdisk.h</itemPath>
+        <itemPath>src/ui/ui_rom.h</itemPath>
         <itemPath>src/ui/ui_utils.h</itemPath>
       </logicalFolder>
       <itemPath>src/build_time.h</itemPath>
@@ -132,11 +134,36 @@
         </logicalFolder>
         <logicalFolder name="f6" displayName="Memory" projectFiles="true">
           <logicalFolder name="f1" displayName="ROM" projectFiles="true">
+            <logicalFolder name="f2" displayName="JSS-1.3" projectFiles="true">
+              <itemPath>src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.c</itemPath>
+              <itemPath>src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.c</itemPath>
+              <itemPath>src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.c</itemPath>
+            </logicalFolder>
+            <logicalFolder name="f4" displayName="JSS-1.5C" projectFiles="true">
+              <itemPath>src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.c</itemPath>
+              <itemPath>src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.c</itemPath>
+              <itemPath>src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.c</itemPath>
+            </logicalFolder>
+            <logicalFolder name="f3" displayName="JSS-1.6A" projectFiles="true">
+              <itemPath>src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.c</itemPath>
+              <itemPath>src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.c</itemPath>
+              <itemPath>src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c</itemPath>
+            </logicalFolder>
+            <logicalFolder name="f1" displayName="WILLY" projectFiles="true">
+              <itemPath>src/memory/ROM/WILLY/ROM_WILLY_MZ700.c</itemPath>
+              <itemPath>src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.c</itemPath>
+              <itemPath>src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.c</itemPath>
+              <itemPath>src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.c</itemPath>
+              <itemPath>src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.c</itemPath>
+              <itemPath>src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.c</itemPath>
+              <itemPath>src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.c</itemPath>
+            </logicalFolder>
             <itemPath>src/memory/ROM/ROM_CGROM.c</itemPath>
             <itemPath>src/memory/ROM/ROM_MZ700.c</itemPath>
             <itemPath>src/memory/ROM/ROM_MZ800.c</itemPath>
           </logicalFolder>
           <itemPath>src/memory/memory.c</itemPath>
+          <itemPath>src/memory/rom.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f11" displayName="MZ-800 Debugger" projectFiles="true">
           <itemPath>src/debugger/breakpoints.c</itemPath>
@@ -176,6 +203,7 @@
         <itemPath>src/ui/ui_main.c</itemPath>
         <itemPath>src/ui/ui_qdisk.c</itemPath>
         <itemPath>src/ui/ui_ramdisk.c</itemPath>
+        <itemPath>src/ui/ui_rom.c</itemPath>
         <itemPath>src/ui/ui_utils.c</itemPath>
       </logicalFolder>
       <itemPath>src/build_time.c</itemPath>
@@ -352,15 +380,99 @@
       </item>
       <item path="src/main.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/ROM/ROM_CGROM.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/memory/ROM/ROM_MZ700.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/memory/ROM/ROM_MZ800.c" ex="false" tool="0" flavor2="10">
       </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/memory.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/memory/memory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/rom.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/rom.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/mz800.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -438,6 +550,10 @@
       <item path="src/ui/ui_ramdisk.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/ui_ramdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_rom.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_rom.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_utils.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -590,15 +706,99 @@
       </item>
       <item path="src/main.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/ROM/ROM_CGROM.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/memory/ROM/ROM_MZ700.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/memory/ROM/ROM_MZ800.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/memory.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/memory/memory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/rom.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/rom.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/mz800.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -676,6 +876,10 @@
       <item path="src/ui/ui_ramdisk.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_ramdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_rom.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_rom.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_utils.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -837,15 +1041,99 @@
       </item>
       <item path="src/main.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/ROM/ROM_CGROM.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/memory/ROM/ROM_MZ700.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/memory/ROM/ROM_MZ800.c" ex="false" tool="0" flavor2="0">
       </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/memory.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/memory/memory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/rom.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/rom.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/mz800.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -923,6 +1211,10 @@
       <item path="src/ui/ui_ramdisk.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_ramdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_rom.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_rom.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_utils.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1090,15 +1382,99 @@
       </item>
       <item path="src/main.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/ROM/ROM_CGROM.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/memory/ROM/ROM_MZ700.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/memory/ROM/ROM_MZ800.c" ex="false" tool="0" flavor2="10">
       </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/memory.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/memory/memory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/rom.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/rom.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/mz800.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -1176,6 +1552,10 @@
       <item path="src/ui/ui_ramdisk.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/ui_ramdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_rom.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_rom.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_utils.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1344,15 +1724,99 @@
       </item>
       <item path="src/main.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/ROM/ROM_CGROM.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/memory/ROM/ROM_MZ700.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/memory/ROM/ROM_MZ800.c" ex="false" tool="0" flavor2="10">
       </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/memory.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/memory/memory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/rom.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/rom.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/mz800.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -1430,6 +1894,10 @@
       <item path="src/ui/ui_ramdisk.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/ui_ramdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_rom.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_rom.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_utils.c" ex="false" tool="0" flavor2="0">
       </item>
