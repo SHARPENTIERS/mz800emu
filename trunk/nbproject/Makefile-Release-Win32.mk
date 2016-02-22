@@ -21,7 +21,7 @@ FC=i686-w64-mingw32-gfortran
 AS=i686-w64-mingw32-as
 
 # Macros
-CND_PLATFORM=i686-w64-mingw32-Linux
+CND_PLATFORM=i686-w64-mingw32-Linux-x86
 CND_DLIB_EXT=so
 CND_CONF=Release-Win32
 CND_DISTDIR=dist
@@ -60,10 +60,27 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_keyboard.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_log.o \
 	${OBJECTDIR}/src/main.o \
+	${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.o \
+	${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.o \
+	${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.o \
+	${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.o \
+	${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.o \
+	${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.o \
+	${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.o \
+	${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.o \
+	${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.o \
 	${OBJECTDIR}/src/memory/ROM/ROM_CGROM.o \
 	${OBJECTDIR}/src/memory/ROM/ROM_MZ700.o \
 	${OBJECTDIR}/src/memory/ROM/ROM_MZ800.o \
+	${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_MZ700.o \
+	${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.o \
+	${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.o \
+	${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.o \
+	${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.o \
+	${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.o \
+	${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.o \
 	${OBJECTDIR}/src/memory/memory.o \
+	${OBJECTDIR}/src/memory/rom.o \
 	${OBJECTDIR}/src/mz800.o \
 	${OBJECTDIR}/src/pio8255/pio8255.o \
 	${OBJECTDIR}/src/pioz80/pioz80.o \
@@ -83,6 +100,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/ui_main.o \
 	${OBJECTDIR}/src/ui/ui_qdisk.o \
 	${OBJECTDIR}/src/ui/ui_ramdisk.o \
+	${OBJECTDIR}/src/ui/ui_rom.o \
 	${OBJECTDIR}/src/ui/ui_utils.o \
 	${OBJECTDIR}/src/z80ex/z80ex.o \
 	${OBJECTDIR}/src/z80ex/z80ex_dasm.o
@@ -240,6 +258,51 @@ ${OBJECTDIR}/src/main.o: src/main.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/main.o src/main.c
 
+${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.o: src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.3
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.o src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.c
+
+${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.o: src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.3
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.o src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.c
+
+${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.o: src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.3
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.o src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.c
+
+${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.o: src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.5C
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.o src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.c
+
+${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.o: src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.5C
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.o src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.c
+
+${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.o: src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.5C
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.o src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.c
+
+${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.o: src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.6A
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.o src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.c
+
+${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.o: src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.6A
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.o src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.c
+
+${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.o: src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.6A
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.o src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c
+
 ${OBJECTDIR}/src/memory/ROM/ROM_CGROM.o: src/memory/ROM/ROM_CGROM.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM
 	${RM} "$@.d"
@@ -255,10 +318,50 @@ ${OBJECTDIR}/src/memory/ROM/ROM_MZ800.o: src/memory/ROM/ROM_MZ800.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/ROM_MZ800.o src/memory/ROM/ROM_MZ800.c
 
+${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_MZ700.o: src/memory/ROM/WILLY/ROM_WILLY_MZ700.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/WILLY
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_MZ700.o src/memory/ROM/WILLY/ROM_WILLY_MZ700.c
+
+${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.o: src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/WILLY
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.o src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.c
+
+${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.o: src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/WILLY
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.o src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.c
+
+${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.o: src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/WILLY
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.o src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.c
+
+${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.o: src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/WILLY
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.o src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.c
+
+${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.o: src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/WILLY
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.o src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.c
+
+${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.o: src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/WILLY
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.o src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.c
+
 ${OBJECTDIR}/src/memory/memory.o: src/memory/memory.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/memory.o src/memory/memory.c
+
+${OBJECTDIR}/src/memory/rom.o: src/memory/rom.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/rom.o src/memory/rom.c
 
 ${OBJECTDIR}/src/mz800.o: src/mz800.c 
 	${MKDIR} -p ${OBJECTDIR}/src
@@ -354,6 +457,11 @@ ${OBJECTDIR}/src/ui/ui_ramdisk.o: src/ui/ui_ramdisk.c
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_ramdisk.o src/ui/ui_ramdisk.c
+
+${OBJECTDIR}/src/ui/ui_rom.o: src/ui/ui_rom.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_rom.o src/ui/ui_rom.c
 
 ${OBJECTDIR}/src/ui/ui_utils.o: src/ui/ui_utils.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui

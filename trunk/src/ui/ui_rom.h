@@ -1,8 +1,8 @@
 /* 
- * File:   cmt_hack.h
+ * File:   ui_rom.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 2. července 2015, 20:50
+ * Created on 22. února 2016, 20:07
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -23,39 +23,19 @@
  * ---------------------------------------------------------------------------
  */
 
-#ifndef CMT_HACK_H
-#define	CMT_HACK_H
+#ifndef UI_ROM_H
+#define	UI_ROM_H
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
 
-#include <stdio.h>
-
-#define CMTHACK_FILENAME_LENGTH 1024
-
-    typedef struct st_CMTHACK {
-        FILE *fp;
-        unsigned load_patch_installed;
-        char filename [ CMTHACK_FILENAME_LENGTH ];
-    } st_CMTHACK;
-
-    extern st_CMTHACK g_cmthack;
-
-    extern void cmthack_reinstall_rom_patch ( void );
-    extern void cmthack_load_rom_patch ( unsigned enabled );
-
-    extern void cmthack_reset ( void );
-    extern void cmthack_init ( void );
-    extern void cmthack_exit ( void );
-
-    extern void cmthack_load_header ( void );
-    extern void cmthack_load_body ( void );
+    extern void ui_rom_menu_update ( void );
 
 
 #ifdef	__cplusplus
 }
 #endif
 
-#endif	/* CMT_HACK_H */
+#endif	/* UI_ROM_H */
 

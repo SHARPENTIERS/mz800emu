@@ -113,7 +113,7 @@ void mz800_exit ( void ) {
     cmthack_exit ( );
     cmt_exit ( );
 #ifdef MZ800_DEBUGGER
-    debugger_exit();
+    debugger_exit ( );
 #endif
 }
 
@@ -743,12 +743,16 @@ void mz800_main ( void ) {
         //        printf ( "0x%04x\n", z80ex_get_reg ( g_mz800.cpu, regPC ) );
 
 #if 0
-        if ( g_mz800.debug_pc ) {
-            printf ( "0x%04x\n", z80ex_get_reg ( g_mz800.cpu, regPC ) );
-            //        } else if ( z80ex_get_reg ( g_mz800.cpu, regPC ) == 0x2f49 ) {
-            //            printf ( "regA: 0x%02x\n", z80ex_get_reg ( g_mz800.cpu, regAF ) >> 8 );
-            //_mz800.debug_pc = 1;
-        };
+        //        if ( g_mz800.debug_pc ) {
+        char mnemonic [ 200 ];
+        Z80EX_WORD addr = z80ex_get_reg ( g_mz800.cpu, regPC );
+        int t_states, t_states2;
+        unsigned bytecode_length = z80ex_dasm ( mnemonic, 200 - 1, 0, &t_states, &t_states2, debugger_dasm_read_cb, addr, NULL );
+        printf ( "0x%04x\t%s\n", addr, mnemonic );
+        //        } else if ( z80ex_get_reg ( g_mz800.cpu, regPC ) == 0x2f49 ) {
+        //            printf ( "regA: 0x%02x\n", z80ex_get_reg ( g_mz800.cpu, regAF ) >> 8 );
+        //_mz800.debug_pc = 1;
+        //        };
 #endif
 
 
