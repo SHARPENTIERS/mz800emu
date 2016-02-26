@@ -717,7 +717,7 @@ void ui_breakpoints_parse_cfg ( st_CFGROOT *cfgroot, GtkTreeModel *model, GtkTre
         while ( *childs == ' ' ) {
             childs++;
         };
-        if ( *childs == 0x00 ) break;
+        if ( ( *childs == 0x00 ) || ( *childs < '0' ) || ( *childs > '9' ) ) break;
         unsigned id_digits = 0;
         unsigned value = 0;
         do {
