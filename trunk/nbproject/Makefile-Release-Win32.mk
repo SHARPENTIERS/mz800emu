@@ -69,6 +69,9 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.o \
 	${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.o \
 	${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.o \
+	${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.o \
+	${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.o \
+	${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.o \
 	${OBJECTDIR}/src/memory/ROM/ROM_CGROM.o \
 	${OBJECTDIR}/src/memory/ROM/ROM_MZ700.o \
 	${OBJECTDIR}/src/memory/ROM/ROM_MZ800.o \
@@ -302,6 +305,21 @@ ${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.o: src/memory/ROM/JSS-1.6
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.6A
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.o src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c
+
+${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.o: src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.8C
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.o src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.c
+
+${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.o: src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.8C
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.o src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.c
+
+${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.o: src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.8C
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.o src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.c
 
 ${OBJECTDIR}/src/memory/ROM/ROM_CGROM.o: src/memory/ROM/ROM_CGROM.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM

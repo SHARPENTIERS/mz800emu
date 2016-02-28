@@ -149,6 +149,11 @@
               <itemPath>src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.c</itemPath>
               <itemPath>src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c</itemPath>
             </logicalFolder>
+            <logicalFolder name="f5" displayName="JSS-1.8C" projectFiles="true">
+              <itemPath>src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.c</itemPath>
+              <itemPath>src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.c</itemPath>
+              <itemPath>src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.c</itemPath>
+            </logicalFolder>
             <logicalFolder name="f1" displayName="WILLY" projectFiles="true">
               <itemPath>src/memory/ROM/WILLY/ROM_WILLY_MZ700.c</itemPath>
               <itemPath>src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.c</itemPath>
@@ -421,6 +426,21 @@
             flavor2="0">
       </item>
       <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.c"
             ex="false"
             tool="0"
             flavor2="0">
@@ -747,6 +767,21 @@
             flavor2="0">
       </item>
       <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.c"
             ex="false"
             tool="0"
             flavor2="0">
@@ -1082,6 +1117,21 @@
             flavor2="0">
       </item>
       <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.c"
             ex="false"
             tool="0"
             flavor2="0">
@@ -1427,6 +1477,21 @@
             tool="0"
             flavor2="0">
       </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/ROM/ROM_CGROM.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/memory/ROM/ROM_MZ700.c" ex="false" tool="0" flavor2="10">
@@ -1765,6 +1830,21 @@
             flavor2="0">
       </item>
       <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.c"
             ex="false"
             tool="0"
             flavor2="0">
