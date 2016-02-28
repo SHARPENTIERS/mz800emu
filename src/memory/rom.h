@@ -52,6 +52,9 @@ extern "C" {
     extern const Z80EX_BYTE c_ROM_JSS106A_CGROM [];
     extern const Z80EX_BYTE c_ROM_JSS106A_MZ800 [];
 
+    extern const Z80EX_BYTE c_ROM_JSS108C_MZ700 [];
+    extern const Z80EX_BYTE c_ROM_JSS108C_CGROM [];
+    extern const Z80EX_BYTE c_ROM_JSS108C_MZ800 [];
 
     extern const Z80EX_BYTE c_ROM_WILLY_MZ700 [];
 
@@ -69,6 +72,7 @@ extern "C" {
         ROMTYPE_JSS103,
         ROMTYPE_JSS105C,
         ROMTYPE_JSS106A,
+        ROMTYPE_JSS108C,
         ROMTYPE_WILLY_EN,
         ROMTYPE_WILLY_GE,
         ROMTYPE_WILLY_JAP,
