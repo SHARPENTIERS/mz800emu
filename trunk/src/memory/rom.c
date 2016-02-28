@@ -77,6 +77,10 @@ void rom_install ( en_ROMTYPE romtype ) {
             rom_install_predefined ( c_ROM_JSS106A_MZ700, c_ROM_JSS106A_CGROM, c_ROM_JSS106A_MZ800 );
             break;
 
+        case ROMTYPE_JSS108C:
+            rom_install_predefined ( c_ROM_JSS108C_MZ700, c_ROM_JSS108C_CGROM, c_ROM_JSS108C_MZ800 );
+            break;
+
         case ROMTYPE_WILLY_EN:
             rom_install_predefined ( c_ROM_WILLY_MZ700, c_ROM_WILLY_en_CGROM, c_ROM_WILLY_en_MZ800 );
             break;
@@ -119,6 +123,7 @@ void rom_init ( void ) {
             ROMTYPE_JSS103, "JSS103",
             ROMTYPE_JSS105C, "JSS105C",
             ROMTYPE_JSS106A, "JSS106A",
+            ROMTYPE_JSS106A, "JSS108C",
             ROMTYPE_WILLY_EN, "WILLY_EN",
             ROMTYPE_WILLY_GE, "WILLY_GE",
             ROMTYPE_WILLY_JAP, "WILLY_JAP",
