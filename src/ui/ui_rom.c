@@ -39,6 +39,7 @@ void ui_rom_menu_update ( void ) {
     gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_jss103" ), FALSE );
     gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_jss105c" ), FALSE );
     gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_jss106a" ), FALSE );
+    gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_jss108c" ), FALSE );
     gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_willy_en" ), FALSE );
     gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_willy_ge" ), FALSE );
     gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_willy_jap" ), FALSE );
@@ -64,6 +65,10 @@ void ui_rom_menu_update ( void ) {
 
         case ROMTYPE_JSS106A:
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_jss106a" ), TRUE );
+            break;
+
+        case ROMTYPE_JSS108C:
+            gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_jss108c" ), TRUE );
             break;
 
         case ROMTYPE_WILLY_EN:
@@ -106,6 +111,8 @@ G_MODULE_EXPORT void on_rom_changed ( GtkCheckMenuItem *menuitem, gpointer data 
         rom_reinstall ( ROMTYPE_JSS105C );
     } else if ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_rom_jss106a" ) ) ) {
         rom_reinstall ( ROMTYPE_JSS106A );
+    } else if ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_rom_jss108c" ) ) ) {
+        rom_reinstall ( ROMTYPE_JSS108C );
     } else if ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_rom_willy_en" ) ) ) {
         rom_reinstall ( ROMTYPE_WILLY_EN );
     } else if ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_rom_willy_ge" ) ) ) {

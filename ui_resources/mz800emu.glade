@@ -291,39 +291,6 @@
             <child>
               <placeholder/>
             </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -1191,8 +1158,18 @@ From time when data were real zeros and ones and computers were
                           <object class="GtkRadioMenuItem" id="menuitem_rom_jss105c">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">JSS v1.05_C for MR-1R18 Compatibile MemCards</property>
+                            <property name="label" translatable="yes">JSS v1.05C for MR-1R18 Compatibile MemCards</property>
                             <property name="use_underline">True</property>
+                            <property name="draw_as_radio">True</property>
+                            <property name="group">radiogrp_rom</property>
+                            <signal name="toggled" handler="on_rom_changed" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkRadioMenuItem" id="menuitem_rom_jss108c">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">JSS v1.08_C for MR-1R18 Compatibile MemCards ?</property>
                             <property name="draw_as_radio">True</property>
                             <property name="group">radiogrp_rom</property>
                             <signal name="toggled" handler="on_rom_changed" swapped="no"/>
