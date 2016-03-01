@@ -54,8 +54,9 @@ void ui_rom_menu_update ( void ) {
     gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_willy_jap" ), FALSE );
     gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_user_defined" ), FALSE );
 
-    gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_rom_user_defined" ), FALSE );
-    gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_rom_user_settings" ), FALSE );
+    gtk_widget_set_visible ( ui_get_widget ( "separatormenuitem_rom_user_defined" ), FALSE );
+    gtk_widget_set_visible ( ui_get_widget ( "menuitem_rom_user_defined" ), FALSE );
+    gtk_widget_set_visible ( ui_get_widget ( "menuitem_rom_user_settings" ), FALSE );
 
 
     switch ( g_rom.type ) {
@@ -134,6 +135,12 @@ G_MODULE_EXPORT void on_rom_changed ( GtkCheckMenuItem *menuitem, gpointer data 
 }
 
 
+void ui_rom_settings_open_window ( void ) {
+    GtkWidget *window = ui_get_widget ( "dialog_rom_user_settings" );
+    gtk_widget_show ( window );
+}
+
+
 G_MODULE_EXPORT void on_menuitem_rom_user_settings_activate ( GtkMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
@@ -142,6 +149,7 @@ G_MODULE_EXPORT void on_menuitem_rom_user_settings_activate ( GtkMenuItem *menui
 #endif
 
     printf ( "%s() - NOT IMPLEMENTED!\n", __func__ );
+    //ui_rom_settings_open_window ( );
 }
 
 
