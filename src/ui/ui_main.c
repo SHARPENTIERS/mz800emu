@@ -511,7 +511,9 @@ unsigned ui_open_file ( char *filename, char *predefined_filename, unsigned max_
         g_ui.last_filetype = filetype;
 
         if ( strlen ( (char*) gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) ) ) < max_filename_size ) {
-            strncpy ( filename, (char*) gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) ), max_filename_size );
+            gchar *fname = gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) );
+            strncpy ( filename, (char*) fname, max_filename_size );
+            g_free ( fname );
             filename [ max_filename_size - 1 ] = 0x00;
             uiret = UIRET_OK;
             break;

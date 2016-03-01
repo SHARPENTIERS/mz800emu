@@ -47,7 +47,14 @@ extern "C" {
 #include "z80ex/include/z80ex.h"
 
 
-#define QDISK_IMAGE_SIZE        61455
+#define QDISK_FORMAT_SIZE            61454
+    
+    /*
+     *  Podle provedenych mereni se povedlo na QD zapsat nad ramec formatu
+     * jeste jeden MZF o velikosti 0x1a80
+     * 
+     */
+#define QDISK_IMAGE_MAX_SIZE        ( QDISK_FORMAT_SIZE + 84 + 0x1a80 )
 
 #define QDISK_DISCONNECTED     0
 #define QDISK_CONNECTED        1
@@ -70,11 +77,11 @@ extern "C" {
 #define QDISKK_FILENAME_LENGTH 1024
 #endif
 
-    
+
 #define QDISK_VIRT_TEMP_FNAME   "qd_temp.tmp"
-    
+
 #define QDISK_MZF_FILENAME_LENGTH   17
-    
+
     typedef enum en_QDSIO_ADDR {
         QDSIO_ADDR_DATA_A = 0,
         QDSIO_ADDR_DATA_B,
