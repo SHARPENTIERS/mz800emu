@@ -27,6 +27,7 @@
 #include <stdlib.h>
 
 #include "main.h"
+#include "cfgmain.h"
 
 #include "z80ex/include/z80ex.h"
 
@@ -182,6 +183,18 @@ void mz800_ei_cb ( Z80EX_CONTEXT *cpu, void *user_data ) {
 
 
 void mz800_init ( void ) {
+
+    CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "MZ800" );
+    CFGELM *elm;
+    
+    elm = cfgmodule_register_new_element ( cmod, "development_mode", CFGENTYPE_KEYWORD, DEVELMODE_NO,
+            DEVELMODE_NO, "NO",
+            DEVELMODE_YES, "YES",
+            -1 );
+    cfgelement_set_handlers ( elm, (void*) &g_mz800.development_mode, (void*) &g_mz800.development_mode );
+
+    cfgmodule_parse ( cmod );
+    cfgmodule_propagate ( cmod );
 
     mz800_set_cpu_speed ( MZ800_EMULATION_SPEED_NORMAL );
     //mz800_set_cpu_speed ( MZ800_EMULATION_SPEED_MAX );

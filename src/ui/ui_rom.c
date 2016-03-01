@@ -29,11 +29,20 @@
 #include "ui_rom.h"
 
 #include "memory/rom.h"
+#include "mz800.h"
 
 
 void ui_rom_menu_update ( void ) {
 
     LOCK_UICALLBACKS ( );
+
+
+    gboolean devel_visible = ( g_mz800.development_mode == DEVELMODE_YES ) ? TRUE : FALSE;
+
+    gtk_widget_set_visible ( ui_get_widget ( "menuitem_rom_jss103" ), devel_visible );
+    gtk_widget_set_visible ( ui_get_widget ( "menuitem_rom_jss105c" ), devel_visible );
+    gtk_widget_set_visible ( ui_get_widget ( "separatormenuitem_rom_devel1" ), devel_visible );
+
 
     gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_standard" ), FALSE );
     gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_jss103" ), FALSE );
@@ -101,7 +110,6 @@ G_MODULE_EXPORT void on_rom_changed ( GtkCheckMenuItem *menuitem, gpointer data 
 #ifdef UI_TOPMENU_IS_WINDOW
     ui_hide_main_menu ( );
 #endif
-
 
     if ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_rom_standard" ) ) ) {
         rom_reinstall ( ROMTYPE_STANDARD );

@@ -118,17 +118,30 @@ void rom_init ( void ) {
 
     CFGELM *elm;
 
-    elm = cfgmodule_register_new_element ( cmod, "rom_type", CFGENTYPE_KEYWORD, ROMTYPE_STANDARD,
-            ROMTYPE_STANDARD, "STANDARD",
-            ROMTYPE_JSS103, "JSS103",
-            ROMTYPE_JSS105C, "JSS105C",
-            ROMTYPE_JSS106A, "JSS106A",
-            ROMTYPE_JSS106A, "JSS108C",
-            ROMTYPE_WILLY_EN, "WILLY_EN",
-            ROMTYPE_WILLY_GE, "WILLY_GE",
-            ROMTYPE_WILLY_JAP, "WILLY_JAP",
-            ROMTYPE_USER_DEFINED, "USER_DEFINED",
-            -1 );
+    if ( g_mz800.development_mode == DEVELMODE_YES ) {
+        elm = cfgmodule_register_new_element ( cmod, "rom_type", CFGENTYPE_KEYWORD, ROMTYPE_STANDARD,
+                ROMTYPE_STANDARD, "STANDARD",
+                ROMTYPE_JSS103, "JSS103",
+                ROMTYPE_JSS105C, "JSS105C",
+                ROMTYPE_JSS106A, "JSS106A",
+                ROMTYPE_JSS108C, "JSS108C",
+                ROMTYPE_WILLY_EN, "WILLY_EN",
+                ROMTYPE_WILLY_GE, "WILLY_GE",
+                ROMTYPE_WILLY_JAP, "WILLY_JAP",
+                ROMTYPE_USER_DEFINED, "USER_DEFINED",
+                -1 );
+    } else {
+        elm = cfgmodule_register_new_element ( cmod, "rom_type", CFGENTYPE_KEYWORD, ROMTYPE_STANDARD,
+                ROMTYPE_STANDARD, "STANDARD",
+                ROMTYPE_JSS106A, "JSS106A",
+                ROMTYPE_JSS108C, "JSS108C",
+                ROMTYPE_WILLY_EN, "WILLY_EN",
+                ROMTYPE_WILLY_GE, "WILLY_GE",
+                ROMTYPE_WILLY_JAP, "WILLY_JAP",
+                ROMTYPE_USER_DEFINED, "USER_DEFINED",
+                -1 );
+    };
+
     cfgelement_set_handlers ( elm, (void*) &g_rom.type, (void*) &g_rom.type );
 
     cfgmodule_parse ( cmod );
