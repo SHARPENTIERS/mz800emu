@@ -131,7 +131,7 @@ void qdisk_virt_close_mzf ( ) {
 
 void qdisk_virt_open_mzf_for_read ( const char *dirpath, const char *filename ) {
     const char *filepath = ui_utils_build_filepath ( dirpath, filename );
-    if ( !( g_qdisk.mzf_fp = ui_utils_fopen ( filepath, FS_LAYER_FMODE_RW ) ) ) {
+    if ( FS_LAYER_FR_OK != FS_LAYER_FOPEN ( g_qdisk.mzf_fp, (char*) filepath, FS_LAYER_FMODE_RW ) ) {
         DBGPRINTF ( DBGERR, "fopen()\n" );
 #ifdef COMPILE_FOR_EMULATOR
         ui_show_error ( "%s() - Can't create open file '%s': %s", __func__, filepath, strerror ( errno ) );
@@ -287,7 +287,9 @@ void qdisk_create_image ( char *filename ) {
 
     FILE *fp;
 
-    if ( !( fp = ui_utils_fopen ( filename, FS_LAYER_FMODE_W ) ) ) {
+    printf ( "\nQuick Disk: create new QD image '%s'\n", filename );
+    
+    if ( FS_LAYER_FR_OK != FS_LAYER_FOPEN ( fp, filename, FS_LAYER_FMODE_W ) ) {
         DBGPRINTF ( DBGERR, "fopen()\n" );
 #ifdef COMPILE_FOR_EMULATOR
         ui_show_error ( "%s() - Can't create file '%s': %s", __func__, filename, strerror ( errno ) );
@@ -301,7 +303,7 @@ void qdisk_create_image ( char *filename ) {
     unsigned i;
     unsigned len;
 
-    for ( i = QDISK_IMAGE_SIZE; i >= QDISK_CREATE_BLOCK_SIZE; i -= QDISK_CREATE_BLOCK_SIZE ) {
+    for ( i = QDISK_FORMAT_SIZE; i >= QDISK_CREATE_BLOCK_SIZE; i -= QDISK_CREATE_BLOCK_SIZE ) {
         if ( FS_LAYER_FR_OK != FS_LAYER_FWRITE ( fp, &block, sizeof ( block ), &len ) ) {
             DBGPRINTF ( DBGERR, "fwrite() error\n" );
         };
@@ -390,7 +392,7 @@ void qdisk_open_image ( char *filepath ) {
                 read_only_flag = 0;
             };
 
-            if ( ( g_qdisk.image_fp = ui_utils_fopen ( filepath, open_file_mode ) ) ) {
+            if ( FS_LAYER_FR_OK == FS_LAYER_FOPEN ( g_qdisk.image_fp, filepath, open_file_mode ) ) {
                 g_qdisk.status = QDSTS_IMG_READY | QDSTS_HEAD_HOME | read_only_flag;
 
 #ifdef COMPILE_FOR_EMULATOR
@@ -439,7 +441,7 @@ void qdisk_open ( void ) {
 void qdisk_mount ( void ) {
 
     if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
-        char window_title[] = "Select MZQ file to open or type new image name";
+        char window_title[] = "Select existing MZQ file to open or type new .mzq filename to create new image";
         char filename [ QDISKK_FILENAME_LENGTH ];
 
         unsigned err;
@@ -468,7 +470,7 @@ void qdisk_mount ( void ) {
             };
 
             if ( err ) {
-                ui_show_error ( "%s() - Bad mzq image file name '%s'", __func__, filename );
+                ui_show_error ( "%s() - Bad MZQ image file name '%s'\nFilename width the \".mzq\" extension is required for creating new a QD image.", __func__, filename );
             };
 
         } while ( err );
@@ -554,8 +556,6 @@ void qdisk_init ( void ) {
     qdisk_open ( );
 
     ui_qdisk_menu_update ( );
-
-    //printf ( "QDISK VIRT files = %d\n", qdisk_virt_scan_directory ( ) );
 }
 
 
@@ -573,6 +573,13 @@ Z80EX_BYTE qdisk_read_byte_from_drive ( void ) {
         return 0xff;
     };
 
+
+    if ( QDISK_IMAGE_MAX_SIZE <= g_qdisk.image_position ) {
+        if ( QDISK_IMAGE_MAX_SIZE == g_qdisk.image_position ) g_qdisk.image_position++;
+        return 0xff;
+    };
+
+
     if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
 
         FS_LAYER_FREAD ( g_qdisk.image_fp, &retval, 1, &readlen );
@@ -581,9 +588,7 @@ Z80EX_BYTE qdisk_read_byte_from_drive ( void ) {
             DBGPRINTF ( DBGERR, "fread() error\n" );
         };
 
-        if ( QDISK_IMAGE_SIZE == g_qdisk.image_position++ ) {
-            g_qdisk.image_position = 0;
-        };
+        g_qdisk.image_position++;
 
     } else {
 
@@ -748,13 +753,19 @@ void qdisk_write_byte_into_drive ( Z80EX_BYTE value ) {
 
     if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
 
+        if ( QDISK_IMAGE_MAX_SIZE <= g_qdisk.image_position ) {
+            if ( QDISK_IMAGE_MAX_SIZE == g_qdisk.image_position ) g_qdisk.image_position++;
+            return;
+        };
+
         if ( FS_LAYER_FR_OK != FS_LAYER_FWRITE ( g_qdisk.image_fp, &value, 1, &len ) ) {
             DBGPRINTF ( DBGERR, "fwrite() error\n" );
-        }
-
-        if ( QDISK_IMAGE_SIZE == g_qdisk.image_position++ ) {
-            g_qdisk.image_position = 0;
+#ifdef COMPILE_FOR_EMULATOR
+            ui_show_error ( "%s():%d - fwrite error: %s", __func__, __LINE__, strerror ( errno ) );
+#endif
         };
+
+        g_qdisk.image_position++;
 
     } else {
 
@@ -958,6 +969,13 @@ Z80EX_BYTE qdisk_read_byte ( en_QDSIO_ADDR SIO_addr ) {
                 channel->Rreg [ QDSIO_REGADDR_0 ] |= 0x20;
             };
 
+            /* pokud jsme prekrocili velikost media, tk zahlasime CRC error */
+            if ( QDISK_IMAGE_MAX_SIZE < g_qdisk.image_position ) {
+                channel->Rreg [ QDSIO_REGADDR_1 ] |= 0x40; /* CTS 1: CRC error */
+            } else {
+                channel->Rreg [ QDSIO_REGADDR_1 ] &= ~0x40;
+            };
+
             retval = channel->Rreg [ channel->REG_addr & 0x03 ];
 
             //printf ( "%s(): channel: '%c', port: 0x%02x, retval: 0x%02x, (PC = 0x%04x)\n", __func__, channel->name, SIO_addr + 0xf4, retval, z80ex_get_reg ( g_mz800.cpu, regPC ) );
@@ -1080,7 +1098,8 @@ void qdisk_write_byte ( en_QDSIO_ADDR SIO_addr, Z80EX_BYTE value ) {
                                     if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( g_qdisk.image_fp, 0 ) ) {
                                         DBGPRINTF ( DBGERR, "fseek() error\n" );
                                     };
-
+                                    
+                                    FS_LAYER_FSYNC ( g_qdisk.image_fp );
                                 };
                             };
 
@@ -1124,7 +1143,7 @@ void qdisk_write_byte ( en_QDSIO_ADDR SIO_addr, Z80EX_BYTE value ) {
                                             char *dirpath = cfgelement_get_text_value ( g_elm_virt_fp );
                                             const char *filepath = ui_utils_build_filepath ( dirpath, QDISK_VIRT_TEMP_FNAME );
 
-                                            if ( !( g_qdisk.mzf_fp = ui_utils_fopen ( filepath, FS_LAYER_FMODE_W ) ) ) {
+                                            if ( FS_LAYER_FR_OK != FS_LAYER_FOPEN ( g_qdisk.mzf_fp, (char*) filepath, FS_LAYER_FMODE_W ) ) {
                                                 DBGPRINTF ( DBGERR, "fopen()\n" );
 #ifdef COMPILE_FOR_EMULATOR
                                                 ui_show_error ( "%s() - Can't create open file '%s': %s", __func__, filepath, strerror ( errno ) );
