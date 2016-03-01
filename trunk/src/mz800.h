@@ -69,6 +69,11 @@ extern "C" {
 #define MZ800_EMULATION_SPEED_NORMAL    0
 #define MZ800_EMULATION_SPEED_MAX       1
 
+    typedef enum en_DEVELMODE {
+        DEVELMODE_NO = 0,
+        DEVELMODE_YES,
+    } en_DEVELMODE;
+
     typedef struct st_mz800 {
         Z80EX_CONTEXT *cpu; /* Model Z80ex */
 
@@ -92,6 +97,8 @@ extern "C" {
         unsigned status_emulation_speed;
 
         unsigned interrupt;
+        
+        en_DEVELMODE development_mode;
 
     } st_mz800;
 
