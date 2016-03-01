@@ -1,64 +1,55 @@
 
+2016-03-01
+
+	Released version 1.0.3
+
+	- bugfix: in the Pezik ramdisk
+	- added breakpoints and memory dump viewer
+	- added Quick Disk emulation
+
+	- added an additional Sharp ROM's, possible to switch between:
+
+		Standard MZ-800 ROM
+		JSS v1.08C - for MR-1R18 compatibile ramdisk
+		JSS v1.06A - for the Pezik (0x0e8 - 0x0ef) ramdisk
+		WILLY English
+		WILLY German
+		WILLY Japanese
+
+	- many litle improvements and bugfixes
+
+
+2015-09-23
+
+	Released version 1.0.2
+
+	- trivial bugfix: locale encoded errors and warning messages in console
+        - trivial bugxix: step mode in debugger sometime stepped over multiple lines
+	- a little improved emulation speed
+        - inline assembler bugfix: fixed instructions with relative
+        - inline assembler bug fixed of generating instruction with relative
+        - value (JR %, DJNZ %, etc.)
+
+
+
+2015-09-20
+	
+	Released version 1.0.1
+
+
+	Bugfix:
+		- trivial bugfix in memory allocation
+		- added loging into error.log
+ 		- localized file names and paths are now fully supported
+
+        This is tested only in my Czech localization of Windows 7.
+
+        Does it work in other codepages? For example in the Japanese localization of Windows?
+
+
 
 2015-09-17
 
 	Released version 1.0
 
-2015-09-18
 
-	- trivial bugfix in memory allocation
-	- added loging into error.log
-
-2015-09-20
-
-	Bugfix: localized file names and paths are now fully supported.
-
-	This is tested only in my Czech localization of Windows 7.
-
-	Does it work in other codepages? For example in the Japanese localization of Windows? 
-
-	PLEASE anybody: can you send me any report about this? 
-	To discusions on the SF, or to my email hucik@ordoz.com
-
-	Released version 1.0.1
-
-
-2015-09-21
-
-	- trivial bugfix: locale encoded errors and warning messages in console
-	- trivial bugxix: step mode in debugger sometime stepped over multiple lines
-
-2015-09-23
-
-	- a little improved emulation speed
-	- inline assembler bugfix: fixed instructions with relative
-	- inline assembler bug fixed of generating instruction with relative value (JR %, DJNZ %, etc.)
-
-	Released version 1.0.2
-
-2015-09-28
-
-	Litle improvement in debugger stepping: screen is updated only in
-	part, that corresponds to the actual position of the beam.
-
-
-2015-09-29
-
-	trivial bugfix - debugger: incorrectly displayed value of 7. bit in the refresh register
-
-2015-10-20
-
-	First version with the basic breakpoints.
-
-2015-10-22
-
-	- small improvements in UI - remember the position of windows in session
-	- WD279x: added check of DSK header
-
-2015-10-22
-
-	Debugger: added option to turn off the animated updates.
-
-2015-10-27
-
-	Created memory dump viewer.
