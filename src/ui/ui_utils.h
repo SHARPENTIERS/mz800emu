@@ -35,6 +35,10 @@ extern "C" {
 
 
     extern FILE* ui_utils_fopen ( const char *filename_in_utf8, const char *mode );
+    
+    extern unsigned int ui_utils_fread ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh );
+    extern unsigned int ui_utils_fwrite ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh );
+    
     extern int ui_utils_access ( const char *filename_in_utf8, int type );
 
     typedef GDir UI_UTILS_DIR_HANDLE;

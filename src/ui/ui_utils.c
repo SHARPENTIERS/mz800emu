@@ -48,6 +48,24 @@ FILE* ui_utils_fopen ( const char *filename_in_utf8, const char *mode ) {
 }
 
 
+unsigned int ui_utils_fread ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh ) {
+#ifdef WIN32
+    /*  stdio bug projevujici se pri "RW" mode :( */
+    fseek ( fh, ftell ( fh ), SEEK_SET );
+#endif
+    return fread ( buffer, size, count_bytes, fh );
+}
+
+
+unsigned int ui_utils_fwrite ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh ) {
+#ifdef WIN32
+    /*  stdio bug projevujici se pri "RW" mode :( */
+    fseek ( fh, ftell ( fh ), SEEK_SET );
+#endif
+    return fwrite ( buffer, size, count_bytes, fh );
+}
+
+
 int ui_utils_access ( const char *filename_in_utf8, int type ) {
     char *filename_in_locale;
     filename_in_locale = g_locale_from_utf8 ( filename_in_utf8, -1, NULL, NULL, NULL );
@@ -101,12 +119,12 @@ const gchar* ui_utils_get_error_message ( void ) {
 
 
 int ui_utils_rename_file ( char *path, char *oldname, char *newname ) {
-    
+
     gchar* filepath1 = g_build_filename ( path, oldname, (gchar*) NULL );
     gchar* filepath2 = g_build_filename ( path, newname, (gchar*) NULL );
-    
+
     int retval = g_rename ( filepath1, filepath2 );
-    
+
     ui_utils_free ( (void*) filepath1 );
     ui_utils_free ( (void*) filepath2 );
 

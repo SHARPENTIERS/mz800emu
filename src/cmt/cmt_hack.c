@@ -239,7 +239,7 @@ void cmthack_load_header ( void ) {
     /* precteme prvnich 128 bajtu z MZF souboru a ulozime je do RAM na adresu z regHL */
 
     reg_hl = z80ex_get_reg ( g_mz800.cpu, regHL );
-    if ( 0x80 != fread ( &g_memory.RAM [ reg_hl ], 1, 0x80, g_cmthack.fp ) ) {
+    if ( 0x80 != ui_utils_fread ( &g_memory.RAM [ reg_hl ], 1, 0x80, g_cmthack.fp ) ) {
         /* Vadny soubor: nastavit Err + Checksum */
         cmthack_result ( LOADRET_ERROR );
         fclose ( g_cmthack.fp );
@@ -281,7 +281,7 @@ void cmthack_load_body ( void ) {
             length = reg_bc;
         };
 
-        if ( length != fread ( &g_memory.RAM [ reg_hl ], 1, length, g_cmthack.fp ) ) {
+        if ( length != ui_utils_fread ( &g_memory.RAM [ reg_hl ], 1, length, g_cmthack.fp ) ) {
             /* Vadny soubor: nastavit Err + Checksum */
             cmthack_result ( LOADRET_ERROR );
             fclose ( g_cmthack.fp );

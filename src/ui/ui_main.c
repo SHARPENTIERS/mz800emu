@@ -55,6 +55,7 @@
 
 #include "main.h"
 #include "ui_main.h"
+#include "ui_utils.h"
 #include "iface_sdl/iface_sdl.h"
 #include "ui_display.h"
 
@@ -335,7 +336,7 @@ void ui_show_error_dialog ( char *error_message ) {
 
 void ui_write_errorlog ( char *lvl, char *msg ) {
     FILE *fp;
-    if ( NULL == ( fp = fopen ( UI_ERRORLOG_FILE, "a" ) ) ) {
+    if ( NULL == ( fp = ui_utils_fopen ( UI_ERRORLOG_FILE, "a" ) ) ) {
         fprintf ( stderr, "%s():%d - '%s' - fopen error: %s", __func__, __LINE__, UI_ERRORLOG_FILE, strerror ( errno ) );
     } else {
         fprintf ( fp, "%s %s:\t%s\n", cfgmain_create_timestamp ( ), lvl, msg );
