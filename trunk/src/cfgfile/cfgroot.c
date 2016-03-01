@@ -34,6 +34,7 @@
 #include "cfgcommon.h"
 
 #include "ui/ui_main.h"
+#include "ui/ui_utils.h"
 
 
 /*
@@ -145,7 +146,7 @@ void cfgroot_save ( st_CFGROOT *r ) {
     printf ( "Save config into: %s\n", r->filename );
 
 
-    if ( !( r->ini_fp = fopen ( r->filename, "w" ) ) ) {
+    if ( !( r->ini_fp = ui_utils_fopen ( r->filename, "w" ) ) ) {
         ui_show_error ( "%s() - Can't open file '%s' to write: %s", __func__, r->filename, strerror ( errno ) );
         return;
     };

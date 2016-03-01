@@ -227,12 +227,12 @@ int cmt_open_mzf_file ( char *filename ) {
 
     fseek ( g_cmt.fh, 0, SEEK_SET );
 
-    if ( 1 != fread ( &g_cmt.mzf_filetype, 1, 1, g_cmt.fh ) ) {
+    if ( 1 != ui_utils_fread ( &g_cmt.mzf_filetype, 1, 1, g_cmt.fh ) ) {
         ui_show_error ( "Can't read MZ filetype from MZF file '%s': %s\n", filename, strerror ( errno ) );
         return RET_CMT_ERROR;
     };
 
-    if ( sizeof ( g_cmt.mzf_filename ) != fread ( &g_cmt.mzf_filename, 1, sizeof ( g_cmt.mzf_filename ), g_cmt.fh ) ) {
+    if ( sizeof ( g_cmt.mzf_filename ) != ui_utils_fread ( &g_cmt.mzf_filename, 1, sizeof ( g_cmt.mzf_filename ), g_cmt.fh ) ) {
         ui_show_error ( "Can't read MZ filename from MZF file '%s': %s\n", filename, strerror ( errno ) );
         return RET_CMT_ERROR;
     };
@@ -257,20 +257,20 @@ int cmt_open_mzf_file ( char *filename ) {
         i++;
     };
 
-    if ( sizeof ( c ) != fread ( &c, 1, sizeof ( c ), g_cmt.fh ) ) {
+    if ( sizeof ( c ) != ui_utils_fread ( &c, 1, sizeof ( c ), g_cmt.fh ) ) {
         ui_show_error ( "Can't read MZ size from MZF file '%s': %s\n", filename, strerror ( errno ) );
         return RET_CMT_ERROR;
     };
     g_cmt.mzf_size = ( c [ 1 ] << 8 ) | c [ 0 ];
 
-    if ( sizeof ( c ) != fread ( &c, 1, sizeof ( c ), g_cmt.fh ) ) {
+    if ( sizeof ( c ) != ui_utils_fread ( &c, 1, sizeof ( c ), g_cmt.fh ) ) {
         ui_show_error ( "Can't read MZ exec from MZF file '%s': %s\n", filename, strerror ( errno ) );
         return RET_CMT_ERROR;
     };
     g_cmt.mzf_exec = ( c [ 1 ] << 8 ) | c [ 0 ];
 
 
-    if ( sizeof ( c ) != fread ( &c, 1, sizeof ( c ), g_cmt.fh ) ) {
+    if ( sizeof ( c ) != ui_utils_fread ( &c, 1, sizeof ( c ), g_cmt.fh ) ) {
         ui_show_error ( "Can't read MZ start addr from MZF file '%s': %s\n", filename, strerror ( errno ) );
         return RET_CMT_ERROR;
     };
@@ -478,7 +478,7 @@ void cmt_step ( void ) {
                         if ( g_cmt.data_bit_position == 7 ) {
                             if ( g_cmt.bit_counter > 1 ) {
                                 /* nacist dalsi bajt */
-                                if ( 1 != fread ( &g_cmt.data, 1, 1, g_cmt.fh ) ) {
+                                if ( 1 != ui_utils_fread ( &g_cmt.data, 1, 1, g_cmt.fh ) ) {
                                     ui_show_error ( "Can't read MZF file '%s': %s\n", g_cmt.filename, strerror ( errno ) );
                                     cmt_stop ( );
                                     return;
