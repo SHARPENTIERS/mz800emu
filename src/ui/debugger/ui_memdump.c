@@ -176,11 +176,12 @@ void ui_memdump_load ( void ) {
             break;
 
         case MEMSRC_PEZIK_E8:
-            MEM = &g_ramdisk.pezik [ RAMDISK_PEZIK_E8 ].memory [ g_uimemdump.mr1z18_bank << 16 ];
+            
+            MEM = &g_ramdisk.pezik [ RAMDISK_PEZIK_E8 ].memory [ g_uimemdump.pezik_e8_bank << 16 ];
             break;
 
         case MEMSRC_PEZIK_68:
-            MEM = &g_ramdisk.pezik [ RAMDISK_PEZIK_68 ].memory [ g_uimemdump.mr1z18_bank << 16 ];
+            MEM = &g_ramdisk.pezik [ RAMDISK_PEZIK_68 ].memory [ g_uimemdump.pezik_68_bank << 16 ];
             break;
 
         case MEMSRC_MZ1R18:
@@ -339,7 +340,7 @@ G_MODULE_EXPORT void on_dbg_memdump_src_comboboxtext_changed ( GtkComboBox *comb
     if ( memsrc == MEMSRC_PEZIK_68 ) {
         not_connected = ~g_ramdisk.pezik [ RAMDISK_PEZIK_68 ].connected & 1;
     } else if ( memsrc == MEMSRC_PEZIK_E8 ) {
-        not_connected = ~g_ramdisk.pezik [ RAMDISK_PEZIK_68 ].connected & 1;
+        not_connected = ~g_ramdisk.pezik [ RAMDISK_PEZIK_E8 ].connected & 1;
     } else if ( memsrc == MEMSRC_MZ1R18 ) {
         not_connected = ~g_ramdisk.std.connected & 1;
     };
