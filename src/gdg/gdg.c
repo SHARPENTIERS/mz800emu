@@ -192,7 +192,7 @@ Z80EX_BYTE gdg_read_dmd_status ( void ) {
     retval |= SIGNAL_GDG_VBLNK ? 1 << 6 : 0x00;
     retval |= SIGNAL_GDG_STS_HS ? 1 << 5 : 0x00;
     retval |= SIGNAL_GDG_STS_VS ? 1 << 4 : 0x00;
-    retval |= SIGNAL_SWITCH_MZ800 << 1;
+    retval |= ( g_mz800.mz800_switch ) ? 1 << 1 : 0x00;
     retval |= SIGNAL_GDG_TEMPO;    
 //    printf ( "read DMD sts = 0x%02x - HB: %d, VB: %d, HS: %d, VS: %d, row: %d, col: %d, PC: 0x%04x\n", retval, SIGNAL_GDG_HBLNK, SIGNAL_GDG_VBLNK, SIGNAL_GDG_STS_HS, SIGNAL_GDG_STS_VS, BEAM_ROW ( g_gdg.screen_ticks_elapsed ), BEAM_COL ( g_gdg.screen_ticks_elapsed ), z80ex_get_reg ( g_mz800.cpu, regPC )  );
     return retval;

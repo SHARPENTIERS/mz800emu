@@ -186,12 +186,20 @@ void mz800_init ( void ) {
 
     CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "MZ800" );
     CFGELM *elm;
-    
+
     elm = cfgmodule_register_new_element ( cmod, "development_mode", CFGENTYPE_KEYWORD, DEVELMODE_NO,
             DEVELMODE_NO, "NO",
             DEVELMODE_YES, "YES",
             -1 );
+    
     cfgelement_set_handlers ( elm, (void*) &g_mz800.development_mode, (void*) &g_mz800.development_mode );
+
+    elm = cfgmodule_register_new_element ( cmod, "mz800_switch", CFGENTYPE_KEYWORD, MZ800SWITCH_OFF,
+            MZ800SWITCH_OFF, "OFF",
+            MZ800SWITCH_ON, "ON",
+            -1 );
+    
+    cfgelement_set_handlers ( elm, (void*) &g_mz800.mz800_switch, (void*) &g_mz800.mz800_switch );
 
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );
