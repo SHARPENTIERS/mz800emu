@@ -32,10 +32,11 @@ extern "C" {
 
 #include "z80ex/include/z80ex.h"
 
-
-#define SIGNAL_SWITCH_MZ800     ( 0 )
-
-
+    typedef enum en_MZ800SWITCH {
+        MZ800SWITCH_OFF = 0,
+        MZ800SWITCH_ON,
+    } en_MZ800SWITCH;
+    
 #define MZ800_INTERRUPT_CTC2    ( 1 << 0 )
 #define MZ800_INTERRUPT_PIOZ80  ( 1 << 1 )
 #define MZ800_INTERRUPT_FDC     ( 1 << 2 )
@@ -97,8 +98,10 @@ extern "C" {
         unsigned status_emulation_speed;
 
         unsigned interrupt;
-        
+
         en_DEVELMODE development_mode;
+        
+        en_MZ800SWITCH mz800_switch;
 
     } st_mz800;
 
