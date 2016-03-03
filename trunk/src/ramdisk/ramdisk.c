@@ -246,7 +246,7 @@ void ramdisk_pezik_init ( int pezik_type, int connect ) {
 void ramdisk_propagatecfg ( void *m, void *data ) {
 
     ramdisk_pezik_init ( RAMDISK_PEZIK_E8, cfgmodule_get_element_bool_value_by_name ( (CFGMOD *) m, "pezik_std_e8_pluged" ) );
-    ramdisk_pezik_init ( RAMDISK_PEZIK_68, cfgmodule_get_element_bool_value_by_name ( (CFGMOD *) m, "pezik_std_e8_pluged" ) );
+    ramdisk_pezik_init ( RAMDISK_PEZIK_68, cfgmodule_get_element_bool_value_by_name ( (CFGMOD *) m, "pezik_shifted_68_pluged" ) );
 
     int mr1r18_pluged = cfgmodule_get_element_bool_value_by_name ( (CFGMOD *) m, "mr1r18_pluged" );
     en_RAMDISK_TYPE mr1r18_type = cfgmodule_get_element_keyword_value_by_name ( (CFGMOD *) m, "mr1r18_type" );
@@ -372,8 +372,8 @@ Z80EX_BYTE ramdisk_pezik_read_byte ( unsigned addr ) {
     int pezik_type;
 
     pezik_type = ( addr & 0x80 ) >> 7;
-    pezik_addr = ( ( addr & 0x07 ) << 16 ) | ( addr & 0xff00 ) | g_ramdisk.pezik [ pezik_type ] . latch;
-    g_ramdisk.pezik [ pezik_type ] . latch = ( addr & 0xff00 ) >> 8;
+    pezik_addr = ( ( addr & 0x07 ) << 16 ) | g_ramdisk.pezik [ pezik_type ] . latch | ( ( addr >> 8 ) & 0x00ff );
+    g_ramdisk.pezik [ pezik_type ] . latch = addr & 0xff00;
 
     return g_ramdisk.pezik [ pezik_type ] . memory [ pezik_addr ];
 }
@@ -385,7 +385,7 @@ void ramdisk_pezik_write_byte ( unsigned addr, Z80EX_BYTE value ) {
     unsigned pezik_type;
 
     pezik_type = ( addr & 0x80 ) >> 7;
-    pezik_addr = ( ( addr & 0x07 ) << 16 ) | ( addr & 0xff00 ) | g_ramdisk.pezik [ pezik_type ] . latch;
+    pezik_addr = ( ( addr & 0x07 ) << 16 ) | g_ramdisk.pezik [ pezik_type ] . latch | ( ( addr >> 8 ) & 0x00ff );
 
     g_ramdisk.pezik [ pezik_type ] . memory [ pezik_addr ] = value;
 }

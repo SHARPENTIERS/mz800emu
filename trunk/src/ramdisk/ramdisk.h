@@ -63,7 +63,7 @@ extern "C" {
 
     typedef struct st_RAMDISKPEZIK {
         unsigned connected;
-        Z80EX_BYTE latch;
+        Z80EX_WORD latch;
         Z80EX_BYTE *memory;
     } st_RAMDISKPEZIK;
 
