@@ -69,10 +69,12 @@ extern "C" {
     extern st_CFGELEMENT* cfgmodule_register_new_element ( st_CFGMODULE *m, char *element_name, en_CFGELEMENTTYPE type, ... );
     extern st_CFGELEMENT* cfgmodule_get_element_by_name ( st_CFGMODULE *m, char *element_name );
 
+    extern unsigned cfgmodule_get_element_unsigned_value_by_name ( st_CFGMODULE *m, char *element_name );
     extern char* cfgmodule_get_element_text_value_by_name ( st_CFGMODULE *m, char *element_name );
     extern int cfgmodule_get_element_bool_value_by_name ( st_CFGMODULE *m, char *element_name );
     extern int cfgmodule_get_element_keyword_value_by_name ( st_CFGMODULE *m, char *element_name );
 
+    extern unsigned cfgmodule_get_element_unsigned_default_value_by_name ( st_CFGMODULE *m, char *element_name );
     extern char* cfgmodule_get_element_text_default_value_by_name ( st_CFGMODULE *m, char *element_name );
     extern int cfgmodule_get_element_bool_default_value_by_name ( st_CFGMODULE *m, char *element_name );
     extern int cfgmodule_get_element_keyword_default_value_by_name ( st_CFGMODULE *m, char *element_name );

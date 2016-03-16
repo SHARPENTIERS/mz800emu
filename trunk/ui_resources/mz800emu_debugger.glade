@@ -1207,7 +1207,22 @@
               </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkComboBoxText" id="dbg_memdump_pezik_endianness_comboboxtext">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="entry_text_column">0</property>
+                <property name="id_column">1</property>
+                <items>
+                  <item translatable="yes">Big Endian Addressing</item>
+                  <item translatable="yes">Little Endian Addressing</item>
+                </items>
+                <signal name="changed" handler="on_dbg_memdump_pezik_endianness_comboboxtext_changed" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
+              </packing>
             </child>
             <child>
               <object class="GtkButton" id="dbg_memdump_refresh_button">
@@ -1224,6 +1239,9 @@
                 <property name="pack_type">end</property>
                 <property name="position">5</property>
               </packing>
+            </child>
+            <child>
+              <placeholder/>
             </child>
           </object>
           <packing>

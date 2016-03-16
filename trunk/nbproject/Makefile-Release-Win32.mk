@@ -99,6 +99,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/debugger/ui_memdump.o \
 	${OBJECTDIR}/src/ui/ui_cmt.o \
 	${OBJECTDIR}/src/ui/ui_display.o \
+	${OBJECTDIR}/src/ui/ui_fcbutton.o \
 	${OBJECTDIR}/src/ui/ui_fdc.o \
 	${OBJECTDIR}/src/ui/ui_main.o \
 	${OBJECTDIR}/src/ui/ui_qdisk.o \
@@ -455,6 +456,11 @@ ${OBJECTDIR}/src/ui/ui_display.o: src/ui/ui_display.c
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_display.o src/ui/ui_display.c
+
+${OBJECTDIR}/src/ui/ui_fcbutton.o: src/ui/ui_fcbutton.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_fcbutton.o src/ui/ui_fcbutton.c
 
 ${OBJECTDIR}/src/ui/ui_fdc.o: src/ui/ui_fdc.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui
