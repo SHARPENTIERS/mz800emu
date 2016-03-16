@@ -30,11 +30,10 @@
 extern "C" {
 #endif
 
-    
-    typedef void ( *cfgelement_propagate_cb_t ) ( void *e, void *data );
-    typedef void ( *cfgelement_save_cb_t ) ( void *e, void *data );
 
-    
+    typedef void ( *cfgelement_propagate_cb_t ) (void *e, void *data );
+    typedef void ( *cfgelement_save_cb_t ) (void *e, void *data );
+
     typedef enum en_CFGELVAR {
         CFGELVAR_VALUE,
         CFGELVAR_DEFAULT_VALUE,
@@ -45,6 +44,7 @@ extern "C" {
         CFGENTYPE_KEYWORD = 0,
         CFGENTYPE_BOOL,
         CFGENTYPE_TEXT,
+        CFGENTYPE_UNSIGNED,
         CFGENTYPE_COUNT
     } en_CFGELEMENTTYPE;
 
@@ -59,6 +59,11 @@ extern "C" {
         int words_count;
     } st_CFGELPROPKEYWORD;
 
+    typedef struct st_CFGELPROPUNSIGNED {
+        unsigned min;
+        unsigned max;
+    } st_CFGELPROPUNSIGNED;
+
     typedef struct st_CFGELPROPCB {
         cfgelement_propagate_cb_t exec;
         void *data;
@@ -72,13 +77,15 @@ extern "C" {
     typedef struct st_CFGELEMENT {
         char *name;
         en_CFGELEMENTTYPE type;
-        
+
         void *parent;
 
         void *default_value;
         void *value;
 
-        st_CFGELPROPKEYWORD *properties;
+        /* TODO: vsechny properties by mely mit jen jeden univerzalni pointer na ktery se pripoji spravna struktura podle typu elementu */
+        st_CFGELPROPKEYWORD *pkw;
+        st_CFGELPROPUNSIGNED *ppu;
 
         st_CFGELPROPCB propagate_cb; /* pokud neni NULL, tak se provede pri propagate */
         void *propagate_value_handler; /* pokud neni NULL, tak se sem ulozi propagovana hodnota pri propagate (neplati pro CFGENTYPE_TEXT) */
@@ -98,18 +105,22 @@ extern "C" {
 
     extern void cfgelement_reset ( st_CFGELEMENT *e );
 
+    extern void cfgelement_set_unsigned_value ( st_CFGELEMENT *e, unsigned unsigned_value );
     extern void cfgelement_set_text_value ( st_CFGELEMENT *e, char *text_value );
     extern void cfgelement_set_bool_value ( st_CFGELEMENT *e, int bool_value );
     extern void cfgelement_set_keyword_value ( st_CFGELEMENT *e, int key_value );
 
+    extern void cfgelement_set_unsigned_default_value ( st_CFGELEMENT *e, unsigned unsigned_value );
     extern void cfgelement_set_text_default_value ( st_CFGELEMENT *e, char *text_value );
     extern void cfgelement_set_bool_default_value ( st_CFGELEMENT *e, int bool_value );
     extern void cfgelement_set_keyword_default_value ( st_CFGELEMENT *e, int key_value );
 
+    extern unsigned cfgelement_get_unsigned_value ( st_CFGELEMENT *e );
     extern char* cfgelement_get_text_value ( st_CFGELEMENT *e );
     extern int cfgelement_get_bool_value ( st_CFGELEMENT *e );
     extern int cfgelement_get_keyword_value ( st_CFGELEMENT *e );
 
+    extern unsigned cfgelement_get_unsigned_default_value ( st_CFGELEMENT *e );
     extern char* cfgelement_get_text_default_value ( st_CFGELEMENT *e );
     extern int cfgelement_get_bool_default_value ( st_CFGELEMENT *e );
     extern int cfgelement_get_keyword_default_value ( st_CFGELEMENT *e );
@@ -118,6 +129,8 @@ extern "C" {
     extern char* cfgelement_get_keyword_by_default_value ( st_CFGELEMENT *e );
     
     extern int cfgelement_property_get_value_by_keyword ( st_CFGELPROPKEYWORD *pkw, char *key_word );
+    
+    extern int cfgelement_property_test_unsigned_value ( st_CFGELPROPUNSIGNED *ppu, unsigned value );
 
     extern void cfgelement_propagate ( st_CFGELEMENT *e );
     extern void cfgelement_save ( st_CFGELEMENT *e );

@@ -58,6 +58,7 @@ typedef struct st_UIMEMDUMP {
     unsigned vram_plane;
     unsigned pezik_e8_bank;
     unsigned pezik_68_bank;
+    unsigned pezik_endianity;
     unsigned mr1z18_bank;
 } st_UIMEMDUMP;
 
@@ -80,7 +81,11 @@ void ui_memdump_update ( void ) {
 
     GtkWidget *label = ui_get_widget ( "dbg_memdump_bank_label" );
     GtkWidget *spinbutton = ui_get_widget ( "dbg_memdump_bank_spinbutton" );
+    GtkWidget *endianness_combo = ui_get_widget ( "dbg_memdump_pezik_endianness_comboboxtext" );
 
+    gtk_combo_box_set_active ( (GtkComboBox*) endianness_combo, g_uimemdump.pezik_endianity );
+    gtk_widget_hide ( endianness_combo );
+    
     if ( g_uimemdump.memsrc >= MEMSRC_VRAM ) {
 
         gtk_widget_show ( label );
@@ -94,6 +99,7 @@ void ui_memdump_update ( void ) {
         } else {
             gtk_label_set_text ( GTK_LABEL ( label ), "Bank:" );
             if ( g_uimemdump.memsrc == MEMSRC_PEZIK_68 ) {
+                gtk_widget_show ( endianness_combo );
                 if ( !g_ramdisk.pezik [ RAMDISK_PEZIK_68 ].connected ) {
                     g_uimemdump.memsrc = MEMSRC_MAPED;
                     ui_memdump_update ( );
@@ -103,6 +109,7 @@ void ui_memdump_update ( void ) {
                 gtk_spin_button_set_range ( GTK_SPIN_BUTTON ( spinbutton ), 0, 7 );
                 gtk_spin_button_set_value ( GTK_SPIN_BUTTON ( spinbutton ), g_uimemdump.pezik_68_bank );
             } else if ( g_uimemdump.memsrc == MEMSRC_PEZIK_E8 ) {
+                gtk_widget_show ( endianness_combo );
                 if ( !g_ramdisk.pezik [ RAMDISK_PEZIK_E8 ].connected ) {
                     g_uimemdump.memsrc = MEMSRC_MAPED;
                     ui_memdump_update ( );
@@ -176,7 +183,7 @@ void ui_memdump_load ( void ) {
             break;
 
         case MEMSRC_PEZIK_E8:
-            
+
             MEM = &g_ramdisk.pezik [ RAMDISK_PEZIK_E8 ].memory [ g_uimemdump.pezik_e8_bank << 16 ];
             break;
 
@@ -190,9 +197,9 @@ void ui_memdump_load ( void ) {
     };
 
     static int last_dump_src = -1;
-    
+
     GtkTreeIter iter;
-    
+
     if ( last_dump_src != g_uimemdump.memsrc ) {
         if ( ( last_dump_src == -1 ) || ( g_uimemdump.memsrc == MEMSRC_VRAM ) || ( last_dump_src == MEMSRC_VRAM ) ) {
             gtk_list_store_clear ( GTK_LIST_STORE ( model ) );
@@ -215,7 +222,14 @@ void ui_memdump_load ( void ) {
             if ( g_uimemdump.memsrc == MEMSRC_MAPED ) {
                 value = debugger_memory_read_byte ( addr + i );
             } else {
-                value = MEM [ addr + i ];
+                if ( ( ( g_uimemdump.memsrc == MEMSRC_PEZIK_E8 ) || ( g_uimemdump.memsrc == MEMSRC_PEZIK_68 ) ) && ( g_uimemdump.pezik_endianity == 1 ) ) {
+                    /* pezik low endian */
+                    unsigned le_addr = addr + i;
+                    value = MEM [ ( ( le_addr & 0xff ) << 8 ) | ( le_addr >> 8 ) ];
+                } else {
+                    /* standardni endianita adresovani + pezik big endian */
+                    value = MEM [ addr + i ];
+                };
             };
 
             char value_txt [ 4 ];
@@ -240,7 +254,7 @@ void ui_memdump_load ( void ) {
         };
 
         //printf ( "%s: %s\n", addr_txt, values_row );
-        
+
         if ( last_dump_src == -1 ) {
             gtk_list_store_append ( GTK_LIST_STORE ( model ), &iter );
         } else {
@@ -259,7 +273,7 @@ void ui_memdump_load ( void ) {
                 -1 );
         addr += i;
     } while ( addr != addr_end );
-    
+
     last_dump_src = g_uimemdump.memsrc;
 }
 
@@ -278,6 +292,7 @@ void ui_memdump_show_window ( void ) {
         g_uimemdump.mr1z18_bank = 0;
         g_uimemdump.pezik_68_bank = 0;
         g_uimemdump.pezik_e8_bank = 0;
+        g_uimemdump.pezik_endianity = 0;
         g_uimemdump.mr1z18_bank = 0;
         g_uimemdump.vram_plane = 0;
     };
@@ -379,6 +394,14 @@ G_MODULE_EXPORT void on_dbg_memdump_bank_spinbutton_value_changed ( GtkSpinButto
         g_uimemdump.mr1z18_bank = value;
     };
 
+    ui_memdump_load ( );
+}
+
+
+G_MODULE_EXPORT void on_dbg_memdump_pezik_endianness_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+
+    g_uimemdump.pezik_endianity = gtk_combo_box_get_active ( combobox );
     ui_memdump_load ( );
 }
 
