@@ -247,8 +247,12 @@ int cmt_open_mzf_file ( char *filename ) {
     };
 
     if ( !found ) {
-        ui_show_error ( "Bad MZ filename in MZF file '%s': %s\nTerminator 0x0d not found!\n", filename );
+#if 0
+        ui_show_error ( "Bad MZ filename in MZF file '%s'\nTerminator 0x0d not found!\n", filename );
         return RET_CMT_ERROR;
+#else 
+        g_cmt.mzf_filename [ i ] = 0x00;
+#endif
     };
 
     i = 0;
