@@ -37,6 +37,8 @@
 #define GETTEXT_PACKAGE "gtk30"
  */
 #include <gtk/gtk.h>
+#include <glib.h>
+#include <glib/gprintf.h>
 
 /*
 #include <gdk/gdk.h>
@@ -353,6 +355,7 @@ void ui_show_error ( char *format, ... ) {
     va_list args;
     va_start ( args, format );
 
+#if 0
     /* TODO: W32NAT nezna vasprintf - asi by bylo reseni pouzit vsnprintf (pokud jej tam existuje) */
 #if W32NAT
     msg = "Unknown Error Message: your build is completed on host without vasprintf()\nCheck console for details.";
@@ -360,6 +363,9 @@ void ui_show_error ( char *format, ... ) {
 #else
     vasprintf ( &msg, format, args );
 #endif
+#else
+    g_vasprintf ( &msg, format, args );
+#endif    
     va_end ( args );
 
     GtkWidget *dialog = NULL;
@@ -367,11 +373,13 @@ void ui_show_error ( char *format, ... ) {
         dialog = gtk_message_dialog_new ( NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, msg );
     };
 
+#if 0
 #ifndef W32NAT
     char *msg_in_locale;
     msg_in_locale = g_locale_from_utf8 ( msg, -1, NULL, NULL, NULL );
     fprintf ( stderr, "\nUI_ERROR: %s\n", msg_in_locale );
     g_free ( msg_in_locale );
+#endif
 #endif
 
 #ifdef UI_USE_ERRORLOG
@@ -394,12 +402,16 @@ void ui_show_warning ( char *format, ... ) {
     va_list args;
     va_start ( args, format );
 
+#if 0
     /* TODO: W32NAT nezna vasprintf  - asi by bylo reseni pouzit vsnprintf (pokud jej tam existuje) */
 #if W32NAT
     msg = "Unknown Error Message: your build is completed on host without vasprintf()\nCheck console for details.";
     vprintf ( format, args );
 #else
     vasprintf ( &msg, format, args );
+#endif
+#else
+    g_vasprintf ( &msg, format, args );
 #endif
 
     va_end ( args );
@@ -409,12 +421,13 @@ void ui_show_warning ( char *format, ... ) {
         dialog = gtk_message_dialog_new ( NULL, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, msg );
     };
 
-
+#if 0
 #ifndef W32NAT
     char *msg_in_locale;
     msg_in_locale = g_locale_from_utf8 ( msg, -1, NULL, NULL, NULL );
     fprintf ( stderr, "\nUI_WARNING: %s\n", msg_in_locale );
     g_free ( msg_in_locale );
+#endif
 #endif
 
 #ifdef UI_USE_ERRORLOG
