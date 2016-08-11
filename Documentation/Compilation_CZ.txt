@@ -11,6 +11,36 @@ Kompilacni volby preprocesoru:
 	MZ800_DEBUGGER - kompilovany emulator bude obsahovat i debugger
 
 
+Kompilace v Linuxu:
+==================
+
+Pro zmeny konfigurace doporucuji pouzit Netbeans IDE.
+
+Minimalni potrebne vybaveni:
+
+	- mingw32 ( pokud chcete crosskompilovat pro WIN32 )
+	- vyvojove knihovny SDL2 , ( v pripade cross kompilace v mingw je - potreba WIN32 verze ! ) https://www.libsdl.org/download-2.0.php
+	- GTK3
+	- pkg-config
+
+
+Makefile je prpraven pouzit tyto konfigurace:
+
+	Release-Win32 (default)
+	Debug-Linux 
+	Release-Linux 
+	Debug-Win32-Native
+	Release-Win32-Native
+
+Pro cross kompilaci do WIN32 staci napsat 'make', nebo 'make CONF=Release-Win32'.
+
+Ke kompilaci LINUX verze 'make CONF=Release-Linux'.
+
+Po uspesne kompilaci naleznete vysledek v prislusnem podadresari ./dist/
+
+Do adresare ze ktereho budete program spoustet je potreba nakopirovat adresar ./ui_resources
+
+
 Potize pri linkovani:
 =====================
 

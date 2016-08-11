@@ -120,7 +120,7 @@ build: .build-post
 	@./tools/copy_ui_resources-Release-Linux.sh "${CONF}"
 	
 	@# Zkopirujeme vysledek do adresare sdileneho s windows - jen na mem desktopu
-	@./tools/copy_win32_exe_to_sharedir.sh "${CONF}"
+	@./tools/copy_win32_exe_to_sharedir.sh "${CONF}" "${CND_PLATFORM_${CONF}}"
 
 # clean
 clean: .clean-post

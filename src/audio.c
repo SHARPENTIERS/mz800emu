@@ -23,12 +23,6 @@
  * ---------------------------------------------------------------------------
  */
 
-
-#ifdef LINUX
-//#define USE_LINUX_AUDIO_DOUBLE_BUFFER
-#endif
-
-
 #include <math.h>
 
 #include "audio.h"
@@ -50,9 +44,6 @@ st_AUDIO g_audio;
 
 
 void audio_init ( void ) {
-#ifdef USE_LINUX_AUDIO_DOUBLE_BUFFER
-    g_audio.active_buffer = 0;
-#endif
     g_audio.last_update = 0;
     g_audio.resample_timer = PSG_RESAMPLE_PERIOD;
     g_audio.buffer_position = 0;
@@ -107,11 +98,7 @@ void audio_fill_buffer ( unsigned event_ticks ) {
         
         if ( g_audio.resample_timer <= PSG_DIVIDER ) {
             if ( g_audio.buffer_position < IFACE_AUDIO_20MS_SAMPLES ) {
-#ifdef USE_LINUX_AUDIO_DOUBLE_BUFFER
-                g_audio.buffer [ ( ~g_audio.active_buffer ) & 1 ] [ g_audio.buffer_position++ ] = last_value;
-#else
                 g_audio.buffer [ g_audio.buffer_position++ ] = last_value;
-#endif
             };
             g_audio.resample_timer += PSG_RESAMPLE_PERIOD;
         };
