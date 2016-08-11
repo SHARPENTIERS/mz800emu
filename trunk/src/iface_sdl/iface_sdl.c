@@ -333,10 +333,11 @@ void iface_sdl_set_window_size ( float scale ) {
 void iface_sdl_init ( void ) {
 
     /* Kontrola verze SDL */
-    if ( !SDL_VERSION_ATLEAST ( 2, 0, 3 ) ) {
-        SDL_Log ( "SDL_VERSION %i.%i.%i is less than 2.0.3", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL );
+    if ( !SDL_VERSION_ATLEAST ( 2, 0, 2 ) ) {
+        SDL_Log ( "SDL_VERSION %i.%i.%i is less than 2.0.2", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL );
         main_app_quit ( EXIT_FAILURE );
     };
+    SDL_Log ( "SDL_VERSION %i.%i.%i", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL );
 
 
     /* Inicializace video interface */
