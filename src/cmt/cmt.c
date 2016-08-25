@@ -133,11 +133,19 @@ st_CMT g_cmt;
 #define CMT_TIMEBASE_DIVIDER  GDGCLK_1M1_DIVIDER
 
 /* Pouzivame hodnoty namerene z ROM. V poznamce jsou hodnoty, ktere odpovidaji informacim ze SM */
+#if 0
+/* hodnoty namerene v ROM - TurboCopy s nimi ma problem pri 3600 bps */
 #define CMT_1200BPS_LOG1_HIGH ( 8320 / CMT_TIMEBASE_DIVIDER ) /* 8335 */
 #define CMT_1200BPS_LOG1_LOW ( 8640 / CMT_TIMEBASE_DIVIDER ) /* 8760 */
 #define CMT_1200BPS_LOG0_HIGH ( 4220 / CMT_TIMEBASE_DIVIDER ) /* 4356 */
 #define CMT_1200BPS_LOG0_LOW ( 4590 / CMT_TIMEBASE_DIVIDER ) /* 4930 */
-
+#else
+/* Hodnoty dle SM */
+#define CMT_1200BPS_LOG1_HIGH ( 8335 / CMT_TIMEBASE_DIVIDER ) /* 8335 */
+#define CMT_1200BPS_LOG1_LOW ( 8760 / CMT_TIMEBASE_DIVIDER ) /* 8760 */
+#define CMT_1200BPS_LOG0_HIGH ( 4356 / CMT_TIMEBASE_DIVIDER ) /* 4356 */
+#define CMT_1200BPS_LOG0_LOW ( 4930 / CMT_TIMEBASE_DIVIDER ) /* 4930 */
+#endif
 
 #define CMT_UI_PLAYER_REFRESH_PER_SEC   2
 #define CMT_UI_PLAYER_REFRESH_TIMER_PRESET ( GDGCLK_BASE / CMT_TIMEBASE_DIVIDER / CMT_UI_PLAYER_REFRESH_PER_SEC )
