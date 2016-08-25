@@ -31,7 +31,7 @@ DEFAULTCONF=Release-Win32
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Release-Win32 Debug-Linux Release-Linux Debug-Win32-Native Release-Win32-Native 
+ALLCONFS=Release-Win32 Release-Win64 Debug-Linux Release-Linux Gprof-Release-Linux Debug-Win32-Native Release-Win32-Native 
 
 
 # build
@@ -76,7 +76,7 @@ ALLCONFS=Release-Win32 Debug-Linux Release-Linux Debug-Win32-Native Release-Win3
 .depcheck-impl:
 	@echo "# This code depends on make tool being used" >.dep.inc
 	@if [ -n "${MAKE_VERSION}" ]; then \
-	    echo "DEPFILES=\$$(wildcard \$$(addsuffix .d, \$${OBJECTFILES}))" >>.dep.inc; \
+	    echo "DEPFILES=\$$(wildcard \$$(addsuffix .d, \$${OBJECTFILES} \$${TESTOBJECTFILES}))" >>.dep.inc; \
 	    echo "ifneq (\$${DEPFILES},)" >>.dep.inc; \
 	    echo "include \$${DEPFILES}" >>.dep.inc; \
 	    echo "endif" >>.dep.inc; \

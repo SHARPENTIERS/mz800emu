@@ -24,20 +24,23 @@
  */
 
 #ifndef CTC8253_H
-#define	CTC8253_H
+#define CTC8253_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
-    
+#include "mz800emu_cfg.h"
+
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+#include "mz800.h"
+#endif
+
 #include "z80ex/include/z80ex.h"
 
-    
-//#define USE_FAST_CTC0   1
 
-    
-    typedef void (*ctc8253_out_cb_t ) (unsigned value, unsigned event_screen_ticks );
+    typedef void (*ctc8253_out_cb_t ) (unsigned value, unsigned event_screen_ticks);
+
 
     /* Addresni sbernice */
     typedef enum en_CTCADDR {
@@ -50,6 +53,7 @@ extern "C" {
 
     /* Control Word (CW) - SC1, SC0, RL1, RL0, M2, M1, M0, BCD */
 
+
     /* CW - vyber citace */
     typedef enum en_CTC_CS {
         CTC_CS0 = 0, /* Select Counter 0 */
@@ -58,12 +62,14 @@ extern "C" {
         CTC_CS_ILLEGAL /* Ilegalni kombo */
     } en_CTC_CS;
 
+
     /* CW - Read/Load format */
     typedef enum en_CTC_RLF {
         CTC_RLF_LSB = 1, /* Read / Load LSB */
         CTC_RLF_MSB, /* Read / Load MSB */
         CTC_RLF_LSBMSB /* Read / Load LSB followed by MSB */
     } en_CTC_RLF;
+
 
     /* CW - Mode */
     typedef enum en_CTC_MODE {
@@ -74,6 +80,7 @@ extern "C" {
         CTC_MODE4, /* Mode 4 - Software Triggered Strobe */
         CTC_MODE5, /* Mode 5 - Hardware Triggered Strobe */
     } en_CTC_MODE;
+
 
     typedef enum en_CTC_STATE {
         CTC_STATE_INIT, /* bylo vlozeno CW */
@@ -89,6 +96,7 @@ extern "C" {
         CTC_STATE_BLIND_COUNT, /* odecet bez cile */
 
     } en_CTC_STATE;
+
 
     typedef struct st_CTC8253 {
         unsigned out; /* Vystupni hodnota citace: 0|1 */
@@ -109,6 +117,11 @@ extern "C" {
         unsigned mode3_destination_value;
         unsigned mode3_half_value;
         ctc8253_out_cb_t output_cb; /* tento callback je zavolan pri kazde zmene vystupniho stavu citace */
+
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+        unsigned clk1m1_last_event_total_ticks;
+        st_EVENT clk1m1_event;
+#endif
     } st_CTC8253;
 
     extern struct st_CTC8253 g_ctc8253[3];
@@ -119,11 +132,19 @@ extern "C" {
     extern void ctc8253_gate ( unsigned addr, unsigned gate, unsigned event_screen_ticks );
     extern void ctc8253_clkfall ( unsigned cs, unsigned event_ticks );
 
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+
+    extern void ctc8253_ctc1m1_event ( unsigned event_ticks );
+    extern void ctc8253_on_screen_done_event ( void );
+    
+#endif
+
+
 #define CTC8253_OUT(cs) g_ctc8253[cs].out
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* CTC8253_H */
+#endif /* CTC8253_H */
 

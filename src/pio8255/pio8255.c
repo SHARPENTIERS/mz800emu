@@ -95,7 +95,7 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
             /* blokovani CTC0 - zvukovy vystup */
             g_pio8255.signal_pc00 = ( value >> 0 ) & 0x01;
             DBGPRINTF ( DBGINF, "audio ctc0 mask (pc00): %d\n", g_pio8255.signal_pc00 );
-            audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), g_gdg.screen_ticks_elapsed );
+            audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), g_gdg.elapsed_screen_ticks );
 
             /* data do CMT */
             g_pio8255.signal_pc01 = ( value >> 1 ) & 0x01;
@@ -129,7 +129,7 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
                     g_pio8255.signal_pc02 = 0;
                     DBGPRINTF ( DBGINF, "reset - pc00 - pc03 = 0x00\n" );
 
-                    audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), g_gdg.screen_ticks_elapsed );
+                    audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), g_gdg.elapsed_screen_ticks );
                     mz800_ctc2_interrupt_handle ( );
 #if ( DBGLEVEL & DBGWAR )
                 } else {
@@ -142,7 +142,7 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
                 if ( bit_setres == 0 ) {
                     g_pio8255.signal_pc00 = value & 0x01;
                     DBGPRINTF ( DBGINF, "audio ctc0 mask (pc00): %d\n", g_pio8255.signal_pc00 );
-                    audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), g_gdg.screen_ticks_elapsed );
+                    audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), g_gdg.elapsed_screen_ticks );
 
                 } else if ( bit_setres == 1 ) {
                     g_pio8255.signal_pc01 = value & 0x01;
@@ -216,7 +216,7 @@ Z80EX_BYTE pio8255_read ( int addr ) {
 
             retval = 0x00;
             retval |= SIGNAL_GDG_VBLNK ? 1 << 7 : 0;
-            retval |= ( ( g_gdg.screens_counter / 25 ) & 1 ) << 6;
+            retval |= ( ( g_gdg.elapsed_total_screens / 25 ) & 1 ) << 6;
             retval |= g_cmt.output_signal << 5;
             //retval |= g_pio8255.signal_pc04 << 4;
             retval |= SIGNAL_GDG_VBLNK << 4; /* simulujeme promenlivy stav motoru (jinak neni mozne spustut hru "24" - musel by se manualne menit stav motoru ) */

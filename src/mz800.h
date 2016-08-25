@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+#include "mz800emu_cfg.h"
+
 #include "z80ex/include/z80ex.h"
 
     typedef enum en_MZ800SWITCH {
@@ -44,11 +46,6 @@ extern "C" {
     typedef enum en_MZEVENT {
         //        EVENT_GDG_STS_HSYNC_END,
         EVENT_GDG_HBLN_END,
-#if 0
-#ifdef LINUX
-        EVENT_GDG_HALF_SCREEN,
-#endif
-#endif
         EVENT_GDG_HBLN_START,
         EVENT_GDG_STS_VSYNC_END,
         EVENT_GDG_STS_VSYNC_START,
@@ -56,8 +53,17 @@ extern "C" {
         //        EVENT_GDG_STS_HSYNC_START,
         EVENT_GDG_AFTER_LAST_VISIBLE_PIXEL,
         EVENT_GDG_REAL_HSYNC_START,
-        EVENT_GDG_BEAM_ROW_END,
+        EVENT_GDG_SCREEN_ROW_END,
 
+        // jine, nez GDG eventy
+        EVENT_NO_GDG,   /* pouze hranicni hodnota - neni skutecny event */
+                
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+        EVENT_CTC0,
+        EVENT_CMT,
+#endif
+                
+        // high priority eventy
         EVENT_MZ800_INTERRUPT,
         EVENT_USER_INTERFACE,
     } en_MZEVENT;

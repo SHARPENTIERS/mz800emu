@@ -23,10 +23,12 @@
  * ---------------------------------------------------------------------------
  */
 
+#include "mz800emu_cfg.h"
+
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 
 
 #include "ui/ui_main.h"

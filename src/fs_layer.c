@@ -77,7 +77,7 @@ int fs_layer_fwrite ( FILE **fh, void *buffer, int count_bytes, unsigned int *wr
 }
 
 
-#ifdef WIN32
+#ifdef WINDOWS
 #include <windows.h>
 
 int fs_layer_win32_truncate ( FILE **fh ) {
@@ -89,7 +89,7 @@ int fs_layer_win32_truncate ( FILE **fh ) {
     };
     return retval;
 }
-#endif /* WIN32 */
+#endif /* WINDOWS */
 
 
 #endif

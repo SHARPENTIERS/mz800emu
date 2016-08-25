@@ -3,12 +3,10 @@ Kompilacni volby preprocesoru:
 ==============================
 
 	LINUX - pokud je cilovym OS
-	WIN32 - pokud touzite po tomto cili
+	WINDOWS - pokud touzite po tomto cili
 
 	W32NAT - pokud projekt kompilujete v nativnim prostredi windows
 		(v nativnim mingw32 chybi fce vasprintf a musime ji bypasovat)
-
-	MZ800_DEBUGGER - kompilovany emulator bude obsahovat i debugger
 
 
 Kompilace v Linuxu:
@@ -27,6 +25,7 @@ Minimalni potrebne vybaveni:
 Makefile je prpraven pouzit tyto konfigurace:
 
 	Release-Win32 (default)
+	Release-Win64
 	Debug-Linux 
 	Release-Linux 
 	Debug-Win32-Native

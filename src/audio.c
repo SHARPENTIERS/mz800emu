@@ -76,8 +76,8 @@ AUDIO_BUF_t audio_scan ( void ) {
 void audio_fill_buffer ( unsigned event_ticks ) {
     static AUDIO_BUF_t last_value = 0;
 
-    if ( event_ticks > ( BEAM_SCREEN_TICKS - 2 ) ) {
-        event_ticks = ( BEAM_SCREEN_TICKS - 2 );
+    if ( event_ticks > ( VIDEO_SCREEN_TICKS ) ) {
+        event_ticks = ( VIDEO_SCREEN_TICKS );
     };
     
     if ( ( event_ticks - g_audio.last_update ) < PSG_DIVIDER ) return;
@@ -112,7 +112,11 @@ void audio_fill_buffer ( unsigned event_ticks ) {
 
 void audio_ctc0_changed ( unsigned value, unsigned event_ticks ) {
     if ( g_audio.ctc0_output == value ) return;
+
+#ifdef AUDIO_FILLBUFF_v1
     audio_fill_buffer ( event_ticks );
+#endif
+    
     g_audio.ctc0_output = value;
 }
 

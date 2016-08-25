@@ -37,16 +37,6 @@
 
 struct st_CFGROOT *g_cfgmain;
 
-
-#ifdef LINUX
-#define CFGMAIN_PLATFORM    "Linux"
-#endif
-
-#ifdef WIN32
-#define CFGMAIN_PLATFORM    "Windows"
-#endif
-
-
 #define CFGMAIN_TIMESTAMP_MAXLEN   20
 
 

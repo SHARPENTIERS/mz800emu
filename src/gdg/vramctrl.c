@@ -106,6 +106,8 @@
  *
  */
 
+#include "mz800emu_cfg.h"
+
 #include "z80ex/include/z80ex.h"
 
 #include "gdg.h"
@@ -115,7 +117,7 @@
 #include "framebuffer.h"
 #include "memory/memory.h"
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 #include "debugger/debugger.h"
 #endif
 
@@ -175,13 +177,13 @@ void vramctrl_mz700_memop_write ( Z80EX_WORD addr, Z80EX_BYTE value ) {
 
     if ( SIGNAL_GDG_HBLNK ) {
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
         if ( !TEST_DEBUGGER_MEMOP_CALL ) {
 #endif
             if ( g_vramctrl.mz700_wr_latch_is_used++ != 0 ) {
                 mz800_sync_inside_cpu ( INSIDEOP_MZ700_NOTHBLN_VRAM_MREQ );
             };
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
         };
 #endif
 
