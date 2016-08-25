@@ -56,7 +56,7 @@
  *
  */
 
-#ifdef WIN32
+#ifdef WINDOWS
 #include<windows.h>
 #endif
 

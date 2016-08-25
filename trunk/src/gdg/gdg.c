@@ -79,50 +79,46 @@ st_GDG g_gdg;
 const struct st_GDGEVENT g_gdgevent [] = {
 
     /* row: ALL, col: 150 */
-    { EVENT_GDG_HBLN_END, 0, BEAM_TOTAL_ROWS, DISPLAY_SCREEN_FIRST_COLUMN - 4 },
+    { EVENT_GDG_HBLN_END, 0, VIDEO_SCREEN_HEIGHT, VIDEO_BEAM_CANVAS_FIRST_COLUMN - 4 },
 
-#if 0
-#ifdef LINUX
-    { EVENT_GDG_HALF_SCREEN, ( BEAM_TOTAL_ROWS - 1 ) / 2, 1, ( BEAM_TOTAL_COLS - 1 ) / 2 },
-#endif
-#endif
-    
     /* row: ALL, col: 790 */
     /* + row: 45, col: 790 - VBLN_END */
     /* + row: 245, col: 790 - VBLN_START */
-    { EVENT_GDG_HBLN_START, 0, BEAM_TOTAL_ROWS, BEAM_HBLN_START_COLUMN },
+    { EVENT_GDG_HBLN_START, 0, VIDEO_SCREEN_HEIGHT, VIDEO_BEAM_HBLN_FIRST_COLUMN },
 
     /* row: 0, col: 792 */
-    { EVENT_GDG_STS_VSYNC_END, 0, 1, DISPLAY_BORDER_LEFT_WIDTH + DISPLAY_SCREEN_WIDTH - 2 },
+    { EVENT_GDG_STS_VSYNC_END, 0, 1, VIDEO_BORDER_LEFT_WIDTH + VIDEO_CANVAS_WIDTH - 2 },
 
     /* row: 287, col: 792 */
-    { EVENT_GDG_STS_VSYNC_START, DISPLAY_VISIBLE_HEIGHT - 1, 1, DISPLAY_BORDER_LEFT_WIDTH + DISPLAY_SCREEN_WIDTH - 2 },
+    { EVENT_GDG_STS_VSYNC_START, VIDEO_DISPLAY_HEIGHT - 1, 1, VIDEO_BORDER_LEFT_WIDTH + VIDEO_CANVAS_WIDTH - 2 },
 
     /* row: 46 - 245, col: 794 */
-    { EVENT_GDG_AFTER_LAST_SCREEN_PIXEL, DISPLAY_SCREEN_FIRST_ROW, DISPLAY_SCREEN_HEIGHT, DISPLAY_BORDER_RIGHT_FIRST_COLUMN },
+    { EVENT_GDG_AFTER_LAST_SCREEN_PIXEL, VIDEO_BEAM_CANVAS_FIRST_ROW, VIDEO_CANVAS_HEIGHT, VIDEO_BEAM_BORDER_RIGHT_FIRST_COLUMN },
 
     /* row: ALL, col: 928 - STS_HSYNC start (z duvodu uspory ho spustime trochu drive ) */
     /* row: 0 - 287, col: 928 */
     //{ EVENT_GDG_AFTER_LAST_VISIBLE_PIXEL, 0, DISPLAY_VISIBLE_HEIGHT, DISPLAY_VISIBLE_LAST_COLUMN + 1 },
-    { EVENT_GDG_AFTER_LAST_VISIBLE_PIXEL, 0, BEAM_TOTAL_ROWS, DISPLAY_VISIBLE_LAST_COLUMN + 1 },
-    
+    { EVENT_GDG_AFTER_LAST_VISIBLE_PIXEL, 0, VIDEO_SCREEN_HEIGHT, VIDEO_BEAM_DISPLAY_LAST_COLUMN + 1 },
+
     /* row: ALL, col: 926 - podle mych mereni zacina zde */
     //{ EVENT_GDG_STS_HSYNC_START, 0, BEAM_TOTAL_ROWS, 926 },
 
     /* row: ALL, col: 950 - realny HSYNC ma delku 80 px, jeho konec nas ale nezajima */
-    { EVENT_GDG_REAL_HSYNC_START, 0, BEAM_TOTAL_ROWS, 950 },
+    { EVENT_GDG_REAL_HSYNC_START, 0, VIDEO_SCREEN_HEIGHT, 950 },
 
     /* row: ALL, col: 1133 - podle mych mereni konci zde */
     //{ EVENT_GDG_STS_HSYNC_END, 0, BEAM_TOTAL_ROWS, 1133 },
 
     /* row: ALL, col: 1135 STS_HSYNC end (z duvodu uspory jej ukoncime malinko pozdeji) */
     /* row: ALL, col: 1135 */
-    { EVENT_GDG_BEAM_ROW_END, 0, BEAM_TOTAL_ROWS, BEAM_TOTAL_COLS },
+    { EVENT_GDG_SCREEN_ROW_END, 0, VIDEO_SCREEN_HEIGHT, VIDEO_SCREEN_WIDTH },
 };
-
 
 void gdg_init ( void ) {
 
+    g_gdg.elapsed_screen_ticks = 0;
+    g_gdg.elapsed_total_screens = 0;
+    
     g_gdg.event.event_name = 0;
     g_gdg.event.ticks = g_gdgevent [ g_gdg.event.event_name ].event_column;
 
@@ -132,11 +128,8 @@ void gdg_init ( void ) {
     g_gdg.sts_hsync = HSYN_OFF;
     g_gdg.sts_vsync = VSYN_ACTIVE;
 
-    g_gdg.screen_ticks_elapsed = 0;
     g_gdg.beam_row = 0;
     g_gdg.screen_is_already_rendered_at_beam_pos = 0;
-
-    g_gdg.screens_counter = 0;
 
     g_gdg.screen_need_update_from = 0;
     g_gdg.last_updated_border_pixel = 0;
@@ -149,10 +142,12 @@ void gdg_init ( void ) {
     g_gdg.tempo = 0;
 
     g_gdg.regct53g7 = 0;
+#ifdef MZ800EMU_CFG_CLK1M1_SLOW
     g_gdg.ctc0clk = 0;
+#endif
 
     hwscroll_init ( );
-    
+
     g_vramctrl.mz700_wr_latch_is_used = 0;
 }
 
@@ -182,7 +177,6 @@ void gdg_reset ( void ) {
 
 }
 
-
 Z80EX_BYTE gdg_read_dmd_status ( void ) {
 
     Z80EX_BYTE retval;
@@ -193,12 +187,10 @@ Z80EX_BYTE gdg_read_dmd_status ( void ) {
     retval |= SIGNAL_GDG_STS_HS ? 1 << 5 : 0x00;
     retval |= SIGNAL_GDG_STS_VS ? 1 << 4 : 0x00;
     retval |= ( g_mz800.mz800_switch ) ? 1 << 1 : 0x00;
-    retval |= SIGNAL_GDG_TEMPO;    
-//    printf ( "read DMD sts = 0x%02x - HB: %d, VB: %d, HS: %d, VS: %d, row: %d, col: %d, PC: 0x%04x\n", retval, SIGNAL_GDG_HBLNK, SIGNAL_GDG_VBLNK, SIGNAL_GDG_STS_HS, SIGNAL_GDG_STS_VS, BEAM_ROW ( g_gdg.screen_ticks_elapsed ), BEAM_COL ( g_gdg.screen_ticks_elapsed ), z80ex_get_reg ( g_mz800.cpu, regPC )  );
+    retval |= SIGNAL_GDG_TEMPO;
+    //    printf ( "read DMD sts = 0x%02x - HB: %d, VB: %d, HS: %d, VS: %d, row: %d, col: %d, PC: 0x%04x\n", retval, SIGNAL_GDG_HBLNK, SIGNAL_GDG_VBLNK, SIGNAL_GDG_STS_HS, SIGNAL_GDG_STS_VS, BEAM_ROW ( g_gdg.screen_ticks_elapsed ), BEAM_COL ( g_gdg.screen_ticks_elapsed ), z80ex_get_reg ( g_mz800.cpu, regPC )  );
     return retval;
 }
-
-
 
 void gdg_write_byte ( unsigned addr, Z80EX_BYTE value ) {
 
@@ -217,7 +209,7 @@ void gdg_write_byte ( unsigned addr, Z80EX_BYTE value ) {
             value = value & 0x01;
             if ( value != g_gdg.regct53g7 ) {
                 g_gdg.regct53g7 = value;
-                ctc8253_gate ( 0, value, g_gdg.screen_ticks_elapsed );
+                ctc8253_gate ( 0, value, g_gdg.elapsed_screen_ticks );
             };
             break;
 
@@ -324,7 +316,7 @@ void gdg_write_byte ( unsigned addr, Z80EX_BYTE value ) {
                             };
                             g_gdg.regPAL2 = pal_value;
                         };
-                        break;;
+                        break;
 
                     case 3:
                         if ( ( REGISTER_DMD_FLAG_SCRW640 | REGISTER_DMD_FLAG_HICOLOR | REGISTER_DMD_FLAG_VBANK ) == ( g_gdg.regDMD & ( REGISTER_DMD_FLAG_SCRW640 | REGISTER_DMD_FLAG_HICOLOR | REGISTER_DMD_FLAG_VBANK ) ) ) {

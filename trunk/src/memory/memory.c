@@ -23,6 +23,8 @@
  * ---------------------------------------------------------------------------
  */
 
+#include "mz800emu_cfg.h"
+
 #include <stdio.h>
 #include <string.h>
 
@@ -37,7 +39,7 @@
 #include "pio8255/pio8255.h"
 #include "typedefs.h"
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 #include "debugger/debugger.h"
 #include "ui/ui_main.h"
 #endif
@@ -382,7 +384,7 @@ void memory_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD addr, Z80EX_BYTE value, vo
                 if ( addr_low > 0x07 ) {
                     if ( addr_low == 0x08 ) {
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
                         if ( TEST_DEBUGGER_MEMOP_CALL ) {
                             ui_show_error ( "MZ-800 Debugger can't write into memory mapped port 0x%04x", addr );
                             return;
@@ -396,7 +398,7 @@ void memory_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD addr, Z80EX_BYTE value, vo
                     return;
                 };
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
                 if ( TEST_DEBUGGER_MEMOP_CALL ) {
                     ui_show_error ( "MZ-800 Debugger can't write into memory mapped port 0x%04x", addr );
                     return;

@@ -23,6 +23,8 @@
  * ---------------------------------------------------------------------------
  */
 
+#include "mz800emu_cfg.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,7 +45,7 @@
 
 //#include "mz800.h"
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 #include "debugger/debugger.h"
 #include "ui/debugger/ui_breakpoints.h"
 #endif
@@ -56,13 +58,13 @@
 #define IFACE_STATUS_LINE_HEIGHT                  0
 #endif
 
-#define IFACE_WINDOW_WIDTH                    DISPLAY_VISIBLE_WIDTH
-#define IFACE_WINDOW_HEIGHT                   ( ( DISPLAY_VISIBLE_HEIGHT * 2 ) + IFACE_STATUS_LINE_HEIGHT )
+#define IFACE_WINDOW_WIDTH                    VIDEO_DISPLAY_WIDTH
+#define IFACE_WINDOW_HEIGHT                   ( ( VIDEO_DISPLAY_HEIGHT * 2 ) + IFACE_STATUS_LINE_HEIGHT )
 
 
-SDL_Rect mzdisplay_rect = { 0, 0, DISPLAY_VISIBLE_WIDTH, DISPLAY_VISIBLE_HEIGHT };
+SDL_Rect mzdisplay_rect = { 0, 0, VIDEO_DISPLAY_WIDTH, VIDEO_DISPLAY_HEIGHT };
 #if 0
-SDL_Rect statusline_rect = { 0, 0 + DISPLAY_VISIBLE_HEIGHT, DISPLAY_VISIBLE_WIDTH, IFACE_STATUS_LINE_HEIGHT };
+SDL_Rect statusline_rect = { 0, 0 + VIDEO_DISPLAY_HEIGHT, VIDEO_DISPLAY_WIDTH, IFACE_STATUS_LINE_HEIGHT };
 #endif
 
 struct st_iface_sdl g_iface_sdl;
@@ -322,7 +324,7 @@ void iface_sdl_set_window_size ( float scale ) {
 
     SDL_SetWindowSize ( g_iface_sdl.window, w, h );
 
-    if ( SDL_RenderSetScale ( g_iface_sdl.renderer, (float) w / DISPLAY_VISIBLE_WIDTH, (float) ( h - IFACE_STATUS_LINE_HEIGHT ) / DISPLAY_VISIBLE_HEIGHT ) ) {
+    if ( SDL_RenderSetScale ( g_iface_sdl.renderer, (float) w / VIDEO_DISPLAY_WIDTH, (float) ( h - IFACE_STATUS_LINE_HEIGHT ) / VIDEO_DISPLAY_HEIGHT ) ) {
         fprintf ( stderr, "Could not set render scale: %s\n", SDL_GetError ( ) );
         main_app_quit ( EXIT_FAILURE );
     };
@@ -366,14 +368,14 @@ void iface_sdl_init ( void ) {
         fprintf ( stderr, "Could not create render: %s\n", SDL_GetError ( ) );
         main_app_quit ( EXIT_FAILURE );
     };
-    if ( SDL_RenderSetScale ( g_iface_sdl.renderer, (float) IFACE_WINDOW_WIDTH / DISPLAY_VISIBLE_WIDTH, (float) ( IFACE_WINDOW_HEIGHT - IFACE_STATUS_LINE_HEIGHT ) / DISPLAY_VISIBLE_HEIGHT ) ) {
+    if ( SDL_RenderSetScale ( g_iface_sdl.renderer, (float) IFACE_WINDOW_WIDTH / VIDEO_DISPLAY_WIDTH, (float) ( IFACE_WINDOW_HEIGHT - IFACE_STATUS_LINE_HEIGHT ) / VIDEO_DISPLAY_HEIGHT ) ) {
         fprintf ( stderr, "Could not set render scale: %s\n", SDL_GetError ( ) );
         main_app_quit ( EXIT_FAILURE );
     };
 
 
     /* Inicializace surface s 8 bitovou barevnou hloubkou (4 bitova hloubka neni podporovana) */
-    g_iface_sdl.active_surface = SDL_CreateRGBSurface ( 0, DISPLAY_VISIBLE_WIDTH, DISPLAY_VISIBLE_HEIGHT, 8, 0, 0, 0, 0 );
+    g_iface_sdl.active_surface = SDL_CreateRGBSurface ( 0, VIDEO_DISPLAY_WIDTH, VIDEO_DISPLAY_HEIGHT, 8, 0, 0, 0, 0 );
 
     if ( NULL == g_iface_sdl.active_surface ) {
         fprintf ( stderr, "Could not create active surface: %s\n", SDL_GetError ( ) );
@@ -382,7 +384,7 @@ void iface_sdl_init ( void ) {
 
 #if 0
     /* Inicializace zalozniho surface s 8 bitovou barevnou hloubkou (4 bitova hloubka neni podporovana) */
-    g_iface_sdl.old_surface = SDL_CreateRGBSurface ( 0, DISPLAY_VISIBLE_WIDTH, DISPLAY_VISIBLE_HEIGHT, 8, 0, 0, 0, 0 );
+    g_iface_sdl.old_surface = SDL_CreateRGBSurface ( 0, VIDEO_DISPLAY_WIDTH, VIDEO_DISPLAY_HEIGHT, 8, 0, 0, 0, 0 );
 
     if ( NULL == g_iface_sdl.old_surface ) {
         fprintf ( stderr, "Could not create backup surface: %s\n", SDL_GetError ( ) );
@@ -415,7 +417,7 @@ void iface_sdl_init ( void ) {
         main_app_quit ( EXIT_FAILURE );
     };
 #endif
-
+       
     iface_sdl_audio_init ( );
 }
 
@@ -457,7 +459,7 @@ void iface_sdl_pool_all_events ( void ) {
                 } else if ( event.window.event == SDL_WINDOWEVENT_RESIZED ) {
                     //                    printf ( "RESIZED - X = %d, Y = %d\n", event.window.data1, event.window.data2 );
                     //printf ( "RESIZED - New scale: %f x %f\n", (float) event.window.data1 / DISPLAY_VISIBLE_WIDTH, (float) event.window.data2 / DISPLAY_VISIBLE_HEIGHT );
-                    if ( SDL_RenderSetScale ( g_iface_sdl.renderer, (float) event.window.data1 / DISPLAY_VISIBLE_WIDTH, (float) ( event.window.data2 - IFACE_STATUS_LINE_HEIGHT ) / DISPLAY_VISIBLE_HEIGHT ) ) {
+                    if ( SDL_RenderSetScale ( g_iface_sdl.renderer, (float) event.window.data1 / VIDEO_DISPLAY_WIDTH, (float) ( event.window.data2 - IFACE_STATUS_LINE_HEIGHT ) / VIDEO_DISPLAY_HEIGHT ) ) {
                         fprintf ( stderr, "Could not set render scale: %s\n", SDL_GetError ( ) );
                         main_app_quit ( EXIT_FAILURE );
                     };
@@ -520,7 +522,7 @@ void iface_sdl_pool_all_events ( void ) {
                          * Pause emulation: Alt + P
                          */
                         mz800_pause_emulation ( ( ~g_mz800.emulation_paused ) & 0x01 );
-#ifdef MZ800_DEBUGGER                    
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED                    
                     } else if ( event.key.keysym.scancode == SDL_SCANCODE_D ) {
                         /*
                          * Debugger window: Alt + D
@@ -606,7 +608,7 @@ void iface_sdl_pool_window_events ( void ) {
     if ( resize_request != -1 ) {
         SDL_Event event = events [ resize_request ];
         //printf ( "Resize accepted - New scale: %f x %f\n", (float) event.window.data1 / DISPLAY_COLS, (float) event.window.data2 / DISPLAY_ROWS );
-        if ( SDL_RenderSetScale ( g_iface_sdl.renderer, (float) event.window.data1 / DISPLAY_VISIBLE_WIDTH, (float) ( event.window.data2 - IFACE_STATUS_LINE_HEIGHT ) / DISPLAY_VISIBLE_HEIGHT ) ) {
+        if ( SDL_RenderSetScale ( g_iface_sdl.renderer, (float) event.window.data1 / VIDEO_DISPLAY_WIDTH, (float) ( event.window.data2 - IFACE_STATUS_LINE_HEIGHT ) / VIDEO_DISPLAY_HEIGHT ) ) {
             fprintf ( stderr, "Could not set render scale: %s\n", SDL_GetError ( ) );
             main_app_quit ( EXIT_FAILURE );
         };
@@ -680,7 +682,7 @@ void iface_sdl_pool_window_events ( void ) {
                      * Pause emulation: Alt + P
                      */
                     mz800_pause_emulation ( ( ~g_mz800.emulation_paused ) & 0x01 );
-#ifdef MZ800_DEBUGGER                    
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED                    
                 } else if ( event.key.keysym.scancode == SDL_SCANCODE_D ) {
                     /*
                      * Debugger window: Alt + D
@@ -717,7 +719,7 @@ int lcmp_fb_row ( uint8_t *f0, uint8_t *f1, int start_x ) {
     int x;
 
     //    for ( x = start_x; x < DISPLAY_VISIBLE_WIDTH; x++ ) {
-    for ( x = start_x; x < DISPLAY_BORDER_LEFT_WIDTH + DISPLAY_SCREEN_WIDTH; x++ ) {
+    for ( x = start_x; x < VIDEO_BORDER_LEFT_WIDTH + VIDEO_CANVAS_WIDTH; x++ ) {
         if ( f0 [ x ] != f1 [ x ] ) {
             return x;
         };
@@ -732,7 +734,7 @@ unsigned fb_search_block_end ( uint8_t *f0, uint8_t *f1, int start_x ) {
     int count_eq = 0;
 
     //    for ( x = start_x; x < DISPLAY_VISIBLE_WIDTH; x++ ) {
-    for ( x = start_x; x < DISPLAY_BORDER_LEFT_WIDTH + DISPLAY_SCREEN_WIDTH; x++ ) {
+    for ( x = start_x; x < VIDEO_BORDER_LEFT_WIDTH + VIDEO_CANVAS_WIDTH; x++ ) {
         if ( f0 [ x ] != f1 [ x ] ) {
             count_eq = 0;
         } else {
@@ -920,37 +922,37 @@ void iface_sdl_update_window ( void ) {
 
         if ( g_gdg.framebuffer_state == FB_STATE_BORDER_CHANGED ) {
 
-            update_box.x = DISPLAY_BORDER_TOP_FIRST_COLUMN;
-            update_box.y = DISPLAY_BORDER_TOP_FIRST_ROW;
-            update_box.w = DISPLAY_BORDER_TOP_WIDTH;
-            update_box.h = DISPLAY_BORDER_TOP_HEIGHT;
+            update_box.x = VIDEO_BEAM_BORDER_TOP_FIRST_COLUMN;
+            update_box.y = VIDEO_BEAM_BORDER_TOP_FIRST_ROW;
+            update_box.w = VIDEO_BORDER_TOP_WIDTH;
+            update_box.h = VIDEO_BORDER_TOP_HEIGHT;
             if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
                 fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __func__, __LINE__, SDL_GetError ( ) );
                 main_app_quit ( EXIT_FAILURE );
             };
 
-            update_box.x = DISPLAY_BORDER_LEFT_FIRST_COLUMN;
-            update_box.y = DISPLAY_BORDER_LEFT_FIRST_ROW;
-            update_box.w = DISPLAY_BORDER_LEFT_WIDTH;
-            update_box.h = DISPLAY_BORDER_LEFT_HEIGHT;
+            update_box.x = VIDEO_BEAM_BORDER_LEFT_FIRST_COLUMN;
+            update_box.y = VIDEO_BEAM_BORDER_LEFT_FIRST_ROW;
+            update_box.w = VIDEO_BORDER_LEFT_WIDTH;
+            update_box.h = VIDEO_BORDER_LEFT_HEIGHT;
             if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
                 fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __func__, __LINE__, SDL_GetError ( ) );
                 main_app_quit ( EXIT_FAILURE );
             };
 
-            update_box.x = DISPLAY_BORDER_RIGHT_FIRST_COLUMN;
-            update_box.y = DISPLAY_BORDER_RIGHT_FIRST_ROW;
-            update_box.w = DISPLAY_BORDER_RIGHT_WIDTH;
-            update_box.h = DISPLAY_BORDER_RIGHT_HEIGHT;
+            update_box.x = VIDEO_BEAM_BORDER_RIGHT_FIRST_COLUMN;
+            update_box.y = VIDEO_BEAM_BORDER_RIGHT_FIRST_ROW;
+            update_box.w = VIDEO_BORDER_RIGHT_WIDTH;
+            update_box.h = VIDEO_BORDER_RIGHT_HEIGHT;
             if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
                 fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __func__, __LINE__, SDL_GetError ( ) );
                 main_app_quit ( EXIT_FAILURE );
             };
 
-            update_box.x = DISPLAY_BORDER_BOTOM_FIRST_COLUMN;
-            update_box.y = DISPLAY_BORDER_BOTOM_FIRST_ROW;
-            update_box.w = DISPLAY_BORDER_BOTOM_WIDTH;
-            update_box.h = DISPLAY_BORDER_BOTOM_HEIGHT;
+            update_box.x = VIDEO_BEAM_BORDER_BOTOM_FIRST_COLUMN;
+            update_box.y = VIDEO_BEAM_BORDER_BOTOM_FIRST_ROW;
+            update_box.w = VIDEO_BORDER_BOTOM_WIDTH;
+            update_box.h = VIDEO_BORDER_BOTOM_HEIGHT;
             if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
                 fprintf ( stderr, "%s():%d - SDL_RenderCopyEx(): %s\n", __func__, __LINE__, SDL_GetError ( ) );
                 main_app_quit ( EXIT_FAILURE );
@@ -959,10 +961,10 @@ void iface_sdl_update_window ( void ) {
         } else if ( g_gdg.framebuffer_state == FB_STATE_SCREEN_CHANGED ) {
 
 #if 1
-            update_box.x = DISPLAY_SCREEN_FIRST_COLUMN;
-            update_box.y = DISPLAY_SCREEN_FIRST_ROW;
-            update_box.w = DISPLAY_SCREEN_WIDTH;
-            update_box.h = DISPLAY_SCREEN_HEIGHT;
+            update_box.x = VIDEO_BEAM_CANVAS_FIRST_COLUMN;
+            update_box.y = VIDEO_BEAM_CANVAS_FIRST_ROW;
+            update_box.w = VIDEO_CANVAS_WIDTH;
+            update_box.h = VIDEO_CANVAS_HEIGHT;
             if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {
                 fprintf ( stderr, "%s():%d - Could not copy from texture: %s\n", __func__, __LINE__, SDL_GetError ( ) );
                 main_app_quit ( EXIT_FAILURE );
@@ -975,11 +977,11 @@ void iface_sdl_update_window ( void ) {
 
             unsigned row;
 
-            for ( row = DISPLAY_SCREEN_FIRST_ROW; row <= DISPLAY_SCREEN_LAST_ROW; row++ ) {
-                uint8_t *active = (uint8_t*) g_iface_sdl.active_surface->pixels + ( row * DISPLAY_VISIBLE_WIDTH );
-                uint8_t *old = (uint8_t*) g_iface_sdl.old_surface->pixels + ( row * DISPLAY_VISIBLE_WIDTH );
+            for ( row = VIDEO_BEAM_CANVAS_FIRST_ROW; row <= VIDEO_BEAM_CANVAS_LAST_ROW; row++ ) {
+                uint8_t *active = (uint8_t*) g_iface_sdl.active_surface->pixels + ( row * VIDEO_DISPLAY_WIDTH );
+                uint8_t *old = (uint8_t*) g_iface_sdl.old_surface->pixels + ( row * VIDEO_DISPLAY_WIDTH );
 
-                int px_start = lcmp_fb_row ( active, old, DISPLAY_BORDER_LEFT_WIDTH );
+                int px_start = lcmp_fb_row ( active, old, VIDEO_BORDER_LEFT_WIDTH );
 
 
                 if ( -1 != px_start ) {
@@ -1046,10 +1048,10 @@ void iface_sdl_update_window ( void ) {
 void iface_sdl_update_window_in_beam_interval ( unsigned beam_start, unsigned beam_end ) {
 
 
-    if ( beam_start >= BEAM_TICKS ( DISPLAY_VISIBLE_LAST_ROW, DISPLAY_VISIBLE_LAST_COLUMN ) ) return;
+    if ( beam_start >= VIDEO_GET_DISPLAY_ADDR ( VIDEO_BEAM_DISPLAY_LAST_ROW, VIDEO_BEAM_DISPLAY_LAST_COLUMN ) ) return;
 
-    if ( beam_end > BEAM_TICKS ( DISPLAY_VISIBLE_LAST_ROW, DISPLAY_VISIBLE_LAST_COLUMN ) ) {
-        beam_end = BEAM_TICKS ( DISPLAY_VISIBLE_LAST_ROW, DISPLAY_VISIBLE_LAST_COLUMN );
+    if ( beam_end > VIDEO_GET_DISPLAY_ADDR ( VIDEO_BEAM_DISPLAY_LAST_ROW, VIDEO_BEAM_DISPLAY_LAST_COLUMN ) ) {
+        beam_end = VIDEO_GET_DISPLAY_ADDR ( VIDEO_BEAM_DISPLAY_LAST_ROW, VIDEO_BEAM_DISPLAY_LAST_COLUMN );
     };
 
 
@@ -1064,22 +1066,22 @@ void iface_sdl_update_window_in_beam_interval ( unsigned beam_start, unsigned be
 
     SDL_Rect update_box;
 
-    unsigned row1 = BEAM_ROW ( beam_start );
-    unsigned col1 = BEAM_COL ( beam_start );
-    if ( col1 >= DISPLAY_VISIBLE_LAST_COLUMN ) {
+    unsigned row1 = VIDEO_GET_SCREEN_ROW ( beam_start );
+    unsigned col1 = VIDEO_GET_SCREEN_COL ( beam_start );
+    if ( col1 >= VIDEO_BEAM_DISPLAY_LAST_COLUMN ) {
         row1++;
         col1 = 0;
     };
 
-    unsigned row2 = BEAM_ROW ( beam_end );
-    unsigned col2 = BEAM_COL ( beam_end );
+    unsigned row2 = VIDEO_GET_SCREEN_ROW ( beam_end );
+    unsigned col2 = VIDEO_GET_SCREEN_COL ( beam_end );
 
     
-    if ( col2 > DISPLAY_VISIBLE_LAST_COLUMN ) {
-        col2 = DISPLAY_VISIBLE_LAST_COLUMN;
+    if ( col2 > VIDEO_BEAM_DISPLAY_LAST_COLUMN ) {
+        col2 = VIDEO_BEAM_DISPLAY_LAST_COLUMN;
     };
 
-    if ( BEAM_TICKS ( row1, col1 ) >= BEAM_TICKS ( row2, col2 ) ) return;
+    if ( VIDEO_GET_DISPLAY_ADDR ( row1, col1 ) >= VIDEO_GET_DISPLAY_ADDR ( row2, col2 ) ) return;
 
     //printf ( "Update interval: %d, %d - %d, %d\n", row1, col1, row2, col2 );
 
@@ -1089,7 +1091,7 @@ void iface_sdl_update_window_in_beam_interval ( unsigned beam_start, unsigned be
     if ( row1 == row2 ) {
         update_box.w = col2 - col1;
     } else {
-        update_box.w = DISPLAY_VISIBLE_LAST_COLUMN - col1;
+        update_box.w = VIDEO_BEAM_DISPLAY_LAST_COLUMN - col1;
     };
     update_box.h = 1;
 
@@ -1101,12 +1103,12 @@ void iface_sdl_update_window_in_beam_interval ( unsigned beam_start, unsigned be
     col1 = 0;
     update_box.y++;
 
-    if ( BEAM_TICKS ( update_box.y, col1 ) < BEAM_TICKS ( row2, col2 ) ) {
+    if ( VIDEO_GET_DISPLAY_ADDR ( update_box.y, col1 ) < VIDEO_GET_DISPLAY_ADDR ( row2, col2 ) ) {
 
         update_box.x = 0;
 
         if ( update_box.y != row2 ) {
-            update_box.w = DISPLAY_VISIBLE_LAST_COLUMN;
+            update_box.w = VIDEO_BEAM_DISPLAY_LAST_COLUMN;
             update_box.h = row2 - update_box.y;
 
             if ( SDL_RenderCopyEx ( g_iface_sdl.renderer, texture, &update_box, &update_box, 0, NULL, SDL_FLIP_NONE ) ) {

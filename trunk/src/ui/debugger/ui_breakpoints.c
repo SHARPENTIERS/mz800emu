@@ -23,6 +23,8 @@
  * ---------------------------------------------------------------------------
  */
 
+#include "mz800emu_cfg.h"
+
 #include <gtk/gtk.h>
 #include <glib.h>
 #include <glib/gprintf.h>
@@ -33,7 +35,7 @@
 #include <gtk-3.0/gtk/gtktogglebutton.h>
 
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 
 #include "ui/debugger/ui_breakpoints.h"
 #include "ui/ui_main.h"

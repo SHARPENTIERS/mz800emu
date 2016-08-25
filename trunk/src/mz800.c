@@ -23,6 +23,8 @@
  * ---------------------------------------------------------------------------
  */
 
+#include "mz800emu_cfg.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -63,7 +65,7 @@
 #include "ui/ui_main.h"
 #include "typedefs.h"
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 #include "debugger/debugger.h"
 #include "debugger/breakpoints.h"
 #include "ui/debugger/ui_breakpoints.h"
@@ -77,9 +79,6 @@
 
 
 struct st_mz800 g_mz800;
-
-/* Volba v tuto chvili uplne vypne, nebo zapne pomaly 1M1_CLK a cmt_step() */
-#define SLOW_CTC0_v1   1
 
 
 void mz800_reset ( void ) {
@@ -100,7 +99,7 @@ void mz800_reset ( void ) {
 
     cmthack_reset ( );
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     debugger_update_all ( );
 #endif
 
@@ -113,7 +112,7 @@ void mz800_exit ( void ) {
     ramdisc_exit ( );
     cmthack_exit ( );
     cmt_exit ( );
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     debugger_exit ( );
 #endif
 }
@@ -126,11 +125,11 @@ void mz800_set_display_mode ( Z80EX_BYTE dmd_mode ) {
 
     if ( dmd_mode & REGISTER_DMD_FLAG_MZ700 ) {
         /* rezim MZ-700 */
-        ctc8253_gate ( 0, g_gdg.regct53g7, g_gdg.screen_ticks_elapsed );
+        ctc8253_gate ( 0, g_gdg.regct53g7, g_gdg.elapsed_screen_ticks );
 
     } else {
         /* rezim MZ-800 */
-        ctc8253_gate ( 0, 1, g_gdg.screen_ticks_elapsed );
+        ctc8253_gate ( 0, 1, g_gdg.elapsed_screen_ticks );
         g_vramctrl.mz700_wr_latch_is_used = 0;
     };
 
@@ -188,17 +187,17 @@ void mz800_init ( void ) {
     CFGELM *elm;
 
     elm = cfgmodule_register_new_element ( cmod, "development_mode", CFGENTYPE_KEYWORD, DEVELMODE_NO,
-            DEVELMODE_NO, "NO",
-            DEVELMODE_YES, "YES",
-            -1 );
-    
+                                           DEVELMODE_NO, "NO",
+                                           DEVELMODE_YES, "YES",
+                                           -1 );
+
     cfgelement_set_handlers ( elm, (void*) &g_mz800.development_mode, (void*) &g_mz800.development_mode );
 
     elm = cfgmodule_register_new_element ( cmod, "mz800_switch", CFGENTYPE_KEYWORD, MZ800SWITCH_OFF,
-            MZ800SWITCH_OFF, "OFF",
-            MZ800SWITCH_ON, "ON",
-            -1 );
-    
+                                           MZ800SWITCH_OFF, "OFF",
+                                           MZ800SWITCH_ON, "ON",
+                                           -1 );
+
     cfgelement_set_handlers ( elm, (void*) &g_mz800.mz800_switch, (void*) &g_mz800.mz800_switch );
 
     cfgmodule_parse ( cmod );
@@ -213,12 +212,12 @@ void mz800_init ( void ) {
     mz800_pause_emulation ( 0 );
 
     g_mz800.cpu = z80ex_create (
-            memory_read_cb, NULL,
-            memory_write_cb, NULL,
-            port_read_cb, NULL,
-            port_write_cb, NULL,
-            pioz80_intread_cb, NULL
-            );
+                                 memory_read_cb, NULL,
+                                 memory_write_cb, NULL,
+                                 port_read_cb, NULL,
+                                 port_write_cb, NULL,
+                                 pioz80_intread_cb, NULL
+                                 );
 
     /*
         z80ex_set_tstate_callback ( g_mz800.cpu, mz800_tstate_cb, NULL );
@@ -247,7 +246,7 @@ void mz800_init ( void ) {
     cmt_init ( );
     qdisk_init ( );
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     debugger_init ( );
 #endif
 
@@ -258,7 +257,7 @@ void mz800_init ( void ) {
 static volatile unsigned make_picture_time = 1;
 static volatile unsigned update_status_time = 1;
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 static volatile unsigned update_debugger_time = 1;
 #endif
 
@@ -292,7 +291,7 @@ uint32_t screens_counter_flush ( uint32_t interval, void* param ) {
         make_pic_counter--;
     };
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     static unsigned debugger_update_counter = 0;
 
     if ( !TEST_EMULATION_PAUSED ) {
@@ -326,7 +325,7 @@ uint32_t screens_counter_flush ( uint32_t interval, void* param ) {
 
         call_counter = ( ( 1000 / INTERRUPT_TIMER_MS ) ) - 1;
         static unsigned last = 0;
-        unsigned i = g_gdg.screens_counter;
+        unsigned i = g_gdg.elapsed_total_screens;
         unsigned j = i - last;
         last = i;
         g_mz800.status_emulation_speed = (float) j / 0.5;
@@ -344,15 +343,116 @@ uint32_t screens_counter_flush ( uint32_t interval, void* param ) {
     return interval;
 }
 
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+
+
+static inline st_EVENT* mz800_place_proximate_clk1m1_event ( void ) {
+
+    if ( g_ctc8253 [ CTC_CS0 ].clk1m1_event.ticks <= g_cmt.clk1m1_event.ticks ) {
+        return &g_ctc8253 [ CTC_CS0 ].clk1m1_event;
+    };
+
+    return &g_cmt.clk1m1_event;
+}
+
+#endif
+
+
+static void mz800_screen_done_event ( void ) {
+
+#if 0
+    if ( pool_events_time ) {
+        iface_sdl_pool_window_events ( );
+        pool_events_time = 0;
+    };
+#endif
+
+    static unsigned last_make_picture_time;
+    if ( ( g_mz800.emulation_speed == 0 ) || ( last_make_picture_time != make_picture_time ) ) {
+        last_make_picture_time = make_picture_time;
+
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+        if ( g_debugger.animated_updates ) debugger_animation ( );
+#endif
+
+        if ( update_status_time ) {
+            update_status_time = 0;
+            iface_sdl_render_status_line ( );
+        };
+        iface_sdl_pool_all_events ( );
+        ui_iteration ( );
+
+
+
+        //g_iface_sdl.redraw_full_screen_request = 1;
+        if ( g_gdg.framebuffer_state || g_iface_sdl.redraw_full_screen_request ) {
+            iface_sdl_update_window ( );
+            g_gdg.framebuffer_state = FB_STATE_NOT_CHANGED;
+
+
+            g_gdg.screen_is_already_rendered_at_beam_pos = g_mz800.event.ticks;
+#if 0
+
+        } else if ( g_mz800.status_changed ) {
+            iface_sdl_render_status_line ( );
+#endif
+        };
+
+#ifdef AUDIO_FILLBUFF_v1
+        audio_fill_buffer ( g_mz800.event.ticks );
+#endif
+
+#ifndef MZ800EMU_CFG_AUDIO_DISABLED
+        audio_sdl_wait_to_cycle_done ( );
+#endif
+
+        g_audio.last_update = 0;
+        g_audio.buffer_position = 0;
+
+        //make_picture_time = 0;
+    };
+
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+    ctc8253_on_screen_done_event ( );
+    cmt_on_screen_done_event ( );
+#endif
+
+    g_gdg.elapsed_total_screens++;
+    g_gdg.elapsed_screen_ticks -= ( VIDEO_SCREEN_TICKS - 1 );
+    g_gdg.beam_row = 0;
+
+
+}
+
 
 static inline void mz800_sync ( void ) {
 
-    while ( g_gdg.screen_ticks_elapsed >= g_mz800.event.ticks ) {
+    while ( g_gdg.elapsed_screen_ticks >= g_mz800.event.ticks ) {
 
-        if ( g_mz800.event.event_name >= EVENT_MZ800_INTERRUPT ) {
+        if ( g_mz800.event.event_name >= EVENT_NO_GDG ) {
+
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+            if ( g_ctc8253 [ CTC_CS0 ].clk1m1_event.ticks <= g_mz800.event.ticks ) {
+                ctc8253_ctc1m1_event ( g_mz800.event.ticks );
+            };
+
+            if ( g_cmt.clk1m1_event.ticks <= g_mz800.event.ticks ) {
+                cmt_ctc1m1_event ( g_mz800.event.ticks );
+            };
+
+            st_EVENT *proximate_clk1m1_event = mz800_place_proximate_clk1m1_event ( );
+
+            if ( g_gdg.event.ticks >= proximate_clk1m1_event->ticks ) {
+                g_mz800.event.event_name = proximate_clk1m1_event->event_name;
+                g_mz800.event.ticks = proximate_clk1m1_event->ticks;
+                return;
+            };
+#endif
+
             g_mz800.event.event_name = g_gdg.event.event_name;
             g_mz800.event.ticks = g_gdg.event.ticks;
-            if ( !( g_gdg.screen_ticks_elapsed >= g_mz800.event.ticks ) ) return;
+
+            if ( !( g_gdg.elapsed_screen_ticks >= g_mz800.event.ticks ) ) return;
         };
 
 
@@ -364,13 +464,13 @@ static inline void mz800_sync ( void ) {
                 g_gdg.screen_is_already_rendered_at_beam_pos = g_mz800.event.ticks;
 
                 /* V rezimu MZ-700 aktualizujeme screen framebuffer jakmile skonci HBLN. */
-                if ( ( DMD_TEST_MZ700 ) && ( ( g_gdg.beam_row >= DISPLAY_SCREEN_FIRST_ROW ) && ( g_gdg.beam_row <= DISPLAY_SCREEN_LAST_ROW ) ) ) {
+                if ( ( DMD_TEST_MZ700 ) && ( ( g_gdg.beam_row >= VIDEO_BEAM_CANVAS_FIRST_ROW ) && ( g_gdg.beam_row <= VIDEO_BEAM_CANVAS_LAST_ROW ) ) ) {
                     if ( g_gdg.screen_changes ) {
                         framebuffer_update_MZ700_screen_row ( );
                     };
 
                     /* Pokud jsme na poslednim pixelu screen area */
-                    if ( g_gdg.beam_row == DISPLAY_SCREEN_LAST_ROW ) {
+                    if ( g_gdg.beam_row == VIDEO_BEAM_CANVAS_LAST_ROW ) {
                         if ( g_gdg.screen_changes ) {
                             g_gdg.screen_changes--;
                             g_gdg.framebuffer_state |= FB_STATE_SCREEN_CHANGED;
@@ -379,15 +479,6 @@ static inline void mz800_sync ( void ) {
                 };
                 break;
 
-#if 0                
-#ifdef LINUX
-            case EVENT_GDG_HALF_SCREEN:
-                //printf ( "half\n" );
-                audio_fill_buffer ( g_mz800.event.ticks );
-                audio_sdl_wait_to_cycle_done ( );
-                break;
-#endif
-#endif           
 
             case EVENT_GDG_HBLN_START:
                 g_gdg.hbln = HBLN_ACTIVE;
@@ -395,9 +486,9 @@ static inline void mz800_sync ( void ) {
 
                 unsigned last_vbln_state = g_gdg.vbln;
 
-                if ( g_gdg.beam_row == DISPLAY_SCREEN_LAST_ROW ) {
+                if ( g_gdg.beam_row == VIDEO_BEAM_CANVAS_LAST_ROW ) {
                     g_gdg.vbln = VBLN_ACTIVE;
-                } else if ( g_gdg.beam_row == DISPLAY_SCREEN_FIRST_ROW - 1 ) {
+                } else if ( g_gdg.beam_row == VIDEO_BEAM_CANVAS_FIRST_ROW - 1 ) {
                     g_gdg.vbln = VBLN_OFF;
                 };
 
@@ -423,11 +514,11 @@ static inline void mz800_sync ( void ) {
                 if ( !DMD_TEST_MZ700 ) {
                     //g_gdg.screen_changes = 1;
                     if ( g_gdg.screen_changes ) {
-                        framebuffer_MZ800_screen_row_fill ( DISPLAY_SCREEN_WIDTH );
+                        framebuffer_MZ800_screen_row_fill ( VIDEO_CANVAS_WIDTH );
                     };
 
                     /* Pokud jsme na poslednim pixelu screen area */
-                    if ( g_gdg.beam_row == DISPLAY_SCREEN_LAST_ROW ) {
+                    if ( g_gdg.beam_row == VIDEO_BEAM_CANVAS_LAST_ROW ) {
                         if ( g_gdg.screen_changes ) {
                             g_gdg.screen_changes--;
                             g_gdg.framebuffer_state |= FB_STATE_SCREEN_CHANGED;
@@ -445,14 +536,14 @@ static inline void mz800_sync ( void ) {
             case EVENT_GDG_AFTER_LAST_VISIBLE_PIXEL:
                 g_gdg.sts_hsync = HSYN_ACTIVE; /* aktivni o par ticku drive */
                 /* Jsme skutecne jeste ve viditelne casti obrazu? */
-                if ( g_gdg.beam_row < DISPLAY_VISIBLE_HEIGHT ) {
+                if ( g_gdg.beam_row < VIDEO_DISPLAY_HEIGHT ) {
                     if ( g_gdg.border_changes ) {
                         framebuffer_border_row_fill ( );
                     };
-                    g_gdg.last_updated_border_pixel = DISPLAY_VISIBLE_LAST_COLUMN + 1;
+                    g_gdg.last_updated_border_pixel = VIDEO_BEAM_DISPLAY_LAST_COLUMN + 1;
 
                     /* Pokud jsme na poslednim pixelu visible area */
-                    if ( g_gdg.beam_row == DISPLAY_VISIBLE_LAST_ROW ) {
+                    if ( g_gdg.beam_row == VIDEO_BEAM_DISPLAY_LAST_ROW ) {
                         if ( g_gdg.border_changes ) {
                             g_gdg.border_changes--;
                             g_gdg.framebuffer_state |= FB_STATE_BORDER_CHANGED;
@@ -468,7 +559,7 @@ static inline void mz800_sync ( void ) {
                 break;
 
 
-            case EVENT_GDG_BEAM_ROW_END:
+            case EVENT_GDG_SCREEN_ROW_END:
                 g_gdg.sts_hsync = HSYN_OFF;
                 g_gdg.tempo_divider++;
                 /* Na mem MZ800 ma TEMPO pravdepodobne cca 34 Hz - tedy od oka :) */
@@ -479,92 +570,60 @@ static inline void mz800_sync ( void ) {
 
                 /* Muzeme vynulovat update pozici borderu ve framebufferu? */
                 /* (Pokud ma jinou hodnotu, tak to znamena, ze pres OUT doslo ke zmene radku, ktery teprve nastane.) */
-                if ( g_gdg.last_updated_border_pixel == DISPLAY_VISIBLE_LAST_COLUMN + 1 ) {
+                if ( g_gdg.last_updated_border_pixel == VIDEO_BEAM_DISPLAY_LAST_COLUMN + 1 ) {
                     g_gdg.last_updated_border_pixel = 0;
                 };
 
                 g_gdg.screen_need_update_from = 0;
 
-                if ( g_gdg.beam_row < BEAM_TOTAL_ROWS - 1 ) {
-
+                if ( g_gdg.beam_row < VIDEO_SCREEN_HEIGHT - 1 ) {
                     g_gdg.beam_row++;
-
                 } else {
-
-#if 0
-                    if ( pool_events_time ) {
-                        iface_sdl_pool_window_events ( );
-                        pool_events_time = 0;
-                    };
-#endif
-                    static unsigned last_make_picture_time;
-                    if ( ( g_mz800.emulation_speed == 0 ) || ( last_make_picture_time != make_picture_time ) ) {
-                        last_make_picture_time = make_picture_time;
-
-                        if ( g_debugger.animated_updates ) debugger_animation ( );
-
-                        if ( update_status_time ) {
-                            update_status_time = 0;
-                            iface_sdl_render_status_line ( );
-                        };
-                        iface_sdl_pool_all_events ( );
-                        ui_iteration ( );
-
-
-
-                        //g_iface_sdl.redraw_full_screen_request = 1;
-                        if ( g_gdg.framebuffer_state || g_iface_sdl.redraw_full_screen_request ) {
-                            iface_sdl_update_window ( );
-                            g_gdg.framebuffer_state = FB_STATE_NOT_CHANGED;
-
-
-                            g_gdg.screen_is_already_rendered_at_beam_pos = g_mz800.event.ticks;
-#if 0
-
-                        } else if ( g_mz800.status_changed ) {
-                            iface_sdl_render_status_line ( );
-#endif
-                        };
-
-                        audio_fill_buffer ( g_mz800.event.ticks );
-                        audio_sdl_wait_to_cycle_done ( );
-
-                        g_audio.last_update = 0;
-                        g_audio.buffer_position = 0;
-
-                        //make_picture_time = 0;
-                    };
-
-                    g_gdg.screens_counter++;
-                    g_gdg.screen_ticks_elapsed -= ( PICTURE_TICKS - 1 );
-                    g_gdg.beam_row = 0;
-
-                    //audio_sdl_start_cycle ( );
-
+                    mz800_screen_done_event ( );
                 };
                 break;
 
                 /* tyto eventy neni potreba zde resit */
-            case EVENT_USER_INTERFACE:
+            case EVENT_NO_GDG:
             case EVENT_MZ800_INTERRUPT:
+            case EVENT_USER_INTERFACE:
+
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+            case EVENT_CTC0:
+            case EVENT_CMT:
+#endif
                 break;
         };
 
 
         /* Presun na dalsi GDG event */
-        if ( g_gdg.event.event_name == EVENT_GDG_BEAM_ROW_END ) {
+        if ( g_gdg.event.event_name == EVENT_GDG_SCREEN_ROW_END ) {
             g_gdg.event.event_name = 0;
         } else {
             g_gdg.event.event_name++;
         };
 
         while ( 1 ) {
-            if ( ( g_gdgevent[ g_gdg.event.event_name ].start_row <= g_gdg.beam_row ) && ( ( g_gdgevent [ g_gdg.event.event_name ].start_row + g_gdgevent[ g_gdg.event.event_name ].num_rows - 1 ) >= g_gdg.beam_row ) ) {
-                g_gdg.event.ticks = g_gdg.beam_row * BEAM_TOTAL_COLS + g_gdgevent[ g_gdg.event.event_name ].event_column;
+            if ( ( g_gdgevent[ g_gdg.event.event_name ].start_row <= g_gdg.beam_row ) &&
+                 ( ( g_gdgevent [ g_gdg.event.event_name ].start_row + g_gdgevent[ g_gdg.event.event_name ].num_rows - 1 ) >= g_gdg.beam_row ) ) {
+
+                g_gdg.event.ticks = g_gdg.beam_row * VIDEO_SCREEN_WIDTH + g_gdgevent[ g_gdg.event.event_name ].event_column;
+
                 break;
             };
             g_gdg.event.event_name++;
         };
+
+
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+        st_EVENT *proximate_clk1m1_event = mz800_place_proximate_clk1m1_event ( );
+
+        if ( g_gdg.event.ticks >= proximate_clk1m1_event->ticks ) {
+            g_mz800.event.event_name = proximate_clk1m1_event->event_name;
+            g_mz800.event.ticks = proximate_clk1m1_event->ticks;
+            return;
+        };
+#endif
 
         g_mz800.event.event_name = g_gdg.event.event_name;
         g_mz800.event.ticks = g_gdg.event.ticks;
@@ -572,26 +631,31 @@ static inline void mz800_sync ( void ) {
 }
 
 
-#if SLOW_CTC0_v1
+#ifdef MZ800EMU_CFG_CLK1M1_SLOW
 
 
-#define mz800_sync_ctc0_and_cmt( instruction_ticks ) {\
-    g_gdg.screen_ticks_elapsed -= g_gdg.ctc0clk;\
-    instruction_ticks += g_gdg.ctc0clk;\
-    while ( instruction_ticks > GDGCLK_1M1_DIVIDER - 1 ) {\
-        g_gdg.screen_ticks_elapsed += GDGCLK_1M1_DIVIDER;\
-        instruction_ticks -= GDGCLK_1M1_DIVIDER;\
-\
-        ctc8253_clkfall ( CTC_CS0, g_gdg.screen_ticks_elapsed );\
-\
-        /* TODO: prozatim si sem povesime i pomaly cmt_step() */\
-        if ( TEST_CMT_PLAYING ) {\
-            cmt_step ( );\
-        };\
-    };\
-    g_gdg.ctc0clk = instruction_ticks;\
-    g_gdg.screen_ticks_elapsed += instruction_ticks;\
+static inline void mz800_sync_ctc0_and_cmt ( unsigned instruction_ticks ) {
+
+    g_gdg.elapsed_screen_ticks -= g_gdg.ctc0clk;
+    instruction_ticks += g_gdg.ctc0clk;
+
+    while ( instruction_ticks > GDGCLK_1M1_DIVIDER - 1 ) {
+
+        g_gdg.elapsed_screen_ticks += GDGCLK_1M1_DIVIDER;
+        instruction_ticks -= GDGCLK_1M1_DIVIDER;
+
+        ctc8253_clkfall ( CTC_CS0, g_gdg.elapsed_screen_ticks );
+
+        /* TODO: prozatim si sem povesime i pomaly cmt_step() */
+        if ( TEST_CMT_PLAYING ) {
+            cmt_step ( );
+        };
+    };
+
+    g_gdg.ctc0clk = instruction_ticks;
+    g_gdg.elapsed_screen_ticks += instruction_ticks;
 }
+
 #endif
 
 
@@ -601,7 +665,7 @@ static inline void mz800_sync ( void ) {
 /* To by mohlo byt zpusobeno tim jak a kdy se scanuje klavesnice - tedy zase az tak velikou haluz zrejme nemame */
 void mz800_sync_inside_cpu ( en_INSIDEOP insideop ) {
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     if ( TEST_DEBUGGER_MEMOP_CALL ) return;
 #endif
 
@@ -612,13 +676,27 @@ void mz800_sync_inside_cpu ( en_INSIDEOP insideop ) {
     st_EVENT hpr_event;
 
     if ( g_mz800.event.event_name >= EVENT_MZ800_INTERRUPT ) {
+
         if ( g_mz800.event.event_name > EVENT_MZ800_INTERRUPT ) {
             flag_high_priority_event = 1;
             hpr_event.event_name = g_mz800.event.event_name;
             hpr_event.ticks = g_mz800.event.ticks;
         };
+
+#ifdef MZ800EMU_CFG_CLK1M1_FAST        
+        st_EVENT *proximate_clk1m1_event = mz800_place_proximate_clk1m1_event ( );
+
+        if ( g_gdg.event.ticks >= proximate_clk1m1_event->ticks ) {
+            g_mz800.event.event_name = proximate_clk1m1_event->event_name;
+            g_mz800.event.ticks = proximate_clk1m1_event->ticks;
+        } else {
+            g_mz800.event.event_name = g_gdg.event.event_name;
+            g_mz800.event.ticks = g_gdg.event.ticks;
+        };
+#else
         g_mz800.event.event_name = g_gdg.event.event_name;
         g_mz800.event.ticks = g_gdg.event.ticks;
+#endif
 
     };
 
@@ -626,7 +704,7 @@ void mz800_sync_inside_cpu ( en_INSIDEOP insideop ) {
 
     if ( insideop == INSIDEOP_MZ700_NOTHBLN_VRAM_MREQ ) {
 
-        unsigned gdg_ticks_to_hbln = BEAM_HBLN_START_COLUMN - BEAM_COL ( g_gdg.screen_ticks_elapsed );
+        unsigned gdg_ticks_to_hbln = VIDEO_BEAM_HBLN_FIRST_COLUMN - VIDEO_GET_SCREEN_COL ( g_gdg.elapsed_screen_ticks );
         gdg_ticks_to_hbln += GDGCLK2CPU_DIVIDER - ( gdg_ticks_to_hbln % GDGCLK2CPU_DIVIDER );
         z80ex_w_states ( g_mz800.cpu, ( gdg_ticks_to_hbln / GDGCLK2CPU_DIVIDER ) );
 
@@ -669,13 +747,13 @@ void mz800_sync_inside_cpu ( en_INSIDEOP insideop ) {
 
 
 
-#if SLOW_CTC0_v1
+#ifdef MZ800EMU_CFG_CLK1M1_SLOW
     mz800_sync_ctc0_and_cmt ( insideop_ticks );
 #else
-    g_gdg.screen_ticks_elapsed += insideop_ticks;
+    g_gdg.elapsed_screen_ticks += insideop_ticks;
 #endif
 
-    if ( g_gdg.screen_ticks_elapsed >= g_gdg.event.ticks ) {
+    if ( g_gdg.elapsed_screen_ticks >= g_gdg.event.ticks ) {
         mz800_sync ( );
     };
 
@@ -696,7 +774,7 @@ static inline void mz800_do_emulation_paused ( void ) {
 
     //printf ( "Emulation paused - PC: 0x%04x.\n", z80ex_get_reg ( g_mz800.cpu, regPC ) );
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 
     debugger_update_all ( );
     debugger_step_call ( 0 );
@@ -707,8 +785,9 @@ static inline void mz800_do_emulation_paused ( void ) {
     if ( !DMD_TEST_MZ700 ) {
         framebuffer_MZ800_screen_changed ( );
     };
-    iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos, g_gdg.screen_ticks_elapsed );
-    g_gdg.screen_is_already_rendered_at_beam_pos = g_gdg.screen_ticks_elapsed;
+    unsigned screen_elapsed_ticks = g_gdg.elapsed_screen_ticks;
+    iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos, screen_elapsed_ticks );
+    g_gdg.screen_is_already_rendered_at_beam_pos = screen_elapsed_ticks;
 
     while ( TEST_EMULATION_PAUSED && ( !TEST_DEBUGGER_STEP_CALL ) ) {
         iface_sdl_pool_all_events ( );
@@ -726,7 +805,7 @@ static inline void mz800_do_emulation_paused ( void ) {
 #else // MZ800_DEBUGGER
 
     iface_sdl_render_status_line ( );
-    iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos, g_gdg.screen_ticks_elapsed );
+    iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos, g_gdg.elapsed_screen_ticks );
 
 
     while ( TEST_EMULATION_PAUSED ) {
@@ -742,6 +821,8 @@ static inline void mz800_do_emulation_paused ( void ) {
 
 }
 
+#include <inttypes.h>
+
 
 void mz800_main ( void ) {
 
@@ -756,6 +837,7 @@ void mz800_main ( void ) {
 
     g_mz800.event.event_name = g_gdg.event.event_name;
     g_mz800.event.ticks = g_gdg.event.ticks;
+
 
 
     while ( 1 ) {
@@ -794,14 +876,14 @@ void mz800_main ( void ) {
         } while ( z80ex_last_op_type ( g_mz800.cpu ) != 0 );
 
 
-#if SLOW_CTC0_v1
+#ifdef MZ800EMU_CFG_CLK1M1_SLOW
         mz800_sync_ctc0_and_cmt ( instruction_ticks );
 #else
-        g_gdg.screen_ticks_elapsed += instruction_ticks;
+        g_gdg.elapsed_screen_ticks += instruction_ticks;
 #endif
 
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
         /*
          * 
          * Implementace zakladnich breakpointu
@@ -818,7 +900,7 @@ void mz800_main ( void ) {
 #endif
 
 
-        if ( g_gdg.screen_ticks_elapsed >= g_mz800.event.ticks ) {
+        if ( g_gdg.elapsed_screen_ticks >= g_mz800.event.ticks ) {
             /* Pokud ceka ve fronte nejaky gdg event, interrupt, ci uzivatelem volana pauza */
 
             g_mz800.event_locked = 1;
@@ -843,12 +925,13 @@ void mz800_main ( void ) {
 
                     instruction_ticks = interrupt_ticks * GDGCLK2CPU_DIVIDER;
 
-#if SLOW_CTC0_v1
+#ifdef MZ800EMU_CFG_CLK1M1_SLOW
                     mz800_sync_ctc0_and_cmt ( instruction_ticks );
 #else
-                    g_gdg.screen_ticks_elapsed += instruction_ticks;
+                    g_gdg.elapsed_screen_ticks += instruction_ticks;
 #endif
-                    if ( g_gdg.screen_ticks_elapsed >= g_mz800.event.ticks ) {
+
+                    if ( g_gdg.elapsed_screen_ticks >= g_mz800.event.ticks ) {
                         mz800_sync ( );
                     };
 
@@ -894,9 +977,9 @@ void mz800_flush_full_screen ( void ) {
         do {
 
             if ( g_gdg.screen_changes ) {
-                if ( ( g_gdg.beam_row >= DISPLAY_SCREEN_FIRST_ROW ) && ( g_gdg.beam_row <= DISPLAY_SCREEN_LAST_ROW ) ) {
+                if ( ( g_gdg.beam_row >= VIDEO_BEAM_CANVAS_FIRST_ROW ) && ( g_gdg.beam_row <= VIDEO_BEAM_CANVAS_LAST_ROW ) ) {
                     if ( !DMD_TEST_MZ700 ) {
-                        framebuffer_MZ800_screen_row_fill ( DISPLAY_SCREEN_WIDTH );
+                        framebuffer_MZ800_screen_row_fill ( VIDEO_CANVAS_WIDTH );
                     } else {
                         framebuffer_update_MZ700_screen_row ( );
                     };
@@ -905,13 +988,13 @@ void mz800_flush_full_screen ( void ) {
             };
 
             if ( g_gdg.border_changes ) {
-                if ( g_gdg.beam_row <= DISPLAY_VISIBLE_LAST_ROW ) {
+                if ( g_gdg.beam_row <= VIDEO_BEAM_DISPLAY_LAST_ROW ) {
                     framebuffer_border_row_fill ( );
                     g_gdg.last_updated_border_pixel = 0;
                 };
             };
 
-            if ( g_gdg.beam_row < BEAM_TOTAL_ROWS - 1 ) {
+            if ( g_gdg.beam_row < VIDEO_SCREEN_HEIGHT - 1 ) {
                 g_gdg.beam_row++;
             } else {
                 g_gdg.beam_row = 0;
@@ -967,7 +1050,7 @@ void mz800_pause_emulation ( unsigned value ) {
     g_mz800.emulation_paused = value;
     ui_main_update_emulation_state ( g_mz800.emulation_paused );
 
-#if MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     if ( TEST_DEBUGGER_ACTIVE ) {
         if ( value ) {
             ui_debugger_hide_spinner_window ( );

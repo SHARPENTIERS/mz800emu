@@ -102,6 +102,7 @@
  * 
  */
 
+#include "mz800emu_cfg.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -121,22 +122,25 @@
 
 #include "ui/ui_utils.h"
 
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+#include "gdg/video.h"
+#endif
 
-mz800_cmt_t g_cmt;
+st_CMT g_cmt;
 
 
 /* krokujeme podle 1M1, coz je gdg / 16 */
-#define CMT_TIMEBASE_DIVIDER		GDGCLK_1M1_DIVIDER
+#define CMT_TIMEBASE_DIVIDER  GDGCLK_1M1_DIVIDER
 
 /* Pouzivame hodnoty namerene z ROM. V poznamce jsou hodnoty, ktere odpovidaji informacim ze SM */
-#define CMT_1200BPS_LOG1_HIGH	( 8320 / CMT_TIMEBASE_DIVIDER )	/* 8335 */
-#define CMT_1200BPS_LOG1_LOW	( 8640 / CMT_TIMEBASE_DIVIDER )	/* 8760 */
-#define CMT_1200BPS_LOG0_HIGH	( 4220 / CMT_TIMEBASE_DIVIDER )	/* 4356 */
-#define CMT_1200BPS_LOG0_LOW	( 4590 / CMT_TIMEBASE_DIVIDER )	/* 4930 */
+#define CMT_1200BPS_LOG1_HIGH ( 8320 / CMT_TIMEBASE_DIVIDER ) /* 8335 */
+#define CMT_1200BPS_LOG1_LOW ( 8640 / CMT_TIMEBASE_DIVIDER ) /* 8760 */
+#define CMT_1200BPS_LOG0_HIGH ( 4220 / CMT_TIMEBASE_DIVIDER ) /* 4356 */
+#define CMT_1200BPS_LOG0_LOW ( 4590 / CMT_TIMEBASE_DIVIDER ) /* 4930 */
 
 
-#define CMT_UI_PLAYER_REFRESH_PER_SEC			2
-#define CMT_UI_PLAYER_REFRESH_TIMER_PRESET	( GDGCLK_BASE / CMT_TIMEBASE_DIVIDER / CMT_UI_PLAYER_REFRESH_PER_SEC )
+#define CMT_UI_PLAYER_REFRESH_PER_SEC   2
+#define CMT_UI_PLAYER_REFRESH_TIMER_PRESET ( GDGCLK_BASE / CMT_TIMEBASE_DIVIDER / CMT_UI_PLAYER_REFRESH_PER_SEC )
 
 
 void cmt_exit ( void ) {
@@ -149,6 +153,11 @@ void cmt_exit ( void ) {
 
 
 void cmt_stop ( void ) {
+
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+    g_cmt.clk1m1_event.ticks = -1;
+    g_cmt.clk1m1_event.event_name = EVENT_CMT;
+#endif
 
     g_cmt.bit_counter = 0;
     g_cmt.tick_counter = 0;
@@ -196,10 +205,10 @@ void cmt_init ( void ) {
 
     CFGELM *elm;
     elm = cfgmodule_register_new_element ( cmod, "cmt_speed", CFGENTYPE_KEYWORD, CMT_SPEED_1200,
-            CMT_SPEED_1200, "NORMAL",
-            CMT_SPEED_2400, "DOUBLE",
-            CMT_SPEED_3600, "TRIPLE",
-            -1 );
+                                           CMT_SPEED_1200, "NORMAL",
+                                           CMT_SPEED_2400, "DOUBLE",
+                                           CMT_SPEED_3600, "TRIPLE",
+                                           -1 );
     cfgelement_set_propagate_cb ( elm, cmt_propagatecfg_cmt_speed, NULL );
     cfgelement_set_handlers ( elm, NULL, (void*) &g_cmt.speed );
 
@@ -330,6 +339,13 @@ int cmt_open ( void ) {
 void cmt_play ( void ) {
     cmt_stop ( );
     g_cmt.state = CMT_PLAY_START;
+
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+    /* Nechame uplynout 1 screen a za nim najdeme nejblizsi event */
+    g_cmt.clk1m1_event.ticks = gdg_proximate_clk1m1_event ( VIDEO_SCREEN_TICKS );
+    g_cmt.clk1m1_last_event_total_ticks = gdg_compute_total_ticks ( g_cmt.clk1m1_event.ticks );
+#endif
+
     ui_cmt_window_update ( );
 }
 
@@ -581,3 +597,38 @@ void cmt_step ( void ) {
     };
 
 }
+
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+
+
+void cmt_ctc1m1_event ( unsigned event_ticks ) {
+
+    unsigned event_total_ticks = gdg_compute_total_ticks ( event_ticks );
+
+    if ( g_cmt.state > CMT_PLAY_START ) {
+        unsigned elapsed_ticks = event_total_ticks - g_cmt.clk1m1_last_event_total_ticks;
+        g_cmt.tick_counter -= elapsed_ticks / GDGCLK_1M1_DIVIDER;
+        g_cmt.play_iface_refresh_timer -= elapsed_ticks / GDGCLK_1M1_DIVIDER;
+    };
+
+    cmt_step ( );
+
+    g_cmt.clk1m1_last_event_total_ticks = event_total_ticks;
+
+    if ( g_cmt.state != CMT_PLAY_NONE ) {
+        unsigned refresh_timer_event = g_cmt.play_iface_refresh_timer - 1;
+        unsigned proximate_event = ( g_cmt.tick_counter < refresh_timer_event ) ? g_cmt.tick_counter : refresh_timer_event;
+        g_cmt.clk1m1_event.ticks = event_ticks + ( proximate_event * GDGCLK_1M1_DIVIDER );
+    } else {
+        g_cmt.clk1m1_event.ticks = -1;
+    };
+}
+
+
+void cmt_on_screen_done_event ( void ) {
+    if ( g_cmt.clk1m1_event.ticks != -1 ) {
+        g_cmt.clk1m1_event.ticks -= VIDEO_SCREEN_TICKS;
+    };
+}
+
+#endif

@@ -87,7 +87,7 @@ extern "C" {
 #define FS_LAYER_DITEM_GET_FILEPATH(path, ditem) ui_utils_ditem_get_filepath ( path, ditem )
 #define FS_LAYER_DITEM_FREE_FILEPATH(filepath) ui_utils_free ( (void*) filepath )
     
-#ifdef WIN32
+#ifdef WINDOWS
 
 #include <windows.h>
 

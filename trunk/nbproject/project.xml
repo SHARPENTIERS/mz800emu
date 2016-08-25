@@ -16,11 +16,19 @@
                     <type>1</type>
                 </confElem>
                 <confElem>
+                    <name>Release-Win64</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
                     <name>Debug-Linux</name>
                     <type>1</type>
                 </confElem>
                 <confElem>
                     <name>Release-Linux</name>
+                    <type>1</type>
+                </confElem>
+                <confElem>
+                    <name>Gprof-Release-Linux</name>
                     <type>1</type>
                 </confElem>
                 <confElem>

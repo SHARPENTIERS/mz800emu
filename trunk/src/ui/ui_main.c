@@ -23,10 +23,11 @@
  * ---------------------------------------------------------------------------
  */
 
+#include "mz800emu_cfg.h"
 
 #define _GNU_SOURCE /* vasprintf */
 
-#ifdef WIN32
+#ifdef WINDOWS
 #include<windows.h>
 #endif
 
@@ -68,7 +69,7 @@
 
 
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 #include "debugger/debugger.h"
 #include "ui/debugger/ui_breakpoints.h"
 #include "ui/debugger/ui_memdump.h"
@@ -180,7 +181,7 @@ void ui_init ( void ) {
     };
 
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     /* TODO: prozkoumat GtkCssProvider - nastavit rules hint pro disassembled a stack treeview */
     if ( 0 == gtk_builder_add_from_file ( g_ui.builder, UI_RESOURCES_DIR "mz800emu_debugger.glade", &err ) ) {
         printf ( "GtkBuilder error: %s\n", err->message );
@@ -665,7 +666,7 @@ void ui_main_update_emulation_state ( unsigned state ) {
 
 
 
-#ifdef MZ800_DEBUGGER
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 
 
 G_MODULE_EXPORT void on_open_debugger ( GtkMenuItem *menuitem, gpointer data ) {
@@ -722,10 +723,10 @@ G_MODULE_EXPORT void on_menuitem_open_memdump_activate ( GtkMenuItem *menuitem, 
 
 
 
-#ifdef WIN32
+#ifdef WINDOWS
 
 
-/* BUGFIX: ve win32 nefunguje spravne gtk_show_uri() */
+/* BUGFIX: ve WINDOWS (WIN32 i WIN64?) nefunguje spravne gtk_show_uri() */
 void on_aboutdialog_activate_link_event ( GtkMenuItem *menuitem, gpointer user_data ) {
     GtkWidget *window = ui_get_widget ( "emulator_aboutdialog" );
     ShellExecute ( NULL, "open", gtk_about_dialog_get_website ( GTK_ABOUT_DIALOG ( window ) ), NULL, NULL, SW_SHOWNORMAL );
@@ -744,21 +745,21 @@ G_MODULE_EXPORT void on_about_menuitem_activate ( GtkMenuItem *menuitem, gpointe
     if ( initialised == 0 ) {
 
         unsigned version_length = 0;
-        char *version_format = "version: %s\nbuild: %s"; /* verze, build time */
+        char *version_format = "version: %s\nbuild: %s (%s)"; /* verze, build time, platform */
 
         version_length += strlen ( CFGMAIN_EMULATOR_VERSION_TEXT );
         version_length += strlen ( build_time_get ( ) );
         version_length += strlen ( version_format ) + 1;
 
         gchar *version_txt = malloc ( version_length );
-        sprintf ( version_txt, version_format, CFGMAIN_EMULATOR_VERSION_TEXT, build_time_get ( ) );
+        sprintf ( version_txt, version_format, CFGMAIN_EMULATOR_VERSION_TEXT, build_time_get ( ), CFGMAIN_PLATFORM );
 
         gtk_about_dialog_set_version ( GTK_ABOUT_DIALOG ( window ), version_txt );
 
         free ( version_txt );
 
         g_signal_connect ( GTK_DIALOG ( window ), "response", G_CALLBACK ( gtk_widget_hide ), window );
-#ifdef WIN32
+#ifdef WINDOWS
         g_signal_connect ( GTK_DIALOG ( window ), "activate-link", G_CALLBACK ( on_aboutdialog_activate_link_event ), NULL );
 #endif
         initialised = 1;

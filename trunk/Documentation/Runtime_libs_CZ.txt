@@ -5,8 +5,9 @@ K provozu tohoto software je potreba zajistit nasledujici runtime knihovny:
 SDL2 - https://www.libsdl.org/download-2.0.php 
 GTK3 - http://sourceforge.net/projects/gtk3win/
 
+GTK3 X64 - https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer
 
-WIN32 a problem GTK2 vs GTK3:
+WIN32 (X86) a problem GTK2 vs GTK3:
 
 Pokud jiz byl v pocitaci nainstalovan runtime GTK2, tak je potreba napr. s
 pomoci $PATH zajistit, aby cesta k GTK3 knihovnam mela vyssi prioritu.

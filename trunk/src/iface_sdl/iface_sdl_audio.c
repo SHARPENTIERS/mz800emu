@@ -5,6 +5,7 @@
  * Created on 18. července 2015, 18:29
  */
 
+#include "mz800emu_cfg.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -35,7 +36,6 @@ static struct timespec g_cycle_start;
 #define MIN_NS_PER_CYCLE     17000000    /* realna delka je 20ms, tzn. 20 000 000 ns */
 #endif
 
-
 typedef enum en_AUBUFSTATE {
     AUBUFSTATE_INPROGRES = 0,
     AUBUFSTATE_DONE
@@ -52,20 +52,23 @@ static volatile en_AUCBSTATE g_aucbstate;
 
 SDL_AudioDeviceID dev;
 
-
 void audio_sdl_cb ( void *userdata, Uint8 *stream, int len ) {
-    
-    while ( ! ( ( g_aubufstate == AUBUFSTATE_DONE ) && ( g_aucbstate == AUCBSTATE_PLAYING ) ) ) {
-        if ( g_mz800.emulation_speed != 0 ) break;
+
+    if ( g_mz800.emulation_speed == 0 ) {
+        while ( ! ( ( g_aubufstate == AUBUFSTATE_DONE ) && ( g_aucbstate == AUCBSTATE_PLAYING ) ) ) {
+        };
     };
-    
+
     memcpy ( stream, g_audio.buffer, len );
 
     g_aucbstate = AUCBSTATE_DONE;
 }
 
-
 void iface_sdl_audio_init ( void ) {
+
+#ifdef MZ800EMU_CFG_AUDIO_DISABLED
+    return;
+#endif
 
     if ( SDL_InitSubSystem ( SDL_INIT_AUDIO ) ) {
         fprintf ( stderr, "%s():%d - Can not initialise audio subsystem: %s\n", __func__, __LINE__, SDL_GetError ( ) );
@@ -141,21 +144,17 @@ void iface_sdl_audio_init ( void ) {
     };
 }
 
-
 void iface_sdl_audio_quit ( void ) {
+
+#ifdef MZ800EMU_CFG_AUDIO_DISABLED
+    return;
+#endif
     
     /* pokus o korektni ukonceni CB */
     g_aubufstate = AUBUFSTATE_DONE;
-    
-    while ( g_aucbstate == AUCBSTATE_PLAYING ) {
-    };
-
-    g_aubufstate = AUBUFSTATE_INPROGRES;
     g_aucbstate = AUCBSTATE_PLAYING;
-    
     SDL_PauseAudioDevice ( dev, 1 );
 }
-
 
 void audio_sdl_start_cycle ( void ) {
     g_aubufstate = AUBUFSTATE_INPROGRES;
@@ -167,38 +166,39 @@ void audio_sdl_start_cycle ( void ) {
 
 }
 
-
 void audio_sdl_wait_to_cycle_done ( void ) {
-    
+
     g_aubufstate = AUBUFSTATE_DONE;
-    
-    while ( ( g_mz800.emulation_speed == 0 ) && ( g_aucbstate == AUCBSTATE_PLAYING ) ) {
-    };
+
+    if ( g_mz800.emulation_speed == 0 ) {
+        while ( g_aucbstate == AUCBSTATE_PLAYING ) {
+        };
 
 #ifdef USE_USLEEP_SYNC
-    struct timespec t;
-    long int dist_ns;
-    
-    clock_gettime ( CLOCK_MONOTONIC, &t );
-    int sec_dist = t.tv_sec - g_cycle_start.tv_sec;
-    if ( sec_dist <= 1 ) {
-        if ( sec_dist == 1 ) {
-            dist_ns = ( 1000000000 - g_cycle_start.tv_nsec ) + t.tv_nsec;
-        } else if ( sec_dist == 0 ) {
-            dist_ns = t.tv_nsec - g_cycle_start.tv_nsec;
+        struct timespec t;
+        long int dist_ns = 0;
+
+        clock_gettime ( CLOCK_MONOTONIC, &t );
+        int sec_dist = t.tv_sec - g_cycle_start.tv_sec;
+        if ( sec_dist <= 1 ) {
+            if ( sec_dist == 1 ) {
+                dist_ns = ( 1000000000 - g_cycle_start.tv_nsec ) + t.tv_nsec;
+            } else if ( sec_dist == 0 ) {
+                dist_ns = t.tv_nsec - g_cycle_start.tv_nsec;
+            };
         };
+
+        //printf ( "DIST: %d", dist_ns );
+        if ( dist_ns < MIN_NS_PER_CYCLE ) {
+            unsigned int usecs = ( MIN_NS_PER_CYCLE - dist_ns ) / 1000;
+            usleep ( usecs );
+            //printf ( "\tUSLEEP: %d", usecs );
+        };
+        //printf ( "\n" );
+        clock_gettime ( CLOCK_MONOTONIC, &g_cycle_start );
+#endif
     };
 
-    //printf ( "DIST: %d", dist_ns );
-    if ( dist_ns < MIN_NS_PER_CYCLE ) {
-        unsigned int usecs = ( MIN_NS_PER_CYCLE - dist_ns ) / 1000;
-        usleep ( usecs );
-        //printf ( "\tUSLEEP: %d", usecs );
-    };
-    //printf ( "\n" );
-    clock_gettime ( CLOCK_MONOTONIC, &g_cycle_start );
-#endif
-    
     g_aubufstate = AUBUFSTATE_INPROGRES;
     g_aucbstate = AUCBSTATE_PLAYING;
 

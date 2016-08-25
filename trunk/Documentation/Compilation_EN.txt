@@ -4,15 +4,10 @@ Preprocessor directives:
 ========================
 
 	LINUX - target binary is compiled for Linux
-	WIN32 - target binary is compiled for Windows
+	WINDOWS - target binary is compiled for Windows
 
 	W32NAT - program is compiled native in Windows (only for WIN32 targets)
 		 this directive is activation bypass for function vasprintf() - is missing here
-
-
-	MZ800_DEBUGGER - if is set, the program will be compilled with
-			integrated Z80 debugger - can affect the speed of the program
- 
 
 
 Compilation
@@ -34,6 +29,7 @@ For compilation you need:
 The Makefile supports several configurations:
 
 	Release-Win32 (is default)
+	Release-Win64
 	Debug-Linux 
 	Release-Linux 
 	Debug-Win32-Native

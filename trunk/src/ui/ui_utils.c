@@ -49,7 +49,7 @@ FILE* ui_utils_fopen ( const char *filename_in_utf8, const char *mode ) {
 
 
 unsigned int ui_utils_fread ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh ) {
-#ifdef WIN32
+#ifdef WINDOWS
     /*  stdio bug projevujici se pri "RW" mode :( */
     fseek ( fh, ftell ( fh ), SEEK_SET );
 #endif
@@ -58,7 +58,7 @@ unsigned int ui_utils_fread ( void *buffer, unsigned int size, unsigned int coun
 
 
 unsigned int ui_utils_fwrite ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh ) {
-#ifdef WIN32
+#ifdef WINDOWS
     /*  stdio bug projevujici se pri "RW" mode :( */
     fseek ( fh, ftell ( fh ), SEEK_SET );
 #endif

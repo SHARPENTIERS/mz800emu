@@ -30,9 +30,13 @@
 extern "C" {
 #endif
 
+#define AUDIO_FILLBUFF_v1 /* Experimentalni - zakomentovanim teto definice se bypasuje generovani audio bufferu */
+//#define AUDIO_FILLBUFF_V2 /* pozatim neimplementovano */
+    
 #include "iface_sdl/iface_sdl_audio.h"
 #include <stdint.h>
 
+    
     typedef uint16_t AUDIO_BUF_t;
 
     typedef struct st_AUDIO {

@@ -30,7 +30,7 @@
 extern "C" {
 #endif
 
-#ifdef WIN32
+#ifdef WINDOWS
 #define COMPILE_FOR_EMULATOR
 #undef COMPILE_FOR_UNICARD
 #undef FS_LAYER_FATFS

@@ -43,7 +43,8 @@
 #
 # NOCDDL
 
-
+MY_HOME_SHAREDIR    := ${HOME}/share/mz800emu/
+	
 # Environment 
 MKDIR=mkdir
 CP=cp
@@ -76,14 +77,23 @@ WINDRES			:= windres
 
 else ifeq (${BUILD_HOST_OS},GNU/Linux)
 
-# definice pro CROSS WIN32
-MINGW32_PLATFORM	:= i686-w64-mingw32
-MINGW32_TOOLS_PREFIX	:= ${MINGW32_PLATFORM}-
-MINGW32_PKGCONFIG	:= ${MINGW32_TOOLS_PREFIX}pkg-config
-MINGW32_SDL2_CONFIG	:= /usr/local/cross-tools/$(MINGW32_PLATFORM)/bin/sdl2-config
-# ve win32 verzi odstranenim -mwindows vynutime vystupni consoli
-MINGW32_SDL2_LIBS	:= ${shell ${MINGW32_SDL2_CONFIG} --libs | /bin/sed -e 's/-mwindows//' } -lSDL2
-WINDRES			:= ${MINGW32_TOOLS_PREFIX}windres
+# definice pro CROSS WIN_X86
+WIN_X86_MINGW32_PLATFORM	:= i686-w64-mingw32
+WIN_X86_MINGW32_TOOLS_PREFIX	:= ${WIN_X86_MINGW32_PLATFORM}-
+WIN_X86_MINGW32_PKGCONFIG	:= ${WIN_X86_MINGW32_TOOLS_PREFIX}pkg-config
+WIN_X86_MINGW32_SDL2_CONFIG	:= /usr/local/cross-tools/$(WIN_X86_MINGW32_PLATFORM)/bin/sdl2-config
+# ve windows verzi odstranenim -mwindows vynutime vystupni consoli
+WIN_X86_MINGW32_SDL2_LIBS	:= ${shell ${WIN_X86_MINGW32_SDL2_CONFIG} --libs | /bin/sed -e 's/-mwindows//' } -lSDL2
+WIN_X86_WINDRES			:= ${WIN_X86_MINGW32_TOOLS_PREFIX}windres
+
+# definice pro CROSS WIN_X64
+WIN_X64_MINGW32_PLATFORM	:= x86_64-w64-mingw32
+WIN_X64_MINGW32_TOOLS_PREFIX	:= ${WIN_X64_MINGW32_PLATFORM}-
+WIN_X64_MINGW32_PKGCONFIG	:= ${WIN_X64_MINGW32_TOOLS_PREFIX}pkg-config
+WIN_X64_MINGW32_SDL2_CONFIG	:= /usr/local/cross-tools/$(WIN_X64_MINGW32_PLATFORM)/bin/sdl2-config
+# ve windows verzi odstranenim -mwindows vynutime vystupni consoli
+WIN_X64_MINGW32_SDL2_LIBS	:= ${shell ${WIN_X64_MINGW32_SDL2_CONFIG} --libs | /bin/sed -e 's/-mwindows//' } -lSDL2
+WIN_X64_WINDRES			:= ${WIN_X64_MINGW32_TOOLS_PREFIX}windres
 
 # definice pro NATIVE LINUX
 LINUX_TOOLS_PREFIX	:=
@@ -96,6 +106,7 @@ else
 $(error  "Unknovn build host OS! '${BUILD_HOST_OS}'")
 
 endif
+
 
 
 # build
@@ -115,12 +126,35 @@ build: .build-post
 .build-post: .build-impl
 	@# Add your post 'build' code here...
 	@#echo ${CND_ARTIFACT_PATH_${CONF}}
-	
-	@# Linuxakum pro jistotu nakopirujeme ui_resources do adresare s binarkou
-	@./tools/copy_ui_resources-Release-Linux.sh "${CONF}"
+		
+	@# vzdy nakopirujeme ui_resources do adresare s binarkou
+	@echo -e "\n";
+	@./tools/copy_ui_resources.sh ${CND_ARTIFACT_DIR_${CONF}}
+
+	@# zobrazime si informaci o buildu
+	@echo -e "`cat src/build_time.c | sed -e 's/";/\n/' -e 's/"/\nBuild time: /' | egrep "^Build time: "`\n"
 	
 	@# Zkopirujeme vysledek do adresare sdileneho s windows - jen na mem desktopu
-	@./tools/copy_win32_exe_to_sharedir.sh "${CONF}" "${CND_PLATFORM_${CONF}}"
+	@if [ ! -z "`uname -n|egrep 'arrakis.ordoz.com|atreides.ordoz.com'`" ]; then \
+	    if [ ! -z "`echo "${CONF}"|egrep 'Release-Win32|Release-Win64'`" ]; then \
+		echo -e "Copy ${CND_ARTIFACT_PATH_${CONF}} to ${MY_HOME_SHAREDIR}\n"; \
+		$(CP) ${CND_ARTIFACT_PATH_${CONF}} ${MY_HOME_SHAREDIR}; \
+	    fi; \
+	fi
+		
+	@# Pokud profilujeme
+	@if [ "${CONF}" = "Gprof-Release-Linux" ]; then \
+	    echo -e "\n\n********** ${CONF} **********\n"; \
+	    echo -e "\nprof1) gprof - http://www.thegeekstuff.com/2012/08/gprof-tutorial/" \
+	    echo -e "prof2) valgrind --tool=callgrind ${CND_ARTIFACT_PATH_${CONF}}\n(visualise in KCachegrind)" \
+	    echo "Now:"; \
+	    echo "1. Run '${CND_ARTIFACT_PATH_${CONF}}' to create gmon.out (exit the program)"; \
+	    echo "2. Run gprof ${CND_ARTIFACT_PATH_${CONF}} gmon.out > analysis.txt"; \
+	    echo -e "3. cat analysis.txt\n\n"; \
+	    ${CND_ARTIFACT_PATH_${CONF}}; \
+	    gprof ${CND_ARTIFACT_PATH_${CONF}} gmon.out > analysis.txt; \
+	    cat analysis.txt; \
+	fi
 
 # clean
 clean: .clean-post
@@ -174,7 +208,7 @@ test: .test-post
 
 # help
 help: .help-post
-	@echo "Targets available only for WIN32:"
+	@echo "Targets available only for WIN_X86:"
 	@echo -e "\tpackage"
 	@echo -e "\n"
 
@@ -200,7 +234,15 @@ include nbproject/Makefile-variables.mk
 # windows icon
 src/windows_icon/app.o: src/windows_icon/app.rc src/windows_icon/mz800emu.ico
 	${MKDIR} -p ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/src/windows_icon
-	$(WINDRES) src/windows_icon/app.rc -o ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/$@
+	@#$(WINDRES) src/windows_icon/app.rc -o ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/$@
+	
+	@if [ "${CONF}" = "Release-Win32" ]; then \
+	    $(WIN_X86_WINDRES) src/windows_icon/app.rc -o ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/$@; \
+	elif [ "${CONF}" = "Release-Win64" ]; then \
+	    $(WIN_X64_WINDRES) src/windows_icon/app.rc -o ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/$@; \
+	else \
+	    $(WINDRES) src/windows_icon/app.rc -o ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/$@; \
+	fi
 
 
 package: build
