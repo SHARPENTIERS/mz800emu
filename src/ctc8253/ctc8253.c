@@ -117,6 +117,19 @@ void ctc8253_init ( void ) {
 }
 
 
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+
+
+static inline void ctc8253_update_ctc0_by_totalticks ( unsigned event_total_ticks ) {
+    unsigned elapsed_ticks = event_total_ticks - g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks;
+    unsigned decremented = elapsed_ticks / GDGCLK_1M1_DIVIDER;
+    g_ctc8253[CTC_CS0].value -= decremented;
+    g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks += decremented * GDGCLK_1M1_DIVIDER;
+}
+
+#endif
+
+
 Z80EX_BYTE ctc8253_read_byte ( unsigned cs ) {
 
     Z80EX_BYTE retval = 0;
@@ -124,11 +137,7 @@ Z80EX_BYTE ctc8253_read_byte ( unsigned cs ) {
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
     if ( !( g_ctc8253[cs].latch_op == 1 ) ) {
         if ( ( cs == CTC_CS0 ) && ( g_ctc8253[CTC_CS0].state >= CTC_STATE_COUNTDOWN ) && ( g_ctc8253[CTC_CS0].clk1m1_event.ticks != -1 ) ) {
-            unsigned event_total_ticks = gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks );
-            unsigned elapsed_ticks = event_total_ticks - g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks;
-            unsigned decremented = elapsed_ticks / GDGCLK_1M1_DIVIDER;
-            g_ctc8253[CTC_CS0].value -= decremented;
-            g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks += decremented * GDGCLK_1M1_DIVIDER;
+            ctc8253_update_ctc0_by_totalticks ( gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks ) );
         };
     };
 #endif
@@ -219,6 +228,10 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
         if ( cs == CTC_CS_ILLEGAL ) return;
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
+        if ( ( cs == CTC_CS0 ) && ( g_ctc8253[CTC_CS0].state >= CTC_STATE_COUNTDOWN ) && ( g_ctc8253[CTC_CS0].clk1m1_event.ticks != -1 ) ) {
+            ctc8253_update_ctc0_by_totalticks ( gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks ) );
+        };
+
         old_state = g_ctc8253[cs].state;
 #endif
 
@@ -230,16 +243,6 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
         if ( rlf == 0 ) {
             //DBGPRINTF ( DBGINF, "LatchOP CTC: %d\n", cs );
             g_ctc8253[cs].latch_op = 1;
-
-#ifdef MZ800EMU_CFG_CLK1M1_FAST
-            if ( ( cs == CTC_CS0 ) && ( g_ctc8253[CTC_CS0].state >= CTC_STATE_COUNTDOWN ) && ( g_ctc8253[CTC_CS0].clk1m1_event.ticks != -1 ) ) {
-                unsigned event_total_ticks = gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks );
-                unsigned elapsed_ticks = event_total_ticks - g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks;
-                unsigned decremented = elapsed_ticks / GDGCLK_1M1_DIVIDER;
-                g_ctc8253[CTC_CS0].value -= decremented;
-                g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks += decremented * GDGCLK_1M1_DIVIDER;
-            };
-#endif
 
             g_ctc8253[cs].read_latch = g_ctc8253[cs].value;
             /* TODO: proverit jak se chova read latch, zmeni se pokud se dokoncil countdown, nebo pokud prisel trigger, atp. ? */
@@ -277,6 +280,10 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
         cs = addr;
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
+        if ( ( cs == CTC_CS0 ) && ( g_ctc8253[CTC_CS0].state >= CTC_STATE_COUNTDOWN ) && ( g_ctc8253[CTC_CS0].clk1m1_event.ticks != -1 ) ) {
+            ctc8253_update_ctc0_by_totalticks ( gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks ) );
+        };
+
         old_state = g_ctc8253[cs].state;
 #endif
 
@@ -601,10 +608,8 @@ void ctc8253_gate ( unsigned cs, unsigned gate, unsigned event_ticks ) {
     if ( cs == CTC_CS0 ) {
         if ( old_state != g_ctc8253[cs].state ) {
 
-            if ( old_state >= CTC_STATE_COUNTDOWN ) {
-                unsigned event_total_ticks = gdg_compute_total_ticks ( gdg_proximate_clk1m1_event ( event_ticks ) );
-                unsigned elapsed_ticks = event_total_ticks - g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks;
-                g_ctc8253[CTC_CS0].value -= elapsed_ticks / GDGCLK_1M1_DIVIDER;
+            if ( ( old_state >= CTC_STATE_COUNTDOWN ) && ( g_ctc8253[CTC_CS0].clk1m1_event.ticks != -1 ) ) {
+                ctc8253_update_ctc0_by_totalticks ( gdg_compute_total_ticks ( event_ticks ) );
             };
 
             g_ctc8253[CTC_CS0].clk1m1_event.ticks = gdg_proximate_clk1m1_event ( event_ticks );
