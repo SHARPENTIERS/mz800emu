@@ -12,11 +12,11 @@
             <sourceRootList/>
             <confList>
                 <confElem>
-                    <name>Debug-Linux</name>
+                    <name>Release-Win32</name>
                     <type>1</type>
                 </confElem>
                 <confElem>
-                    <name>Release-Win32</name>
+                    <name>Debug-Linux</name>
                     <type>1</type>
                 </confElem>
                 <confElem>
