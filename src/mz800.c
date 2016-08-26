@@ -417,10 +417,13 @@ static void mz800_screen_done_event ( void ) {
     cmt_on_screen_done_event ( );
 #endif
 
+#ifdef MZ800EMU_CFG_CLK1M1_SLOW
+    g_gdg.ctc0clk++;
+#endif
+
     g_gdg.elapsed_total_screens++;
     g_gdg.elapsed_screen_ticks -= ( VIDEO_SCREEN_TICKS - 1 );
     g_gdg.beam_row = 0;
-
 
 }
 

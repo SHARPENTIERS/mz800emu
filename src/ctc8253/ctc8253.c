@@ -49,9 +49,11 @@
 
 struct st_CTC8253 g_ctc8253[3];
 
+#include "cmt/cmt.h"
+
 
 void ctc8253_ctc0_output_event ( unsigned value, unsigned event_ticks ) {
-    //DBGPRINTF ( DBGINF, "CTC0 output event! (%d)\n", value );
+    //DBGPRINTF ( DBGINF, "CTC0 output event! (%d) - %d\n", value, event_ticks );
     pioz80_port_event ( PIOZ80_PORT_A, 4, ~value & 0x01 ); /* pripojeno pres invertor !!! */
 
     /* Bugfix pro hru Ralye (Tatra-sys HD cpm disk 5) - nastavi ctc0 mode: 3, preset: 2 a povoli audio (pc00) - na Sharpu ten zvuk zrejme neprojde filtrem */
@@ -115,9 +117,6 @@ void ctc8253_init ( void ) {
 }
 
 
-
-
-
 Z80EX_BYTE ctc8253_read_byte ( unsigned cs ) {
 
     Z80EX_BYTE retval = 0;
@@ -127,8 +126,9 @@ Z80EX_BYTE ctc8253_read_byte ( unsigned cs ) {
         if ( ( cs == CTC_CS0 ) && ( g_ctc8253[CTC_CS0].state >= CTC_STATE_COUNTDOWN ) && ( g_ctc8253[CTC_CS0].clk1m1_event.ticks != -1 ) ) {
             unsigned event_total_ticks = gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks );
             unsigned elapsed_ticks = event_total_ticks - g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks;
-            g_ctc8253[CTC_CS0].value -= elapsed_ticks / GDGCLK_1M1_DIVIDER;
-            g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks += elapsed_ticks * GDGCLK_1M1_DIVIDER;
+            unsigned decremented = elapsed_ticks / GDGCLK_1M1_DIVIDER;
+            g_ctc8253[CTC_CS0].value -= decremented;
+            g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks += decremented * GDGCLK_1M1_DIVIDER;
         };
     };
 #endif
@@ -209,6 +209,7 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
 
     //printf ( "WR 8253 - addr: %d, value: 0x%02x, PC: 0x%04x\n", addr, value, z80ex_get_reg ( g_mz800.cpu, regPC ) );
 
+
     if ( addr == CTCADDR_CWREG ) {
         /* Zapis do CW registru */
 
@@ -234,8 +235,9 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
             if ( ( cs == CTC_CS0 ) && ( g_ctc8253[CTC_CS0].state >= CTC_STATE_COUNTDOWN ) && ( g_ctc8253[CTC_CS0].clk1m1_event.ticks != -1 ) ) {
                 unsigned event_total_ticks = gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks );
                 unsigned elapsed_ticks = event_total_ticks - g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks;
-                g_ctc8253[CTC_CS0].value -= elapsed_ticks / GDGCLK_1M1_DIVIDER;
-                g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks += elapsed_ticks * GDGCLK_1M1_DIVIDER;
+                unsigned decremented = elapsed_ticks / GDGCLK_1M1_DIVIDER;
+                g_ctc8253[CTC_CS0].value -= decremented;
+                g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks += decremented * GDGCLK_1M1_DIVIDER;
             };
 #endif
 
@@ -347,6 +349,11 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
             /* vytvorime event pro zavolani CTC0 ctc8253_clkfall() */
             g_ctc8253[CTC_CS0].clk1m1_event.ticks = gdg_proximate_clk1m1_event ( g_gdg.elapsed_screen_ticks );
             g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks = gdg_compute_total_ticks ( g_ctc8253[CTC_CS0].clk1m1_event.ticks );
+
+            if ( g_ctc8253[CTC_CS0].clk1m1_event.ticks <= g_mz800.event.ticks ) {
+                g_mz800.event.ticks = g_ctc8253[CTC_CS0].clk1m1_event.ticks;
+                g_mz800.event.event_name = EVENT_CTC0;
+            };
         };
     };
 #endif
@@ -355,6 +362,10 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
 
 
 void ctc8253_clkfall ( unsigned cs, unsigned event_ticks ) {
+
+    if ( cs == CTC_CS0 ) {
+        cs = CTC_CS0;
+    }
 
     switch ( g_ctc8253[cs].mode ) {
 
@@ -524,7 +535,7 @@ void ctc8253_clkfall ( unsigned cs, unsigned event_ticks ) {
 }
 
 
-void ctc8253_gate ( unsigned cs, unsigned gate, unsigned event_screen_ticks ) {
+void ctc8253_gate ( unsigned cs, unsigned gate, unsigned event_ticks ) {
     gate = gate & 0x01;
 
     /* Gate se nezmenila - jdeme pryc */
@@ -559,7 +570,7 @@ void ctc8253_gate ( unsigned cs, unsigned gate, unsigned event_screen_ticks ) {
                     g_ctc8253[cs].state = CTC_STATE_PRESET;
                 } else if ( g_ctc8253[cs].state == CTC_STATE_INIT_DONE ) {
                     /* Nabezna GATE prisla drive, nez byl dokoncen LOAD */
-                    ctc8253_set_out ( cs, 0, event_screen_ticks );
+                    ctc8253_set_out ( cs, 0, event_ticks );
                     g_ctc8253[cs].state = CTC_STATE_MODE1_TRIGGER_ERROR;
                 };
             } else if ( g_ctc8253[cs].state == CTC_STATE_BLIND_COUNT ) {
@@ -572,7 +583,7 @@ void ctc8253_gate ( unsigned cs, unsigned gate, unsigned event_screen_ticks ) {
         case CTC_MODE3:
             if ( g_ctc8253[cs].gate == 0 ) {
                 if ( ( g_ctc8253[cs].state == CTC_STATE_COUNTDOWN ) || ( g_ctc8253[cs].state == CTC_STATE_PRESET ) ) {
-                    ctc8253_set_out ( cs, 1, event_screen_ticks );
+                    ctc8253_set_out ( cs, 1, event_ticks );
                     g_ctc8253[cs].state = CTC_STATE_WAIT_GATE1;
                 };
             } else if ( ( g_ctc8253[cs].state == CTC_STATE_WAIT_GATE1 ) && ( g_ctc8253[cs].gate == 1 ) ) {
@@ -589,8 +600,21 @@ void ctc8253_gate ( unsigned cs, unsigned gate, unsigned event_screen_ticks ) {
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
     if ( cs == CTC_CS0 ) {
         if ( old_state != g_ctc8253[cs].state ) {
-            g_ctc8253[CTC_CS0].clk1m1_event.ticks = gdg_proximate_clk1m1_event ( event_screen_ticks );
+
+            if ( old_state >= CTC_STATE_COUNTDOWN ) {
+                unsigned event_total_ticks = gdg_compute_total_ticks ( gdg_proximate_clk1m1_event ( event_ticks ) );
+                unsigned elapsed_ticks = event_total_ticks - g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks;
+                g_ctc8253[CTC_CS0].value -= elapsed_ticks / GDGCLK_1M1_DIVIDER;
+            };
+
+            g_ctc8253[CTC_CS0].clk1m1_event.ticks = gdg_proximate_clk1m1_event ( event_ticks );
             g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks = gdg_compute_total_ticks ( g_ctc8253[CTC_CS0].clk1m1_event.ticks );
+
+            if ( g_ctc8253[CTC_CS0].clk1m1_event.ticks <= g_mz800.event.ticks ) {
+                g_mz800.event.ticks = g_ctc8253[CTC_CS0].clk1m1_event.ticks;
+                g_mz800.event.event_name = EVENT_CTC0;
+            };
+
         };
     };
 #endif
@@ -634,7 +658,10 @@ void ctc8253_ctc1m1_event ( unsigned event_ticks ) {
 
     if ( ctc0->state >= CTC_STATE_COUNTDOWN ) {
         unsigned elapsed_ticks = event_total_ticks - ctc0->clk1m1_last_event_total_ticks;
-        ctc0->value -= elapsed_ticks / GDGCLK_1M1_DIVIDER;
+        if ( elapsed_ticks != 0 ) {
+            elapsed_ticks -= GDGCLK_1M1_DIVIDER;
+            ctc0->value -= elapsed_ticks / GDGCLK_1M1_DIVIDER;
+        };
     };
 
     ctc8253_clkfall ( CTC_CS0, event_ticks );
@@ -656,15 +683,15 @@ void ctc8253_ctc1m1_event ( unsigned event_ticks ) {
         switch ( ctc0->mode ) {
             case CTC_MODE0:
             case CTC_MODE1:
-                destination_clk1m1_falls = ctc0->value - 1;
+                destination_clk1m1_falls = ctc0->value;
                 break;
 
             case CTC_MODE2:
-                destination_clk1m1_falls = ctc0->value - 2;
+                destination_clk1m1_falls = ctc0->value;
                 break;
 
             case CTC_MODE3:
-                destination_clk1m1_falls = ctc0->value - ctc0->mode3_destination_value - 1;
+                destination_clk1m1_falls = ctc0->value - ctc0->mode3_destination_value;
                 break;
 
             case CTC_MODE4:

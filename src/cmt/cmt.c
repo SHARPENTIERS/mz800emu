@@ -352,6 +352,11 @@ void cmt_play ( void ) {
     /* Nechame uplynout 1 screen a za nim najdeme nejblizsi event */
     g_cmt.clk1m1_event.ticks = gdg_proximate_clk1m1_event ( VIDEO_SCREEN_TICKS );
     g_cmt.clk1m1_last_event_total_ticks = gdg_compute_total_ticks ( g_cmt.clk1m1_event.ticks );
+
+    if ( g_cmt.clk1m1_event.ticks <= g_mz800.event.ticks ) {
+        g_mz800.event.ticks = g_cmt.clk1m1_event.ticks;
+        g_mz800.event.event_name = EVENT_CMT;
+    };
 #endif
 
     ui_cmt_window_update ( );
@@ -610,6 +615,10 @@ void cmt_step ( void ) {
 
 
 void cmt_ctc1m1_event ( unsigned event_ticks ) {
+
+    if ( !TEST_CMT_PLAYING ) {
+        g_cmt.clk1m1_event.ticks = -1;
+    };
 
     unsigned event_total_ticks = gdg_compute_total_ticks ( event_ticks );
 
