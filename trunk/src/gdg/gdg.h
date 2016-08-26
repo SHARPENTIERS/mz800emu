@@ -154,16 +154,14 @@ extern "C" {
 
 
 
-#ifdef MZ800EMU_CFG_CLK1M1_FAST
-
-
     static inline unsigned gdg_compute_total_ticks ( unsigned now_ticks ) {
         return now_ticks + ( g_gdg.elapsed_total_screens * VIDEO_SCREEN_TICKS );
     }
 
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
 
     static inline unsigned gdg_proximate_clk1m1_event ( unsigned now_ticks ) {
-        return now_ticks + GDGCLK_1M1_DIVIDER - ( gdg_compute_total_ticks ( now_ticks ) & 0x0f );
+        return now_ticks + ( 0x10 - ( gdg_compute_total_ticks ( now_ticks ) & 0x0f ) );
     }
 
 #endif    
