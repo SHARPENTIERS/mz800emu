@@ -209,11 +209,11 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
     switch ( port_lsb ) {
 
         case 0x01:
-            cmthack_load_header ( );
+            cmthack_load_file ( );
             break;
 
         case 0x02:
-            cmthack_load_body ( );
+            cmthack_read_body ( );
             break;
 
         case 0x68:

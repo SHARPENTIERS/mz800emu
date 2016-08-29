@@ -60,9 +60,9 @@
 
 #include "z80ex/include/z80ex.h"
 
-#include "gdg/hwscroll.h"
-#include "gdg/gdg.h"
-#include "gdg/framebuffer.h"
+#include "hwscroll.h"
+#include "gdg.h"
+#include "framebuffer.h"
 
 //#define DBGLEVEL (DBGNON /* | DBGERR | DBGWAR | DBGINF*/)
 //#define DBGLEVEL (DBGNON | DBGERR | DBGWAR | DBGINF )
@@ -182,21 +182,4 @@ void hwscroll_set_reg ( int addr, Z80EX_BYTE value ) {
 
 }
 
-
-unsigned int hwscroll_shift_addr ( unsigned int addr ) {
-
-    if ( g_hwscroll.enabled ) {
-
-        /* nachazime se v oblasti, ktera ma byt scrollovana? */
-        if ( ( addr >= g_hwscroll.regSSA ) && ( addr < g_hwscroll.regSEA ) ) {
-
-            if ( addr >= ( g_hwscroll.regSEA - g_hwscroll.regSOF ) ) {
-                return ( addr + g_hwscroll.regSOF - g_hwscroll.regSW );
-            };
-            return ( addr + g_hwscroll.regSOF );
-        };
-    };
-
-    return addr;
-}
-
+    

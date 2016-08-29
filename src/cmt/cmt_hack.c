@@ -206,17 +206,11 @@ void cmthack_result ( en_LOADRET result ) {
  * Pozadavek na precteni headeru z CMT
  * 
  */
-void cmthack_load_header ( void ) {
+void cmthack_load_file ( void ) {
 
     mz800_flush_full_screen ( );
 
-    unsigned reg_hl;
     char filename [ CMTHACK_FILENAME_LENGTH ];
-
-    if ( g_cmthack.fp != NULL ) {
-        fclose ( g_cmthack.fp );
-        g_cmthack.fp = NULL;
-    };
 
     char window_title[] = "Select MZF file to open";
     filename[0] = 0x00;
@@ -225,7 +219,19 @@ void cmthack_load_header ( void ) {
         cmthack_result ( LOADRET_BREAK );
         return;
     };
+    
+    cmthack_load_filename ( filename );
+}
 
+
+void cmthack_load_filename ( char *filename ) {
+
+    unsigned reg_hl;
+
+    if ( g_cmthack.fp != NULL ) {
+        fclose ( g_cmthack.fp );
+        g_cmthack.fp = NULL;
+    };
 
     if ( !( g_cmthack.fp = ui_utils_fopen ( filename, "rb" ) ) ) {
         /* Nejde otevrit soubor: nastavit Err + Break */
@@ -257,7 +263,7 @@ void cmthack_load_header ( void ) {
  * Pozadavek na precteni tela souboru
  * 
  */
-void cmthack_load_body ( void ) {
+void cmthack_read_body ( void ) {
 
     unsigned reg_hl;
     unsigned reg_bc;
@@ -272,7 +278,7 @@ void cmthack_load_body ( void ) {
     /* precteme prvnich regBC bajtu z MZF souboru a ulozime je do RAM na adresu z regHL */
     reg_hl = z80ex_get_reg ( g_mz800.cpu, regHL );
     reg_bc = z80ex_get_reg ( g_mz800.cpu, regBC );
-
+    
     while ( reg_bc ) {
 
         unsigned length = 0xffff - reg_hl;

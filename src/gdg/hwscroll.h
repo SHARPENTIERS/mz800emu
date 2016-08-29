@@ -24,13 +24,14 @@
  */
 
 #ifndef HWSCROLL_H
-#define	HWSCROLL_H
+#define HWSCROLL_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "z80ex/include/z80ex.h"
+
 
     typedef struct st_HWSCROLL {
         int regSSA;
@@ -45,13 +46,31 @@ extern "C" {
 
     extern void hwscroll_init ( void );
     extern void hwscroll_reset ( void );
-    extern void hwscroll_set_reg (int addr, Z80EX_BYTE value);
-    extern unsigned int hwscroll_shift_addr ( unsigned int addr );
+    extern void hwscroll_set_reg ( int addr, Z80EX_BYTE value );
 
 
-#ifdef	__cplusplus
+    static inline unsigned int hwscroll_shift_addr ( unsigned int addr ) {
+
+        if ( g_hwscroll.enabled ) {
+
+            /* nachazime se v oblasti, ktera ma byt scrollovana? */
+            if ( ( addr >= g_hwscroll.regSSA ) && ( addr < g_hwscroll.regSEA ) ) {
+
+                if ( addr >= ( g_hwscroll.regSEA - g_hwscroll.regSOF ) ) {
+                    return ( addr + g_hwscroll.regSOF - g_hwscroll.regSW );
+                };
+                return ( addr + g_hwscroll.regSOF );
+            };
+        };
+
+        return addr;
+    }
+
+
+
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* HWSCROLL_H */
+#endif /* HWSCROLL_H */
 

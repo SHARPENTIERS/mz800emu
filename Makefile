@@ -145,8 +145,8 @@ build: .build-post
 	@# Pokud profilujeme
 	@if [ "${CONF}" = "Gprof-Release-Linux" ]; then \
 	    echo -e "\n\n********** ${CONF} **********\n"; \
-	    echo -e "\nprof1) gprof - http://www.thegeekstuff.com/2012/08/gprof-tutorial/" \
-	    echo -e "prof2) valgrind --tool=callgrind ${CND_ARTIFACT_PATH_${CONF}}\n(visualise in KCachegrind)" \
+	    echo -e "\nprof1) gprof - http://www.thegeekstuff.com/2012/08/gprof-tutorial/"; \
+	    echo -e "prof2) valgrind --tool=callgrind ${CND_ARTIFACT_PATH_${CONF}}\n(visualise in KCachegrind)"; \
 	    echo "Now:"; \
 	    echo "1. Run '${CND_ARTIFACT_PATH_${CONF}}' to create gmon.out (exit the program)"; \
 	    echo "2. Run gprof ${CND_ARTIFACT_PATH_${CONF}} gmon.out > analysis.txt"; \
