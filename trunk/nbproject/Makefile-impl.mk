@@ -31,7 +31,7 @@ DEFAULTCONF=Release-Win32
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Release-Win32 Debug-Linux Release-Win64 Release-Linux Gprof-Release-Linux Debug-Win32-Native Release-Win32-Native 
+ALLCONFS=Release-Win32 Release-Win64 Release-Linux Debug-Linux Gprof-Release-Linux Debug-Win32-Native Release-Win32-Native 
 
 
 # build

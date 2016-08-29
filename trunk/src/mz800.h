@@ -90,7 +90,7 @@ extern "C" {
 
         //unsigned have_rejected_interrupt;
 
-        unsigned emulation_speed; /* MZ800_EMULATION_SPEED_NORMAL = 0, MZ800_EMULATION_SPEED_MAX = 1 */
+        unsigned use_max_emulation_speed; /* MZ800_EMULATION_SPEED_NORMAL = 0, MZ800_EMULATION_SPEED_MAX = 1 */
         unsigned emulation_paused;
 
         unsigned synchronised_insideop_GDG_ticks; /* Celkovy pocet gdg ticku, ktere jsme v ramci prave provadene instrukce jiz synchronizovali pres mz800_sync_inside_cpu() */

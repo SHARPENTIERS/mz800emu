@@ -626,373 +626,6 @@
       <item path="tools/search_dll.sh" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
-    <conf name="Debug-Linux" type="1">
-      <toolsSet>
-        <compilerSet>default</compilerSet>
-        <dependencyChecking>true</dependencyChecking>
-        <rebuildPropChanged>false</rebuildPropChanged>
-      </toolsSet>
-      <compileType>
-        <cTool>
-          <standard>10</standard>
-          <incDir>
-            <pElem>src</pElem>
-            <pElem>src/z80ex/</pElem>
-            <pElem>src/z80ex/include</pElem>
-          </incDir>
-          <commandLine>-pedantic -pipe -Wl,--export-dynamic `${LINUX_SDL2_CONFIG} --cflags` `${LINUX_PKGCONFIG} --cflags ${PKG_OBJECTS}`</commandLine>
-          <preprocessorList>
-            <Elem>LINUX</Elem>
-            <Elem>_XOPEN_SOURCE=500</Elem>
-          </preprocessorList>
-          <warningLevel>2</warningLevel>
-        </cTool>
-        <ccTool>
-          <warningLevel>3</warningLevel>
-        </ccTool>
-        <linkerTool>
-          <commandlineTool>gcc</commandlineTool>
-          <commandLine>-lm ${LINUX_SDL2_LIBS} `${LINUX_PKGCONFIG} --libs ${PKG_OBJECTS}`</commandLine>
-        </linkerTool>
-      </compileType>
-      <item path="src/audio.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/audio.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/build_time.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/build_time.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/cfgfile/cfgcommon.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/cfgfile/cfgelement.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/cfgfile/cfgelement.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/cfgfile/cfgmodule.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/cfgfile/cfgmodule.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/cfgfile/cfgroot.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/cfgfile/cfgroot.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/cfgmain.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/cfgmain.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_hack.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ctc8253/ctc8253.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ctc8253/ctc8253.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/debug.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/debugger/breakpoints.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/debugger/breakpoints.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/debugger/debugger.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/debugger/debugger.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/debugger/inline_asm.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/debugger/inline_asm.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/debugger/inline_asm_opcodes.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/display.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/display.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/fdc/fdc.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/fdc/fdc.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/fdc/wd279x.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/fdc/wd279x.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/fs_layer.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/fs_layer.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/gdg/framebuffer.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/gdg/framebuffer.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/gdg/gdg.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/gdg/gdg.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/gdg/hwscroll.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/gdg/hwscroll.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/gdg/video.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/gdg/vramctrl.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/iface_sdl/iface_sdl.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/iface_sdl/iface_sdl.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/iface_sdl/iface_sdl_audio.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/iface_sdl/iface_sdl_audio.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/iface_sdl/iface_sdl_keyboard.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/iface_sdl/iface_sdl_keyboard.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/iface_sdl/iface_sdl_log.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/main.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/main.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/ROM_CGROM.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/memory/ROM/ROM_MZ700.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/memory/ROM/ROM_MZ800.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/memory/ROM/WILLY/ROM_WILLY_MZ700.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/memory/memory.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/memory/memory.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/memory/rom.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/memory/rom.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/mz800.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/mz800.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/mz800emu_cfg.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/pio8255/pio8255.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/pio8255/pio8255.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/pioz80/pioz80.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/pioz80/pioz80.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/port.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/port.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/psg/psg.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/psg/psg.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/qdisk/qdisk.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/qdisk/qdisk.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ramdisk/ramdisk.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ramdisk/ramdisk.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/sharpmz_ascii.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/sharpmz_ascii.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ui/debugger/ui_breakpoints.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ui/debugger/ui_debugger.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/debugger/ui_debugger.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ui/debugger/ui_debugger_callbacks.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="src/ui/debugger/ui_debugger_iasm.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/debugger/ui_debugger_iasm.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ui/ui_cmt.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_cmt.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ui/ui_display.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_display.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ui/ui_fcbutton.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_fcbutton.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ui/ui_fdc.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_fdc.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ui/ui_main.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_main.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ui/ui_qdisk.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_qdisk.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ui/ui_ramdisk.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_ramdisk.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ui/ui_rom.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_rom.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ui/ui_utils.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_utils.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/z80ex/include/z80ex.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/z80ex/include/z80ex_dasm.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/z80ex/z80ex.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/z80ex/z80ex_dasm.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="tools/copy_ui_resources-Release-Debug-Linux.sh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="tools/copy_win32_exe_to_sharedir.sh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="tools/create_buildtime.sh" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="tools/create_package-Release-Win32.sh"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="tools/make_dll_dir.sh" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="tools/search_dll.sh" ex="false" tool="3" flavor2="0">
-      </item>
-    </conf>
     <conf name="Release-Win64" type="1">
       <toolsSet>
         <compilerSet>x86_64-w64-mingw32|GNU</compilerSet>
@@ -1413,6 +1046,373 @@
         <asmTool>
           <developmentMode>5</developmentMode>
         </asmTool>
+        <linkerTool>
+          <commandlineTool>gcc</commandlineTool>
+          <commandLine>-lm ${LINUX_SDL2_LIBS} `${LINUX_PKGCONFIG} --libs ${PKG_OBJECTS}`</commandLine>
+        </linkerTool>
+      </compileType>
+      <item path="src/audio.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/audio.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/build_time.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/build_time.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgcommon.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgelement.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgelement.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgmodule.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgmodule.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgroot.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgroot.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cfgmain.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cfgmain.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_hack.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ctc8253/ctc8253.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ctc8253/ctc8253.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/debug.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/debugger/breakpoints.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/debugger/breakpoints.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/debugger/debugger.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/debugger/debugger.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/debugger/inline_asm.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/debugger/inline_asm.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/debugger/inline_asm_opcodes.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/display.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/display.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fdc/fdc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/fdc/fdc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fdc/wd279x.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/fdc/wd279x.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/fs_layer.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/fs_layer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/gdg.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/gdg.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/hwscroll.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/hwscroll.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/video.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/iface_sdl/iface_sdl.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/iface_sdl/iface_sdl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/iface_sdl/iface_sdl_audio.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/iface_sdl/iface_sdl_audio.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/iface_sdl/iface_sdl_keyboard.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/iface_sdl/iface_sdl_keyboard.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/iface_sdl/iface_sdl_log.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/main.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/ROM_CGROM.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/ROM/ROM_MZ700.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/ROM/ROM_MZ800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_MZ700.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/memory.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/memory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/rom.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/rom.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/mz800.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/mz800emu_cfg.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/pio8255/pio8255.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/pio8255/pio8255.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/pioz80/pioz80.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/pioz80/pioz80.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/port.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/port.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/psg/psg.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/psg/psg.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/qdisk/qdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/qdisk/qdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ramdisk/ramdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ramdisk/ramdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/sharpmz_ascii.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/sharpmz_ascii.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_breakpoints.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_debugger.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_debugger.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_debugger_callbacks.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_debugger_iasm.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_debugger_iasm.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_cmt.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_cmt.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_display.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_display.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_fcbutton.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_fcbutton.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_fdc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_fdc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_main.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_qdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_qdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_ramdisk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_ramdisk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_rom.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_rom.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_utils.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_utils.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/z80ex/include/z80ex.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/z80ex/include/z80ex_dasm.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/z80ex/z80ex.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/z80ex/z80ex_dasm.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="tools/copy_ui_resources-Release-Debug-Linux.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="tools/copy_win32_exe_to_sharedir.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="tools/create_buildtime.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tools/create_package-Release-Win32.sh"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="tools/make_dll_dir.sh" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="tools/search_dll.sh" ex="false" tool="3" flavor2="0">
+      </item>
+    </conf>
+    <conf name="Debug-Linux" type="1">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <standard>10</standard>
+          <incDir>
+            <pElem>src</pElem>
+            <pElem>src/z80ex/</pElem>
+            <pElem>src/z80ex/include</pElem>
+          </incDir>
+          <commandLine>-pedantic -pipe -Wl,--export-dynamic `${LINUX_SDL2_CONFIG} --cflags` `${LINUX_PKGCONFIG} --cflags ${PKG_OBJECTS}`</commandLine>
+          <preprocessorList>
+            <Elem>LINUX</Elem>
+            <Elem>_XOPEN_SOURCE=500</Elem>
+          </preprocessorList>
+          <warningLevel>2</warningLevel>
+        </cTool>
+        <ccTool>
+          <warningLevel>3</warningLevel>
+        </ccTool>
         <linkerTool>
           <commandlineTool>gcc</commandlineTool>
           <commandLine>-lm ${LINUX_SDL2_LIBS} `${LINUX_PKGCONFIG} --libs ${PKG_OBJECTS}`</commandLine>

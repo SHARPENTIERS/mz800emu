@@ -48,10 +48,10 @@
  */
 
 
-#define DEF_PIO8255_PORTA	0x00
-#define DEF_PIO8255_PORTB	0x01
-#define DEF_PIO8255_PORTC	0x02
-#define DEF_PIO8255_MASTER	0x03
+#define DEF_PIO8255_PORTA 0x00
+#define DEF_PIO8255_PORTB 0x01
+#define DEF_PIO8255_PORTC 0x02
+#define DEF_PIO8255_MASTER 0x03
 
 
 st_PIO8255 g_pio8255;
@@ -196,7 +196,8 @@ Z80EX_BYTE pio8255_read ( int addr ) {
 
         case DEF_PIO8255_PORTB:
 
-            iface_sdl_keybord_scan ( );
+            iface_sdl_pool_keyboard_events ( );
+            //iface_sdl_keybord_scan ( );
             //BGPRINTF ( DBGINF, "addr = %d (PORT_B - key scan: %d ), value = 0x%02x, PC = 0x%04x\n", addr, g_pio8255.signal_PA_keybord_column, g_pio8255.keyboard_matrix [ g_pio8255.signal_PA_keybord_column ], z80ex_get_reg ( g_mz800.cpu, regPC ) );
             return g_pio8255.keyboard_matrix [ g_pio8255.signal_PA_keybord_column ];
 

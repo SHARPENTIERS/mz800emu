@@ -33,6 +33,7 @@
 
 #include "iface_sdl.h"
 #include "iface_sdl_audio.h"
+#include "iface_sdl_keyboard.h"
 
 #include "main.h"
 #include "display.h"
@@ -41,14 +42,6 @@
 #include "gdg/gdg.h"
 
 #include "ui/ui_main.h"
-#include "ui/ui_cmt.h"
-
-//#include "mz800.h"
-
-#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
-#include "debugger/debugger.h"
-#include "ui/debugger/ui_breakpoints.h"
-#endif
 
 
 /* Zakladni rozmery okna */
@@ -417,7 +410,7 @@ void iface_sdl_init ( void ) {
         main_app_quit ( EXIT_FAILURE );
     };
 #endif
-       
+
     iface_sdl_audio_init ( );
 }
 
@@ -441,7 +434,8 @@ void iface_sdl_pool_all_events ( void ) {
     };
 
     SDL_Event event;
-    static unsigned keyboard_alt = 0;
+
+    int keyboard_events = 0;
 
     while ( SDL_PollEvent ( &event ) ) {
 
@@ -469,84 +463,16 @@ void iface_sdl_pool_all_events ( void ) {
                     //iface_sdl_redraw_screen ( );
                     g_iface_sdl.redraw_full_screen_request = 1;
                 };
-
                 break;
 
             case SDL_KEYDOWN:
-
-                if ( event.key.keysym.scancode == SDL_SCANCODE_F12 ) {
-                    mz800_reset ( );
-#if 0
-                } else if ( event.key.keysym.scancode == SDL_SCANCODE_F11 ) {
-                    if ( g_mz800.debug_pc == 0 ) {
-                        printf ( "Turn ON debug PC\n" );
-                    } else {
-                        printf ( "Turn OFF debug PC\n" );
-                    };
-                    g_mz800.debug_pc = ~g_mz800.debug_pc & 1;
-#endif
-                } else if ( event.key.keysym.scancode == SDL_SCANCODE_F10 ) {
-                    printf ( "F10 - INTERRUPT\n" );
-                    unsigned interrupt_ticks = z80ex_int ( g_mz800.cpu );
-                    if ( interrupt_ticks ) {
-                        /* interrupt byl prijat */
-                        printf ( "Interrupt received!\n" );
-                    } else {
-                        printf ( "Interrupt NOT received!\n" );
-                    }
-
-                } else if ( event.key.keysym.scancode == SDL_SCANCODE_LALT ) {
-                    keyboard_alt = 1;
-
-                    /*
-                     * 
-                     *  Obsluha klavesovych zkratek ALT+xx
-                     * 
-                     */
-                } else if ( keyboard_alt ) {
-
-                    if ( event.key.keysym.scancode == SDL_SCANCODE_C ) {
-                        /*
-                         * Virtual CMT: Alt + C
-                         */
-                        ui_cmt_window_show_hide ( );
-
-                    } else if ( event.key.keysym.scancode == SDL_SCANCODE_M ) {
-                        /*
-                         * Max speed: Alt + M
-                         */
-                        mz800_set_cpu_speed ( ( ~g_mz800.emulation_speed ) & 0x01 );
-
-                    } else if ( event.key.keysym.scancode == SDL_SCANCODE_P ) {
-                        /*
-                         * Pause emulation: Alt + P
-                         */
-                        mz800_pause_emulation ( ( ~g_mz800.emulation_paused ) & 0x01 );
-#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED                    
-                    } else if ( event.key.keysym.scancode == SDL_SCANCODE_D ) {
-                        /*
-                         * Debugger window: Alt + D
-                         */
-                        debugger_show_hide_main_window ( );
-
-                    } else if ( event.key.keysym.scancode == SDL_SCANCODE_B ) {
-                        /*
-                         * Breakpoints window: Alt + B
-                         */
-                        ui_breakpoints_show_hide_window ( );
-#endif
-                    };
-
-                };
-
+                keyboard_events++;
+                iface_sdl_keydown_event ( &event );
                 break;
 
-
-
             case SDL_KEYUP:
-                if ( event.key.keysym.scancode == SDL_SCANCODE_LALT ) {
-                    keyboard_alt = 0;
-                };
+                keyboard_events++;
+                iface_sdl_keyup_event ( &event );
                 break;
 
 
@@ -563,6 +489,10 @@ void iface_sdl_pool_all_events ( void ) {
         };
 
     };
+
+    if ( keyboard_events != 0 ) {
+        iface_sdl_full_keyboard_scan ( );
+    }
 
 }
 
@@ -676,7 +606,7 @@ void iface_sdl_pool_window_events ( void ) {
                     /*
                      * Max speed: Alt + M
                      */
-                    mz800_set_cpu_speed ( ( ~g_mz800.emulation_speed ) & 0x01 );
+                    mz800_set_cpu_speed ( ( ~g_mz800.use_max_emulation_speed ) & 0x01 );
                 } else if ( event.key.keysym.scancode == SDL_SCANCODE_P ) {
                     /*
                      * Pause emulation: Alt + P
@@ -842,7 +772,7 @@ void iface_sdl_render_status_line ( void ) {
     if ( TEST_EMULATION_PAUSED ) {
         strcat ( txt, "PAUSED" );
     } else {
-        switch ( g_mz800.emulation_speed ) {
+        switch ( g_mz800.use_max_emulation_speed ) {
             case 0:
                 strcat ( txt, "SYNC" );
                 break;
@@ -1076,7 +1006,7 @@ void iface_sdl_update_window_in_beam_interval ( unsigned beam_start, unsigned be
     unsigned row2 = VIDEO_GET_SCREEN_ROW ( beam_end );
     unsigned col2 = VIDEO_GET_SCREEN_COL ( beam_end );
 
-    
+
     if ( col2 > VIDEO_BEAM_DISPLAY_LAST_COLUMN ) {
         col2 = VIDEO_BEAM_DISPLAY_LAST_COLUMN;
     };

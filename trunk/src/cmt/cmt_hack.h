@@ -49,8 +49,9 @@ extern "C" {
     extern void cmthack_init ( void );
     extern void cmthack_exit ( void );
 
-    extern void cmthack_load_header ( void );
-    extern void cmthack_load_body ( void );
+    extern void cmthack_load_file ( void );
+    extern void cmthack_load_filename ( char *filename );
+    extern void cmthack_read_body ( void );
 
 
 #ifdef	__cplusplus

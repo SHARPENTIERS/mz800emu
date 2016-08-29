@@ -54,7 +54,7 @@ SDL_AudioDeviceID dev;
 
 void audio_sdl_cb ( void *userdata, Uint8 *stream, int len ) {
 
-    if ( g_mz800.emulation_speed == 0 ) {
+    if ( g_mz800.use_max_emulation_speed == 0 ) {
         while ( ! ( ( g_aubufstate == AUBUFSTATE_DONE ) && ( g_aucbstate == AUCBSTATE_PLAYING ) ) ) {
         };
     };
@@ -170,7 +170,7 @@ void audio_sdl_wait_to_cycle_done ( void ) {
 
     g_aubufstate = AUBUFSTATE_DONE;
 
-    if ( g_mz800.emulation_speed == 0 ) {
+    if ( g_mz800.use_max_emulation_speed == 0 ) {
         while ( g_aucbstate == AUCBSTATE_PLAYING ) {
         };
 
