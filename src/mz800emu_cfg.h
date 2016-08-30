@@ -37,10 +37,10 @@ extern "C" {
      * Emulace se zjednodusi a mela by byt rychlejsi (nemeril jsem, zda je tomu skutecne tak).
      * 
      */
-    
+
 #define MZ800EMU_CFG_DEBUGGER_ENABLED
-    
-    
+
+
     /*
      * Konfigurace pro emulaci CLK 1.1 MHz (CTC8253-CTC0 a CMT )
      * =========================================================
@@ -59,7 +59,7 @@ extern "C" {
 #define MZ800EMU_CFG_CLK1M1_FAST
 
 
-    
+
     /*
      * Experimentalni vypnuti audio vystupu a synchronizace snimku se zvukem
      * =====================================================================
@@ -70,7 +70,16 @@ extern "C" {
 
 //#define MZ800EMU_CFG_AUDIO_DISABLED
 
+
+    /*
+     * Experimentalni zavedeni MZF do pameti a vykonani jen predvoleny pocet snimku
+     * 
+     * Slouzi pouze k lepsimu ladeni maximalniho vykonu.
+     * 
+     */
+//#define MZ800EMU_CFG_SPEED_TEST
     
+
 #ifdef __cplusplus
 }
 #endif

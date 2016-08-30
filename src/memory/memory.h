@@ -24,28 +24,30 @@
  */
 
 #ifndef MEMORY_H
-#define	MEMORY_H
+#define MEMORY_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 
 #include "z80ex/include/z80ex.h"
 #include "gdg/gdg.h"
+#include "memory/rom.h"
+
     /*
      *
      * Velikost jednotlivych pameti
      * 
      */
-#define MEMORY_SIZE_ROM_MZ700	0x1000
-#define MEMORY_SIZE_ROM_CGROM	0x1000
-#define MEMORY_SIZE_ROM_MZ800	0x2000
+#define MEMORY_SIZE_ROM_MZ700 0x1000
+#define MEMORY_SIZE_ROM_CGROM 0x1000
+#define MEMORY_SIZE_ROM_MZ800 0x2000
 
-#define MEMORY_SIZE_ROM		MEMORY_SIZE_ROM_MZ700 + MEMORY_SIZE_ROM_CGROM + MEMORY_SIZE_ROM_MZ800
-#define MEMORY_SIZE_RAM		0x10000
+#define MEMORY_SIZE_ROM  MEMORY_SIZE_ROM_MZ700 + MEMORY_SIZE_ROM_CGROM + MEMORY_SIZE_ROM_MZ800
+#define MEMORY_SIZE_RAM  0x10000
 
-#define MEMORY_SIZE_VRAM_BANK	0x2000
+#define MEMORY_SIZE_VRAM_BANK 0x2000
 #define MEMORY_SIZE_VRAM        MEMORY_SIZE_VRAM_BANK * 2
 
 
@@ -54,11 +56,12 @@ extern "C" {
      *  Flagy mapovani pameti
      *
      */
-#define MEMORY_MAP_FLAG_ROM_0000	( 1 << 0 )
-#define MEMORY_MAP_FLAG_ROM_1000	( 1 << 1 )
-#define MEMORY_MAP_FLAG_CGRAM_VRAM	( 1 << 2 )  /* MZ700: 0xc000 - 0xcfff (CGRAM) 
+#define MEMORY_MAP_FLAG_ROM_0000 ( 1 << 0 )
+#define MEMORY_MAP_FLAG_ROM_1000 ( 1 << 1 )
+#define MEMORY_MAP_FLAG_CGRAM_VRAM ( 1 << 2 )  /* MZ700: 0xc000 - 0xcfff (CGRAM) 
                                                        MZ800: 0x8000 - 0x9fff | 0xbfff (VRAM) */
-#define MEMORY_MAP_FLAG_ROM_E000	( 1 << 3 )  /* + MZ700: 0xd000 - 0xdfff (atributova VRAM) */
+#define MEMORY_MAP_FLAG_ROM_E000 ( 1 << 3 )  /* + MZ700: 0xd000 - 0xdfff (atributova VRAM) */
+
 
     /*
      * 
@@ -89,15 +92,16 @@ extern "C" {
      *  Testy mapovacich stavu
      *
      */
-#define MEMORY_MAP_TEST_ROM_0000	( g_memory.map & MEMORY_MAP_FLAG_ROM_0000 )
-#define MEMORY_MAP_TEST_ROM_1000	( g_memory.map & MEMORY_MAP_FLAG_ROM_1000 )
-#define MEMORY_MAP_TEST_ROM_E000	( g_memory.map & MEMORY_MAP_FLAG_ROM_E000 )
-#define MEMORY_MAP_TEST_VRAM		( g_memory.map & MEMORY_MAP_FLAG_CGRAM_VRAM )
-#define MEMORY_MAP_TEST_CGRAM		( DMD_TEST_MZ700 && MEMORY_MAP_TEST_VRAM )
-#define MEMORY_MAP_TEST_VRAM_D000	( DMD_TEST_MZ700 && MEMORY_MAP_TEST_ROM_E000 )
+#define MEMORY_MAP_TEST_ROM_0000 ( g_memory.map & MEMORY_MAP_FLAG_ROM_0000 )
+#define MEMORY_MAP_TEST_ROM_1000 ( g_memory.map & MEMORY_MAP_FLAG_ROM_1000 )
+#define MEMORY_MAP_TEST_ROM_E000 ( g_memory.map & MEMORY_MAP_FLAG_ROM_E000 )
+#define MEMORY_MAP_TEST_VRAM  ( g_memory.map & MEMORY_MAP_FLAG_CGRAM_VRAM )
+#define MEMORY_MAP_TEST_CGRAM  ( DMD_TEST_MZ700 && MEMORY_MAP_TEST_VRAM )
+#define MEMORY_MAP_TEST_VRAM_D000 ( DMD_TEST_MZ700 && MEMORY_MAP_TEST_ROM_E000 )
 
-#define MEMORY_MAP_TEST_VRAM_8000	( ( ! DMD_TEST_MZ700 ) && MEMORY_MAP_TEST_VRAM )
-#define MEMORY_MAP_TEST_VRAM_A000	( MEMORY_MAP_TEST_VRAM_8000 && DMD_TEST_SCRW640 )
+#define MEMORY_MAP_TEST_VRAM_8000 ( ( ! DMD_TEST_MZ700 ) && MEMORY_MAP_TEST_VRAM )
+#define MEMORY_MAP_TEST_VRAM_A000 ( MEMORY_MAP_TEST_VRAM_8000 && DMD_TEST_SCRW640 )
+
 
     /*
      * 
@@ -110,14 +114,14 @@ extern "C" {
     } MEMORY_MAP_IOOP;
 
 
-    
+
     /*
      * 
      *  Obsluzne funkce pameti
      *
      */
 
-    
+
     /* Tepla inicializace pameti */
     extern void memory_reset ( void );
 
@@ -136,9 +140,9 @@ extern "C" {
 
 
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* MEMORY_H */
+#endif /* MEMORY_H */
 

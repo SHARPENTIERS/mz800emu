@@ -42,16 +42,24 @@
 
 st_AUDIO g_audio;
 
+static AUDIO_BUF_t g_attenuator_volume_value [ PSG_OUT_OFF + 1 ];
+
 
 void audio_init ( void ) {
     g_audio.last_update = 0;
     g_audio.resample_timer = PSG_RESAMPLE_PERIOD;
     g_audio.buffer_position = 0;
     g_audio.ctc0_output = 0;
+
+    int i;
+    for ( i = 0; i <= PSG_OUT_OFF; i++ ) {
+        g_attenuator_volume_value[i] = AUDIO_MAXVAL_PER_CHANNEL * pow ( 10, -( (float) i / PSG_OUT_OFF ) );
+    };
+
 }
 
 
-AUDIO_BUF_t audio_scan ( void ) {
+static inline AUDIO_BUF_t audio_scan ( void ) {
 
     AUDIO_BUF_t scan_value = 0;
 
@@ -62,13 +70,13 @@ AUDIO_BUF_t audio_scan ( void ) {
                 if ( g_psg.channel [ channel ].attn == PSG_OUT_MAX ) {
                     scan_value += AUDIO_MAXVAL_PER_CHANNEL;
                 } else {
-                    scan_value += AUDIO_MAXVAL_PER_CHANNEL * pow ( 10, -( (float) g_psg.channel [ channel ].attn / PSG_OUT_OFF ) );
+                    scan_value += g_attenuator_volume_value[g_psg.channel[channel].attn];
                 };
             };
         };
     };
     scan_value += g_audio.ctc0_output * AUDIO_MAXVAL_PER_CHANNEL;
-    
+
     return scan_value;
 }
 
@@ -79,7 +87,7 @@ void audio_fill_buffer ( unsigned event_ticks ) {
     if ( event_ticks > ( VIDEO_SCREEN_TICKS ) ) {
         event_ticks = ( VIDEO_SCREEN_TICKS );
     };
-    
+
     if ( ( event_ticks - g_audio.last_update ) < PSG_DIVIDER ) return;
 
     do {
@@ -94,8 +102,8 @@ void audio_fill_buffer ( unsigned event_ticks ) {
          * 
          */
         last_value = last_value + ( audio_scan ( ) - last_value ) / 16;
-        
-        
+
+
         if ( g_audio.resample_timer <= PSG_DIVIDER ) {
             if ( g_audio.buffer_position < IFACE_AUDIO_20MS_SAMPLES ) {
                 g_audio.buffer [ g_audio.buffer_position++ ] = last_value;
@@ -116,7 +124,7 @@ void audio_ctc0_changed ( unsigned value, unsigned event_ticks ) {
 #ifdef AUDIO_FILLBUFF_v1
     audio_fill_buffer ( event_ticks );
 #endif
-    
+
     g_audio.ctc0_output = value;
 }
 

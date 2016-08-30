@@ -62,8 +62,6 @@ void framebuffer_update_MZ700_screen_row ( void ) {
 
     unsigned pos_Y = beam_row - VIDEO_BEAM_CANVAS_FIRST_ROW;
 
-    //    vram_addr = ( start_pixel / 2 / 8 ) + ( ( pos_Y / 8 ) * 40 );
-
     unsigned vram_addr = ( ( pos_Y / 8 ) * 40 );
 
     Z80EX_BYTE *vram_data = &VRAM_CHAR [ vram_addr ];
@@ -71,10 +69,8 @@ void framebuffer_update_MZ700_screen_row ( void ) {
 
     unsigned pos_X;
 
-
     for ( pos_X = 0; pos_X < VIDEO_CANVAS_WIDTH; pos_X += 16 ) {
 
-        //        if ( ( pos_X & 0x0f ) == 0 ) {
         mz700_attr_fgc = ( *vram_attr >> 4 ) & 0x07;
         mz700_attr_bgc = *vram_attr & 0x07;
         mz700_attr_grp = ( ( *vram_attr << 4 ) & 0x0800 );
@@ -86,56 +82,47 @@ void framebuffer_update_MZ700_screen_row ( void ) {
 
         vram_data++;
         vram_attr++;
-        //        };
-
-        uint8_t igrb;
 
         /* 0. pixel */
-        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        *p++ = igrb;
-        *p++ = igrb;
+        p[0] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        p[1] = p[0];
         mz700_mask = mz700_mask >> 1;
 
         /* 1. pixel */
-        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        *p++ = igrb;
-        *p++ = igrb;
+        p[2] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        p[3] = p[2];
         mz700_mask = mz700_mask >> 1;
 
         /* 2. pixel */
-        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        *p++ = igrb;
-        *p++ = igrb;
+        p[4] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        p[5] = p[4];
         mz700_mask = mz700_mask >> 1;
 
         /* 3. pixel */
-        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        *p++ = igrb;
-        *p++ = igrb;
+        p[6] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        p[7] = p[6];
         mz700_mask = mz700_mask >> 1;
 
         /* 4. pixel */
-        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        *p++ = igrb;
-        *p++ = igrb;
+        p[8] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        p[9] = p[8];
         mz700_mask = mz700_mask >> 1;
 
         /* 5. pixel */
-        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        *p++ = igrb;
-        *p++ = igrb;
+        p[10] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        p[11] = p[10];
         mz700_mask = mz700_mask >> 1;
 
         /* 6. pixel */
-        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        *p++ = igrb;
-        *p++ = igrb;
+        p[12] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        p[13] = p[12];
         mz700_mask = mz700_mask >> 1;
 
         /* 7. pixel */
-        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        *p++ = igrb;
-        *p++ = igrb;
+        p[14] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        p[15] = p[14];
+
+        p += 16;
     };
 }
 
