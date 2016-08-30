@@ -422,7 +422,9 @@ static void mz800_screen_done_event ( void ) {
 #endif
 
     g_gdg.elapsed_total_screens++;
- //   if ( g_gdg.elapsed_total_screens > 1000 ) main_app_quit ( EXIT_SUCCESS );
+#ifdef MZ800EMU_CFG_SPEED_TEST
+    if ( g_gdg.elapsed_total_screens > 5000 ) main_app_quit ( EXIT_SUCCESS );
+#endif
     g_gdg.elapsed_screen_ticks -= ( VIDEO_SCREEN_TICKS - 1 );
     g_gdg.beam_row = 0;
 
@@ -665,6 +667,7 @@ static inline void mz800_sync_ctc0_and_cmt ( unsigned instruction_ticks ) {
 
 /* TODO: casovani (MZ700 VRAM casovani) neni jeste uplne OK - viz FX soundtrack 3 - border pri zmacknute klavese je v trochu jine poloze, nez na realnem HW */
 
+
 /* 
  * To by mohlo byt zpusobeno tim jak a kdy se scanuje klavesnice - tedy zase az tak velikou haluz zrejme nemame.
  * Pozn: scanovanim klavesnice to zarucene zpusobeno neni!
@@ -846,28 +849,33 @@ void mz800_main ( void ) {
     g_mz800.event.ticks = g_gdg.event.ticks;
 
 
-#if 0
+#ifdef MZ800EMU_CFG_SPEED_TEST
     z80ex_set_reg ( g_mz800.cpu, regHL, 0x10f0 );
-    cmthack_load_filename ( "Flappy.mzf" );
+    //cmthack_load_filename ( "Flappy.mzf" );
+    cmthack_load_filename ( "Galao.mzf" );
     z80ex_set_reg ( g_mz800.cpu, regHL, ( g_memory.RAM [ 0x1105 ] << 8 ) | g_memory.RAM [ 0x1104 ] );
     z80ex_set_reg ( g_mz800.cpu, regBC, ( g_memory.RAM [ 0x1103 ] << 8 ) | g_memory.RAM [ 0x1102 ] );
     cmthack_read_body ( );
-    
-    z80ex_set_reg ( g_mz800.cpu, regSP, 0x1104 );
+
+    z80ex_set_reg ( g_mz800.cpu, regSP, 0x1106 );
+    printf ( "Test prg start: 0x%04x\n", ( g_memory.RAM [ 0x1107 ] << 8 ) | g_memory.RAM [ 0x1106 ] );
     //z80ex_set_reg ( g_mz800.cpu, regPC, ( g_memory.RAM [ 0x1107 ] << 8 ) | g_memory.RAM [ 0x1106 ] );
-    g_memory.map = MEMORY_MAP_FLAG_ROM_0000 | MEMORY_MAP_FLAG_ROM_E000;;
+    g_memory.map = MEMORY_MAP_FLAG_ROM_0000 | MEMORY_MAP_FLAG_ROM_E000;
+    ;
     z80ex_set_reg ( g_mz800.cpu, regPC, 0x308 );
 
     z80ex_set_reg ( g_mz800.cpu, regIM, 1 );
     pioz80_write_byte ( 0xfc & 0x03, 0x00 );
-    
+
     pio8255_write ( 0x03, 0x8a );
     pio8255_write ( 0x03, 0x07 );
     pio8255_write ( 0x03, 0x05 );
     pio8255_write ( 0x03, 0x01 );
     pio8255_write ( 0x03, 0x05 );
+
+    //memcpy ( g_memoryVRAM, g_rom.cgrom, MEMORY_SIZE_ROM_CGROM );
 #endif
-    
+
     while ( 1 ) {
 
         //                fprintf ( fp, "0x%04x\n", z80ex_get_reg ( g_mz800.cpu, regPC ) );
