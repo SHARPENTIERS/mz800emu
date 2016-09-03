@@ -90,7 +90,7 @@ G_MODULE_EXPORT void on_dbg_reset_menuitem_activate ( GtkCheckMenuItem *menuitem
 G_MODULE_EXPORT void on_dbg_speed_menuitem_activate ( GtkCheckMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
-    mz800_set_cpu_speed ( ( ~g_mz800.use_max_emulation_speed ) & 0x01 );
+    mz800_switch_emulation_speed ( ( ~g_mz800.use_max_emulation_speed ) & 0x01 );
 }
 
 

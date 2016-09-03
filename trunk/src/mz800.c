@@ -203,7 +203,7 @@ void mz800_init ( void ) {
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );
 
-    mz800_set_cpu_speed ( MZ800_EMULATION_SPEED_NORMAL );
+    mz800_switch_emulation_speed ( MZ800_EMULATION_SPEED_NORMAL );
     //mz800_set_cpu_speed ( MZ800_EMULATION_SPEED_MAX );
 
     g_mz800.emulation_paused = 0;
@@ -231,6 +231,13 @@ void mz800_init ( void ) {
     g_mz800.debug_pc = 0;
     g_mz800.status_changed = 0;
     g_mz800.interrupt = 0;
+
+#ifdef MZ800EMU_CFG_VARIABLE_SPEED
+    g_mz800.speed_in_percentage = 100;
+    g_mz800.speed_frame_width = VIDEO_SCREEN_TICKS * (float) g_mz800.speed_in_percentage / 100;
+    g_mz800.speed_sync_event.event_name = EVENT_SPEED_SYNC;
+    g_mz800.speed_sync_event.ticks = g_mz800.speed_frame_width;
+#endif
 
     memory_init ( );
     ctc8253_init ( );
@@ -343,22 +350,37 @@ uint32_t screens_counter_flush ( uint32_t interval, void* param ) {
     return interval;
 }
 
+
+static inline st_EVENT* mz800_place_proximate_event ( void ) {
+
+    st_EVENT *proximate_event;
+
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
 
-
-static inline st_EVENT* mz800_place_proximate_clk1m1_event ( void ) {
-
-    if ( g_ctc8253 [ CTC_CS0 ].clk1m1_event.ticks <= g_cmt.clk1m1_event.ticks ) {
-        return &g_ctc8253 [ CTC_CS0 ].clk1m1_event;
+    if ( g_ctc8253[CTC_CS0].clk1m1_event.ticks <= g_cmt.clk1m1_event.ticks ) {
+        proximate_event = &g_ctc8253 [CTC_CS0].clk1m1_event;
+    } else {
+        proximate_event = &g_cmt.clk1m1_event;
     };
 
-    return &g_cmt.clk1m1_event;
-}
-
+    if ( g_gdg.event.ticks <= proximate_event->ticks ) {
+        proximate_event = &g_gdg.event;
+    };
+#else
+    proximate_event = &g_gdg.event;
 #endif
 
+#ifdef MZ800EMU_CFG_VARIABLE_SPEED
+    if ( g_mz800.speed_sync_event.ticks <= proximate_event->ticks ) {
+        proximate_event = &g_mz800.speed_sync_event;
+    };
+#endif
 
-static void mz800_screen_done_event ( void ) {
+    return proximate_event;
+}
+
+
+static inline void mz800_screen_done_event ( void ) {
 
 #if 0
     if ( pool_events_time ) {
@@ -368,7 +390,12 @@ static void mz800_screen_done_event ( void ) {
 #endif
 
     static unsigned last_make_picture_time;
+
+#ifdef MZ800EMU_CFG_VARIABLE_SPEED
+    if ( ( ( g_mz800.use_max_emulation_speed == 0 ) && ( g_mz800.speed_in_percentage == 100 ) ) || ( last_make_picture_time != make_picture_time ) ) {
+#else
     if ( ( g_mz800.use_max_emulation_speed == 0 ) || ( last_make_picture_time != make_picture_time ) ) {
+#endif
         last_make_picture_time = make_picture_time;
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
@@ -398,23 +425,35 @@ static void mz800_screen_done_event ( void ) {
 #endif
         };
 
+#ifndef MZ800EMU_CFG_VARIABLE_SPEED
+
 #ifdef AUDIO_FILLBUFF_v1
         audio_fill_buffer ( g_mz800.event.ticks );
+        g_audio.last_update = 0;
+        g_audio.buffer_position = 0;
+#endif
+
+#ifdef AUDIO_FILLBUFF_v2
+        audio_fill_buffer_v2 ( gdg_compute_total_ticks ( g_mz800.event.ticks ) );
 #endif
 
 #ifndef MZ800EMU_CFG_AUDIO_DISABLED
         audio_sdl_wait_to_cycle_done ( );
 #endif
 
-        g_audio.last_update = 0;
-        g_audio.buffer_position = 0;
+#endif
 
         //make_picture_time = 0;
+        //        printf ( "snimek! %d\n", g_gdg.elapsed_total_screens );
     };
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
     ctc8253_on_screen_done_event ( );
     cmt_on_screen_done_event ( );
+#endif
+
+#ifdef MZ800EMU_CFG_VARIABLE_SPEED
+    g_mz800.speed_sync_event.ticks -= VIDEO_SCREEN_TICKS;
 #endif
 
 #ifdef MZ800EMU_CFG_CLK1M1_SLOW
@@ -430,12 +469,37 @@ static void mz800_screen_done_event ( void ) {
 
 }
 
+#ifdef MZ800EMU_CFG_VARIABLE_SPEED
+
+
+static inline void mz800_speed_sync_event ( void ) {
+
+#ifdef AUDIO_FILLBUFF_v1
+    audio_fill_buffer ( g_mz800.event.ticks );
+    g_audio.last_update = 0;
+    g_audio.buffer_position = 0;
+#endif
+
+#ifdef AUDIO_FILLBUFF_v2
+    audio_fill_buffer_v2 ( gdg_compute_total_ticks ( g_mz800.event.ticks ) );
+#endif
+
+#ifndef MZ800EMU_CFG_AUDIO_DISABLED
+    audio_sdl_wait_to_cycle_done ( );
+#endif
+
+    g_mz800.speed_sync_event.ticks += g_mz800.speed_frame_width;
+
+}
+#endif
+
 
 static inline void mz800_sync ( void ) {
 
     while ( g_gdg.elapsed_screen_ticks >= g_mz800.event.ticks ) {
 
         if ( g_mz800.event.event_name >= EVENT_NO_GDG ) {
+
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
             if ( g_ctc8253 [ CTC_CS0 ].clk1m1_event.ticks <= g_mz800.event.ticks ) {
@@ -445,18 +509,20 @@ static inline void mz800_sync ( void ) {
             if ( g_cmt.clk1m1_event.ticks <= g_mz800.event.ticks ) {
                 cmt_ctc1m1_event ( g_mz800.event.ticks );
             };
+#endif
 
-            st_EVENT *proximate_clk1m1_event = mz800_place_proximate_clk1m1_event ( );
-
-            if ( g_gdg.event.ticks >= proximate_clk1m1_event->ticks ) {
-                g_mz800.event.event_name = proximate_clk1m1_event->event_name;
-                g_mz800.event.ticks = proximate_clk1m1_event->ticks;
-                return;
+#ifdef MZ800EMU_CFG_VARIABLE_SPEED
+            if ( g_mz800.speed_sync_event.ticks <= g_mz800.event.ticks ) {
+                mz800_speed_sync_event ( );
             };
 #endif
 
-            g_mz800.event.event_name = g_gdg.event.event_name;
-            g_mz800.event.ticks = g_gdg.event.ticks;
+            st_EVENT *proximate_event = mz800_place_proximate_event ( );
+
+            g_mz800.event.event_name = proximate_event->event_name;
+            g_mz800.event.ticks = proximate_event->ticks;
+
+            if ( g_mz800.event.event_name >= EVENT_NO_GDG ) return;
 
             if ( !( g_gdg.elapsed_screen_ticks >= g_mz800.event.ticks ) ) return;
         };
@@ -594,6 +660,10 @@ static inline void mz800_sync ( void ) {
             case EVENT_MZ800_INTERRUPT:
             case EVENT_USER_INTERFACE:
 
+#ifdef MZ800EMU_CFG_VARIABLE_SPEED
+            case EVENT_SPEED_SYNC:
+#endif
+
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
             case EVENT_CTC0:
             case EVENT_CMT:
@@ -620,19 +690,10 @@ static inline void mz800_sync ( void ) {
             g_gdg.event.event_name++;
         };
 
+        st_EVENT *proximate_event = mz800_place_proximate_event ( );
 
-#ifdef MZ800EMU_CFG_CLK1M1_FAST
-        st_EVENT *proximate_clk1m1_event = mz800_place_proximate_clk1m1_event ( );
-
-        if ( g_gdg.event.ticks >= proximate_clk1m1_event->ticks ) {
-            g_mz800.event.event_name = proximate_clk1m1_event->event_name;
-            g_mz800.event.ticks = proximate_clk1m1_event->ticks;
-            return;
-        };
-#endif
-
-        g_mz800.event.event_name = g_gdg.event.event_name;
-        g_mz800.event.ticks = g_gdg.event.ticks;
+        g_mz800.event.event_name = proximate_event->event_name;
+        g_mz800.event.ticks = proximate_event->ticks;
     };
 }
 
@@ -693,21 +754,11 @@ void mz800_sync_inside_cpu ( en_INSIDEOP insideop ) {
             hpr_event.ticks = g_mz800.event.ticks;
         };
 
-#ifdef MZ800EMU_CFG_CLK1M1_FAST        
-        st_EVENT *proximate_clk1m1_event = mz800_place_proximate_clk1m1_event ( );
 
-        if ( g_gdg.event.ticks >= proximate_clk1m1_event->ticks ) {
-            g_mz800.event.event_name = proximate_clk1m1_event->event_name;
-            g_mz800.event.ticks = proximate_clk1m1_event->ticks;
-        } else {
-            g_mz800.event.event_name = g_gdg.event.event_name;
-            g_mz800.event.ticks = g_gdg.event.ticks;
-        };
-#else
-        g_mz800.event.event_name = g_gdg.event.event_name;
-        g_mz800.event.ticks = g_gdg.event.ticks;
-#endif
+        st_EVENT *proximate_event = mz800_place_proximate_event ( );
 
+        g_mz800.event.event_name = proximate_event->event_name;
+        g_mz800.event.ticks = proximate_event->ticks;
     };
 
     unsigned insideop_ticks = 0;
@@ -845,14 +896,16 @@ void mz800_main ( void ) {
 
     SDL_AddTimer ( INTERRUPT_TIMER_MS, screens_counter_flush, NULL );
 
-    g_mz800.event.event_name = g_gdg.event.event_name;
-    g_mz800.event.ticks = g_gdg.event.ticks;
+    st_EVENT *proximate_event = mz800_place_proximate_event ( );
+
+    g_mz800.event.event_name = proximate_event->event_name;
+    g_mz800.event.ticks = proximate_event->ticks;
 
 
 #ifdef MZ800EMU_CFG_SPEED_TEST
     z80ex_set_reg ( g_mz800.cpu, regHL, 0x10f0 );
-    //cmthack_load_filename ( "Flappy.mzf" );
-    cmthack_load_filename ( "Galao.mzf" );
+    cmthack_load_filename ( "Flappy.mzf" );
+    //cmthack_load_filename ( "Galao.mzf" );
     z80ex_set_reg ( g_mz800.cpu, regHL, ( g_memory.RAM [ 0x1105 ] << 8 ) | g_memory.RAM [ 0x1104 ] );
     z80ex_set_reg ( g_mz800.cpu, regBC, ( g_memory.RAM [ 0x1103 ] << 8 ) | g_memory.RAM [ 0x1102 ] );
     cmthack_read_body ( );
@@ -861,7 +914,7 @@ void mz800_main ( void ) {
     printf ( "Test prg start: 0x%04x\n", ( g_memory.RAM [ 0x1107 ] << 8 ) | g_memory.RAM [ 0x1106 ] );
     //z80ex_set_reg ( g_mz800.cpu, regPC, ( g_memory.RAM [ 0x1107 ] << 8 ) | g_memory.RAM [ 0x1106 ] );
     g_memory.map = MEMORY_MAP_FLAG_ROM_0000 | MEMORY_MAP_FLAG_ROM_E000;
-    ;
+
     z80ex_set_reg ( g_mz800.cpu, regPC, 0x308 );
 
     z80ex_set_reg ( g_mz800.cpu, regIM, 1 );
@@ -875,6 +928,15 @@ void mz800_main ( void ) {
 
     //memcpy ( g_memoryVRAM, g_rom.cgrom, MEMORY_SIZE_ROM_CGROM );
 #endif
+
+
+    /*
+        pio8255_write ( 0x03, 0x8a );
+        pio8255_write ( 0x03, 0x07 );
+        pio8255_write ( 0x03, 0x05 );
+        pio8255_write ( 0x03, 0x01 );
+        pio8255_write ( 0x03, 0x05 );
+     */
 
     while ( 1 ) {
 
@@ -1056,7 +1118,7 @@ void mz800_flush_full_screen ( void ) {
 }
 
 
-void mz800_set_cpu_speed ( unsigned value ) {
+void mz800_switch_emulation_speed ( unsigned value ) {
 
     value &= 1;
     if ( g_mz800.use_max_emulation_speed == value ) return;

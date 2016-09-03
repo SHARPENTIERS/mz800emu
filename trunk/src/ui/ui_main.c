@@ -608,9 +608,9 @@ G_MODULE_EXPORT void on_max_cpu_speed ( GtkCheckMenuItem *menuitem, gpointer dat
 #endif
 
     if ( FALSE == gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_max_cpu_speed" ) ) ) {
-        mz800_set_cpu_speed ( MZ800_EMULATION_SPEED_NORMAL );
+        mz800_switch_emulation_speed ( MZ800_EMULATION_SPEED_NORMAL );
     } else {
-        mz800_set_cpu_speed ( MZ800_EMULATION_SPEED_MAX );
+        mz800_switch_emulation_speed ( MZ800_EMULATION_SPEED_MAX );
     };
 }
 

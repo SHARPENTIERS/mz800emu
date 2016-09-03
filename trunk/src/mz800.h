@@ -24,9 +24,9 @@
  */
 
 #ifndef MZ800_H
-#define	MZ800_H
+#define MZ800_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -34,14 +34,16 @@ extern "C" {
 
 #include "z80ex/include/z80ex.h"
 
+
     typedef enum en_MZ800SWITCH {
         MZ800SWITCH_OFF = 0,
         MZ800SWITCH_ON,
     } en_MZ800SWITCH;
-    
+
 #define MZ800_INTERRUPT_CTC2    ( 1 << 0 )
 #define MZ800_INTERRUPT_PIOZ80  ( 1 << 1 )
 #define MZ800_INTERRUPT_FDC     ( 1 << 2 )
+
 
     typedef enum en_MZEVENT {
         //        EVENT_GDG_STS_HSYNC_END,
@@ -56,17 +58,22 @@ extern "C" {
         EVENT_GDG_SCREEN_ROW_END,
 
         // jine, nez GDG eventy
-        EVENT_NO_GDG,   /* pouze hranicni hodnota - neni skutecny event */
+        EVENT_NO_GDG, /* pouze hranicni hodnota - neni skutecny event */
+
+#ifdef MZ800EMU_CFG_VARIABLE_SPEED
+        EVENT_SPEED_SYNC,
+#endif
                 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
         EVENT_CTC0,
         EVENT_CMT,
 #endif
-                
+
         // high priority eventy
         EVENT_MZ800_INTERRUPT,
         EVENT_USER_INTERFACE,
     } en_MZEVENT;
+
 
     typedef struct st_EVENT {
         en_MZEVENT event_name;
@@ -76,10 +83,12 @@ extern "C" {
 #define MZ800_EMULATION_SPEED_NORMAL    0
 #define MZ800_EMULATION_SPEED_MAX       1
 
+
     typedef enum en_DEVELMODE {
         DEVELMODE_NO = 0,
         DEVELMODE_YES,
     } en_DEVELMODE;
+
 
     typedef struct st_mz800 {
         Z80EX_CONTEXT *cpu; /* Model Z80ex */
@@ -106,8 +115,14 @@ extern "C" {
         unsigned interrupt;
 
         en_DEVELMODE development_mode;
-        
+
         en_MZ800SWITCH mz800_switch;
+
+#ifdef MZ800EMU_CFG_VARIABLE_SPEED        
+        st_EVENT speed_sync_event;
+        unsigned speed_in_percentage; /* pozadovana rychlost v procentech 1 - 500, default 100 % */
+        unsigned speed_frame_width;
+#endif
 
     } st_mz800;
 
@@ -122,6 +137,7 @@ extern "C" {
         g_mz800.event.ticks = t;\
     };\
 }
+
 
     typedef enum en_INSIDEOP {
         INSIDEOP_IORQ_WR = ( 0 << 1 | 0 ),
@@ -144,12 +160,12 @@ extern "C" {
     extern void mz800_sync_inside_cpu ( en_INSIDEOP insideop );
     extern void mz800_flush_full_screen ( void );
 
-    extern void mz800_set_cpu_speed ( unsigned emulation_speed );
+    extern void mz800_switch_emulation_speed ( unsigned emulation_speed );
     extern void mz800_pause_emulation ( unsigned value );
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* MZ800_H */
+#endif /* MZ800_H */
 

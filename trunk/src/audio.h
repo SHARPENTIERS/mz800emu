@@ -24,20 +24,56 @@
  */
 
 #ifndef AUDIO_H
-#define	AUDIO_H
+#define AUDIO_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
-#define AUDIO_FILLBUFF_v1 /* Experimentalni - zakomentovanim teto definice se bypasuje generovani audio bufferu */
-//#define AUDIO_FILLBUFF_V2 /* pozatim neimplementovano */
-    
+#include "mz800emu_cfg.h"
+#include "gdg/video.h"
+#include "gdg/gdg.h"
+
+
 #include "iface_sdl/iface_sdl_audio.h"
 #include <stdint.h>
 
-    
+
     typedef uint16_t AUDIO_BUF_t;
+
+#ifdef AUDIO_FILLBUFF_v2
+
+
+    typedef struct st_AUDIO_SAMPLE {
+        unsigned timestamp;
+        AUDIO_BUF_t state;
+    } st_AUDIO_SAMPLE;
+
+
+
+#if ( GDGCLK_1M1_DIVIDER == 16 ) && ( MZ800EMU_CFG_MAX_SYNC_SPEED == 1000 )
+#define AUDIO_MIN_CTC0_EVENT_WIDTH  ( GDGCLK_1M1_DIVIDER * 1.5 )  /* ( 24 = 16 * 1.5 ) */
+#define AUDIO_MAX_SCAN_WIDTH  ( MZ800EMU_CFG_MAX_SYNC_SPEED * 0.01 * VIDEO_SCREEN_TICKS )  /* ( 3544320 = 1000 * 0.01 * 354432 ) */
+#define AUDIO_MAX_CTC_SAMPLES ( 3544320 / 24 )
+#else
+#if ( GDGCLK_1M1_DIVIDER == 16 ) && ( MZ800EMU_CFG_MAX_SYNC_SPEED == 100 )
+#define AUDIO_MIN_CTC0_EVENT_WIDTH  ( GDGCLK_1M1_DIVIDER * 1.5 )  /* ( 24 = 16 * 1.5 ) */
+#define AUDIO_MAX_SCAN_WIDTH  VIDEO_SCREEN_TICKS
+#define AUDIO_MAX_CTC_SAMPLES ( AUDIO_MAX_SCAN_WIDTH / 24 )
+#else
+#error Plese define AUDIO_MAX_CTC_SAMPLES
+#endif
+#endif
+
+
+    typedef struct st_AUDIO_CTC {
+        st_AUDIO_SAMPLE samples [ AUDIO_MAX_CTC_SAMPLES ];
+        unsigned count;
+    } st_AUDIO_CTC;
+
+    extern st_AUDIO_CTC g_audio_ctc;
+#endif
+
 
     typedef struct st_AUDIO {
         AUDIO_BUF_t buffer [ IFACE_AUDIO_20MS_SAMPLES ];
@@ -50,13 +86,20 @@ extern "C" {
     extern st_AUDIO g_audio;
 
     extern void audio_init ( void );
-    extern void audio_fill_buffer ( unsigned event_ticks );
     extern void audio_ctc0_changed ( unsigned value, unsigned event_ticks );
 
+#ifdef AUDIO_FILLBUFF_v1
+    extern void audio_fill_buffer ( unsigned event_ticks );
+#endif
 
-#ifdef	__cplusplus
+#ifdef AUDIO_FILLBUFF_v2
+    extern void audio_fill_buffer_v2 ( unsigned total_ticks );
+#endif
+
+
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* AUDIO_H */
+#endif /* AUDIO_H */
 
