@@ -384,7 +384,7 @@ void iface_sdl_keydown_event ( SDL_Event *event ) {
             /*
              * Max speed: Alt + M
              */
-            mz800_set_cpu_speed ( ( ~g_mz800.use_max_emulation_speed ) & 0x01 );
+            mz800_switch_emulation_speed ( ( ~g_mz800.use_max_emulation_speed ) & 0x01 );
 
         } else if ( event->key.keysym.scancode == SDL_SCANCODE_P ) {
             /*

@@ -1013,7 +1013,7 @@
       <item path="tools/search_dll.sh" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
-    <conf name="Release-Linux" type="1">
+    <conf name="Debug-Linux" type="1">
       <toolsSet>
         <compilerSet>default</compilerSet>
         <dependencyChecking>true</dependencyChecking>
@@ -1021,12 +1021,10 @@
       </toolsSet>
       <compileType>
         <cTool>
-          <developmentMode>5</developmentMode>
           <standard>10</standard>
-          <commandlineTool>gcc</commandlineTool>
           <incDir>
             <pElem>src</pElem>
-            <pElem>src/z80ex</pElem>
+            <pElem>src/z80ex/</pElem>
             <pElem>src/z80ex/include</pElem>
           </incDir>
           <commandLine>-pedantic -pipe -Wl,--export-dynamic `${LINUX_SDL2_CONFIG} --cflags` `${LINUX_PKGCONFIG} --cflags ${PKG_OBJECTS}`</commandLine>
@@ -1037,15 +1035,8 @@
           <warningLevel>2</warningLevel>
         </cTool>
         <ccTool>
-          <developmentMode>5</developmentMode>
           <warningLevel>3</warningLevel>
         </ccTool>
-        <fortranCompilerTool>
-          <developmentMode>5</developmentMode>
-        </fortranCompilerTool>
-        <asmTool>
-          <developmentMode>5</developmentMode>
-        </asmTool>
         <linkerTool>
           <commandlineTool>gcc</commandlineTool>
           <commandLine>-lm ${LINUX_SDL2_LIBS} `${LINUX_PKGCONFIG} --libs ${PKG_OBJECTS}`</commandLine>
@@ -1389,7 +1380,7 @@
       <item path="tools/search_dll.sh" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
-    <conf name="Debug-Linux" type="1">
+    <conf name="Release-Linux" type="1">
       <toolsSet>
         <compilerSet>default</compilerSet>
         <dependencyChecking>true</dependencyChecking>
@@ -1397,10 +1388,12 @@
       </toolsSet>
       <compileType>
         <cTool>
+          <developmentMode>5</developmentMode>
           <standard>10</standard>
+          <commandlineTool>gcc</commandlineTool>
           <incDir>
             <pElem>src</pElem>
-            <pElem>src/z80ex/</pElem>
+            <pElem>src/z80ex</pElem>
             <pElem>src/z80ex/include</pElem>
           </incDir>
           <commandLine>-pedantic -pipe -Wl,--export-dynamic `${LINUX_SDL2_CONFIG} --cflags` `${LINUX_PKGCONFIG} --cflags ${PKG_OBJECTS}`</commandLine>
@@ -1411,8 +1404,15 @@
           <warningLevel>2</warningLevel>
         </cTool>
         <ccTool>
+          <developmentMode>5</developmentMode>
           <warningLevel>3</warningLevel>
         </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
         <linkerTool>
           <commandlineTool>gcc</commandlineTool>
           <commandLine>-lm ${LINUX_SDL2_LIBS} `${LINUX_PKGCONFIG} --libs ${PKG_OBJECTS}`</commandLine>

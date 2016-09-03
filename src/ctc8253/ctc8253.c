@@ -370,10 +370,6 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
 
 void ctc8253_clkfall ( unsigned cs, unsigned event_ticks ) {
 
-    if ( cs == CTC_CS0 ) {
-        cs = CTC_CS0;
-    }
-
     switch ( g_ctc8253[cs].mode ) {
 
         case CTC_MODE0:
@@ -715,36 +711,6 @@ void ctc8253_ctc1m1_event ( unsigned event_ticks ) {
     } else {
         ctc0->clk1m1_event.ticks = -1;
     };
-
-#if 0
-    if ( ctc0->mode == CTC_MODE3 ) {
-        if ( ctc0->state == CTC_STATE_COUNTDOWN ) {
-            unsigned ctc0_elapsed_ticks = ctc0->clk1m1_counter_elapsed_ticks + event_ticks - ctc0->clk1m1_last_event_total_ticks;
-            ctc0->value -= ctc0_elapsed_ticks / GDGCLK_1M1_DIVIDER;
-        };
-    } else {
-        printf ( "ctc8253_ctc0_event(): Fast CTC0 - unsupported mode!\n" );
-    };
-
-    ctc8253_clkfall ( CTC_CS0, event_ticks );
-    ctc0->clk1m1_last_event_total_ticks = event_ticks;
-
-
-    if ( ctc0->mode == CTC_MODE3 ) {
-        if ( ctc0->state == CTC_STATE_COUNTDOWN ) {
-            ctc0->clk1m1_event.ticks = event_ticks + ( GDGCLK_1M1_DIVIDER * ( ctc0->value - ctc0->mode3_destination_value - 1 ) );
-            //        } else if ( ctc0->state == CTC_STATE_WAIT_GATE1 ) {
-            //            printf ("wait\n");
-            //            ctc0->ctc0v2_next_event_ticks = -1;
-            //        } else {
-            //            ctc0->ctc0v2_next_event_ticks = event_ticks + GDGCLK_1M1_DIVIDER;
-        } else {
-            ctc0->clk1m1_event.ticks = -1;
-        };
-    } else {
-        printf ( "ctc8253_ctc0_event(): Fast CTC0 - unsupported mode!\n" );
-    };
-#endif
 }
 
 

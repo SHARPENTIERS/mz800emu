@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+
+    
     /*
      * Konfiguracni vypnuti modulu MZ-800 debugger
      * ===========================================
@@ -58,7 +60,42 @@ extern "C" {
 //#define MZ800EMU_CFG_CLK1M1_SLOW
 #define MZ800EMU_CFG_CLK1M1_FAST
 
+    
+    /*
+     * Variabilni speed sync - umoznuje menit plynule synchronizovanou rychlost 
+     * 
+     */
+//#define MZ800EMU_CFG_VARIABLE_SPEED
+    
 
+    /*
+     * 
+     * Audio buffer v1 - je generovan on the fly
+     * 
+     * Audio buffer v2 - zabira mnohem vice mista v pameti a dynamicky reaguje na zmeny rychlosti
+     * 
+     */
+
+#define AUDIO_FILLBUFF_v1
+//#define AUDIO_FILLBUFF_v2
+
+    
+    /*
+     * Maximalni povolena variabilni rychlost emulace v procentech, pri ktere jeste probiha poctiva synchronizace.
+     * 
+     * 100 % = 50 snimku za sekundu
+     * 250 % = 150 snimku za sekundu
+     * ...
+     * 
+     */
+
+#ifdef AUDIO_FILLBUFF_v2
+#ifndef MZ800EMU_CFG_VARIABLE_SPEED
+#define MZ800EMU_CFG_MAX_SYNC_SPEED 100
+#else
+#define MZ800EMU_CFG_MAX_SYNC_SPEED 1000
+#endif
+#endif
 
     /*
      * Experimentalni vypnuti audio vystupu a synchronizace snimku se zvukem
@@ -78,7 +115,7 @@ extern "C" {
      * 
      */
 //#define MZ800EMU_CFG_SPEED_TEST
-    
+
 
 #ifdef __cplusplus
 }

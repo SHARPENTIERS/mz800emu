@@ -20,11 +20,11 @@
                     <type>1</type>
                 </confElem>
                 <confElem>
-                    <name>Release-Linux</name>
+                    <name>Debug-Linux</name>
                     <type>1</type>
                 </confElem>
                 <confElem>
-                    <name>Debug-Linux</name>
+                    <name>Release-Linux</name>
                     <type>1</type>
                 </confElem>
                 <confElem>
