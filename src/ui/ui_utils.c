@@ -114,6 +114,9 @@ unsigned ui_utils_ditem_is_file ( char *path, UI_UTILS_DIR_ITEM *ditem ) {
 
 
 const gchar* ui_utils_get_error_message ( void ) {
+    if ( NULL == g_ui_utils_error ) {
+        return "(null error message)";
+    }
     return g_ui_utils_error->message;
 }
 
