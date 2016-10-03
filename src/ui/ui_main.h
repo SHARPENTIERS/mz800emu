@@ -118,6 +118,8 @@ extern "C" {
 
     extern void ui_main_update_cpu_speed_menu ( unsigned state );
     extern void ui_main_update_emulation_state ( unsigned state );
+    
+    extern void ui_update_last_folder_value ( en_FILETYPE file_type, char *value );
 
 #ifdef UI_TOPMENU_IS_WINDOW
     extern void ui_hide_main_menu ( void );

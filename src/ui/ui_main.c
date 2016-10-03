@@ -75,6 +75,7 @@
 #include "ui/debugger/ui_memdump.h"
 #endif
 
+
 st_UI g_ui;
 static int g_ui_is_initialised = 0;
 
@@ -179,7 +180,11 @@ void ui_init ( void ) {
     if ( 0 == gtk_builder_add_from_file ( g_ui.builder, UI_RESOURCES_DIR "mz800emu_cmt.glade", &err ) ) {
         printf ( "GtkBuilder error: %s\n", err->message );
     };
-
+#if 0
+    if ( 0 == gtk_builder_add_from_file ( g_ui.builder, UI_RESOURCES_DIR "dsk_tool.glade", &err ) ) {
+        printf ( "GtkBuilder error: %s\n", err->message );
+    };
+#endif
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     /* TODO: prozkoumat GtkCssProvider - nastavit rules hint pro disassembled a stack treeview */
@@ -206,30 +211,30 @@ void ui_init ( void ) {
     screen = gdk_display_get_default_screen ( display );
 
     gtk_style_context_add_provider_for_screen ( screen,
-            GTK_STYLE_PROVIDER ( provider ),
-            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION );
+                                                GTK_STYLE_PROVIDER ( provider ),
+                                                GTK_STYLE_PROVIDER_PRIORITY_APPLICATION );
 
 
 
     gtk_style_context_add_provider_for_screen ( screen,
-            GTK_STYLE_PROVIDER ( provider ),
-            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION );
+                                                GTK_STYLE_PROVIDER ( provider ),
+                                                GTK_STYLE_PROVIDER_PRIORITY_APPLICATION );
 
 #if 0
     gtk_css_provider_load_from_data ( GTK_CSS_PROVIDER ( provider ),
-            " GtkWindow {\n"
-            "   -GtkWidget-focus-line-width: 0;\n"
-            /* The next 2 lines are not guaranteed to work, they can be can be overridden by the window manager*/
-            "   -GtkWindow-resize-grip-height: 0;\n"
-            "   -GtkWindow-resize-grip-width: 0;\n"
-            /* The next 4 lines are just 4 different ways to make the background blue. Each one overrides the last one.
+                                      " GtkWindow {\n"
+                                      "   -GtkWidget-focus-line-width: 0;\n"
+                                      /* The next 2 lines are not guaranteed to work, they can be can be overridden by the window manager*/
+                                      "   -GtkWindow-resize-grip-height: 0;\n"
+                                      "   -GtkWindow-resize-grip-width: 0;\n"
+                                      /* The next 4 lines are just 4 different ways to make the background blue. Each one overrides the last one.
                 Their just different color units: named color units, rgb,  rgba, hexidecimal, and shade*/
-            "   background-color: blue;\n"
-            "   background-color: rgb (0, 0, 255);\n"
-            "   background-color: rgba (0,0,255,1);\n"
-            "   background-color: #0000FF;\n"
-            "   background-color: shade(blue, 1.0);\n"
-            "}\n", -1, NULL );
+                                      "   background-color: blue;\n"
+                                      "   background-color: rgb (0, 0, 255);\n"
+                                      "   background-color: rgba (0,0,255,1);\n"
+                                      "   background-color: #0000FF;\n"
+                                      "   background-color: shade(blue, 1.0);\n"
+                                      "}\n", -1, NULL );
 #endif
 
     gtk_css_provider_load_from_path ( GTK_CSS_PROVIDER ( provider ), UI_RESOURCES_DIR "mz800emu.css", &err );
@@ -272,12 +277,12 @@ void ui_init ( void ) {
     cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_DIR );
 
     elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_filetype", CFGENTYPE_KEYWORD, FILETYPE_MZF,
-            FILETYPE_MZF, "MZF",
-            FILETYPE_DSK, "DSK",
-            FILETYPE_DAT, "DAT",
-            FILETYPE_MZQ, "MZQ",
-            FILETYPE_DIR, "DIR",
-            -1 );
+                                           FILETYPE_MZF, "MZF",
+                                           FILETYPE_DSK, "DSK",
+                                           FILETYPE_DAT, "DAT",
+                                           FILETYPE_MZQ, "MZQ",
+                                           FILETYPE_DIR, "DIR",
+                                           -1 );
     cfgelement_set_handlers ( elm, (void*) &g_ui.last_filetype, (void*) &g_ui.last_filetype );
 
     cfgmodule_parse ( cmod );
@@ -464,10 +469,10 @@ unsigned ui_open_file ( char *filename, char *predefined_filename, unsigned max_
     };
 
     filechooserdialog = gtk_file_chooser_dialog_new ( window_title, NULL,
-            fcaction,
-            "_Cancel", GTK_RESPONSE_CANCEL,
-            "_Open", GTK_RESPONSE_ACCEPT,
-            NULL );
+                                                      fcaction,
+                                                      "_Cancel", GTK_RESPONSE_CANCEL,
+                                                      "_Open", GTK_RESPONSE_ACCEPT,
+                                                      NULL );
 
     gtk_container_set_border_width ( GTK_CONTAINER ( filechooserdialog ), 5 );
     g_object_set ( filechooserdialog, "local-only", FALSE, NULL );
@@ -773,3 +778,4 @@ G_MODULE_EXPORT gboolean on_emulator_aboutdialog_delete_event ( GtkWidget *widge
     gtk_widget_hide ( window );
     return TRUE;
 }
+

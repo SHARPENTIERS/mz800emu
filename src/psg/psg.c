@@ -41,6 +41,7 @@ st_PSG g_psg;
 st_PSG_SAMPLES g_psg_audio;
 #endif
 
+
 void psg_init ( void ) {
 
 #ifdef AUDIO_FILLBUFF_v2
@@ -63,14 +64,66 @@ void psg_init ( void ) {
 }
 
 
+void psg_real_write_byte ( Z80EX_BYTE value ) {
+
+    unsigned latch, attn, cs;
+
+    latch = value & ( 1 << 7 );
+
+    if ( latch ) {
+        cs = ( value >> 5 ) & 0x03;
+        attn = value & ( 1 << 4 );
+        g_psg.latch_cs = cs;
+        g_psg.latch_attn = attn;
+    } else {
+        cs = g_psg.latch_cs;
+        attn = g_psg.latch_attn;
+    };
+
+    st_PSG_CHANNEL *channel = &g_psg.channel [ cs ];
+
+    if ( attn ) {
+        en_ATTENUATOR new_attn = value & 0x0f;
+        if ( new_attn != channel->attn ) {
+#ifdef AUDIO_FILLBUFF_v1
+            audio_fill_buffer_v1 ( g_gdg.elapsed_screen_ticks );
+#endif
+            channel->attn = new_attn;
+        };
+    } else if ( ( latch ) && ( channel->type == PSG_CHTYPE_TONE ) ) {
+        channel->tone.latch_divider = value & 0x0f;
+    } else {
+        if ( channel->type == PSG_CHTYPE_TONE ) {
+            unsigned new_divider = ( value << 4 ) | channel->tone.latch_divider;
+            if ( new_divider != channel->tone.divider ) {
+#ifdef AUDIO_FILLBUFF_v1
+                audio_fill_buffer_v1 ( g_gdg.elapsed_screen_ticks );
+#endif
+                channel->tone.divider = new_divider;
+            };
+        } else {
+            en_NOISE_DIV_TYPE new_div_type = value & 0x03;
+            en_NOISE_TYPE new_type = ( value >> 2 ) & 1;
+            if ( ( new_div_type != channel->noise.div_type ) || ( new_type != channel->noise.type ) ) {
+#ifdef AUDIO_FILLBUFF_v1
+                audio_fill_buffer_v1 ( g_gdg.elapsed_screen_ticks );
+#endif
+                channel->noise.div_type = new_div_type;
+                channel->noise.type = new_type;
+            };
+        };
+    };
+}
+
+
 void psg_write_byte ( Z80EX_BYTE value ) {
 
     DBGPRINTF ( DBGINF, "value = 0x%02x\n", value );
 
 #ifdef AUDIO_FILLBUFF_v1
     psg_real_write_byte ( value );
-//    printf ( "REAL WRITE: %d - %d: 0x%02x\n", gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks ), gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks ), value );
-//    printf ( "REAL WRITE: %d: 0x%02x\n", gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks ), value );
+    //    printf ( "REAL WRITE: %d - %d: 0x%02x\n", gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks ), gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks ), value );
+    //    printf ( "REAL WRITE: %d: 0x%02x\n", gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks ), value );
 #endif
 
 #ifdef AUDIO_FILLBUFF_v2

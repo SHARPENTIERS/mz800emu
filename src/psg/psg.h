@@ -38,6 +38,10 @@ extern "C" {
 
 #include <stdio.h>
 
+
+#define PSG_DIVIDER                     ( 16 * GDGCLK2CPU_DIVIDER )
+    
+
 #ifdef AUDIO_FILLBUFF_v2
 
 
@@ -155,123 +159,8 @@ extern "C" {
     extern st_PSG g_psg;
 
     extern void psg_init ( void );
+    extern void psg_real_write_byte ( Z80EX_BYTE value );
     extern void psg_write_byte ( Z80EX_BYTE value );
-
-
-    static inline void psg_step ( void ) {
-
-        unsigned cs;
-
-
-        for ( cs = 0; cs < PSG_CHANNELS_COUNT; cs++ ) {
-            st_PSG_CHANNEL *channel = &g_psg.channel [ cs ];
-
-
-            if ( channel->attn != PSG_OUT_OFF ) {
-
-                if ( channel->type == PSG_CHTYPE_TONE ) {
-
-//                    printf ( "\t[%d] - a: %d, %d, %d\n", cs, channel->attn, channel->tone.divider, channel->timer );
-
-                    /* tone */
-                    st_PSG_TONE *tone = &channel->tone;
-                    if ( tone->divider < 2 ) {
-                        channel->output_signal = 1;
-
-                    } else if ( 0 == channel->timer-- ) {
-                        channel->timer = tone->divider - 1;
-                        channel->output_signal = ( ~channel->output_signal ) & 0x01;
-                    };
-                } else {
-
-                    //printf ( "\t[%d] - a: %d, %d, %d\n", cs, channel->attn, channel->noise.shiftregister, channel->timer );
-
-                    /* noise */
-                    unsigned bit0, bit3;
-                    st_PSG_NOISE *noise = &channel->noise;
-                    if ( ( noise->div_type == 0x03 ) && ( g_psg.channel [ PSG_CHANNEL_2 ].tone.divider < 2 ) ) {
-                        channel->output_signal = 1;
-
-                    } else if ( 0 == channel->timer-- ) {
-
-                        if ( noise->div_type == NOISE_DIV_TYPE3 ) {
-                            channel->timer = g_psg.channel [ PSG_CHANNEL_2 ].tone.divider - 1;
-                        } else {
-                            channel->timer = ( 0x10 << noise->div_type ) - 1;
-                        };
-
-                        bit0 = noise->shiftregister & 0x01;
-
-                        if ( noise->last_noise_type != noise->type ) {
-                            noise->shiftregister = 1 << 15;
-                            noise->last_noise_type = noise->type;
-
-                        } else if ( noise->type == NOISE_TYPE_WHITE ) {
-                            bit3 = ( noise->shiftregister >> 3 ) & 0x01;
-                            noise->shiftregister = noise->shiftregister >> 1;
-                            noise->shiftregister |= ( bit0 ^ bit3 ) << 15;
-                        } else {
-                            noise->shiftregister = noise->shiftregister >> 1;
-                            noise->shiftregister |= bit0 << 15;
-                        };
-                        channel->output_signal = noise->shiftregister & 0x01;
-                    };
-                };
-            };
-        };
-    }
-
-
-    static inline void psg_real_write_byte ( Z80EX_BYTE value ) {
-
-        unsigned latch, attn, cs;
-
-        latch = value & ( 1 << 7 );
-
-        if ( latch ) {
-            cs = ( value >> 5 ) & 0x03;
-            attn = value & ( 1 << 4 );
-            g_psg.latch_cs = cs;
-            g_psg.latch_attn = attn;
-        } else {
-            cs = g_psg.latch_cs;
-            attn = g_psg.latch_attn;
-        };
-
-        st_PSG_CHANNEL *channel = &g_psg.channel [ cs ];
-
-        if ( attn ) {
-            en_ATTENUATOR new_attn = value & 0x0f;
-            if ( new_attn != channel->attn ) {
-#ifdef AUDIO_FILLBUFF_v1
-                audio_fill_buffer ( g_gdg.elapsed_screen_ticks );
-#endif
-                channel->attn = new_attn;
-            };
-        } else if ( ( latch ) && ( channel->type == PSG_CHTYPE_TONE ) ) {
-            channel->tone.latch_divider = value & 0x0f;
-        } else {
-            if ( channel->type == PSG_CHTYPE_TONE ) {
-                unsigned new_divider = ( value << 4 ) | channel->tone.latch_divider;
-                if ( new_divider != channel->tone.divider ) {
-#ifdef AUDIO_FILLBUFF_v1
-                    audio_fill_buffer ( g_gdg.elapsed_screen_ticks );
-#endif
-                    channel->tone.divider = new_divider;
-                };
-            } else {
-                en_NOISE_DIV_TYPE new_div_type = value & 0x03;
-                en_NOISE_TYPE new_type = ( value >> 2 ) & 1;
-                if ( ( new_div_type != channel->noise.div_type ) || ( new_type != channel->noise.type ) ) {
-#ifdef AUDIO_FILLBUFF_v1
-                    audio_fill_buffer ( g_gdg.elapsed_screen_ticks );
-#endif
-                    channel->noise.div_type = new_div_type;
-                    channel->noise.type = new_type;
-                };
-            };
-        };
-    }
 
 
 #ifdef __cplusplus

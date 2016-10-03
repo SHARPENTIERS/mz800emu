@@ -22,14 +22,6 @@ CND_ARTIFACT_PATH_Release-Win64=dist/Release-Win64/x86_64-w64-mingw32-Linux/mz80
 CND_PACKAGE_DIR_Release-Win64=dist/Release-Win64/x86_64-w64-mingw32-Linux/package
 CND_PACKAGE_NAME_Release-Win64=mz800emu.tar
 CND_PACKAGE_PATH_Release-Win64=dist/Release-Win64/x86_64-w64-mingw32-Linux/package/mz800emu.tar
-# Debug-Linux configuration
-CND_PLATFORM_Debug-Linux=GNU-Linux
-CND_ARTIFACT_DIR_Debug-Linux=dist/Debug-Linux/GNU-Linux
-CND_ARTIFACT_NAME_Debug-Linux=mz800emu
-CND_ARTIFACT_PATH_Debug-Linux=dist/Debug-Linux/GNU-Linux/mz800emu
-CND_PACKAGE_DIR_Debug-Linux=dist/Debug-Linux/GNU-Linux/package
-CND_PACKAGE_NAME_Debug-Linux=mz800emu.tar
-CND_PACKAGE_PATH_Debug-Linux=dist/Debug-Linux/GNU-Linux/package/mz800emu.tar
 # Release-Linux configuration
 CND_PLATFORM_Release-Linux=GNU-Linux
 CND_ARTIFACT_DIR_Release-Linux=dist/Release-Linux/GNU-Linux
@@ -38,14 +30,22 @@ CND_ARTIFACT_PATH_Release-Linux=dist/Release-Linux/GNU-Linux/mz800emu
 CND_PACKAGE_DIR_Release-Linux=dist/Release-Linux/GNU-Linux/package
 CND_PACKAGE_NAME_Release-Linux=mz800emu.tar
 CND_PACKAGE_PATH_Release-Linux=dist/Release-Linux/GNU-Linux/package/mz800emu.tar
-# Gprof-Release-Linux configuration
-CND_PLATFORM_Gprof-Release-Linux=GNU-Linux
-CND_ARTIFACT_DIR_Gprof-Release-Linux=dist/Gprof-Release-Linux/GNU-Linux
-CND_ARTIFACT_NAME_Gprof-Release-Linux=mz800emu
-CND_ARTIFACT_PATH_Gprof-Release-Linux=dist/Gprof-Release-Linux/GNU-Linux/mz800emu
-CND_PACKAGE_DIR_Gprof-Release-Linux=dist/Gprof-Release-Linux/GNU-Linux/package
-CND_PACKAGE_NAME_Gprof-Release-Linux=mz800emu.tar
-CND_PACKAGE_PATH_Gprof-Release-Linux=dist/Gprof-Release-Linux/GNU-Linux/package/mz800emu.tar
+# Debug-Linux configuration
+CND_PLATFORM_Debug-Linux=GNU-Linux
+CND_ARTIFACT_DIR_Debug-Linux=dist/Debug-Linux/GNU-Linux
+CND_ARTIFACT_NAME_Debug-Linux=mz800emu
+CND_ARTIFACT_PATH_Debug-Linux=dist/Debug-Linux/GNU-Linux/mz800emu
+CND_PACKAGE_DIR_Debug-Linux=dist/Debug-Linux/GNU-Linux/package
+CND_PACKAGE_NAME_Debug-Linux=mz800emu.tar
+CND_PACKAGE_PATH_Debug-Linux=dist/Debug-Linux/GNU-Linux/package/mz800emu.tar
+# Gprof-Debug-Linux configuration
+CND_PLATFORM_Gprof-Debug-Linux=GNU-Linux
+CND_ARTIFACT_DIR_Gprof-Debug-Linux=dist/Gprof-Debug-Linux/GNU-Linux
+CND_ARTIFACT_NAME_Gprof-Debug-Linux=mz800emu
+CND_ARTIFACT_PATH_Gprof-Debug-Linux=dist/Gprof-Debug-Linux/GNU-Linux/mz800emu
+CND_PACKAGE_DIR_Gprof-Debug-Linux=dist/Gprof-Debug-Linux/GNU-Linux/package
+CND_PACKAGE_NAME_Gprof-Debug-Linux=mz800emu.tar
+CND_PACKAGE_PATH_Gprof-Debug-Linux=dist/Gprof-Debug-Linux/GNU-Linux/package/mz800emu.tar
 # Debug-Win32-Native configuration
 CND_PLATFORM_Debug-Win32-Native=MinGW-Windows
 CND_ARTIFACT_DIR_Debug-Win32-Native=dist/Debug-Win32-Native/MinGW-Windows

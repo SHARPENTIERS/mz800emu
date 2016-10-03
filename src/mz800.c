@@ -351,6 +351,29 @@ uint32_t screens_counter_flush ( uint32_t interval, void* param ) {
 }
 
 
+static inline void mz800_speed_sync_event ( void ) {
+
+#ifdef AUDIO_FILLBUFF_v1
+    audio_fill_buffer_v1 ( g_mz800.event.ticks );
+    g_audio.last_update = 0;
+    g_audio.buffer_position = 0;
+#endif
+
+#ifdef AUDIO_FILLBUFF_v2
+    audio_fill_buffer_v2 ( gdg_compute_total_ticks ( g_mz800.event.ticks ) );
+#endif
+
+#ifndef MZ800EMU_CFG_AUDIO_DISABLED
+    audio_sdl_wait_to_cycle_done ( );
+#endif
+
+#ifdef MZ800EMU_CFG_VARIABLE_SPEED
+    g_mz800.speed_sync_event.ticks += g_mz800.speed_frame_width;
+#endif
+
+}
+
+
 static inline st_EVENT* mz800_place_proximate_event ( void ) {
 
     st_EVENT *proximate_event;
@@ -426,25 +449,9 @@ static inline void mz800_screen_done_event ( void ) {
         };
 
 #ifndef MZ800EMU_CFG_VARIABLE_SPEED
-
-#ifdef AUDIO_FILLBUFF_v1
-        audio_fill_buffer ( g_mz800.event.ticks );
-        g_audio.last_update = 0;
-        g_audio.buffer_position = 0;
+        mz800_speed_sync_event ( );
 #endif
 
-#ifdef AUDIO_FILLBUFF_v2
-        audio_fill_buffer_v2 ( gdg_compute_total_ticks ( g_mz800.event.ticks ) );
-#endif
-
-#ifndef MZ800EMU_CFG_AUDIO_DISABLED
-        audio_sdl_wait_to_cycle_done ( );
-#endif
-
-#endif
-
-        //make_picture_time = 0;
-        //        printf ( "snimek! %d\n", g_gdg.elapsed_total_screens );
     };
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
@@ -462,45 +469,25 @@ static inline void mz800_screen_done_event ( void ) {
 
     g_gdg.elapsed_total_screens++;
 #ifdef MZ800EMU_CFG_SPEED_TEST
-    if ( g_gdg.elapsed_total_screens > 5000 ) main_app_quit ( EXIT_SUCCESS );
+    if ( g_gdg.elapsed_total_screens > 1000 ) main_app_quit ( EXIT_SUCCESS );
 #endif
     g_gdg.elapsed_screen_ticks -= ( VIDEO_SCREEN_TICKS - 1 );
     g_gdg.beam_row = 0;
-
+    //printf ("snimek!\n");
 }
-
-#ifdef MZ800EMU_CFG_VARIABLE_SPEED
-
-
-static inline void mz800_speed_sync_event ( void ) {
-
-#ifdef AUDIO_FILLBUFF_v1
-    audio_fill_buffer ( g_mz800.event.ticks );
-    g_audio.last_update = 0;
-    g_audio.buffer_position = 0;
-#endif
-
-#ifdef AUDIO_FILLBUFF_v2
-    audio_fill_buffer_v2 ( gdg_compute_total_ticks ( g_mz800.event.ticks ) );
-#endif
-
-#ifndef MZ800EMU_CFG_AUDIO_DISABLED
-    audio_sdl_wait_to_cycle_done ( );
-#endif
-
-    g_mz800.speed_sync_event.ticks += g_mz800.speed_frame_width;
-
-}
-#endif
 
 
 static inline void mz800_sync ( void ) {
 
     while ( g_gdg.elapsed_screen_ticks >= g_mz800.event.ticks ) {
 
+#if 1
         if ( g_mz800.event.event_name >= EVENT_NO_GDG ) {
+#else
+        if ( g_mz800.event.event_name >= EVENT_NOT_HW ) {
+#endif
 
-
+#if 1
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
             if ( g_ctc8253 [ CTC_CS0 ].clk1m1_event.ticks <= g_mz800.event.ticks ) {
                 ctc8253_ctc1m1_event ( g_mz800.event.ticks );
@@ -516,13 +503,13 @@ static inline void mz800_sync ( void ) {
                 mz800_speed_sync_event ( );
             };
 #endif
-
+#endif
             st_EVENT *proximate_event = mz800_place_proximate_event ( );
 
             g_mz800.event.event_name = proximate_event->event_name;
             g_mz800.event.ticks = proximate_event->ticks;
 
-            if ( g_mz800.event.event_name >= EVENT_NO_GDG ) return;
+            if ( g_mz800.event.event_name >= EVENT_NOT_HW ) return;
 
             if ( !( g_gdg.elapsed_screen_ticks >= g_mz800.event.ticks ) ) return;
         };
@@ -654,21 +641,39 @@ static inline void mz800_sync ( void ) {
                     mz800_screen_done_event ( );
                 };
                 break;
+#if 0
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+            case EVENT_CTC0:
+                ctc8253_ctc1m1_event ( g_mz800.event.ticks );
+                break;
 
-                /* tyto eventy neni potreba zde resit */
-            case EVENT_NO_GDG:
-            case EVENT_MZ800_INTERRUPT:
-            case EVENT_USER_INTERFACE:
+            case EVENT_CMT:
+                cmt_ctc1m1_event ( g_mz800.event.ticks );
+                break;
+#endif
 
 #ifdef MZ800EMU_CFG_VARIABLE_SPEED
             case EVENT_SPEED_SYNC:
+                mz800_speed_sync_event ( );
+                break;
 #endif
-
+#endif
+                /* tyto eventy neni potreba zde resit */
+            case EVENT_NO_GDG:
+            case EVENT_NOT_HW:
+            case EVENT_MZ800_INTERRUPT:
+            case EVENT_USER_INTERFACE:
+#if 1
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
             case EVENT_CTC0:
             case EVENT_CMT:
 #endif
+#ifdef MZ800EMU_CFG_VARIABLE_SPEED
+            case EVENT_SPEED_SYNC:
+#endif
+#endif
                 break;
+
         };
 
 
