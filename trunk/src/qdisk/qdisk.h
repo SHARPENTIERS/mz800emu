@@ -189,6 +189,7 @@ extern "C" {
     extern void qdisk_mount ( void );
     extern void qdisk_umount ( void );
     extern void qdisk_set_write_protected ( int value );
+    extern void qdisk_create_image ( char *filename );
 
 
 #ifdef	__cplusplus

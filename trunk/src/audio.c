@@ -28,22 +28,12 @@
 
 #include "audio.h"
 #include "psg/psg.h"
+#include "psg/psg_step.h"
 #include "gdg/gdg.h"
-#include "gdg/video.h"
-#include "iface_sdl/iface_sdl_audio.h"
-
-
-#define PSG_DIVIDER                     ( 16 * GDGCLK2CPU_DIVIDER )
-#define PSG_RESAMPLE_PERIOD             ( (unsigned) (GDGCLK_BASE / 50 ) / IFACE_AUDIO_20MS_SAMPLES )
-
-#define AUDIO_BUF_MAX_VALUE             0xffff
-#define AUDIO_SRC_CANNELS_COUNT         ( 4 + 1 )   /* Celkovy pocet audio kanalu: 4 (psg) + 1 (ctc0) */
-#define AUDIO_MAXVAL_PER_CHANNEL        ( AUDIO_BUF_MAX_VALUE / AUDIO_SRC_CANNELS_COUNT )
-
 
 st_AUDIO g_audio;
 
-static AUDIO_BUF_t g_attenuator_volume_value [ PSG_OUT_OFF + 1 ];
+AUDIO_BUF_t g_attenuator_volume_value [ PSG_OUT_OFF + 1 ];
 
 #ifdef AUDIO_FILLBUFF_v2
 
@@ -61,9 +51,10 @@ void audio_init ( void ) {
 #endif
 
     g_audio.last_update = 0;
-    g_audio.resample_timer = PSG_RESAMPLE_PERIOD;
+    g_audio.resample_timer = AUDIO_RESAMPLE_PERIOD;
     g_audio.buffer_position = 0;
     g_audio.ctc0_output = 0;
+    g_audio.last_value = 0;
 
     int i;
     for ( i = 0; i <= PSG_OUT_OFF; i++ ) {
@@ -72,7 +63,25 @@ void audio_init ( void ) {
 }
 
 
-static inline AUDIO_BUF_t audio_psg_scan ( void ) {
+void audio_ctc0_changed ( unsigned value, unsigned event_ticks ) {
+    if ( g_audio.ctc0_output == value ) return;
+
+#ifdef AUDIO_FILLBUFF_v1
+    audio_fill_buffer_v1 ( event_ticks );
+#endif
+
+    g_audio.ctc0_output = value;
+
+#ifdef AUDIO_FILLBUFF_v2
+    unsigned total_ticks = gdg_compute_total_ticks ( event_ticks );
+    g_audio_ctc.count++;
+    g_audio_ctc.samples[g_audio_ctc.count].timestamp = total_ticks;
+    g_audio_ctc.samples[g_audio_ctc.count].state = ( value ) ? AUDIO_MAXVAL_PER_CHANNEL : 0;
+#endif
+}
+
+
+static inline AUDIO_BUF_t psg_audio_scan ( void ) {
 
     AUDIO_BUF_t scan_value = 0;
 
@@ -92,13 +101,14 @@ static inline AUDIO_BUF_t audio_psg_scan ( void ) {
     return scan_value;
 }
 
-
-
 #ifdef AUDIO_FILLBUFF_v1
 
 
-void audio_fill_buffer ( unsigned event_ticks ) {
-    static AUDIO_BUF_t last_value = 0;
+void audio_fill_buffer_v1 ( unsigned event_ticks ) {
+
+    //printf ( "fill: %d, %d, %d\n", event_ticks, g_audio.last_update, g_audio.buffer_position );
+
+    //static AUDIO_BUF_t last_value = 0;
 
     if ( event_ticks > ( VIDEO_SCREEN_TICKS ) ) {
         event_ticks = ( VIDEO_SCREEN_TICKS );
@@ -120,16 +130,16 @@ void audio_fill_buffer ( unsigned event_ticks ) {
          * x = vzorkovaci_frq / ( 2 * pi * delici_frq )
          * 
          */
-        AUDIO_BUF_t scan_value = audio_psg_scan ( ) + g_audio.ctc0_output * AUDIO_MAXVAL_PER_CHANNEL;
-        last_value = last_value + ( scan_value - last_value ) / 16;
+        AUDIO_BUF_t scan_value = psg_audio_scan ( ) + g_audio.ctc0_output * AUDIO_MAXVAL_PER_CHANNEL;
+        g_audio.last_value = g_audio.last_value + ( scan_value - g_audio.last_value ) / 16;
 
 
         if ( g_audio.resample_timer <= PSG_DIVIDER ) {
             if ( g_audio.buffer_position < IFACE_AUDIO_20MS_SAMPLES ) {
                 //printf ( "res: %d = %d\n", g_audio.buffer_position, last_value );
-                g_audio.buffer [ g_audio.buffer_position++ ] = last_value;
+                g_audio.buffer [ g_audio.buffer_position++ ] = g_audio.last_value;
             };
-            g_audio.resample_timer += PSG_RESAMPLE_PERIOD;
+            g_audio.resample_timer += AUDIO_RESAMPLE_PERIOD;
         };
 
         g_audio.resample_timer -= PSG_DIVIDER;
@@ -140,22 +150,7 @@ void audio_fill_buffer ( unsigned event_ticks ) {
 #endif
 
 
-void audio_ctc0_changed ( unsigned value, unsigned event_ticks ) {
-    if ( g_audio.ctc0_output == value ) return;
 
-#ifdef AUDIO_FILLBUFF_v1
-    audio_fill_buffer ( event_ticks );
-#endif
-
-    g_audio.ctc0_output = value;
-
-#ifdef AUDIO_FILLBUFF_v2
-    unsigned total_ticks = gdg_compute_total_ticks ( event_ticks );
-    g_audio_ctc.count++;
-    g_audio_ctc.samples[g_audio_ctc.count].timestamp = total_ticks;
-    g_audio_ctc.samples[g_audio_ctc.count].state = ( value ) ? AUDIO_MAXVAL_PER_CHANNEL : 0;
-#endif
-}
 
 #ifdef AUDIO_FILLBUFF_v2
 
@@ -208,7 +203,7 @@ void audio_fill_buffer_v2 ( unsigned now_total_ticks ) {
 
             while ( ( tst1 >= tst2 ) && ( psg_buf_pos <= g_psg_audio.count ) ) {
                 //                printf ( "REAL WRITE: %d - %d (%d): 0x%02x\n", current_scan_time, g_psg_audio.samples[psg_buf_pos].timestamp, current_scan_time - g_psg_audio.samples[psg_buf_pos].timestamp,  g_psg_audio.samples[psg_buf_pos].value );
-              //  printf ( "REAL WRITE: %d: 0x%02x\n", g_psg_audio.samples[psg_buf_pos].timestamp, g_psg_audio.samples[psg_buf_pos].value );
+                //  printf ( "REAL WRITE: %d: 0x%02x\n", g_psg_audio.samples[psg_buf_pos].timestamp, g_psg_audio.samples[psg_buf_pos].value );
                 psg_real_write_byte ( g_psg_audio.samples[psg_buf_pos++].value );
                 tst2 = g_psg_audio.samples[psg_buf_pos].timestamp - start_scan_time;
             };
@@ -218,7 +213,7 @@ void audio_fill_buffer_v2 ( unsigned now_total_ticks ) {
 
         psg_step ( );
 
-        audio_last_value = audio_last_value + ( ( audio_psg_scan ( ) + ctc0_current_value ) - audio_last_value ) / 16;
+        audio_last_value = audio_last_value + ( ( psg_audio_scan ( ) + ctc0_current_value ) - audio_last_value ) / 16;
 
         if ( ctc0_buf_pos < g_audio_ctc.count ) {
             if ( ctc0_current_state_width <= AUDIO_SCAN_PERIOD ) {
@@ -285,4 +280,3 @@ void audio_fill_buffer_v2 ( unsigned now_total_ticks ) {
 
 }
 #endif
-

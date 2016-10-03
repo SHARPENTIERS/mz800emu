@@ -69,6 +69,8 @@ extern "C" {
         EVENT_CMT,
 #endif
 
+        EVENT_NOT_HW, /* pouze hranicni hodnota - neni skutecny event */
+
         // high priority eventy
         EVENT_MZ800_INTERRUPT,
         EVENT_USER_INTERFACE,

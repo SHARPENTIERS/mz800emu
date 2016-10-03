@@ -636,6 +636,22 @@ From time when data were real zeros and ones and computers were
                             </child>
                           </object>
                         </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem20">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_fdc_create_new">
+                            <property name="visible">True</property>
+                            <property name="sensitive">False</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Create a new FD image...</property>
+                            <property name="use_underline">True</property>
+                            <signal name="activate" handler="on_menuitem_fdc_create_new" swapped="no"/>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
@@ -1062,6 +1078,21 @@ From time when data were real zeros and ones and computers were
                             <property name="label" translatable="yes">Write _Protected</property>
                             <property name="use_underline">True</property>
                             <signal name="toggled" handler="on_menuitem_qdisk_write_protected" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem21">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_qdisk_create_new">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Create a new QD image...</property>
+                            <property name="use_underline">True</property>
+                            <signal name="activate" handler="on_menuitem_qdisk_create_new" swapped="no"/>
                           </object>
                         </child>
                       </object>
@@ -2455,6 +2486,159 @@ From time when data were real zeros and ones and computers were
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkWindow" id="window_qdisk_new">
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Create a new QD image</property>
+    <property name="window_position">mouse</property>
+    <signal name="key-press-event" handler="on_window_qdisk_new_key_press_event" swapped="no"/>
+    <signal name="delete-event" handler="on_window_qdisk_new_delete_event" swapped="no"/>
+    <child>
+      <object class="GtkBox" id="box5">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="margin_left">5</property>
+        <property name="margin_right">5</property>
+        <property name="margin_top">5</property>
+        <property name="margin_bottom">5</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">5</property>
+        <child>
+          <object class="GtkGrid" id="grid2">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="vexpand">True</property>
+            <property name="row_spacing">5</property>
+            <property name="column_spacing">10</property>
+            <child>
+              <object class="GtkLabel" id="label23">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">New QD image file name</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+                <property name="width">1</property>
+                <property name="height">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="entry_qdisk_new_filename">
+                <property name="width_request">300</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="valign">start</property>
+                <property name="hexpand">True</property>
+                <property name="invisible_char">●</property>
+                <property name="invisible_char_set">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">0</property>
+                <property name="width">1</property>
+                <property name="height">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFileChooserButton" id="filechooserbutton_qdisk_new">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="orientation">vertical</property>
+                <property name="action">select-folder</property>
+                <property name="title" translatable="yes">Select a directory</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+                <property name="width">1</property>
+                <property name="height">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label26">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="valign">start</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">File path</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+                <property name="width">1</property>
+                <property name="height">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator" id="separator7">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButtonBox" id="buttonbox2">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_right">10</property>
+            <property name="spacing">11</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="button_qdisk_new_close">
+                <property name="label">gtk-close</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+                <signal name="clicked" handler="on_button_qdisk_new_close_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button_qdisk_new_ok">
+                <property name="label">gtk-apply</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+                <signal name="clicked" handler="on_button_qdisk_new_ok_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
           </packing>
         </child>
       </object>

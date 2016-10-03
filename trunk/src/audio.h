@@ -33,13 +33,24 @@ extern "C" {
 #include "mz800emu_cfg.h"
 #include "gdg/video.h"
 #include "gdg/gdg.h"
+#include "psg/psg.h"
 
 
 #include "iface_sdl/iface_sdl_audio.h"
 #include <stdint.h>
 
+#define AUDIO_RESAMPLE_PERIOD             ( (unsigned) (GDGCLK_BASE / 50 ) / IFACE_AUDIO_20MS_SAMPLES )
+
+#define AUDIO_BUF_MAX_VALUE             0xffff
+#define AUDIO_SRC_CANNELS_COUNT         ( 4 + 1 )   /* Celkovy pocet audio kanalu: 4 (psg) + 1 (ctc0) */
+#define AUDIO_MAXVAL_PER_CHANNEL        ( AUDIO_BUF_MAX_VALUE / AUDIO_SRC_CANNELS_COUNT )
+
 
     typedef uint16_t AUDIO_BUF_t;
+
+    //extern AUDIO_BUF_t g_attenuator_volume_value [ PSG_OUT_OFF + 1 ];
+    extern AUDIO_BUF_t g_attenuator_volume_value [ 16 ];
+
 
 #ifdef AUDIO_FILLBUFF_v2
 
@@ -81,6 +92,7 @@ extern "C" {
         unsigned last_update;
         unsigned resample_timer;
         unsigned ctc0_output;
+        AUDIO_BUF_t last_value;
     } st_AUDIO;
 
     extern st_AUDIO g_audio;
@@ -89,13 +101,12 @@ extern "C" {
     extern void audio_ctc0_changed ( unsigned value, unsigned event_ticks );
 
 #ifdef AUDIO_FILLBUFF_v1
-    extern void audio_fill_buffer ( unsigned event_ticks );
+    extern void audio_fill_buffer_v1 ( unsigned event_ticks );
 #endif
 
 #ifdef AUDIO_FILLBUFF_v2
-    extern void audio_fill_buffer_v2 ( unsigned total_ticks );
+    extern void audio_fill_buffer_v2 ( unsigned now_total_ticks );
 #endif
-
 
 #ifdef __cplusplus
 }

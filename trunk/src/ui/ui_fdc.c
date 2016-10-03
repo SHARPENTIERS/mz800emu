@@ -27,6 +27,7 @@
 
 #include "ui_main.h"
 #include "ui_fdc.h"
+//#include "dsk_tool/ui_dsk_tool.h"
 
 #include "fdc/fdc.h"
 
@@ -35,19 +36,19 @@
 G_MODULE_EXPORT void on_fdc_changed ( GtkCheckMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
-    
+
     if ( TEST_UICALLBACKS_LOCKED ) return;
-    
+
 #ifdef UI_TOPMENU_IS_WINDOW
     ui_hide_main_menu ( );
 #endif
-    
+
     if ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_fdc_wd279x" ) ) ) {
         g_fdc.connected = FDC_CONNECTED;
     } else {
         g_fdc.connected = FDC_DISCONNECTED;
     };
-    ui_fdc_menu_update();
+    ui_fdc_menu_update ( );
 }
 
 
@@ -135,11 +136,11 @@ void ui_fdc_set_dsk ( unsigned drive_id, char *dsk_filename ) {
     char item_fdd_name[] = "menuitem_fdc_fdd0";
     char item_dsk_name[] = "menuitem_fdc_fdd0_dsk";
     char item_umount_name[] = "menuitem_fdc_fdd0_umount";
-    
+
     item_fdd_name [ 16 ] = '0' + drive_id;
     item_dsk_name [ 16 ] = '0' + drive_id;
     item_umount_name [ 16 ] = '0' + drive_id;
-    
+
     if ( dsk_filename [ 0 ] != 0x00 ) {
         char fdd_label [ 50 ];
         sprintf ( fdd_label, "FDD _%d", drive_id );
@@ -157,7 +158,7 @@ void ui_fdc_set_dsk ( unsigned drive_id, char *dsk_filename ) {
 
 
 void ui_fdc_menu_update ( void ) {
-    LOCK_UICALLBACKS();
+    LOCK_UICALLBACKS ( );
     if ( g_fdc.connected == FDC_DISCONNECTED ) {
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_fdc_not_connected" ), TRUE );
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_fdc_wd279x" ), FALSE );
@@ -173,5 +174,16 @@ void ui_fdc_menu_update ( void ) {
         gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_fdc_fdd2" ), TRUE );
         gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_fdc_fdd3" ), TRUE );
     };
-    UNLOCK_UICALLBACKS();
+    UNLOCK_UICALLBACKS ( );
+}
+
+
+G_MODULE_EXPORT void on_menuitem_fdc_create_new ( GtkMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+
+//    ui_dsk_tool_show_window ( );
 }

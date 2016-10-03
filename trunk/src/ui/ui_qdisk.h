@@ -30,9 +30,11 @@
 extern "C" {
 #endif
 
+#define UI_QDISK_NEW_IMAGE_NAME "new_qd_image"
+    
     extern void ui_qdisk_set_path ( char *path );
     extern void ui_qdisk_menu_update ( void );
-
+    
 #ifdef	__cplusplus
 }
 #endif

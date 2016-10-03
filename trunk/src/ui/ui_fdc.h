@@ -24,18 +24,19 @@
  */
 
 #ifndef UI_FDC_H
-#define	UI_FDC_H
+#define UI_FDC_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
+
 
     extern void ui_fdc_set_dsk ( unsigned drive_id, char *dsk_filename );
     extern void ui_fdc_menu_update ( void );
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* UI_FDC_H */
+#endif /* UI_FDC_H */
 
