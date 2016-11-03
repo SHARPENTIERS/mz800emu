@@ -291,12 +291,12 @@ int8_t FDC_setFDfromCFG ( uint8_t drive_id ) {
     /*     fname [ 0 ] = '\0'; */
 
     DBGPRINTF ( DBGINF, "FDC_setFDfromCFG(): New cfg: '%s' and file '%s', DRIVE: 0x%02x\n",
-            FDC->drive [ drive_id ].path, FDC->drive[drive_id].filename, drive_id );
+                FDC->drive [ drive_id ].path, FDC->drive[drive_id].filename, drive_id );
 
     if ( FS_LAYER_FR_OK != f_open ( &( FDC->drive[drive_id].fh ), FDC->drive[drive_id].path, FS_LAYER_FMODE_RW ) ) {
 
         DBGPRINTF ( DBGERR, "FDC_setFDfromCFG(): error when opening path '%s' and file '%s', DRIVE: 0x%02x\n",
-                FDC->drive [ drive_id ].path, FDC->drive [ drive_id ].filename, drive_id );
+                    FDC->drive [ drive_id ].path, FDC->drive [ drive_id ].filename, drive_id );
 
         FDC->drive [ drive_id ].path [ 0 ] = '\0';
         FDC->drive [ drive_id ].filename [ 0 ] = '\0';
@@ -318,7 +318,7 @@ int8_t FDC_setFDfromCFG ( uint8_t drive_id ) {
     };
 
     DBGPRINTF ( DBGINF, "FDC_setFDfromCFG(): DRIVE: 0x02%, new FH: 0x%02x\n",
-            drive_id, FDC->drive [ drive_id ].fh );
+                drive_id, FDC->drive [ drive_id ].fh );
 
     return ( 1 );
 }
@@ -939,12 +939,12 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
 
 
             DBGPRINTF ( DBGINF, "WRITE TRACK - finished sector field DRIVE: 0x%02x, TRACK: 0x%02x, SIDE: 0x%02x, SECTOR: 0x%02x, SIZE: 0x%02x, value: 0x%02x\n",
-                    FDC->MOTOR & 0x03,
-                    FDC->regTRACK,
-                    FDC->SIDE,
-                    FDC->buffer [ FDC->buffer_pos - 1 ],
-                    FDC->buffer [ 4 ],
-                    FDC->buffer [ sizeof ( FDC->buffer ) - 1 ] );
+                        FDC->MOTOR & 0x03,
+                        FDC->regTRACK,
+                        FDC->SIDE,
+                        FDC->buffer [ FDC->buffer_pos - 1 ],
+                        FDC->buffer [ 4 ],
+                        FDC->buffer [ sizeof ( FDC->buffer ) - 1 ] );
 
         };
 
@@ -965,9 +965,9 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
 
 
             DBGPRINTF ( DBGINF, "WRITE TRACK - finishing DRIVE: 0x%02x, TRACK: 0x%02x, SIDE: 0x%02x\n",
-                    FDC->MOTOR & 0x03,
-                    FDC->regTRACK,
-                    FDC->SIDE );
+                        FDC->MOTOR & 0x03,
+                        FDC->regTRACK,
+                        FDC->SIDE );
 
 
             // zapiseme stopu do DSK
@@ -1213,11 +1213,11 @@ int wd279x_do_write_sector ( st_WD279X *FDC, unsigned int *io_data ) {
 
     if ( !FDC->DATA_COUNTER ) {
         DBGPRINTF ( DBGINF, "Writing last byte into FDD sector.\nDRIVE: 0x%02x, TRACK: 0x%02x, SIDE: 0x%02x, SECTOR: 0x%02x, track_offset: 0x%x\n",
-                FDC->MOTOR & 0x03,
-                FDC->drive[ FDC->MOTOR & 0x03 ].TRACK,
-                FDC->drive[ FDC->MOTOR & 0x03 ].SIDE,
-                FDC->drive[ FDC->MOTOR & 0x03 ].SECTOR,
-                FDC->drive[ FDC->MOTOR & 0x03 ].track_offset );
+                    FDC->MOTOR & 0x03,
+                    FDC->drive[ FDC->MOTOR & 0x03 ].TRACK,
+                    FDC->drive[ FDC->MOTOR & 0x03 ].SIDE,
+                    FDC->drive[ FDC->MOTOR & 0x03 ].SECTOR,
+                    FDC->drive[ FDC->MOTOR & 0x03 ].track_offset );
 
 
         if ( FS_LAYER_FR_OK != FS_LAYER_FSYNC ( FDC->drive[FDC->MOTOR & 0x03].fh ) ) {
@@ -1257,6 +1257,7 @@ int wd279x_do_write_sector ( st_WD279X *FDC, unsigned int *io_data ) {
 
     return WD279X_RET_OK;
 }
+
 
 typedef enum en_FDCPORT_OFFSET {
     FDCPORT_CMDSTS = 0,
@@ -1512,11 +1513,11 @@ int wd279x_read_byte ( st_WD279X *FDC, int i_addroffset, unsigned int *io_data )
 
 
                                     DBGPRINTF ( DBGINF, "DRIVE: 0x%02x, TRACK: 0x%02x, SIDE: 0x%02x, SECTOR: 0x%02x, track_offset: 0x%x\n",
-                                            FDC->MOTOR & 0x03,
-                                            FDC->drive[ FDC->MOTOR & 0x03 ].TRACK,
-                                            FDC->drive[ FDC->MOTOR & 0x03 ].SIDE,
-                                            FDC->drive[ FDC->MOTOR & 0x03 ].SECTOR,
-                                            FDC->drive[ FDC->MOTOR & 0x03 ].track_offset );
+                                                FDC->MOTOR & 0x03,
+                                                FDC->drive[ FDC->MOTOR & 0x03 ].TRACK,
+                                                FDC->drive[ FDC->MOTOR & 0x03 ].SIDE,
+                                                FDC->drive[ FDC->MOTOR & 0x03 ].SECTOR,
+                                                FDC->drive[ FDC->MOTOR & 0x03 ].track_offset );
 
                                     // status code?
                                     return WD279X_RET_ERR;
@@ -1685,7 +1686,7 @@ int wd279x_read_byte ( st_WD279X *FDC, int i_addroffset, unsigned int *io_data )
 #else
             if ( !FDC->drive[ FDC->MOTOR & 0x03 ].dsk_in_drive ) {
 #endif
-                DBGPRINTF ( DBGWAR, "Empty drive, NOT READY for write data into sector, FDC = %s, drive_id = %d\n", FDC->name, FDC->MOTOR & 0x03 );
+                DBGPRINTF ( DBGWAR, "Empty drive, NOT READY for read data from sector, FDC = %s, drive_id = %d\n", FDC->name, FDC->MOTOR & 0x03 );
                 FDC->regSTATUS = 0x80; /* not ready */
                 *io_data = 0xff;
                 return WD279X_RET_ERR;
@@ -1698,8 +1699,8 @@ int wd279x_read_byte ( st_WD279X *FDC, int i_addroffset, unsigned int *io_data )
                 *io_data = ~FDC->buffer[ 6 - FDC->DATA_COUNTER ];
 
                 DBGPRINTF ( DBGINF, "TRACK ADDR READING (0x%02x) - 0x%02x\n",
-                        FDC->DATA_COUNTER - 1,
-                        FDC->buffer[ 6 - FDC->DATA_COUNTER ] );
+                            FDC->DATA_COUNTER - 1,
+                            FDC->buffer[ 6 - FDC->DATA_COUNTER ] );
 
 
                 FDC->DATA_COUNTER--;
@@ -1743,42 +1744,46 @@ int wd279x_read_byte ( st_WD279X *FDC, int i_addroffset, unsigned int *io_data )
                         fdd_io_size = sizeof ( FDC->buffer );
                     };
 
-                    if ( FDC->buffer_pos == fdd_io_size - 1 ) {
-                        FDC->buffer_pos = 0;
+                    if ( FDC->DATA_COUNTER ) {
 
-                        FS_LAYER_FREAD ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, fdd_io_size, &readlen );
-                        if ( readlen != fdd_io_size ) {
 
-                            DBGPRINTF ( DBGERR, "FDControllerMain(): error when reading3 DSK file! readsize = 0x%02x\n", readlen );
+                        if ( FDC->buffer_pos == fdd_io_size - 1 ) {
+                            FDC->buffer_pos = 0;
+
+                            FS_LAYER_FREAD ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, FDC->buffer, fdd_io_size, &readlen );
+                            if ( readlen != fdd_io_size ) {
+
+                                DBGPRINTF ( DBGERR, "FDControllerMain(): error when reading3 DSK file! readsize = 0x%02x\n", readlen );
 #ifdef COMPILE_FOR_EMULATOR
-                            ui_show_error ( "%s():%d - fread error: %s", __func__, __LINE__, strerror ( errno ) );
+                                ui_show_error ( "%s():%d - fread error: %s", __func__, __LINE__, strerror ( errno ) );
 #endif
 
-                            DBGPRINTF ( DBGERR, "DRIVE: 0x%02x, TRACK: 0x%02x, SIDE: 0x%02x, SECTOR: 0x%02x, track_offset: 0x%x\n",
+                                DBGPRINTF ( DBGERR, "DRIVE: 0x%02x, TRACK: 0x%02x, SIDE: 0x%02x, SECTOR: 0x%02x, track_offset: 0x%x\n",
+                                            FDC->MOTOR & 0x03,
+                                            FDC->drive[ FDC->MOTOR & 0x03 ].TRACK,
+                                            FDC->drive[ FDC->MOTOR & 0x03 ].SIDE,
+                                            FDC->drive[ FDC->MOTOR & 0x03 ].SECTOR,
+                                            FDC->drive[ FDC->MOTOR & 0x03 ].track_offset );
+
+                                // status code?
+                                FDC->regSTATUS = 0x18; // zkusime vystavit RNF a CRC_ERR 
+                                return WD279X_RET_ERR;
+                            };
+                        } else {
+                            FDC->buffer_pos++;
+                        };
+
+                    } else {
+                        /* FDC->DATA_COUNTER == 0; jsme na konci sektoru */
+
+#if (DBGLEVEL & DBGINF)
+                        SUPPRESSED_DBGMSG = 0;
+                        DBGPRINTF ( DBGINF, "Sector reading finished.\nDRIVE: 0x%02x, TRACK: 0x%02x, SIDE: 0x%02x, SECTOR: 0x%02x, track_offset: 0x%x\n",
                                     FDC->MOTOR & 0x03,
                                     FDC->drive[ FDC->MOTOR & 0x03 ].TRACK,
                                     FDC->drive[ FDC->MOTOR & 0x03 ].SIDE,
                                     FDC->drive[ FDC->MOTOR & 0x03 ].SECTOR,
                                     FDC->drive[ FDC->MOTOR & 0x03 ].track_offset );
-
-                            // status code?
-                            FDC->regSTATUS = 0x18; // zkusime vystavit RNF a CRC_ERR 
-                            return WD279X_RET_ERR;
-                        };
-                    } else {
-                        FDC->buffer_pos++;
-                    };
-
-                    if ( !FDC->DATA_COUNTER ) {
-
-#if (DBGLEVEL & DBGINF)
-                        SUPPRESSED_DBGMSG = 0;
-                        DBGPRINTF ( DBGINF, "Sector reading finished.\nDRIVE: 0x%02x, TRACK: 0x%02x, SIDE: 0x%02x, SECTOR: 0x%02x, track_offset: 0x%x\n",
-                                FDC->MOTOR & 0x03,
-                                FDC->drive[ FDC->MOTOR & 0x03 ].TRACK,
-                                FDC->drive[ FDC->MOTOR & 0x03 ].SIDE,
-                                FDC->drive[ FDC->MOTOR & 0x03 ].SECTOR,
-                                FDC->drive[ FDC->MOTOR & 0x03 ].track_offset );
 
 #endif
 
@@ -1833,7 +1838,7 @@ int wd279x_read_byte ( st_WD279X *FDC, int i_addroffset, unsigned int *io_data )
         default:
 
             DBGPRINTF ( DBGWAR, "FDC UNKNOWN read on PORT offset %c\n",
-                    0x30 + off );
+                        0x30 + off );
 
             break;
     }
