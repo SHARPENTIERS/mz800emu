@@ -748,31 +748,9 @@ int wd279x_do_command ( st_WD279X *FDC ) {
  * Datove zpracovani prikazu WRITE TRACK.
  * 
  */
-int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
+int wd279x_do_write_track ( st_WD279X *FDC, unsigned char *io_data ) {
 
     unsigned int ff_readlen;
-
-#if 0
-    // debug - zapiseme si vse co se posle do radice pri formatu
-    if ( FDC->regTRACK < 2 ) {
-
-        FIL format_fh;
-        unsigned int format_ff_wlen;
-        char format_c = ~ *io_data;
-        char for_name[] = "/format_tr0_se_0_si_0.dat";
-        for_name [10] = FDC->regTRACK + '0';
-        for_name [15] = FDC->regSECTOR + '0';
-        for_name [20] = FDC->SIDE + '0';
-        if ( FS_LAYER_FR_OK != f_open ( &format_fh, for_name, FA_WRITE | FA_OPEN_EXISTING ) ) {
-            f_open ( &format_fh, for_name, FA_WRITE | FA_CREATE_NEW );
-        };
-        f_lseek ( &format_fh, f_size ( &format_fh ) );
-        f_write ( &format_fh, &format_c, 1, &format_ff_wlen );
-        f_close ( &format_fh );
-    };
-
-#endif
-
 
 #if (DBGLEVEL & DBGINF)
     uint8_t last_write_track_stage = FDC->write_track_stage;
@@ -1161,7 +1139,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
  * Datove zpracovani prikazu WRITE SECTOR.
  * 
  */
-int wd279x_do_write_sector ( st_WD279X *FDC, unsigned int *io_data ) {
+int wd279x_do_write_sector ( st_WD279X *FDC, unsigned char *io_data ) {
 
     unsigned int wrlen;
 
@@ -1275,7 +1253,7 @@ typedef enum en_FDCPORT_OFFSET {
  * IORQ zapis do WD279x
  * 
  */
-int wd279x_write_byte ( st_WD279X *FDC, int i_addroffset, unsigned int *io_data ) {
+int wd279x_write_byte ( st_WD279X *FDC, int i_addroffset, unsigned char *io_data ) {
 
     en_FDCPORT_OFFSET off = i_addroffset & 0x07;
 
@@ -1449,7 +1427,7 @@ int wd279x_write_byte ( st_WD279X *FDC, int i_addroffset, unsigned int *io_data 
  * IORQ cteni z WD279x
  * 
  */
-int wd279x_read_byte ( st_WD279X *FDC, int i_addroffset, unsigned int *io_data ) {
+int wd279x_read_byte ( st_WD279X *FDC, int i_addroffset, unsigned char *io_data ) {
 
     en_FDCPORT_OFFSET off = i_addroffset & 0x07;
     unsigned int readlen;
