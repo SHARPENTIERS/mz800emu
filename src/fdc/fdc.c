@@ -134,16 +134,16 @@ void fdc_umount ( unsigned drive_id ) {
 
 
 int fdc_read_byte ( int i_addroffset, uint8_t *io_data ) {
-    unsigned int read_byte;
+    unsigned char read_byte;
     int retval = wd279x_read_byte ( &g_fdc.wd279x, i_addroffset, &read_byte );
-    *io_data = (uint8_t) read_byte;
+    *io_data = read_byte;
     mz800_fdc_interrupt_handle ( wd279x_check_interrupt ( &g_fdc.wd279x ) );
     return retval;
 }
 
 
 int fdc_write_byte ( int i_addroffset, uint8_t *io_data ) {
-    int retval = wd279x_write_byte ( &g_fdc.wd279x, i_addroffset, (unsigned int*) io_data );
+    int retval = wd279x_write_byte ( &g_fdc.wd279x, i_addroffset, io_data );
     mz800_fdc_interrupt_handle ( wd279x_check_interrupt ( &g_fdc.wd279x ) );
     return retval;
 }
