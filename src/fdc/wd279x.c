@@ -795,7 +795,7 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned int *io_data ) {
             // a prepiseme tabulku stop
             if ( FDC->regTRACK == 0 && FDC->SIDE == 0 ) {
                 int32_t write_track_offset = 0x22;
-                if ( !FS_LAYER_FSEEK ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, write_track_offset ) ) {
+                if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( FDC->drive[ FDC->MOTOR & 0x03 ].fh, write_track_offset ) ) {
 #ifdef COMPILE_FOR_EMULATOR
                     ui_show_error ( "%s():%d - fseek error: %s", __func__, __LINE__, strerror ( errno ) );
 #endif
