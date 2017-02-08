@@ -36,8 +36,8 @@ extern "C" {
 
 
     typedef struct st_MEMORY_STATS {
-        unsigned read[16];
-        unsigned write[16];
+        unsigned long long read[16];
+        unsigned long long write[16];
     } st_MEMORY_STATS;
 #endif
 

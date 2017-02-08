@@ -318,8 +318,8 @@ void memory_init ( void ) {
 
     printf ( "Actual memory statistics (from file %s):\n", MEMORY_STATISTIC_FILE );
     int j;
-    for ( j = 0; j < 0x0f; j++ ) {
-        printf ( "READ 0x%02x: %d, WRITE 0x%02x: %d\n", j, g_memory_statistics.read[j], j, g_memory_statistics.write[j] );
+    for ( j = 0; j <= 0x0f; j++ ) {
+        printf ( "READ 0x%02x: %llu, WRITE 0x%02x: %llu\n", j, g_memory_statistics.read[j], j, g_memory_statistics.write[j] );
     };
     printf ( "\n\n" );
 
