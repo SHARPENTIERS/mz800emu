@@ -668,10 +668,11 @@ static inline int pioz80_port_set_icena ( st_PIOZ80_PORT *port, en_PIOZ80_ICENA 
     };
 
     tstates += 3;
-    unsigned event_ticks = g_gdg.elapsed_screen_ticks + ( tstates * GDGCLK2CPU_DIVIDER );
+    unsigned event_ticks = g_gdg.elapsed_screen_ticks + ( tstates * GDGCLK2CPU_DIVIDER ) - g_mz800.instruction_insideop_sync_ticks;
 
     SET_MZ800_EVENT ( EVENT_PIOZ80, event_ticks );
-    g_pioz80.icena_event_total_ticks = event_ticks;
+    g_pioz80.icena_event.ticks = event_ticks;
+    g_pioz80.icena_event_port_id = port->port_id;
 
     return 1;
 }
@@ -715,7 +716,10 @@ static inline void pioz80_port_wr_ctrl_icw ( st_PIOZ80_PORT *port, Z80EX_BYTE va
  */
 static inline void pioz80_port_wr_ctrl_idw ( st_PIOZ80_PORT *port, en_PIOZ80_ICENA value ) {
     DBGPRINTF ( DBGINF, "port: %c, icena: %s, PC = 0x%04x\n", pioz80_dbg_get_port_name ( port->port_id ), pioz80_dbg_get_icena_status ( value ), g_mz800.instruction_addr );
-    pioz80_port_set_icena ( port, value );
+    int icena_event = pioz80_port_set_icena ( port, value );
+    if ( !icena_event ) {
+        pioz80_interrupt_manager ( PIOZ80_PORT_EVENT_INTERNAL_CHANGED_ICENA );
+    };
 }
 
 

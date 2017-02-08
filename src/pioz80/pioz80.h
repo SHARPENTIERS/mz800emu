@@ -205,7 +205,6 @@ extern "C" {
         en_PIOZ80_INTERRUPT interrupt; // 0. bit INT, 1. bit IEO
         en_PIOZ80_PORT_ID interrupt_port_id;
 
-        unsigned icena_event_total_ticks;
         st_EVENT icena_event;
         en_PIOZ80_PORT_ID icena_event_port_id;
     } st_PIOZ80;
