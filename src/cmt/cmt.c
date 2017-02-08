@@ -611,6 +611,7 @@ void cmt_step ( void ) {
 
 }
 
+
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
 
 
@@ -640,12 +641,5 @@ void cmt_ctc1m1_event ( unsigned event_ticks ) {
         g_cmt.clk1m1_event.ticks = -1;
     };
 }
-
-
-void cmt_on_screen_done_event ( void ) {
-    if ( g_cmt.clk1m1_event.ticks != -1 ) {
-        g_cmt.clk1m1_event.ticks -= VIDEO_SCREEN_TICKS;
-    };
-}
-
 #endif
+

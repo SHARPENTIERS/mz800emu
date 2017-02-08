@@ -137,7 +137,7 @@ void debugger_animation ( void ) {
 
 Z80EX_BYTE debugger_dasm_read_cb ( Z80EX_WORD addr, void *user_data ) {
     g_debugger.memop_call = 1;
-    Z80EX_BYTE retval = memory_read_cb ( g_mz800.cpu, addr, 0, NULL );
+    Z80EX_BYTE retval = memory_read_byte ( addr );
     g_debugger.memop_call = 0;
     return retval;
 }
@@ -145,7 +145,7 @@ Z80EX_BYTE debugger_dasm_read_cb ( Z80EX_WORD addr, void *user_data ) {
 
 void debugger_memory_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
     g_debugger.memop_call = 1;
-    memory_write_cb ( g_mz800.cpu, addr, value, NULL );
+    memory_write_byte ( addr, value );
     g_debugger.memop_call = 0;
 }
 

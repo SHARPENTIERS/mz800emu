@@ -41,7 +41,7 @@ st_FDC g_fdc;
 
 void fdc_reset ( void ) {
     wd279x_reset ( &g_fdc.wd279x );
-    mz800_fdc_interrupt_handle ( 0 );
+    mz800_interrupt_manager ( );
 }
 
 
@@ -87,19 +87,19 @@ void fdc_init ( void ) {
     elm = cfgmodule_register_new_element ( cmod, "wd279x_fdd0_dskpath", CFGENTYPE_TEXT, "" );
     cfgelement_set_propagate_cb ( elm, fdc_propagatecfg_fdd, (void*) "\x00" );
     cfgelement_set_handlers ( elm, NULL, (void*) &g_fdc.wd279x.drive[0].filename );
-    
+
     elm = cfgmodule_register_new_element ( cmod, "wd279x_fdd1_dskpath", CFGENTYPE_TEXT, "" );
     cfgelement_set_propagate_cb ( elm, fdc_propagatecfg_fdd, (void*) "\x01" );
     cfgelement_set_handlers ( elm, NULL, (void*) &g_fdc.wd279x.drive[1].filename );
-    
+
     elm = cfgmodule_register_new_element ( cmod, "wd279x_fdd2_dskpath", CFGENTYPE_TEXT, "" );
     cfgelement_set_propagate_cb ( elm, fdc_propagatecfg_fdd, (void*) "\x02" );
     cfgelement_set_handlers ( elm, NULL, (void*) &g_fdc.wd279x.drive[2].filename );
-    
+
     elm = cfgmodule_register_new_element ( cmod, "wd279x_fdd3_dskpath", CFGENTYPE_TEXT, "" );
     cfgelement_set_propagate_cb ( elm, fdc_propagatecfg_fdd, (void*) "\x03" );
     cfgelement_set_handlers ( elm, NULL, (void*) &g_fdc.wd279x.drive[3].filename );
-    
+
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );
 
@@ -137,13 +137,18 @@ int fdc_read_byte ( int i_addroffset, uint8_t *io_data ) {
     unsigned char read_byte;
     int retval = wd279x_read_byte ( &g_fdc.wd279x, i_addroffset, &read_byte );
     *io_data = read_byte;
-    mz800_fdc_interrupt_handle ( wd279x_check_interrupt ( &g_fdc.wd279x ) );
+    mz800_interrupt_manager ( );
     return retval;
 }
 
 
 int fdc_write_byte ( int i_addroffset, uint8_t *io_data ) {
     int retval = wd279x_write_byte ( &g_fdc.wd279x, i_addroffset, io_data );
-    mz800_fdc_interrupt_handle ( wd279x_check_interrupt ( &g_fdc.wd279x ) );
+    mz800_interrupt_manager ( );
     return retval;
+}
+
+
+int fdc_get_interrupt_state ( void ) {
+    return wd279x_check_interrupt ( &g_fdc.wd279x );
 }

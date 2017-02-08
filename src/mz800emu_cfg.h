@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 
-    
+
     /*
      * Konfiguracni vypnuti modulu MZ-800 debugger
      * ===========================================
@@ -41,6 +41,7 @@ extern "C" {
      */
 
 #define MZ800EMU_CFG_DEBUGGER_ENABLED
+
 
 
     /*
@@ -58,15 +59,15 @@ extern "C" {
      */
 
 //#define MZ800EMU_CFG_CLK1M1_SLOW
-#define MZ800EMU_CFG_CLK1M1_FAST
+#define MZ800EMU_CFG_CLK1M1_FAST  
 
-    
+
     /*
      * Variabilni speed sync - umoznuje menit plynule synchronizovanou rychlost 
      * 
      */
-//#define MZ800EMU_CFG_VARIABLE_SPEED
-    
+    //#define MZ800EMU_CFG_VARIABLE_SPEED
+
 
     /*
      * 
@@ -77,9 +78,9 @@ extern "C" {
      */
 
 #define AUDIO_FILLBUFF_v1
-//#define AUDIO_FILLBUFF_v2
+    //#define AUDIO_FILLBUFF_v2
 
-    
+
     /*
      * Maximalni povolena variabilni rychlost emulace v procentech, pri ktere jeste probiha poctiva synchronizace.
      * 
@@ -105,7 +106,7 @@ extern "C" {
      * 
      */
 
-//#define MZ800EMU_CFG_AUDIO_DISABLED
+    //#define MZ800EMU_CFG_AUDIO_DISABLED
 
 
     /*
@@ -114,9 +115,19 @@ extern "C" {
      * Slouzi pouze k lepsimu ladeni maximalniho vykonu.
      * 
      */
-//#define MZ800EMU_CFG_SPEED_TEST
+    //#define MZ800EMU_CFG_SPEED_TEST
 
 
+    /*
+     * Memory statistics
+     * =================
+     * 
+     * Chci zkusit zjistit, jak nejlepe optimalizovat umisteni podminek pro cteni a zapis do pameti.
+     * Tato volba vytvori aditivni soubor se statistikou pro cteni a zapis pameti.
+     * 
+     */
+//#define MEMORY_MAKE_STATISTICS
+    
 #ifdef __cplusplus
 }
 #endif

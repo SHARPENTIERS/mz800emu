@@ -24,13 +24,14 @@
  */
 
 #ifndef VRAMCTRL_H
-#define	VRAMCTRL_H
+#define VRAMCTRL_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "z80ex/include/z80ex.h"
+
 
     typedef enum {
         GDG_WF_MODE_SINGLE = 0,
@@ -40,6 +41,7 @@ extern "C" {
         GDG_WF_MODE_REPLACE,
         GDG_WF_MODE_PSET = 6
     } WFR_MODE;
+
 
     typedef struct st_VRAMCTRL {
         unsigned regWF_PLANE;
@@ -56,17 +58,21 @@ extern "C" {
 
     extern void vramctrl_reset ( void );
 
-    extern void vramctrl_set_reg (int addr, Z80EX_BYTE value);
+    extern void vramctrl_set_reg ( int addr, Z80EX_BYTE value );
 
-    extern Z80EX_BYTE vramctrl_mz700_memop_read (Z80EX_WORD addr, int m1_state);
-    extern void vramctrl_mz700_memop_write (Z80EX_WORD addr, Z80EX_BYTE value);
-    extern Z80EX_BYTE vramctrl_mz800_memop_read (Z80EX_WORD addr);
-    extern void vramctrl_mz800_memop_write (Z80EX_WORD addr, Z80EX_BYTE value);
+    extern Z80EX_BYTE vramctrl_mz700_memop_read_sync ( Z80EX_WORD addr );
+    extern void vramctrl_mz700_memop_write_sync ( Z80EX_WORD addr, Z80EX_BYTE value );
+
+    extern Z80EX_BYTE vramctrl_mz700_memop_read_byte ( Z80EX_WORD addr );
+    extern void vramctrl_mz700_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value );
+
+    extern Z80EX_BYTE vramctrl_mz800_memop_read_byte ( Z80EX_WORD addr );
+    extern void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value );
 
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* VRAMCTRL_H */
+#endif /* VRAMCTRL_H */
 

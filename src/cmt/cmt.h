@@ -122,7 +122,6 @@ extern "C" {
         unsigned clk1m1_last_event_total_ticks;
         st_EVENT clk1m1_event;
 #endif
-
     } st_CMT;
 
     extern st_CMT g_cmt;
@@ -141,10 +140,16 @@ extern "C" {
     extern void cmt_step ( void );
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
-    extern void cmt_ctc1m1_event ( unsigned event_ticks );
-    extern void cmt_on_screen_done_event ( void );
-#endif
 
+    extern void cmt_ctc1m1_event ( unsigned event_ticks );
+
+#define cmt_on_screen_done_event() { \
+    if ( g_cmt.clk1m1_event.ticks != -1 ) {\
+        g_cmt.clk1m1_event.ticks -= VIDEO_SCREEN_TICKS;\
+    };\
+}
+
+#endif
 
 #ifdef __cplusplus
 }

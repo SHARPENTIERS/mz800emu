@@ -40,7 +40,9 @@ extern "C" {
 
 
 #define PSG_DIVIDER                     ( 16 * GDGCLK2CPU_DIVIDER )
-    
+
+    // pokud je definovano, tak pri inicializaci emulujeme nahodnou desynchronizaci psg.process_clock
+#define PSG_USE_RANDOM_INIT 1    
 
 #ifdef AUDIO_FILLBUFF_v2
 

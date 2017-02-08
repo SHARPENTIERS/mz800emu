@@ -28,9 +28,10 @@
 #include "psg.h"
 #include "gdg/gdg.h"
 #include "audio.h"
+#include "mz800.h"
 
 
-#define DBGLEVEL (DBGNON /* | DBGERR | DBGWAR | DBGINF*/)
+//#define DBGLEVEL (DBGNON /* | DBGERR | DBGWAR | DBGINF*/)
 //#define DBGLEVEL (DBGNON | DBGERR | DBGWAR | DBGINF )
 #include "debug.h"
 
@@ -118,7 +119,9 @@ void psg_real_write_byte ( Z80EX_BYTE value ) {
 
 void psg_write_byte ( Z80EX_BYTE value ) {
 
-    DBGPRINTF ( DBGINF, "value = 0x%02x\n", value );
+    DBGPRINTF ( DBGINF, "value = 0x%02x, PC = 0x%04x\n", value, g_mz800.instruction_addr );
+
+    mz800_sync_insideop_iorq_psg_write ( );
 
 #ifdef AUDIO_FILLBUFF_v1
     psg_real_write_byte ( value );

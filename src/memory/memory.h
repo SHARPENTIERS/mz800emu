@@ -30,6 +30,16 @@
 extern "C" {
 #endif
 
+#ifdef MEMORY_MAKE_STATISTICS
+    
+#define MEMORY_STATISTIC_FILE   "memstats.dat"
+
+
+    typedef struct st_MEMORY_STATS {
+        unsigned read[16];
+        unsigned write[16];
+    } st_MEMORY_STATS;
+#endif
 
 #include "z80ex/include/z80ex.h"
 #include "gdg/gdg.h"
@@ -61,6 +71,26 @@ extern "C" {
 #define MEMORY_MAP_FLAG_CGRAM_VRAM ( 1 << 2 )  /* MZ700: 0xc000 - 0xcfff (CGRAM) 
                                                        MZ800: 0x8000 - 0x9fff | 0xbfff (VRAM) */
 #define MEMORY_MAP_FLAG_ROM_E000 ( 1 << 3 )  /* + MZ700: 0xd000 - 0xdfff (atributova VRAM) */
+
+
+    /* Memory map porty pro IORQ - PWRITE */
+    typedef enum en_MMAP_PWRITE {
+        MMAP_PWRITE_E0 = 0xe0, /* memory unmap ROM 0000 , CGROM */
+        MMAP_PWRITE_E1 = 0xe1, /* memory unmap ROM E000, coz v MZ700 znamena i VRAM na D000 */
+        MMAP_PWRITE_E2 = 0xe2, /* memory map ROM 0000 */
+        MMAP_PWRITE_E3 = 0xe3, /* memory map ROM E000, coz v MZ700 znamena i VRAM na D000 */
+        MMAP_PWRITE_E4 = 0xe4, /* memory map ROM 0000, ROM E000, MZ700: unmap CGROM, CGRAM, MZ800: map CGROM, VRAM */
+        /* pozustatky z MZ-700 - v MZ-800 ponekud nefunkcni */
+        MMAP_PWRITE_E5 = 0xe5, /* map EXROM */
+        MMAP_PWRITE_E6 = 0xe6, /* unmap EXROM */
+    } en_MMAP_PWRITE;
+
+
+    /* Memory map porty pro IORQ - PREAD */
+    typedef enum en_MMAP_PREAD {
+        MMAP_PREAD_E0 = 0xe0, /* memory map CG-ROM, CG-RAM, VRAM - podle mode */
+        MMAP_PREAD_E1 = 0xe1, /* memory unmap CG-ROM, CG-RAM, VRAM - podle mode */
+    } en_MMAP_PREAD;
 
 
     /*
@@ -135,10 +165,18 @@ extern "C" {
     extern void memory_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD addr, Z80EX_BYTE value, void *user_data );
 
     /* Nastaveni mapy pameti */
-    extern void memory_map_set ( MEMORY_MAP_IOOP mmap_method, uint8_t port );
+    extern void memory_map_pwrite ( en_MMAP_PWRITE mmap_port );
+    extern void memory_map_pread ( en_MMAP_PREAD mmap_port );
 
+    /* Cteni z aktualne mapovane pameti - bez synchronizace */
+    extern Z80EX_BYTE memory_read_byte ( Z80EX_WORD addr );
 
+    /* Zapis do aktualne mapovane pameti - bez synchronizace */
+    extern void memory_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value );
 
+#ifdef MEMORY_MAKE_STATISTICS
+    void memory_write_memory_statistics ( void );
+#endif
 
 #ifdef __cplusplus
 }
