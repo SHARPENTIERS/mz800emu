@@ -30,7 +30,7 @@
 #include "ctc8253.h"
 #include "gdg/gdg.h"
 
-#ifdef MZ800EMU_CFG_CLK1M1_FAST
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 #include "gdg/video.h"
 #endif
 
@@ -52,9 +52,8 @@ struct st_CTC8253 g_ctc8253[3];
 #include "cmt/cmt.h"
 
 
-void ctc8253_ctc0_output_event ( unsigned value, unsigned event_ticks ) {
-    //DBGPRINTF ( DBGINF, "CTC0 output event! (%d) - %d\n", value, event_ticks );
-    pioz80_port_event ( PIOZ80_PORT_A, 4, ~value & 0x01 ); /* pripojeno pres invertor !!! */
+static inline void ctc8253_ctc0_output_event ( unsigned value, unsigned event_ticks ) {
+    pioz80_port_id_event ( PIOZ80_PORT_A, PIOZ80_PORT_EVENT_PA4_CTC0, ~value & 0x01 );
 
     /* Bugfix pro hru Ralye (Tatra-sys HD cpm disk 5) - nastavi ctc0 mode: 3, preset: 2 a povoli audio (pc00) - na Sharpu ten zvuk zrejme neprojde filtrem */
     if ( !( ( g_ctc8253[CTC_CS0].mode == CTC_MODE3 ) && ( g_ctc8253[CTC_CS0].preset_value == 2 ) ) ) {
@@ -63,20 +62,19 @@ void ctc8253_ctc0_output_event ( unsigned value, unsigned event_ticks ) {
 }
 
 
-void ctc8253_ctc1_output_event ( unsigned value, unsigned event_ticks ) {
-    //DBGPRINTF ( DBGINF, "CTC1 output event! (%d)\n", value );
+static inline void ctc8253_ctc1_output_event ( unsigned value, unsigned event_ticks ) {
     if ( value != 0 ) return;
     ctc8253_clkfall ( CTC_CS2, event_ticks );
 }
 
 
-void ctc8253_ctc2_output_event ( unsigned value, unsigned event_ticks ) {
+static inline void ctc8253_ctc2_output_event ( unsigned value, unsigned event_ticks ) {
     DBGPRINTF ( DBGINF, "CTC2 output event! (%d)\n", value );
-    mz800_ctc2_interrupt_handle ( );
+    mz800_interrupt_manager ( );
 }
 
 
-void ctc8253_set_out ( unsigned cs, unsigned value, unsigned event_ticks ) {
+static inline void ctc8253_set_out ( unsigned cs, unsigned value, unsigned event_ticks ) {
     /* zadna zmena */
     if ( g_ctc8253[cs].out == value ) return;
 
@@ -116,7 +114,6 @@ void ctc8253_init ( void ) {
 #endif
 }
 
-
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
 
 
@@ -126,7 +123,6 @@ static inline void ctc8253_update_ctc0_by_totalticks ( unsigned event_total_tick
     g_ctc8253[CTC_CS0].value -= decremented;
     g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks += decremented * GDGCLK_1M1_DIVIDER;
 }
-
 #endif
 
 
@@ -137,10 +133,11 @@ Z80EX_BYTE ctc8253_read_byte ( unsigned cs ) {
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
     if ( !( g_ctc8253[cs].latch_op == 1 ) ) {
         if ( ( cs == CTC_CS0 ) && ( g_ctc8253[CTC_CS0].state >= CTC_STATE_COUNTDOWN ) && ( g_ctc8253[CTC_CS0].clk1m1_event.ticks != -1 ) ) {
-            ctc8253_update_ctc0_by_totalticks ( gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks ) );
+            ctc8253_update_ctc0_by_totalticks ( gdg_compute_total_ticks ( gdg_get_insigeop_ticks ( ) ) );
         };
     };
 #endif
+
     unsigned value = ( g_ctc8253[cs].latch_op == 1 ) ? g_ctc8253[cs].read_latch : g_ctc8253[cs].value;
 
     switch ( g_ctc8253[cs].rlf ) {
@@ -229,12 +226,11 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
         if ( ( cs == CTC_CS0 ) && ( g_ctc8253[CTC_CS0].state >= CTC_STATE_COUNTDOWN ) && ( g_ctc8253[CTC_CS0].clk1m1_event.ticks != -1 ) ) {
-            ctc8253_update_ctc0_by_totalticks ( gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks ) );
+            ctc8253_update_ctc0_by_totalticks ( gdg_compute_total_ticks ( gdg_get_insigeop_ticks ( ) ) );
         };
 
         old_state = g_ctc8253[cs].state;
 #endif
-
         unsigned rlf = ( value >> 4 ) & 0x03;
 
         g_ctc8253[cs].rl_byte = 0;
@@ -266,7 +262,7 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
         DBGPRINTF ( DBGINF, "INIT CTC - 0x%02x - addr: %d, RLF: %d, MODE: %d, BCD: %d\n", value, cs, g_ctc8253[cs].rlf, g_ctc8253[cs].mode, g_ctc8253[cs].bcd );
 
         unsigned output_state = ( g_ctc8253[cs].mode == CTC_MODE0 ) ? 0 : 1;
-        ctc8253_set_out ( cs, output_state, g_gdg.elapsed_screen_ticks );
+        ctc8253_set_out ( cs, output_state, gdg_get_insigeop_ticks ( ) );
 
 #if ( DBGLEVEL & DBGWAR )
         if ( g_ctc8253[cs].mode > CTC_MODE3 ) {
@@ -281,7 +277,7 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
         if ( ( cs == CTC_CS0 ) && ( g_ctc8253[CTC_CS0].state >= CTC_STATE_COUNTDOWN ) && ( g_ctc8253[CTC_CS0].clk1m1_event.ticks != -1 ) ) {
-            ctc8253_update_ctc0_by_totalticks ( gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks ) );
+            ctc8253_update_ctc0_by_totalticks ( gdg_compute_total_ticks ( gdg_get_insigeop_ticks ( ) ) );
         };
 
         old_state = g_ctc8253[cs].state;
@@ -293,7 +289,7 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
         if ( g_ctc8253[cs].mode == CTC_MODE0 ) {
             if ( g_ctc8253[cs].state > CTC_STATE_INIT_DONE ) {
                 g_ctc8253[cs].state = CTC_STATE_LOAD;
-                ctc8253_set_out ( cs, 0, g_gdg.elapsed_screen_ticks );
+                ctc8253_set_out ( cs, 0, gdg_get_insigeop_ticks ( ) );
             };
         };
         DBGPRINTF ( DBGINF, "LOAD CTC addr: %d, value: 0x%02x, PC = 0x%04x\n", cs, value, z80ex_get_reg ( g_mz800.cpu, regPC ) );
@@ -354,7 +350,7 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
     if ( cs == CTC_CS0 ) {
         if ( old_state != g_ctc8253[cs].state ) {
             /* vytvorime event pro zavolani CTC0 ctc8253_clkfall() */
-            g_ctc8253[CTC_CS0].clk1m1_event.ticks = gdg_proximate_clk1m1_event ( g_gdg.elapsed_screen_ticks );
+            g_ctc8253[CTC_CS0].clk1m1_event.ticks = gdg_proximate_clk1m1_event ( gdg_get_insigeop_ticks ( ) );
             g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks = gdg_compute_total_ticks ( g_ctc8253[CTC_CS0].clk1m1_event.ticks );
 
             if ( g_ctc8253[CTC_CS0].clk1m1_event.ticks <= g_mz800.event.ticks ) {
@@ -364,7 +360,6 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
         };
     };
 #endif
-
 }
 
 
@@ -619,7 +614,6 @@ void ctc8253_gate ( unsigned cs, unsigned gate, unsigned event_ticks ) {
         };
     };
 #endif
-
 }
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
@@ -712,16 +706,5 @@ void ctc8253_ctc1m1_event ( unsigned event_ticks ) {
         ctc0->clk1m1_event.ticks = -1;
     };
 }
-
-
-void ctc8253_on_screen_done_event ( void ) {
-
-    st_CTC8253 *ctc0 = &g_ctc8253[CTC_CS0];
-
-    if ( ctc0->clk1m1_event.ticks != -1 ) {
-        ctc0->clk1m1_event.ticks -= VIDEO_SCREEN_TICKS;
-    };
-}
-
 
 #endif

@@ -51,7 +51,7 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
 
     Z80EX_BYTE port_lsb = port & 0xff;
 
-    mz800_sync_inside_cpu ( INSIDEOP_IORQ_RD );
+    mz800_sync_insideop_iorq ( );
 
     Z80EX_BYTE retval;
 
@@ -118,7 +118,7 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
         case 0xe0:
         case 0xe1:
             /* cteme memory mapper: 0xe0 - 0xe1 */
-            memory_map_set ( MEMORY_MAPRQ_IOOP_IN, port_lsb );
+            memory_map_pread ( port_lsb );
             retval = g_mz800.regDBUS_latch;
             break;
 
@@ -204,7 +204,7 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
 
     Z80EX_BYTE port_lsb = port & 0xff;
 
-    mz800_sync_inside_cpu ( INSIDEOP_IORQ_WR );
+    mz800_sync_insideop_iorq ( );
 
     switch ( port_lsb ) {
 
@@ -283,7 +283,7 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
         case 0xe5:
         case 0xe6:
             /* zapisujeme na memory mapper: 0xe0 - 0xe6 */
-            memory_map_set ( MEMORY_MAP_IOOP_OUT, port_lsb );
+            memory_map_pwrite ( port_lsb );
             break;
 
 

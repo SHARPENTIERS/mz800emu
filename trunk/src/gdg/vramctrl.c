@@ -121,7 +121,12 @@
 #include "debugger/debugger.h"
 #endif
 
-#define DEF_USE_EXTVRAM		1
+
+/*******************************************************************************
+ *
+ * Obecne rutiny VRAM kontroleru
+ * 
+ ******************************************************************************/
 
 st_VRAMCTRL g_vramctrl;
 
@@ -136,6 +141,94 @@ void vramctrl_reset ( void ) {
 }
 
 
+/*******************************************************************************
+ *
+ * VRAM kontroler pro rezimy MZ-700
+ * 
+ ******************************************************************************/
+
+
+/**
+ * Cteni z MZ-700 VRAM s ohledem na synchronizaci
+ * 
+ * @param addr
+ * @return 
+ */
+Z80EX_BYTE vramctrl_mz700_memop_read_sync ( Z80EX_WORD addr ) {
+    mz800_sync_insideop_mreq ( );
+    if ( SIGNAL_GDG_HBLNK ) {
+        mz800_sync_insideop_mreq_mz700_vramctrl ( );
+    };
+    return g_memory.VRAM [ addr ];
+}
+
+
+/**
+ * Cteni z MZ-700 VRAM bez ohledu na synchronizaci
+ * 
+ * @param addr
+ * @return 
+ */
+Z80EX_BYTE vramctrl_mz700_memop_read_byte ( Z80EX_WORD addr ) {
+    return g_memory.VRAM [ addr ];
+}
+
+
+/**
+ * Interni subrutina fyzickeho zapisu do MZ-700 VRAM - generuje vsak zmenu ve screenu
+ * 
+ * @param addr
+ * @param value
+ */
+static inline void vramctrl_mz700_memop_write_internal ( Z80EX_WORD addr, Z80EX_BYTE value ) {
+    /* TODO: meli by jsme nastavovat jen pokud se zapisuje do CG-RAM, nebo do VRAM, ktera je opravdu videt */
+    g_gdg.screen_changes = SCRSTS_THIS_IS_CHANGED;
+    g_memory.VRAM [ addr ] = value;
+
+}
+
+
+/**
+ * Zapis do MZ-700 VRAM s ohledem na synchronizaci
+ * 
+ * @param addr
+ * @param value
+ */
+void vramctrl_mz700_memop_write_sync ( Z80EX_WORD addr, Z80EX_BYTE value ) {
+    mz800_sync_insideop_mreq ( );
+    if ( SIGNAL_GDG_HBLNK ) {
+        if ( g_vramctrl.mz700_wr_latch_is_used++ != 0 ) {
+            mz800_sync_insideop_mreq_mz700_vramctrl ( );
+        };
+    };
+    vramctrl_mz700_memop_write_internal ( addr, value );
+}
+
+
+/**
+ * Zapis do MZ-700 VRAM bez synchronizace - generuje vsak zmenu ve screenu
+ * 
+ * @param addr
+ * @param value
+ */
+void vramctrl_mz700_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
+    vramctrl_mz700_memop_write_internal ( addr, value );
+}
+
+
+/*******************************************************************************
+ *
+ * VRAM kontroler pro rezimy MZ-800
+ * 
+ ******************************************************************************/
+
+
+/**
+ * Nastaveni hodnoty WFr a RFr
+ * 
+ * @param addr
+ * @param value
+ */
 void vramctrl_set_reg ( int addr, Z80EX_BYTE value ) {
 
     switch ( addr ) {
@@ -161,53 +254,27 @@ void vramctrl_set_reg ( int addr, Z80EX_BYTE value ) {
     };
 }
 
+/* Mame pripojenu externi VRAM? */
+#define DEF_USE_EXTVRAM  1
 
-Z80EX_BYTE vramctrl_mz700_memop_read ( Z80EX_WORD addr, int m1_state ) {
-
-    if ( SIGNAL_GDG_HBLNK ) {
-        mz800_sync_inside_cpu ( INSIDEOP_MZ700_NOTHBLN_VRAM_MREQ );
-    };
-
-    return g_memory.VRAM [ addr ];
-}
-
-
-void vramctrl_mz700_memop_write ( Z80EX_WORD addr, Z80EX_BYTE value ) {
-
-
-    if ( SIGNAL_GDG_HBLNK ) {
-
-#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
-        if ( !TEST_DEBUGGER_MEMOP_CALL ) {
-#endif
-            if ( g_vramctrl.mz700_wr_latch_is_used++ != 0 ) {
-                mz800_sync_inside_cpu ( INSIDEOP_MZ700_NOTHBLN_VRAM_MREQ );
-            };
-#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
-        };
-#endif
-
-    };
-
-    /* TODO: meli by jsme nastavovat jen pokud se zapisuje do CG-RAM, nebo do VRAM, ktera je opravdu videt */
-    g_gdg.screen_changes = SCRSTS_THIS_IS_CHANGED;
-
-    g_memory.VRAM [ addr ] = value;
-    return;
-}
-
-
-#define DEF_PLANE1	( 1 << 0 )
-#define DEF_PLANE2	( 1 << 1 )
-#define DEF_PLANE3	( 1 << 2 )
-#define DEF_PLANE4	( 1 << 3 )
+/* Bitove masky pro identifikaci jednotlivych rovin */
+#define DEF_PLANE1 ( 1 << 0 )
+#define DEF_PLANE2 ( 1 << 1 )
+#define DEF_PLANE3 ( 1 << 2 )
+#define DEF_PLANE4 ( 1 << 3 )
 
 
 /* Pokud jsme v rozliseni 640x200, tak potrebujeme vedet, zda se saha na dudy^H^H^H^H ;) sudy, nebo lichy byte */
 #define ADDR_IS_ODD  ( addr & 0x01 )
 
 
-Z80EX_BYTE vramctrl_mz800_memop_read ( Z80EX_WORD addr ) {
+/**
+ * Cteni z VRAM v rezimu MZ-800
+ * 
+ * @param addr
+ * @return 
+ */
+Z80EX_BYTE vramctrl_mz800_memop_read_byte ( Z80EX_WORD addr ) {
 
     Z80EX_BYTE search = 0xff;
     Z80EX_BYTE notsearch = 0x00;
@@ -466,9 +533,15 @@ Z80EX_BYTE vramctrl_mz800_memop_read ( Z80EX_WORD addr ) {
 }
 
 
-/* TODO: ten write je 1:1 prepis z VHDL ... asi by jej slo zrychlit */
-
-void vramctrl_mz800_memop_write ( Z80EX_WORD addr, Z80EX_BYTE value ) {
+/**
+ * Zapis do VRAM v rezimu MZ-800
+ * 
+ * TODO: ten write je 1:1 prepis z VHDL ... asi by jej slo zrychlit
+ * 
+ * @param addr
+ * @param value
+ */
+void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
 
     /* TODO: meli by jsme volat asi jen pokud se pise do viditelne VRAM */
     framebuffer_MZ800_screen_changed ( );

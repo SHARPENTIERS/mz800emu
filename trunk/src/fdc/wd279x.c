@@ -752,6 +752,8 @@ int wd279x_do_write_track ( st_WD279X *FDC, unsigned char *io_data ) {
 
     unsigned int ff_readlen;
 
+    //printf ( "wd279x_do_write_track: 0x%02x\n", *io_data );
+    
 #if (DBGLEVEL & DBGINF)
     uint8_t last_write_track_stage = FDC->write_track_stage;
 #endif

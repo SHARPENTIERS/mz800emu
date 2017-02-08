@@ -72,6 +72,8 @@ void pio8255_init ( void ) {
 
 void pio8255_write ( int addr, Z80EX_BYTE value ) {
 
+    //DBGPRINTF ( DBGINF, "addr = 0x%02x, value = 0x%02x, PC = 0x%04x\n", addr, value, g_mz800.instruction_addr );
+
     int bit_setres;
 
 
@@ -89,13 +91,13 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
 
         case DEF_PIO8255_PORTC:
 
-            //DBGPRINTF ( DBGINF, "addr = %d (PORT_C), value = 0x%02x )\n", addr, value );
+            DBGPRINTF ( DBGINF, "addr = %d (PORT_C), value = 0x%02x), PC = 0x%04x\n", addr, value, g_mz800.instruction_addr );
             //printf ( "WR addr = %d (PORT_C), value = 0x%02x )\n", addr, value );
 
             /* blokovani CTC0 - zvukovy vystup */
             g_pio8255.signal_pc00 = ( value >> 0 ) & 0x01;
             DBGPRINTF ( DBGINF, "audio ctc0 mask (pc00): %d\n", g_pio8255.signal_pc00 );
-            audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), g_gdg.elapsed_screen_ticks );
+            audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), gdg_get_insigeop_ticks ( ) );
 
             /* data do CMT */
             g_pio8255.signal_pc01 = ( value >> 1 ) & 0x01;
@@ -103,7 +105,7 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
             /* blokovani CTC2 - preruseni z CTC */
             g_pio8255.signal_pc02 = ( value >> 2 ) & 0x01;
             DBGPRINTF ( DBGINF, "interrupt ctc2 mask (pc02): %d\n", g_pio8255.signal_pc02 );
-            mz800_ctc2_interrupt_handle ( );
+            mz800_interrupt_manager ( );
 
             /* rizeni motoru CMT - nabezna hrana provede zmenu */
             unsigned old_pc03_state = g_pio8255.signal_pc03;
@@ -117,7 +119,7 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
 
         case DEF_PIO8255_MASTER:
 
-            DBGPRINTF ( DBGINF, "addr = %d (MASTER_PORT), value = 0x%02x\n", addr, value );
+            DBGPRINTF ( DBGINF, "addr = %d (MASTER_PORT), value = 0x%02x, PC = 0x%04x\n", addr, value, g_mz800.instruction_addr );
 
             if ( value & 0x80 ) {
                 if ( value == 0x8a ) {
@@ -129,8 +131,8 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
                     g_pio8255.signal_pc02 = 0;
                     DBGPRINTF ( DBGINF, "reset - pc00 - pc03 = 0x00\n" );
 
-                    audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), g_gdg.elapsed_screen_ticks );
-                    mz800_ctc2_interrupt_handle ( );
+                    audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), gdg_get_insigeop_ticks ( ) );
+                    mz800_interrupt_manager ( );
 #if ( DBGLEVEL & DBGWAR )
                 } else {
                     DBGPRINTF ( DBGWAR, "addr = %d, value = 0x%02x - UNSUPORTED MODE! PC: 0x%04x\n", addr, value, z80ex_get_reg ( g_mz800.cpu, regPC ) );
@@ -142,7 +144,7 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
                 if ( bit_setres == 0 ) {
                     g_pio8255.signal_pc00 = value & 0x01;
                     DBGPRINTF ( DBGINF, "audio ctc0 mask (pc00): %d\n", g_pio8255.signal_pc00 );
-                    audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), g_gdg.elapsed_screen_ticks );
+                    audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), gdg_get_insigeop_ticks ( ) );
 
                 } else if ( bit_setres == 1 ) {
                     g_pio8255.signal_pc01 = value & 0x01;
@@ -150,7 +152,7 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
                 } else if ( bit_setres == 2 ) {
                     g_pio8255.signal_pc02 = value & 0x01;
                     DBGPRINTF ( DBGINF, "interrupt ctc2 mask (pc02): %d\n", g_pio8255.signal_pc02 );
-                    mz800_ctc2_interrupt_handle ( );
+                    mz800_interrupt_manager ( );
 
                 } else if ( bit_setres == 3 ) {
                     /* rizeni motoru CMT - nabezna hrana provede zmenu */
@@ -186,7 +188,7 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
 
 Z80EX_BYTE pio8255_read ( int addr ) {
 
-    Z80EX_BYTE retval;
+    //DBGPRINTF ( DBGINF, "addr = 0x%02x, PC = 0x%04x\n", addr, g_mz800.instruction_addr );
 
     switch ( addr ) {
 
@@ -197,9 +199,9 @@ Z80EX_BYTE pio8255_read ( int addr ) {
         case DEF_PIO8255_PORTB:
 
             iface_sdl_pool_keyboard_events ( );
-            //iface_sdl_keybord_scan ( );
-            //BGPRINTF ( DBGINF, "addr = %d (PORT_B - key scan: %d ), value = 0x%02x, PC = 0x%04x\n", addr, g_pio8255.signal_PA_keybord_column, g_pio8255.keyboard_matrix [ g_pio8255.signal_PA_keybord_column ], z80ex_get_reg ( g_mz800.cpu, regPC ) );
-            return g_pio8255.keyboard_matrix [ g_pio8255.signal_PA_keybord_column ];
+            Z80EX_BYTE retval = g_pio8255.keyboard_matrix [ g_pio8255.signal_PA_keybord_column ];
+            //DBGPRINTF ( DBGINF, "addr = 0x%02x, keyboard_matrix[%d] = 0x%02x, PC = 0x%04x\n", addr, g_pio8255.signal_PA_keybord_column, retval, g_mz800.instruction_addr );
+            return retval;
 
             /* TODO: prozatim mame jen ty nejpodstatnejsi bity */
         case DEF_PIO8255_PORTC:

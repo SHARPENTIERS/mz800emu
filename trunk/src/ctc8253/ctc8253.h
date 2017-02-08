@@ -132,15 +132,20 @@ extern "C" {
     extern void ctc8253_gate ( unsigned addr, unsigned gate, unsigned event_screen_ticks );
     extern void ctc8253_clkfall ( unsigned cs, unsigned event_ticks );
 
+
+#define CTC8253_OUT(cs) g_ctc8253[cs].out
+
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
 
     extern void ctc8253_ctc1m1_event ( unsigned event_ticks );
-    extern void ctc8253_on_screen_done_event ( void );
-    
+
+#define ctc8253_on_screen_done_event() { \
+    st_CTC8253 *ctc0 = &g_ctc8253[CTC_CS0]; \
+    if ( ctc0->clk1m1_event.ticks != -1 ) { \
+        ctc0->clk1m1_event.ticks -= VIDEO_SCREEN_TICKS; \
+    }; \
+}
 #endif
-
-
-#define CTC8253_OUT(cs) g_ctc8253[cs].out
 
 #ifdef __cplusplus
 }

@@ -60,20 +60,24 @@ extern "C" {
         // jine, nez GDG eventy
         EVENT_NO_GDG, /* pouze hranicni hodnota - neni skutecny event */
 
-#ifdef MZ800EMU_CFG_VARIABLE_SPEED
-        EVENT_SPEED_SYNC,
-#endif
-                
+        EVENT_PIOZ80,
+
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
         EVENT_CTC0,
         EVENT_CMT,
 #endif
 
-        EVENT_NOT_HW, /* pouze hranicni hodnota - neni skutecny event */
+#ifdef MZ800EMU_CFG_VARIABLE_SPEED
+        EVENT_SPEED_SYNC,
+#endif
 
-        // high priority eventy
-        EVENT_MZ800_INTERRUPT,
-        EVENT_USER_INTERFACE,
+        EVENT_BREAK, /* pouze hranicni hodnota - neni skutecny event */
+
+        // V prubehu zpracovani instrukce vznikl MZ800 interrupt.
+        // Tento event slouzi k tomu, aby jsme vybehli z instrukcni smycky a pokusili se jeuj prevzit.
+        EVENT_BREAK_MZ800_INTERRUPT,
+
+        EVENT_BREAK_EMULATION_PAUSED,
     } en_MZEVENT;
 
 
@@ -95,20 +99,18 @@ extern "C" {
     typedef struct st_mz800 {
         Z80EX_CONTEXT *cpu; /* Model Z80ex */
 
+        Z80EX_WORD instruction_addr; /* posledni adresa na ktere se nabirala instrukce */
+
+        int instruction_tstates; /* citac tstates vykonanych v instrukcnim cyklu */
+        int instruction_insideop_sync_ticks; /* citac GDG ticks vykonanych v instrukcnim cyklu, ktere uz jsme v ramci sync vykonali */
+
         Z80EX_BYTE regDBUS_latch; /* Obsahuje esoterickeho ducha hodnoty posledniho bajtu, ktery byl precten na datove sbernici */
 
         int pio8255_ct53g7; /* rizeni CTC0 v rezimu MZ700 */
 
-        //unsigned have_rejected_interrupt;
-
         unsigned use_max_emulation_speed; /* MZ800_EMULATION_SPEED_NORMAL = 0, MZ800_EMULATION_SPEED_MAX = 1 */
         unsigned emulation_paused;
 
-        unsigned synchronised_insideop_GDG_ticks; /* Celkovy pocet gdg ticku, ktere jsme v ramci prave provadene instrukce jiz synchronizovali pres mz800_sync_inside_cpu() */
-
-        unsigned debug_pc;
-
-        unsigned event_locked; /* Pokud je 1, tak se prave nachazime v miste, kde neni vhodne prepisovat eventy */
         st_EVENT event;
 
         unsigned status_changed;
@@ -125,41 +127,43 @@ extern "C" {
         unsigned speed_in_percentage; /* pozadovana rychlost v procentech 1 - 500, default 100 % */
         unsigned speed_frame_width;
 #endif
-
     } st_mz800;
 
     extern struct st_mz800 g_mz800;
 
 #define TEST_EMULATION_PAUSED       ( g_mz800.emulation_paused != 0 )
 
-    /* Pokud to bude nutne, tak tady je misto, kde by mohla vzniknout fronta cekajicich eventu */
-#define SET_MZ800_EVENT(e,t)        {\
-    if ( ! g_mz800.event_locked ) {\
-        g_mz800.event.event_name = e;\
-        g_mz800.event.ticks = t;\
-    };\
+
+#define SET_MZ800_EVENT(e,t) {\
+    g_mz800.event.event_name = e;\
+    g_mz800.event.ticks = t;\
 }
 
 
     typedef enum en_INSIDEOP {
-        INSIDEOP_IORQ_WR = ( 0 << 1 | 0 ),
-        INSIDEOP_IORQ_RD = ( 0 << 1 | 1 ),
-        INSIDEOP_MREQ_WR = ( 1 << 1 | 0 ),
-        INSIDEOP_MREQ_RD = ( 1 << 1 | 1 ),
-        INSIDEOP_MREQ_M1_RD = ( 1 << 2 | 1 << 1 | 1 ), /* nemenit poradi bitu !!! viz memory.c */
-        INSIDEOP_MZ700_NOTHBLN_VRAM_MREQ = ( 1 << 3 ),
+        // IORQ, MREQ a MREQ_E00x se od sebe nicim nelisi - jsoui rozdeleny jen pro lepsi debugovani
+        INSIDEOP_IORQ = 0, /* operace PREAD, PWRITE */
+        INSIDEOP_MREQ, /* obecna operace MREQ */
+        INSIDEOP_MREQ_E00x, /* MREQ pro mapovane porty */
+        // Synchronizace MZ700 VRAM MREQ pri neaktivnim VBLN
+        INSIDEOP_MREQ_MZ700_VRAMCTRL, /* MZ700 VRAM MREQ */
+        INSIDEOP_IORQ_PSG_WRITE, /* IORQ wite byte do PSG */
     } en_INSIDEOP;
 
-    extern void mz800_ctc2_interrupt_handle ( void );
-    extern void mz800_pioz80_interrupt_handle ( void );
-    extern void mz800_fdc_interrupt_handle ( unsigned interrupt );
+    extern void mz800_interrupt_manager ( void );
 
     extern void mz800_reset ( void );
     extern void mz800_init ( void );
     extern void mz800_main ( void );
     extern void mz800_exit ( void );
-    extern void mz800_set_display_mode ( Z80EX_BYTE dmd_mode );
-    extern void mz800_sync_inside_cpu ( en_INSIDEOP insideop );
+    extern void mz800_set_display_mode ( Z80EX_BYTE dmd_mode, unsigned event_ticks );
+
+    extern void mz800_sync_insideop_iorq ( void );
+    extern void mz800_sync_insideop_mreq ( void );
+    extern void mz800_sync_insideop_mreq_e00x ( void );
+    extern void mz800_sync_insideop_mreq_mz700_vramctrl ( void );
+    extern void mz800_sync_insideop_iorq_psg_write ( void );
+
     extern void mz800_flush_full_screen ( void );
 
     extern void mz800_switch_emulation_speed ( unsigned emulation_speed );
