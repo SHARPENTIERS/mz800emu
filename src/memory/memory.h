@@ -32,7 +32,8 @@ extern "C" {
 
 #ifdef MEMORY_MAKE_STATISTICS
     
-#define MEMORY_STATISTIC_FILE   "memstats.dat"
+#define MEMORY_STATISTIC_DAT_FILE   "memstats.dat"
+#define MEMORY_STATISTIC_TXT_FILE   "memstats.txt"
 
 
     typedef struct st_MEMORY_STATS {

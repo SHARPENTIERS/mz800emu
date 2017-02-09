@@ -305,18 +305,18 @@ void memory_init ( void ) {
 
     FILE *fp;
 
-    if ( ui_utils_access ( MEMORY_STATISTIC_FILE, F_OK ) != -1 ) {
-        if ( ( fp = ui_utils_fopen ( MEMORY_STATISTIC_FILE, "rb" ) ) ) {
+    if ( ui_utils_access ( MEMORY_STATISTIC_DAT_FILE, F_OK ) != -1 ) {
+        if ( ( fp = ui_utils_fopen ( MEMORY_STATISTIC_DAT_FILE, "rb" ) ) ) {
             ui_utils_fread ( &g_memory_statistics, 1, sizeof (g_memory_statistics ), fp );
         } else {
-            ui_show_error ( "%s() - Can't open file '%s': %s", __func__, MEMORY_STATISTIC_FILE, strerror ( errno ) );
+            ui_show_error ( "%s() - Can't open file '%s': %s", __func__, MEMORY_STATISTIC_DAT_FILE, strerror ( errno ) );
         };
         fclose ( fp );
     } else {
         memory_write_memory_statistics ( );
     };
 
-    printf ( "Actual memory statistics (from file %s):\n", MEMORY_STATISTIC_FILE );
+    printf ( "Actual memory statistics (from file %s):\n", MEMORY_STATISTIC_DAT_FILE );
     int j;
     for ( j = 0; j <= 0x0f; j++ ) {
         printf ( "READ 0x%02x: %llu, WRITE 0x%02x: %llu\n", j, g_memory_statistics.read[j], j, g_memory_statistics.write[j] );
@@ -333,14 +333,28 @@ void memory_init ( void ) {
 void memory_write_memory_statistics ( void ) {
     FILE *fp;
 
-    if ( !( fp = ui_utils_fopen ( MEMORY_STATISTIC_FILE, "wb" ) ) ) {
-        ui_show_error ( "Can't open file '%s': %s\n", MEMORY_STATISTIC_FILE, strerror ( errno ) );
+    if ( !( fp = ui_utils_fopen ( MEMORY_STATISTIC_DAT_FILE, "wb" ) ) ) {
+        ui_show_error ( "Can't open file '%s': %s\n", MEMORY_STATISTIC_DAT_FILE, strerror ( errno ) );
         return;
     };
 
     if ( sizeof (g_memory_statistics ) != ui_utils_fwrite ( &g_memory_statistics, 1, sizeof (g_memory_statistics ), fp ) ) {
-        ui_show_error ( "Can't write to file '%s': %s\n", MEMORY_STATISTIC_FILE, strerror ( errno ) );
+        ui_show_error ( "Can't write to file '%s': %s\n", MEMORY_STATISTIC_DAT_FILE, strerror ( errno ) );
     };
+
+    fclose ( fp );
+
+    if ( !( fp = ui_utils_fopen ( MEMORY_STATISTIC_TXT_FILE, "wt" ) ) ) {
+        ui_show_error ( "Can't open file '%s': %s\n", MEMORY_STATISTIC_TXT_FILE, strerror ( errno ) );
+        return;
+    };
+
+    fprintf ( fp, "Actual memory statistics (from file %s):\r\n\r\n", MEMORY_STATISTIC_DAT_FILE );
+    int j;
+    for ( j = 0; j <= 0x0f; j++ ) {
+        fprintf ( fp, "READ 0x%02x: %llu, WRITE 0x%02x: %llu\r\n", j, g_memory_statistics.read[j], j, g_memory_statistics.write[j] );
+    };
+    fprintf ( fp, "\r\n\r\n" );
 
     fclose ( fp );
 }
