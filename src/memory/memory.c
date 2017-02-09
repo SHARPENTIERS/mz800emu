@@ -799,7 +799,7 @@ void memory_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD addr, Z80EX_BYTE value, vo
     memory_internal_write_a000_bfff ( addr_high );
     memory_internal_write_c000_cfff_sync ( addr_high );
     memory_internal_write_d000_dfff_sync ( addr_high );
-    memory_internal_write_e000_efff ( addr_high );
+    memory_internal_write_e000_efff_sync ( addr_high );
     memory_internal_write_f000_ffff ( addr_high );
 }
 
