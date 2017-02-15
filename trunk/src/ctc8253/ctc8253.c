@@ -197,7 +197,7 @@ Z80EX_BYTE ctc8253_read_byte ( unsigned cs ) {
             break;
     };
 
-    //DBGPRINTF ( DBGINF, "Read CTC addr: %d, value: 0x%02x\n", cs, retval );
+    DBGPRINTF ( DBGINF, "Read CTC addr: %d, value: 0x%02x, PC = 0x%04x\n", cs, retval, g_mz800.instruction_addr );
 
     return retval;
 }
@@ -237,7 +237,7 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
 
         /* LatchOp - priprava na cteni */
         if ( rlf == 0 ) {
-            //DBGPRINTF ( DBGINF, "LatchOP CTC: %d\n", cs );
+            DBGPRINTF ( DBGINF, "LatchOP CTC: %d, PC = 0x%04x\n", cs, g_mz800.instruction_addr );
             g_ctc8253[cs].latch_op = 1;
 
             g_ctc8253[cs].read_latch = g_ctc8253[cs].value;
@@ -259,7 +259,7 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
         /* skutecny 8253 zrejme pri initu na value nesaha */
         //g_ctc8253[cs].value = 0;
 
-        DBGPRINTF ( DBGINF, "INIT CTC - 0x%02x - addr: %d, RLF: %d, MODE: %d, BCD: %d\n", value, cs, g_ctc8253[cs].rlf, g_ctc8253[cs].mode, g_ctc8253[cs].bcd );
+        DBGPRINTF ( DBGINF, "INIT CTC - 0x%02x - addr: %d, RLF: %d, MODE: %d, BCD: %d, PC = 0x%04x\n", value, cs, g_ctc8253[cs].rlf, g_ctc8253[cs].mode, g_ctc8253[cs].bcd, g_mz800.instruction_addr );
 
         unsigned output_state = ( g_ctc8253[cs].mode == CTC_MODE0 ) ? 0 : 1;
         ctc8253_set_out ( cs, output_state, gdg_get_insigeop_ticks ( ) );
@@ -292,7 +292,7 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
                 ctc8253_set_out ( cs, 0, gdg_get_insigeop_ticks ( ) );
             };
         };
-        DBGPRINTF ( DBGINF, "LOAD CTC addr: %d, value: 0x%02x, PC = 0x%04x\n", cs, value, z80ex_get_reg ( g_mz800.cpu, regPC ) );
+        DBGPRINTF ( DBGINF, "LOAD CTC addr: %d, value: 0x%02x, PC = 0x%04x\n", cs, value, g_mz800.instruction_addr );
 
 
         switch ( g_ctc8253[cs].rlf ) {
@@ -707,4 +707,11 @@ void ctc8253_ctc1m1_event ( unsigned event_ticks ) {
     };
 }
 
+
+inline void ctc8253_on_screen_done_event ( void ) {
+    st_CTC8253 *ctc0 = &g_ctc8253[CTC_CS0];
+    if ( ctc0->clk1m1_event.ticks != -1 ) {
+        ctc0->clk1m1_event.ticks -= VIDEO_SCREEN_TICKS;
+    };
+}
 #endif

@@ -86,7 +86,7 @@ void hwscroll_reset ( void ) {
 
 
 void hwscroll_set_reg ( int addr, Z80EX_BYTE value ) {
-    
+
     //DBGPRINTF ( DBGINF, "addr: 0x%02x, value: 0x%02x, PC: 0x%04x\n", addr, value, z80ex_get_reg ( g_mz800.cpu, regPC ) );
 
     if ( !DMD_TEST_MZ700 ) {
@@ -129,22 +129,14 @@ void hwscroll_set_reg ( int addr, Z80EX_BYTE value ) {
     };
 
     /* jsou splneny vsechny podminky pro scroll? */
-#if 0
-    /* nejaky nesmyslny prepis z VHDL */
-    if ( ( g_hwscroll.regSOF > 0 ) && ( g_hwscroll.regSOF <= 0x1f40 ) &&
-            ( g_hwscroll.regSSA >= 0 ) && ( g_hwscroll.regSSA <= 0x1e00 ) &&
-            ( g_hwscroll.regSEA >= 0x0140 ) && ( g_hwscroll.regSEA <= 0x1f40 ) &&
-            ( g_hwscroll.regSEA > g_hwscroll.regSSA ) && ( g_hwscroll.regSW > g_hwscroll.regSOF ) &&
-            ( g_hwscroll.regSW == ( g_hwscroll.regSEA - g_hwscroll.regSSA ) ) ) {
-#endif
-    if ( ( g_hwscroll.regSOF > 0 ) && 
-            //( g_hwscroll.regSOF <= 0x1f40 ) &&
-            ( g_hwscroll.regSSA <= 0x1e00 ) &&
-            ( g_hwscroll.regSEA >= 0x0140 ) &&
-            //( g_hwscroll.regSEA <= 0x1f40 ) &&
-            ( g_hwscroll.regSW > g_hwscroll.regSOF ) &&
-            ( g_hwscroll.regSEA > g_hwscroll.regSSA ) &&
-            ( g_hwscroll.regSW == ( g_hwscroll.regSEA - g_hwscroll.regSSA ) ) ) {
+    if ( ( g_hwscroll.regSOF > 0 ) &&
+         //( g_hwscroll.regSOF <= 0x1f40 ) &&
+         ( g_hwscroll.regSSA <= 0x1e00 ) &&
+         ( g_hwscroll.regSEA >= 0x0140 ) &&
+         //( g_hwscroll.regSEA <= 0x1f40 ) &&
+         ( g_hwscroll.regSW > g_hwscroll.regSOF ) &&
+         ( g_hwscroll.regSEA > g_hwscroll.regSSA ) &&
+         ( g_hwscroll.regSW == ( g_hwscroll.regSEA - g_hwscroll.regSSA ) ) ) {
 
         g_hwscroll.enabled = 1;
         DBGPRINTF ( DBGINF, "SOF: 0x%04x, SSA: 0x%04x, SEA: 0x%04x, SW: 0x%04x, HW scroll is ENABLED\n", g_hwscroll.regSOF, g_hwscroll.regSSA, g_hwscroll.regSEA, g_hwscroll.regSW );
@@ -153,28 +145,28 @@ void hwscroll_set_reg ( int addr, Z80EX_BYTE value ) {
         g_hwscroll.enabled = 0;
         DBGPRINTF ( DBGINF, "SOF: 0x%04x, SSA: 0x%04x, SEA: 0x%04x, SW: 0x%04x, HW scroll is DISABLED\n", g_hwscroll.regSOF, g_hwscroll.regSSA, g_hwscroll.regSEA, g_hwscroll.regSW );
 #if ( DBGLEVEL & DBGINF )
-        if ( ! ( g_hwscroll.regSOF > 0 ) ) {
+        if ( !( g_hwscroll.regSOF > 0 ) ) {
             printf ( "\t! regSOF > 0\n" );
         };
-//        if ( ! ( g_hwscroll.regSOF <= 0x1f40 ) ) {
-//            printf ( "\t! regSOF <= 0x1f40\n" );
-//        };
-        if ( ! ( g_hwscroll.regSSA <= 0x1e00 ) ) {
+        //        if ( ! ( g_hwscroll.regSOF <= 0x1f40 ) ) {
+        //            printf ( "\t! regSOF <= 0x1f40\n" );
+        //        };
+        if ( !( g_hwscroll.regSSA <= 0x1e00 ) ) {
             printf ( "\t! regSSA <= 0x1e00\n" );
         };
-        if ( ! ( g_hwscroll.regSEA >= 0x0140 ) ) {
+        if ( !( g_hwscroll.regSEA >= 0x0140 ) ) {
             printf ( "\t! regSEA >= 0x0140\n" );
         };
-//        if ( ! ( g_hwscroll.regSEA <= 0x1f40 ) ) {
-//            printf ( "\t! regSEA <= 0x1f40\n" );
-//        };        
-        if ( ! ( g_hwscroll.regSEA > g_hwscroll.regSSA ) ) {
+        //        if ( ! ( g_hwscroll.regSEA <= 0x1f40 ) ) {
+        //            printf ( "\t! regSEA <= 0x1f40\n" );
+        //        };        
+        if ( !( g_hwscroll.regSEA > g_hwscroll.regSSA ) ) {
             printf ( "\t! regSEA > regSSA\n" );
         };
-        if ( ! ( g_hwscroll.regSW > g_hwscroll.regSOF ) ) {
+        if ( !( g_hwscroll.regSW > g_hwscroll.regSOF ) ) {
             printf ( "\t! regSW > regSOF\n" );
         };
-        if ( ! ( g_hwscroll.regSW ==  ( g_hwscroll.regSEA - g_hwscroll.regSSA ) ) ) {
+        if ( !( g_hwscroll.regSW == ( g_hwscroll.regSEA - g_hwscroll.regSSA ) ) ) {
             printf ( "\t! regSW == ( regSEA - regSSA )\n" );
         };
 #endif
@@ -182,4 +174,20 @@ void hwscroll_set_reg ( int addr, Z80EX_BYTE value ) {
 
 }
 
-    
+
+inline unsigned hwscroll_shift_addr ( unsigned addr ) {
+
+    if ( g_hwscroll.enabled ) {
+
+        /* nachazime se v oblasti, ktera ma byt scrollovana? */
+        if ( ( addr >= g_hwscroll.regSSA ) && ( addr < g_hwscroll.regSEA ) ) {
+
+            if ( addr >= ( g_hwscroll.regSEA - g_hwscroll.regSOF ) ) {
+                return ( addr + g_hwscroll.regSOF - g_hwscroll.regSW );
+            };
+            return ( addr + g_hwscroll.regSOF );
+        };
+    };
+
+    return addr;
+}

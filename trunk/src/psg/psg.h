@@ -163,8 +163,8 @@ extern "C" {
     extern void psg_init ( void );
     extern void psg_real_write_byte ( Z80EX_BYTE value );
     extern void psg_write_byte ( Z80EX_BYTE value );
-
-
+    extern void psg_step ( void );
+    
 #ifdef __cplusplus
 }
 #endif

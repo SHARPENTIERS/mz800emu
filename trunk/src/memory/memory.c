@@ -44,7 +44,7 @@
 #include "ui/ui_main.h"
 #endif
 
-//#define DBGLEVEL (DBGNON /* | DBGERR | DBGWAR | DBGINF*/)
+#define DBGLEVEL (DBGNON /* | DBGERR | DBGWAR | DBGINF*/)
 //#define DBGLEVEL (DBGNON | DBGERR | DBGWAR | DBGINF )
 #include "debug.h"
 
@@ -76,15 +76,16 @@ Z80EX_BYTE *g_memoryVRAM_IV = &g_memory.EXVRAM [ MEMORY_SIZE_VRAM_BANK ];
 #define MEMORY_RAM_READ_BYTE                g_memory.RAM [ addr ]
 #define MEMORY_RAM_WRITE_BYTE               g_memory.RAM [ addr ] = value;
 
-#define MEMORY_VRAM_MZ700_READ_BYTE_SYNC    vramctrl_mz700_memop_read_sync ( addr & ~0xe000 )
-#define MEMORY_VRAM_MZ700_WRITE_BYTE_SYNC   vramctrl_mz700_memop_write_sync ( addr & ~0xe000, value )
+#define MEMORY_VRAM_MZ700_READ_BYTE_SYNC    vramctrl_mz700_memop_read_byte_sync ( addr & ~0xe000 )
+#define MEMORY_VRAM_MZ700_WRITE_BYTE_SYNC   vramctrl_mz700_memop_write_byte_sync ( addr & ~0xe000, value )
 
 #define MEMORY_VRAM_MZ700_READ_BYTE         vramctrl_mz700_memop_read_byte ( addr & ~0xe000 )
 #define MEMORY_VRAM_MZ700_WRITE_BYTE        vramctrl_mz700_memop_write_byte ( addr & ~0xe000, value )
 
-#define MEMORY_VRAM_MZ800_READ_BYTE         vramctrl_mz800_memop_read_byte ( addr & 0x3fff )
+#define MEMORY_VRAM_MZ800_READ_BYTE_SYNC         vramctrl_mz800_memop_read_byte_sync ( addr & 0x3fff )
 #define MEMORY_VRAM_MZ800_WRITE_BYTE        vramctrl_mz800_memop_write_byte ( addr & 0x3fff, value )
 
+#define MEMORY_VRAM_MZ800_READ_BYTE         vramctrl_mz800_memop_read_byte ( addr & 0x3fff )
 
 
 /*******************************************************************************
@@ -327,6 +328,34 @@ void memory_init ( void ) {
 #endif
 }
 
+
+#if 0
+
+#define MEMORY_DUMP_VRAM_FILE "vram.dat"
+
+
+void memory_write_vram ( void ) {
+    FILE *fp;
+
+    if ( !( fp = ui_utils_fopen ( MEMORY_DUMP_VRAM_FILE, "wb" ) ) ) {
+        ui_show_error ( "Can't open file '%s': %s\n", MEMORY_DUMP_VRAM_FILE, strerror ( errno ) );
+        return;
+    };
+
+    if ( sizeof (g_memory.VRAM ) != ui_utils_fwrite ( &g_memory.VRAM, 1, sizeof (g_memory.VRAM ), fp ) ) {
+        ui_show_error ( "Can't write to file '%s': %s\n", MEMORY_DUMP_VRAM_FILE, strerror ( errno ) );
+    };
+
+    if ( sizeof (g_memory.EXVRAM ) != ui_utils_fwrite ( &g_memory.EXVRAM, 1, sizeof (g_memory.VRAM ), fp ) ) {
+        ui_show_error ( "Can't write to file '%s': %s\n", MEMORY_DUMP_VRAM_FILE, strerror ( errno ) );
+    };
+
+    fclose ( fp );
+}
+
+#endif
+
+
 #ifdef MEMORY_MAKE_STATISTICS
 
 
@@ -357,6 +386,8 @@ void memory_write_memory_statistics ( void ) {
     fprintf ( fp, "\r\n\r\n" );
 
     fclose ( fp );
+
+    //memory_write_vram ( );
 }
 #endif
 
@@ -376,117 +407,30 @@ void memory_reset ( void ) {
  * 
  ******************************************************************************/
 
-
 /**
- * Cteni z 0x0000 - 0x0fff
+ * Makra pro cteni z prislusne casti pameti a nasledny return - v zavislosti na mapovani.
+ * 
+ * Pokud je precteno, tak makro provede return pri kterem vrati prectenou hodnotu, 
+ * jinak se pokracuje a nasleduje dalsi radek z volajici funkce.
+ * 
+ * a = addr >> 12
  * 
  * @param addr
- * @return 
+ * @return
  */
-static inline Z80EX_BYTE memory_internal_read_0000_0fff ( Z80EX_WORD addr ) {
-    if ( MEMORY_MAP_TEST_ROM_0000 ) {
-        return MEMORY_ROM_READ_BYTE;
-    };
-    return MEMORY_RAM_READ_BYTE;
-}
-
-
-/**
- * Cteni z 0x1000 - 0x1fff
- * 
- * @param addr
- * @return 
- */
-static inline Z80EX_BYTE memory_internal_read_1000_1fff ( Z80EX_WORD addr ) {
-    if ( MEMORY_MAP_TEST_ROM_1000 ) {
-        return MEMORY_ROM_READ_BYTE;
-    };
-    return MEMORY_RAM_READ_BYTE;
-}
-
-
-/**
- * Cteni z 0x8000 - 0x9fff
- * 
- * @param addr
- * @return 
- */
-static inline Z80EX_BYTE memory_internal_read_8000_9fff ( Z80EX_WORD addr ) {
-    if ( MEMORY_MAP_TEST_VRAM_8000 ) {
-        return MEMORY_VRAM_MZ800_READ_BYTE;
-    };
-    return MEMORY_RAM_READ_BYTE;
-}
-
-
-/**
- * Cteni z 0xa000 - 0xbfff
- * 
- * @param addr
- * @return 
- */
-static inline Z80EX_BYTE memory_internal_read_a000_bfff ( Z80EX_WORD addr ) {
-    if ( MEMORY_MAP_TEST_VRAM_A000 ) {
-        return MEMORY_VRAM_MZ800_READ_BYTE;
-    };
-    return MEMORY_RAM_READ_BYTE;
-}
-
-
-/**
- * Synchronizovane cteni z 0xc000 - 0xcfff
- * 
- * @param addr
- * @return 
- */
-static inline Z80EX_BYTE memory_internal_read_c000_cfff_sync ( Z80EX_WORD addr ) {
-    if ( MEMORY_MAP_TEST_CGRAM ) {
-        return MEMORY_VRAM_MZ700_READ_BYTE_SYNC;
-    };
-    return MEMORY_RAM_READ_BYTE;
-}
-
-
-/**
- * Cteni z 0xc000 - 0xcfff - bez synchronizace
- * 
- * @param addr
- * @return 
- */
-static inline Z80EX_BYTE memory_internal_read_c000_cfff ( Z80EX_WORD addr ) {
-    if ( MEMORY_MAP_TEST_CGRAM ) {
-        return MEMORY_VRAM_MZ700_READ_BYTE;
-    };
-    return MEMORY_RAM_READ_BYTE;
-}
-
-
-/**
- * Synchronizovane cteni z 0xd000 - 0xdfff
- * 
- * @param addr
- * @return 
- */
-static inline Z80EX_BYTE memory_internal_read_d000_dfff_sync ( Z80EX_WORD addr ) {
-    if ( MEMORY_MAP_TEST_VRAM_D000 ) {
-        return MEMORY_VRAM_MZ700_READ_BYTE_SYNC;
-    };
-    return MEMORY_RAM_READ_BYTE;
-}
-
-
-/**
- * Cteni z 0xd000 - 0xdfff - bez synchronizace
- * 
- * @param addr
- * @return 
- */
-static inline Z80EX_BYTE memory_internal_read_d000_dfff ( Z80EX_WORD addr ) {
-    if ( MEMORY_MAP_TEST_VRAM_D000 ) {
-        return MEMORY_VRAM_MZ700_READ_BYTE;
-    };
-    return MEMORY_RAM_READ_BYTE;
-}
+#define memory_internal_read_0000_0fff(a) { if ( 0x00 == a ) { if ( MEMORY_MAP_TEST_ROM_0000 ) return MEMORY_ROM_READ_BYTE; return MEMORY_RAM_READ_BYTE; } }
+#define memory_internal_read_1000_1fff(a) { if ( 0x01 == a ) { if ( MEMORY_MAP_TEST_ROM_1000 ) return MEMORY_ROM_READ_BYTE; return MEMORY_RAM_READ_BYTE; } }
+#define memory_internal_read_8000_9fff_sync(a) { if ( ( 0x08 == a) || ( 0x09 == a) ) { if ( MEMORY_MAP_TEST_VRAM_8000 ) return MEMORY_VRAM_MZ800_READ_BYTE_SYNC; return MEMORY_RAM_READ_BYTE; } }
+#define memory_internal_read_8000_9fff(a) { if ( ( 0x08 == a) || ( 0x09 == a) ) { if ( MEMORY_MAP_TEST_VRAM_8000 ) return MEMORY_VRAM_MZ800_READ_BYTE; return MEMORY_RAM_READ_BYTE; } }
+#define memory_internal_read_a000_bfff_sync(a) { if ( ( 0x0a == a) || ( 0x0b == a) ) { if ( MEMORY_MAP_TEST_VRAM_A000 ) return MEMORY_VRAM_MZ800_READ_BYTE_SYNC; return MEMORY_RAM_READ_BYTE; } }
+#define memory_internal_read_a000_bfff(a) { if ( ( 0x0a == a) || ( 0x0b == a) ) { if ( MEMORY_MAP_TEST_VRAM_A000 ) return MEMORY_VRAM_MZ800_READ_BYTE; return MEMORY_RAM_READ_BYTE; } }
+#define memory_internal_read_c000_cfff_sync(a) { if ( 0x0c == a ) { if ( MEMORY_MAP_TEST_CGRAM ) return MEMORY_VRAM_MZ700_READ_BYTE_SYNC; return MEMORY_RAM_READ_BYTE; } }
+#define memory_internal_read_c000_cfff(a) { if ( 0x0c == a ) { if ( MEMORY_MAP_TEST_CGRAM ) return MEMORY_VRAM_MZ700_READ_BYTE; return MEMORY_RAM_READ_BYTE; } }
+#define memory_internal_read_d000_dfff_sync(a) { if ( 0x0d == a ) { if ( MEMORY_MAP_TEST_VRAM_D000 ) return MEMORY_VRAM_MZ700_READ_BYTE_SYNC; return MEMORY_RAM_READ_BYTE; } }
+#define memory_internal_read_d000_dfff(a) { if ( 0x0d == a ) { if ( MEMORY_MAP_TEST_VRAM_D000 ) return MEMORY_VRAM_MZ700_READ_BYTE; return MEMORY_RAM_READ_BYTE; } }
+#define memory_internal_read_e000_efff_sync(a) { if ( 0x0e == a ) { if ( MEMORY_MAP_TEST_ROM_E000 ) return memory_internal_read_rom_e000_efff_sync ( addr ); return MEMORY_RAM_READ_BYTE; } }
+#define memory_internal_read_e000_efff(a) { if ( 0x0e == a ) { if ( MEMORY_MAP_TEST_ROM_E000 ) return memory_internal_read_rom_e000_efff ( addr ); return MEMORY_RAM_READ_BYTE; } }
+#define memory_internal_read_f000_ffff(a) { if ( 0x0f == a ) { if ( MEMORY_MAP_TEST_ROM_E000 ) return MEMORY_ROM_READ_BYTE; return MEMORY_RAM_READ_BYTE; } }
 
 
 /**
@@ -495,48 +439,36 @@ static inline Z80EX_BYTE memory_internal_read_d000_dfff ( Z80EX_WORD addr ) {
  * @param addr
  * @return 
  */
-static inline Z80EX_BYTE memory_internal_read_e000_efff_sync ( Z80EX_WORD addr ) {
+static inline Z80EX_BYTE memory_internal_read_rom_e000_efff_sync ( Z80EX_WORD addr ) {
 
-    if ( MEMORY_MAP_TEST_ROM_E000 ) {
+    unsigned addr_low = addr & 0x0fff;
 
-        unsigned addr_low = addr & 0x0fff;
+    /* cteni z horni rom */
+    if ( addr_low > 0x0f ) return MEMORY_ROM_READ_BYTE;
 
-        if ( addr_low > 0x0f ) {
+    /* cteni z E009 - E00F */
+    if ( addr_low > 0x08 ) return g_mz800.regDBUS_latch;
 
-            /* cteni z horni rom */
-            return MEMORY_ROM_READ_BYTE;
-
-        } else if ( addr_low > 0x08 ) {
-
-            /* cteni z E009 - E00F */
-            return g_mz800.regDBUS_latch;
-
-        } else if ( 0x08 == addr_low ) {
-
-            /* cteni z E008 ( regDMD ) */
-            mz800_sync_insideop_mreq_e00x ( );
-            return gdg_read_dmd_status ( );
-
-        } else if ( addr_low & 0x04 ) {
-
-            /* cteni z CTC8253 */
-            if ( 0x07 == addr_low ) {
-                /* Kontrol registr cist nelze */
-                return g_mz800.regDBUS_latch;
-            } else {
-                mz800_sync_insideop_mreq_e00x ( );
-                return ctc8253_read_byte ( addr_low & 0x03 );
-            };
-
-        } else {
-
-            /* cteni z PIO8255 */
-            mz800_sync_insideop_mreq_e00x ( );
-            return pio8255_read ( addr & 0x03 );
-        };
-
+    /* cteni z E008 ( regDMD ) */
+    if ( 0x08 == addr_low ) {
+        mz800_sync_insideop_mreq_e00x ( );
+        return gdg_read_dmd_status ( );
     };
-    return MEMORY_RAM_READ_BYTE;
+
+    /* cteni z CTC8253 */
+    if ( addr_low & 0x04 ) {
+
+        /* Kontrol registr cist nelze */
+        if ( 0x07 == addr_low ) {
+            return g_mz800.regDBUS_latch;
+        };
+        mz800_sync_insideop_mreq_e00x ( );
+        return ctc8253_read_byte ( addr_low & 0x03 );
+    };
+
+    /* cteni z PIO8255 */
+    mz800_sync_insideop_mreq_e00x ( );
+    return pio8255_read ( addr & 0x03 );
 }
 
 
@@ -546,59 +478,51 @@ static inline Z80EX_BYTE memory_internal_read_e000_efff_sync ( Z80EX_WORD addr )
  * @param addr
  * @return 
  */
-static inline Z80EX_BYTE memory_internal_read_e000_efff ( Z80EX_WORD addr ) {
+static inline Z80EX_BYTE memory_internal_read_rom_e000_efff ( Z80EX_WORD addr ) {
+    unsigned addr_low = addr & 0x0fff;
 
-    if ( MEMORY_MAP_TEST_ROM_E000 ) {
+    /* cteni z horni rom */
+    if ( addr_low > 0x0f ) return MEMORY_ROM_READ_BYTE;
 
-        unsigned addr_low = addr & 0x0fff;
+    /* cteni z E009 - E00F */
+    if ( addr_low > 0x08 ) return g_mz800.regDBUS_latch;
 
-        if ( addr_low > 0x0f ) {
+    /* cteni z E008 ( regDMD ) */
+    if ( 0x08 == addr_low ) return gdg_read_dmd_status ( );
 
-            /* cteni z horni rom */
-            return MEMORY_ROM_READ_BYTE;
 
-        } else if ( addr_low > 0x08 ) {
+    /* cteni z CTC8253 */
+    if ( addr_low & 0x04 ) {
 
-            /* cteni z E009 - E00F */
+        /* Kontrol registr cist nelze */
+        if ( 0x07 == addr_low ) {
             return g_mz800.regDBUS_latch;
-
-        } else if ( 0x08 == addr_low ) {
-
-            /* cteni z E008 ( regDMD ) */
-            return gdg_read_dmd_status ( );
-
-        } else if ( addr_low & 0x04 ) {
-
-            /* cteni z CTC8253 */
-            if ( 0x07 == addr_low ) {
-                /* Kontrol registr cist nelze */
-                return g_mz800.regDBUS_latch;
-            } else {
-                // TODO: prozatim vracime 0x00
-                return 0x00;
-            };
-
-        } else {
-
-            /* cteni z PIO8255 */
-            return pio8255_read ( addr & 0x03 );
         };
-
+        // TODO: prozatim vracime 0x00
+        return 0x00;
     };
-    return MEMORY_RAM_READ_BYTE;
+
+    /* cteni z PIO8255 */
+    return pio8255_read ( addr & 0x03 );
 }
 
 
-/**
- * Cteni z 0xf000 - 0xffff
- * 
- * @param addr
- * @return 
- */
-static inline Z80EX_BYTE memory_internal_read_f000_ffff ( Z80EX_WORD addr ) {
-    if ( MEMORY_MAP_TEST_ROM_E000 ) {
-        return MEMORY_ROM_READ_BYTE;
-    };
+Z80EX_BYTE memory_internal_read_sync ( Z80EX_WORD addr ) {
+
+    unsigned addr_high = addr >> 12;
+
+#ifdef MEMORY_MAKE_STATISTICS
+    g_memory_statistics.read[addr_high]++;
+#endif
+
+    memory_internal_read_0000_0fff ( addr_high );
+    memory_internal_read_1000_1fff ( addr_high );
+    memory_internal_read_8000_9fff_sync ( addr_high );
+    memory_internal_read_a000_bfff_sync ( addr_high );
+    memory_internal_read_c000_cfff_sync ( addr_high );
+    memory_internal_read_d000_dfff_sync ( addr_high );
+    memory_internal_read_e000_efff_sync ( addr_high );
+    memory_internal_read_f000_ffff ( addr_high );
     return MEMORY_RAM_READ_BYTE;
 }
 
@@ -613,56 +537,7 @@ static inline Z80EX_BYTE memory_internal_read_f000_ffff ( Z80EX_WORD addr ) {
  * @return 
  */
 Z80EX_BYTE memory_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, void *user_data ) {
-
-    Z80EX_BYTE retval;
-
-    unsigned addr_high = addr >> 12;
-
-#ifdef MEMORY_MAKE_STATISTICS
-    g_memory_statistics.read[addr_high]++;
-#endif
-
-    switch ( addr_high ) {
-
-        case 0x00:
-            retval = memory_internal_read_0000_0fff ( addr );
-            break;
-
-        case 0x01:
-            retval = memory_internal_read_1000_1fff ( addr );
-            break;
-
-        case 0x08:
-        case 0x09:
-            retval = memory_internal_read_8000_9fff ( addr );
-            break;
-
-        case 0x0a:
-        case 0x0b:
-            retval = memory_internal_read_a000_bfff ( addr );
-            break;
-
-        case 0x0c:
-            retval = memory_internal_read_c000_cfff_sync ( addr );
-            break;
-
-        case 0x0d:
-            retval = memory_internal_read_d000_dfff_sync ( addr );
-            break;
-
-        case 0x0e:
-            retval = memory_internal_read_e000_efff_sync ( addr );
-            break;
-
-        case 0x0f:
-            retval = memory_internal_read_f000_ffff ( addr );
-            break;
-
-        default:
-            retval = MEMORY_RAM_READ_BYTE;
-            break;
-    };
-
+    Z80EX_BYTE retval = memory_internal_read_sync ( addr );
     g_mz800.regDBUS_latch = retval;
     return retval;
 }
@@ -675,44 +550,15 @@ Z80EX_BYTE memory_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, v
  * @return 
  */
 Z80EX_BYTE memory_read_byte ( Z80EX_WORD addr ) {
-
-    switch ( addr >> 12 ) {
-
-        case 0x00:
-            return memory_internal_read_0000_0fff ( addr );
-            break;
-
-        case 0x01:
-            return memory_internal_read_1000_1fff ( addr );
-            break;
-
-        case 0x08:
-        case 0x09:
-            return memory_internal_read_8000_9fff ( addr );
-            break;
-
-        case 0x0a:
-        case 0x0b:
-            return memory_internal_read_a000_bfff ( addr );
-            break;
-
-        case 0x0c:
-            return memory_internal_read_c000_cfff ( addr );
-            break;
-
-        case 0x0d:
-            return memory_internal_read_d000_dfff ( addr );
-            break;
-
-        case 0x0e:
-            return memory_internal_read_e000_efff ( addr );
-            break;
-
-        case 0x0f:
-            return memory_internal_read_f000_ffff ( addr );
-            break;
-    };
-
+    unsigned addr_high = addr >> 12;
+    memory_internal_read_0000_0fff ( addr_high );
+    memory_internal_read_1000_1fff ( addr_high );
+    memory_internal_read_8000_9fff ( addr_high );
+    memory_internal_read_a000_bfff ( addr_high );
+    memory_internal_read_c000_cfff ( addr_high );
+    memory_internal_read_d000_dfff ( addr_high );
+    memory_internal_read_e000_efff ( addr_high );
+    memory_internal_read_f000_ffff ( addr_high );
     return MEMORY_RAM_READ_BYTE;
 }
 
@@ -727,6 +573,9 @@ Z80EX_BYTE memory_read_byte ( Z80EX_WORD addr ) {
 
 /**
  * Makra pro zapis do prislusne casti pameti a nasledny return - v zavislosti na mapovani.
+ * 
+ * Pokud je zapsano, tak makro provede return,
+ * jinak se pokracuje a nasleduje dalsi radek z volajici funkce.
  * 
  * a = addr >> 12
  * 

@@ -163,11 +163,14 @@ extern "C" {
     extern void mz800_sync_insideop_mreq_e00x ( void );
     extern void mz800_sync_insideop_mreq_mz700_vramctrl ( void );
     extern void mz800_sync_insideop_iorq_psg_write ( void );
-
+    extern void mz800_sync_insideop_mreq_mz800_vramctrl ( void );
+    
     extern void mz800_flush_full_screen ( void );
 
     extern void mz800_switch_emulation_speed ( unsigned emulation_speed );
     extern void mz800_pause_emulation ( unsigned value );
+
+    extern int mz800_get_instruction_start_ticks ( void );
 
 #ifdef __cplusplus
 }

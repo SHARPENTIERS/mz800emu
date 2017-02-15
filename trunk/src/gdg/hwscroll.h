@@ -47,26 +47,7 @@ extern "C" {
     extern void hwscroll_init ( void );
     extern void hwscroll_reset ( void );
     extern void hwscroll_set_reg ( int addr, Z80EX_BYTE value );
-
-
-    static inline unsigned int hwscroll_shift_addr ( unsigned int addr ) {
-
-        if ( g_hwscroll.enabled ) {
-
-            /* nachazime se v oblasti, ktera ma byt scrollovana? */
-            if ( ( addr >= g_hwscroll.regSSA ) && ( addr < g_hwscroll.regSEA ) ) {
-
-                if ( addr >= ( g_hwscroll.regSEA - g_hwscroll.regSOF ) ) {
-                    return ( addr + g_hwscroll.regSOF - g_hwscroll.regSW );
-                };
-                return ( addr + g_hwscroll.regSOF );
-            };
-        };
-
-        return addr;
-    }
-
-
+    extern unsigned hwscroll_shift_addr ( unsigned addr );
 
 #ifdef __cplusplus
 }

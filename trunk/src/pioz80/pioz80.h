@@ -227,11 +227,7 @@ extern "C" {
 
     extern void pioz80_icena_event ( void );
 
-#define pioz80_on_screen_done_event() { \
-    if ( g_pioz80.icena_event.ticks != -1 ) {\
-        g_pioz80.icena_event.ticks -= VIDEO_SCREEN_TICKS;\
-    };\
-}
+    extern void pioz80_on_screen_done_event ( void );
 
 
 #ifdef __cplusplus

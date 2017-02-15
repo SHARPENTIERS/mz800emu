@@ -28,7 +28,6 @@
 
 #include "audio.h"
 #include "psg/psg.h"
-#include "psg/psg_step.h"
 #include "gdg/gdg.h"
 
 st_AUDIO g_audio;
