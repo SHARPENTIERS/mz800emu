@@ -658,8 +658,28 @@ void mz800_sync_insideop_mreq_mz700_vramctrl ( void ) {
 }
 
 
+inline void mz800_sync_insideop_mreq_mz800_vramctrl ( void ) {
+    int ticks_to_sync = 16 - ( gdg_get_total_ticks ( )  % 16 );
+
+    if ( ticks_to_sync <= 7 ) {
+        ticks_to_sync += 8;
+    };
+
+    ticks_to_sync += 16;
+    g_mz800.instruction_insideop_sync_ticks -= ticks_to_sync;
+}
+
+
 void mz800_sync_insideop_iorq_psg_write ( void ) {
     mz800_sync_insideop ( INSIDEOP_IORQ_PSG_WRITE );
+}
+
+
+/*
+ * muze legalne vracet i zaporne cislo!
+ */
+inline int mz800_get_instruction_start_ticks ( void ) {
+    return g_gdg.elapsed_screen_ticks - g_mz800.instruction_insideop_sync_ticks;
 }
 
 
@@ -779,6 +799,7 @@ void mz800_interrupt_manager ( void ) {
  * @param user_data
  */
 void mz800_ei_cb ( Z80EX_CONTEXT *cpu, void *user_data ) {
+    //printf("mz800_ei_cb()\n");
     if ( g_mz800.interrupt ) {
         SET_MZ800_EVENT ( EVENT_BREAK_MZ800_INTERRUPT, 0 );
     };

@@ -58,14 +58,15 @@ extern "C" {
 
     extern void vramctrl_reset ( void );
 
-    extern void vramctrl_set_reg ( int addr, Z80EX_BYTE value );
+    extern void vramctrl_mz800_set_wf_rf_reg ( int addr, Z80EX_BYTE value );
 
-    extern Z80EX_BYTE vramctrl_mz700_memop_read_sync ( Z80EX_WORD addr );
-    extern void vramctrl_mz700_memop_write_sync ( Z80EX_WORD addr, Z80EX_BYTE value );
+    extern Z80EX_BYTE vramctrl_mz700_memop_read_byte_sync ( Z80EX_WORD addr );
+    extern void vramctrl_mz700_memop_write_byte_sync ( Z80EX_WORD addr, Z80EX_BYTE value );
 
     extern Z80EX_BYTE vramctrl_mz700_memop_read_byte ( Z80EX_WORD addr );
     extern void vramctrl_mz700_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value );
 
+    extern Z80EX_BYTE vramctrl_mz800_memop_read_byte_sync ( Z80EX_WORD addr );
     extern Z80EX_BYTE vramctrl_mz800_memop_read_byte ( Z80EX_WORD addr );
     extern void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value );
 

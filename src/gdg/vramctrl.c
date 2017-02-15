@@ -154,7 +154,7 @@ void vramctrl_reset ( void ) {
  * @param addr
  * @return 
  */
-Z80EX_BYTE vramctrl_mz700_memop_read_sync ( Z80EX_WORD addr ) {
+inline Z80EX_BYTE vramctrl_mz700_memop_read_byte_sync ( Z80EX_WORD addr ) {
     mz800_sync_insideop_mreq ( );
     if ( SIGNAL_GDG_HBLNK ) {
         mz800_sync_insideop_mreq_mz700_vramctrl ( );
@@ -169,7 +169,7 @@ Z80EX_BYTE vramctrl_mz700_memop_read_sync ( Z80EX_WORD addr ) {
  * @param addr
  * @return 
  */
-Z80EX_BYTE vramctrl_mz700_memop_read_byte ( Z80EX_WORD addr ) {
+inline Z80EX_BYTE vramctrl_mz700_memop_read_byte ( Z80EX_WORD addr ) {
     return g_memory.VRAM [ addr ];
 }
 
@@ -180,7 +180,7 @@ Z80EX_BYTE vramctrl_mz700_memop_read_byte ( Z80EX_WORD addr ) {
  * @param addr
  * @param value
  */
-static inline void vramctrl_mz700_memop_write_internal ( Z80EX_WORD addr, Z80EX_BYTE value ) {
+static inline void vramctrl_mz700_memop_write_byte_internal ( Z80EX_WORD addr, Z80EX_BYTE value ) {
     /* TODO: meli by jsme nastavovat jen pokud se zapisuje do CG-RAM, nebo do VRAM, ktera je opravdu videt */
     g_gdg.screen_changes = SCRSTS_THIS_IS_CHANGED;
     g_memory.VRAM [ addr ] = value;
@@ -194,14 +194,14 @@ static inline void vramctrl_mz700_memop_write_internal ( Z80EX_WORD addr, Z80EX_
  * @param addr
  * @param value
  */
-void vramctrl_mz700_memop_write_sync ( Z80EX_WORD addr, Z80EX_BYTE value ) {
+inline void vramctrl_mz700_memop_write_byte_sync ( Z80EX_WORD addr, Z80EX_BYTE value ) {
     mz800_sync_insideop_mreq ( );
     if ( SIGNAL_GDG_HBLNK ) {
         if ( g_vramctrl.mz700_wr_latch_is_used++ != 0 ) {
             mz800_sync_insideop_mreq_mz700_vramctrl ( );
         };
     };
-    vramctrl_mz700_memop_write_internal ( addr, value );
+    vramctrl_mz700_memop_write_byte_internal ( addr, value );
 }
 
 
@@ -211,8 +211,8 @@ void vramctrl_mz700_memop_write_sync ( Z80EX_WORD addr, Z80EX_BYTE value ) {
  * @param addr
  * @param value
  */
-void vramctrl_mz700_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
-    vramctrl_mz700_memop_write_internal ( addr, value );
+inline void vramctrl_mz700_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
+    vramctrl_mz700_memop_write_byte_internal ( addr, value );
 }
 
 
@@ -229,7 +229,7 @@ void vramctrl_mz700_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
  * @param addr
  * @param value
  */
-void vramctrl_set_reg ( int addr, Z80EX_BYTE value ) {
+inline void vramctrl_mz800_set_wf_rf_reg ( int addr, Z80EX_BYTE value ) {
 
     switch ( addr ) {
 
@@ -269,12 +269,12 @@ void vramctrl_set_reg ( int addr, Z80EX_BYTE value ) {
 
 
 /**
- * Cteni z VRAM v rezimu MZ-800
+ * Proste cteni z VRAM v rezimu MZ-800
  * 
  * @param addr
  * @return 
  */
-Z80EX_BYTE vramctrl_mz800_memop_read_byte ( Z80EX_WORD addr ) {
+static inline Z80EX_BYTE vramctrl_mz800_memop_read_byte_internal ( Z80EX_WORD addr ) {
 
     Z80EX_BYTE search = 0xff;
     Z80EX_BYTE notsearch = 0x00;
@@ -534,6 +534,31 @@ Z80EX_BYTE vramctrl_mz800_memop_read_byte ( Z80EX_WORD addr ) {
 
 
 /**
+ * Cteni z VRAM v rezimu MZ-800 - s ohledem na synchronizaci
+ * 
+ * @param addr
+ * @return 
+ */
+inline Z80EX_BYTE vramctrl_mz800_memop_read_byte_sync ( Z80EX_WORD addr ) {
+    mz800_sync_insideop_mreq_mz800_vramctrl ( );
+    Z80EX_BYTE byte = vramctrl_mz800_memop_read_byte_internal ( addr );
+    return byte;
+}
+
+
+/**
+ * Cteni z VRAM v rezimu MZ-800 - bez synchronizace
+ * 
+ * @param addr
+ * @return 
+ */
+inline Z80EX_BYTE vramctrl_mz800_memop_read_byte ( Z80EX_WORD addr ) {
+    Z80EX_BYTE byte = vramctrl_mz800_memop_read_byte_internal ( addr );
+    return byte;
+}
+
+
+/**
  * Zapis do VRAM v rezimu MZ-800
  * 
  * TODO: ten write je 1:1 prepis z VHDL ... asi by jej slo zrychlit
@@ -541,7 +566,7 @@ Z80EX_BYTE vramctrl_mz800_memop_read_byte ( Z80EX_WORD addr ) {
  * @param addr
  * @param value
  */
-void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
+inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
 
     /* TODO: meli by jsme volat asi jen pokud se pise do viditelne VRAM */
     framebuffer_MZ800_screen_changed ( );

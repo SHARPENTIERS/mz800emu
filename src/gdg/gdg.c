@@ -115,6 +115,30 @@ const struct st_GDGEVENT g_gdgevent [] = {
 };
 
 
+inline unsigned gdg_compute_total_ticks ( unsigned now_ticks ) {
+    return now_ticks + ( g_gdg.elapsed_total_screens * VIDEO_SCREEN_TICKS );
+}
+
+
+inline unsigned gdg_get_total_ticks ( void ) {
+    return gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks );
+}
+
+
+inline unsigned gdg_get_insigeop_ticks ( void ) {
+    return g_gdg.elapsed_screen_ticks + g_mz800.instruction_insideop_sync_ticks;
+}
+
+
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+
+
+inline unsigned gdg_proximate_clk1m1_event ( unsigned now_ticks ) {
+    return now_ticks + ( 0x10 - ( gdg_compute_total_ticks ( now_ticks ) & 0x0f ) );
+}
+#endif
+
+
 void gdg_init ( void ) {
 
     g_gdg.elapsed_screen_ticks = 0;
@@ -200,7 +224,7 @@ void gdg_write_byte ( unsigned addr, Z80EX_BYTE value ) {
 
     /* vramm controller: 0xcc, 0xcd */
     if ( 0xcc == ( addr & 0xfe ) ) {
-        vramctrl_set_reg ( addr & 0x01, value );
+        vramctrl_mz800_set_wf_rf_reg ( addr & 0x01, value );
         return;
     };
 
@@ -256,6 +280,7 @@ void gdg_write_byte ( unsigned addr, Z80EX_BYTE value ) {
                 value = value & 0x0f;
 
                 if ( g_gdg.regBOR != value ) {
+                    //printf ( "BORDER: 0x%02x, screen: %d, ticks: %d\n", value, g_gdg.elapsed_total_screens, mz800_get_instruction_start_ticks ( ) );
                     framebuffer_border_changed ( );
                     g_gdg.regBOR = value;
                 };

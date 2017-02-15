@@ -72,7 +72,7 @@ void pio8255_init ( void ) {
 
 void pio8255_write ( int addr, Z80EX_BYTE value ) {
 
-    //DBGPRINTF ( DBGINF, "addr = 0x%02x, value = 0x%02x, PC = 0x%04x\n", addr, value, g_mz800.instruction_addr );
+    DBGPRINTF ( DBGINF, "addr = 0x%02x, value = 0x%02x, PC = 0x%04x\n", addr, value, g_mz800.instruction_addr );
 
     int bit_setres;
 
@@ -188,7 +188,7 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
 
 Z80EX_BYTE pio8255_read ( int addr ) {
 
-    //DBGPRINTF ( DBGINF, "addr = 0x%02x, PC = 0x%04x\n", addr, g_mz800.instruction_addr );
+    DBGPRINTF ( DBGINF, "addr = 0x%02x, PC = 0x%04x\n", addr, g_mz800.instruction_addr );
 
     switch ( addr ) {
 

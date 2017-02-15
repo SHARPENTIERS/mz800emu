@@ -57,7 +57,6 @@
         </logicalFolder>
         <logicalFolder name="f9" displayName="PSG" projectFiles="true">
           <itemPath>src/psg/psg.h</itemPath>
-          <itemPath>src/psg/psg_step.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f12" displayName="QDISK" projectFiles="true">
           <itemPath>src/qdisk/qdisk.h</itemPath>
@@ -528,8 +527,6 @@
       </item>
       <item path="src/psg/psg.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/psg/psg_step.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/qdisk/qdisk.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/qdisk/qdisk.h" ex="false" tool="3" flavor2="0">
@@ -914,8 +911,6 @@
       </item>
       <item path="src/psg/psg.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/psg/psg_step.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/qdisk/qdisk.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/qdisk/qdisk.h" ex="false" tool="3" flavor2="0">
@@ -1295,8 +1290,6 @@
       </item>
       <item path="src/psg/psg.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/psg/psg_step.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/qdisk/qdisk.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/qdisk/qdisk.h" ex="false" tool="3" flavor2="0">
@@ -1663,8 +1656,6 @@
       <item path="src/psg/psg.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/psg/psg.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/psg/psg_step.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/qdisk/qdisk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2044,8 +2035,6 @@
       <item path="src/psg/psg.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/psg/psg.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/psg/psg_step.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/qdisk/qdisk.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -2433,8 +2422,6 @@
       </item>
       <item path="src/psg/psg.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/psg/psg_step.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/qdisk/qdisk.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/qdisk/qdisk.h" ex="false" tool="3" flavor2="0">
@@ -2818,8 +2805,6 @@
       <item path="src/psg/psg.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/psg/psg.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/psg/psg_step.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/qdisk/qdisk.c" ex="false" tool="0" flavor2="0">
       </item>

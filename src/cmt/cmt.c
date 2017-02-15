@@ -162,6 +162,8 @@ void cmt_exit ( void ) {
 
 void cmt_stop ( void ) {
 
+    //mz800_switch_emulation_speed ( 0 );
+
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
     g_cmt.clk1m1_event.ticks = -1;
     g_cmt.clk1m1_event.event_name = EVENT_CMT;
@@ -347,6 +349,8 @@ int cmt_open ( void ) {
 void cmt_play ( void ) {
     cmt_stop ( );
     g_cmt.state = CMT_PLAY_START;
+
+    //mz800_switch_emulation_speed ( 1 );
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
     /* Nechame uplynout 1 screen a za nim najdeme nejblizsi event */
@@ -641,5 +645,13 @@ void cmt_ctc1m1_event ( unsigned event_ticks ) {
         g_cmt.clk1m1_event.ticks = -1;
     };
 }
+
+
+inline void cmt_on_screen_done_event ( void ) {
+    if ( g_cmt.clk1m1_event.ticks != -1 ) {
+        g_cmt.clk1m1_event.ticks -= VIDEO_SCREEN_TICKS;
+    };
+}
+
 #endif
 

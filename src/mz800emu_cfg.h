@@ -57,10 +57,11 @@ extern "C" {
      * step() zavola jen tehdy, pokud ma nastat konkretni event
      * 
      */
-
-//#define MZ800EMU_CFG_CLK1M1_SLOW
+#if 1
 #define MZ800EMU_CFG_CLK1M1_FAST  
-
+#else
+#define MZ800EMU_CFG_CLK1M1_SLOW
+#endif
 
     /*
      * Variabilni speed sync - umoznuje menit plynule synchronizovanou rychlost 
@@ -76,9 +77,11 @@ extern "C" {
      * Audio buffer v2 - zabira mnohem vice mista v pameti a dynamicky reaguje na zmeny rychlosti
      * 
      */
-
+#if 0
+#define AUDIO_FILLBUFF_v2
+#else
 #define AUDIO_FILLBUFF_v1
-    //#define AUDIO_FILLBUFF_v2
+#endif
 
 
     /*
@@ -127,7 +130,7 @@ extern "C" {
      * 
      */
 //#define MEMORY_MAKE_STATISTICS
-    
+
 #ifdef __cplusplus
 }
 #endif

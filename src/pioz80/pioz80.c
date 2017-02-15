@@ -294,7 +294,7 @@ static inline void pioz80_interrupt_manager ( en_PIOZ80_PORT_EVENT port_event ) 
 
         // ve stavu INT_RECEIVED muze byt vzdy bud jen jeden port, nebo zadny
         if ( port->port_int == PIOZ80_PORT_INT_RECEIVED ) {
-            DBGPRINTF ( DBGINF, "INTERRUPT_RECEIVED\n" );
+            DBGPRINTF ( DBGINF, "INTERRUPT_RECEIVED - screens: %d, ticks: %d\n", g_gdg.elapsed_total_screens, gdg_get_insigeop_ticks ( ) );
             g_pioz80.interrupt = PIOZ80_INTERRUPT_RECEIVED;
             g_pioz80.interrupt_port_id = port_id;
             // tohle je zarucene novy stav a projevi se okamzite - predchozi stav byl "1"
@@ -313,7 +313,8 @@ static inline void pioz80_interrupt_manager ( en_PIOZ80_PORT_EVENT port_event ) 
         if ( g_pioz80.interrupt == PIOZ80_INTERRUPT_NONE ) return;
 
         // prechazime ze stavu INT do klidoveho stavu - vzdy okamzite
-        DBGPRINTF ( DBGINF, "INTERRUPT_NONE\n" );
+        DBGPRINTF ( DBGINF, "INTERRUPT_NONE - screens: %d, ticks: %d\n", g_gdg.elapsed_total_screens, gdg_get_insigeop_ticks ( ) );
+
         g_pioz80.interrupt = PIOZ80_INTERRUPT_NONE;
         mz800_interrupt_manager ( );
 
@@ -324,7 +325,7 @@ static inline void pioz80_interrupt_manager ( en_PIOZ80_PORT_EVENT port_event ) 
     if ( g_pioz80.interrupt == PIOZ80_INTERRUPT_PENDING ) return;
 
     // prechazime z klidoveho stavu do INT
-    DBGPRINTF ( DBGINF, "INTERRUPT_PENDING\n" );
+    DBGPRINTF ( DBGINF, "INTERRUPT_PENDING - screens: %d, ticks: %d\n", g_gdg.elapsed_total_screens, gdg_get_insigeop_ticks ( ) );
     g_pioz80.interrupt = PIOZ80_INTERRUPT_PENDING;
     mz800_interrupt_manager ( );
 }
@@ -364,6 +365,17 @@ static inline void pioz80_port_interrupt_activate ( st_PIOZ80_PORT *port, en_PIO
     };
 
     pioz80_interrupt_manager ( port_event );
+}
+
+
+/**
+ * Byla splnena podminka pro deaktivaci interruptu v dobe, kdy jsme po ACK a cekame na RETI (jsme ve stavu REPENDING)
+ * 
+ * @param port
+ */
+static inline void pioz80_port_interrupt_deactivate ( st_PIOZ80_PORT *port ) {
+    port->port_int &= ~PIOZ80_PORT_INT_PENDING_BIT;
+    DBGPRINTF ( DBGINF, "port: %c, DE-ACTIVATE PORT INTERRUPT SIGNAL\n", pioz80_dbg_get_port_name ( port->port_id ) );
 }
 
 
@@ -484,8 +496,8 @@ static inline void pioz80_port_event ( st_PIOZ80_PORT *port, en_PIOZ80_PORT_EVEN
         return;
     };
 
-    // pokud je INT_PENDING, nebo INT_REPENDING
-    if ( port->port_int & PIOZ80_PORT_INT_PENDING_BIT ) {
+    // pokud je INT_PENDING
+    if ( port->port_int == PIOZ80_PORT_INT_PENDING ) {
         DBGPRINTF ( DBGINF, "port: %c, ignored = PENDING, event = %s%s\n", pioz80_dbg_get_port_name ( port->port_id ), pioz80_dbg_get_port_event_name ( port_event ), dbg_pinvalue );
         return;
     };
@@ -512,6 +524,9 @@ static inline void pioz80_port_event ( st_PIOZ80_PORT *port, en_PIOZ80_PORT_EVEN
 
     if ( port->last_intfnc_result == PIOZ80_INTFNC_RESULT_TRUE ) {
         pioz80_port_interrupt_activate ( port, port_event );
+    } else if ( port->port_int == PIOZ80_PORT_INT_REPENDING ) {
+        // pokud jsme v RE-PENDING (obsluhujeme potvrzeny interrupt), tak je mozne z PENDING prejit do NONE
+        pioz80_port_interrupt_deactivate ( port );
     };
 }
 
@@ -668,7 +683,7 @@ static inline int pioz80_port_set_icena ( st_PIOZ80_PORT *port, en_PIOZ80_ICENA 
     };
 
     tstates += 3;
-    unsigned event_ticks = g_gdg.elapsed_screen_ticks + ( tstates * GDGCLK2CPU_DIVIDER ) - g_mz800.instruction_insideop_sync_ticks;
+    unsigned event_ticks = mz800_get_instruction_start_ticks ( ) + ( tstates * GDGCLK2CPU_DIVIDER );
 
     SET_MZ800_EVENT ( EVENT_PIOZ80, event_ticks );
     g_pioz80.icena_event.ticks = event_ticks;
@@ -941,7 +956,7 @@ void pioz80_interrupt_reti_cb ( Z80EX_CONTEXT *cpu, void *user_data ) {
 
 #if DBGLEVEL
     unsigned dbg_interrupt_ticks = gdg_get_total_ticks ( ) - dbg_interrupt_ack_ticks;
-    DBGPRINTF ( DBGINF, "port: %c, INTERRUPT_RETI, interrupt_ticks = %d, PC = 0x%04x\n", pioz80_dbg_get_port_name ( port->port_id ), dbg_interrupt_ticks, g_mz800.instruction_addr );
+    DBGPRINTF ( DBGINF, "port: %c, INTERRUPT_RETI, screens: %d, ticks: %d, interrupt_ticks = %d, PC = 0x%04x\n", pioz80_dbg_get_port_name ( port->port_id ), g_gdg.elapsed_total_screens, gdg_get_insigeop_ticks ( ), dbg_interrupt_ticks, g_mz800.instruction_addr );
 #endif
 
 
@@ -974,4 +989,11 @@ void pioz80_icena_event ( void ) {
     pioz80_interrupt_manager ( PIOZ80_PORT_EVENT_INTERNAL_CHANGED_ICENA );
     g_pioz80.icena_event.ticks = -1;
     g_pioz80.icena_event_port_id = PIOZ80_PORT_NONE;
+}
+
+
+inline void pioz80_on_screen_done_event ( void ) {
+    if ( g_pioz80.icena_event.ticks != -1 ) {
+        g_pioz80.icena_event.ticks -= VIDEO_SCREEN_TICKS;
+    };
 }
