@@ -53,6 +53,10 @@ struct st_CTC8253 g_ctc8253[3];
 
 
 static inline void ctc8253_ctc0_output_event ( unsigned value, unsigned event_ticks ) {
+    //    DBGPRINTF ( DBGINF, "CTC0 output event! (%d) - ticks: %d\n", value, event_ticks );
+    //    DBGPRINTF ( DBGINF, "CTC0 output event! (%d) - total: %d\n", value, gdg_compute_total_ticks ( event_ticks ) );
+    //DBGPRINTF ( DBGINF, "CTC0 output event! (%d)\n", value );
+
     pioz80_port_id_event ( PIOZ80_PORT_A, PIOZ80_PORT_EVENT_PA4_CTC0, ~value & 0x01 );
 
     /* Bugfix pro hru Ralye (Tatra-sys HD cpm disk 5) - nastavi ctc0 mode: 3, preset: 2 a povoli audio (pc00) - na Sharpu ten zvuk zrejme neprojde filtrem */
@@ -652,11 +656,28 @@ void ctc8253_ctc1m1_event ( unsigned event_ticks ) {
      */
 
     if ( ctc0->state >= CTC_STATE_COUNTDOWN ) {
-        unsigned elapsed_ticks = event_total_ticks - ctc0->clk1m1_last_event_total_ticks;
-        if ( elapsed_ticks != 0 ) {
+        int elapsed_ticks = event_total_ticks - ctc0->clk1m1_last_event_total_ticks;
+        if ( elapsed_ticks > 0 ) {
             elapsed_ticks -= GDGCLK_1M1_DIVIDER;
             ctc0->value -= elapsed_ticks / GDGCLK_1M1_DIVIDER;
-        };
+        } else {
+            /* pokus o bugfix - pokud se kratce pred eventem cetlo z CTC, tak value uz muze mit destinacni hodnotu - deje se u Galao, kde to zpusobuje vypadek zvuku */
+            switch ( ctc0->mode ) {
+                case CTC_MODE0:
+                case CTC_MODE1:
+                    ctc0->value = 1;
+                    break;
+                case CTC_MODE2:
+                    ctc0->value = 2;
+                    break;
+                case CTC_MODE3:
+                    ctc0->value = ctc0->mode3_destination_value + 1;
+                    break;
+                case CTC_MODE4:
+                case CTC_MODE5:
+                    break;
+            };
+        }
     };
 
     ctc8253_clkfall ( CTC_CS0, event_ticks );
