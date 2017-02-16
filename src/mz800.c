@@ -659,7 +659,7 @@ void mz800_sync_insideop_mreq_mz700_vramctrl ( void ) {
 
 
 inline void mz800_sync_insideop_mreq_mz800_vramctrl ( void ) {
-    int ticks_to_sync = 16 - ( gdg_get_total_ticks ( )  % 16 );
+    int ticks_to_sync = 16 - ( gdg_get_total_ticks ( ) % 16 );
 
     if ( ticks_to_sync <= 7 ) {
         ticks_to_sync += 8;
@@ -854,6 +854,17 @@ void mz800_main ( void ) {
     mz800_reset ( );
 
     SDL_AddTimer ( INTERRUPT_TIMER_MS, screens_counter_flush, NULL );
+
+#if 0
+    g_memory.map = MEMORY_MAP_FLAG_ROM_0000 | MEMORY_MAP_FLAG_ROM_E000;
+    z80ex_set_reg ( g_mz800.cpu, regHL, 0x10f0 );
+    cmthack_load_filename ( "Galao.mzf" );
+    z80ex_set_reg ( g_mz800.cpu, regHL, 0x1200 );
+    z80ex_set_reg ( g_mz800.cpu, regBC, 0x4e51 );
+    cmthack_read_body ( );
+    z80ex_set_reg ( g_mz800.cpu, regSP, 0x10f0 );
+    z80ex_set_reg ( g_mz800.cpu, regPC, 0x6000 );
+#endif
 
     while ( 1 ) {
 

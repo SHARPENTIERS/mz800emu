@@ -199,6 +199,7 @@ Z80EX_BYTE pio8255_read ( int addr ) {
         case DEF_PIO8255_PORTB:
 
             iface_sdl_pool_keyboard_events ( );
+            //g_pio8255.keyboard_matrix [ 2 ] &= 0xdf;
             Z80EX_BYTE retval = g_pio8255.keyboard_matrix [ g_pio8255.signal_PA_keybord_column ];
             //DBGPRINTF ( DBGINF, "addr = 0x%02x, keyboard_matrix[%d] = 0x%02x, PC = 0x%04x\n", addr, g_pio8255.signal_PA_keybord_column, retval, g_mz800.instruction_addr );
             return retval;
