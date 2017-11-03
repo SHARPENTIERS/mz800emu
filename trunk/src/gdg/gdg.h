@@ -96,11 +96,19 @@ extern "C" {
     } st_GDGEVENT;
 
 
+    typedef struct st_GDG_TIMESTAMP {
+        unsigned screens; /* celkovy pocet vykonanych obrazovek */
+        unsigned ticks; /* celkovy pocet vykonanych pixelu z posledniho nedokonceneho screenu
+                         * Hodnota 0 odpovida 1. pixelu viditelneho obrazu <0; 354431> 
+                         */
+
+    } st_GDG_TIMESTAMP;
+
+
     typedef struct st_GDG {
         st_EVENT event;
 
-        unsigned elapsed_screen_ticks; /* Hodnota 0 odpovida 1. pixelu viditelneho obrazu <0; 354431> */
-        unsigned elapsed_total_screens;
+        st_GDG_TIMESTAMP total_elapsed; /* Celkovy pocet vykonanych snimku a pixelu */
 
         unsigned beam_row;
         unsigned screen_is_already_rendered_at_beam_pos; /* pokud byla pauza a probehnul render obrazovky, tak tady mame posledmi pozici paprsku, ktera uz je zobrazena */

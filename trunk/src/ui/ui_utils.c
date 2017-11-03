@@ -26,6 +26,8 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
+#include <errno.h>
 
 #include <gtk/gtk.h>
 #include <glib.h>
@@ -45,6 +47,11 @@ FILE* ui_utils_fopen ( const char *filename_in_utf8, const char *mode ) {
     fp = fopen ( filename_in_locale, mode );
     g_free ( filename_in_locale );
     return fp;
+}
+
+
+void ui_utils_fclose ( FILE *fh ) {
+    fclose ( fh );
 }
 
 
@@ -132,4 +139,8 @@ int ui_utils_rename_file ( char *path, char *oldname, char *newname ) {
     ui_utils_free ( (void*) filepath2 );
 
     return retval;
+}
+
+char* ui_utils_strerror ( void ) {
+    return strerror ( errno );
 }

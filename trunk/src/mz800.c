@@ -263,7 +263,7 @@ uint32_t screens_counter_flush ( uint32_t interval, void* param ) {
     if ( call_counter == 0 ) {
         call_counter = ( ( 1000 / INTERRUPT_TIMER_MS ) ) - 1;
         static unsigned last = 0;
-        unsigned i = g_gdg.elapsed_total_screens;
+        unsigned i = g_gdg.total_elapsed.screens;
         unsigned j = i - last;
         last = i;
         g_mz800.status_emulation_speed = (float) j / 0.5;
@@ -345,22 +345,22 @@ static inline void mz800_event_screen_done ( void ) {
     g_mz800.speed_sync_event.ticks -= VIDEO_SCREEN_TICKS;
 #endif
 
-    g_gdg.elapsed_total_screens++;
+    g_gdg.total_elapsed.screens++;
 
 #ifdef MZ800EMU_CFG_SPEED_TEST
-    if ( g_gdg.elapsed_total_screens > 1000 ) main_app_quit ( EXIT_SUCCESS );
+    if ( g_gdg.total_elapsed.screens > 1000 ) main_app_quit ( EXIT_SUCCESS );
 #endif
 
     // proboha, proc -1 ??? :)
-    //     g_gdg.elapsed_screen_ticks -= ( VIDEO_SCREEN_TICKS - 1 );
-    g_gdg.elapsed_screen_ticks -= VIDEO_SCREEN_TICKS;
+    //     g_gdg.total_elapsed.ticks -= ( VIDEO_SCREEN_TICKS - 1 );
+    g_gdg.total_elapsed.ticks -= VIDEO_SCREEN_TICKS;
     g_gdg.beam_row = 0;
 }
 
 
 static inline void mz800_sync ( void ) {
 
-    while ( g_gdg.elapsed_screen_ticks >= g_mz800.event.ticks ) {
+    while ( g_gdg.total_elapsed.ticks >= g_mz800.event.ticks ) {
 
         // Nejprve odbavime eventy, ktere nepochazeji z GDG
         while ( g_mz800.event.event_name >= EVENT_NO_GDG ) {
@@ -385,7 +385,7 @@ static inline void mz800_sync ( void ) {
 #endif
             mz800_set_proximate_hw_event ( );
 
-            if ( !( g_gdg.elapsed_screen_ticks >= g_mz800.event.ticks ) ) return;
+            if ( !( g_gdg.total_elapsed.ticks >= g_mz800.event.ticks ) ) return;
         };
 
 
@@ -542,15 +542,15 @@ static inline void mz800_sync ( void ) {
 
 static inline void mz800_sync_ctc0_and_cmt ( unsigned instruction_ticks ) {
 
-    g_gdg.elapsed_screen_ticks -= g_gdg.ctc0clk;
+    g_gdg.total_elapsed.ticks -= g_gdg.ctc0clk;
     instruction_ticks += g_gdg.ctc0clk;
 
     while ( instruction_ticks > GDGCLK_1M1_DIVIDER - 1 ) {
 
-        g_gdg.elapsed_screen_ticks += GDGCLK_1M1_DIVIDER;
+        g_gdg.total_elapsed.ticks += GDGCLK_1M1_DIVIDER;
         instruction_ticks -= GDGCLK_1M1_DIVIDER;
 
-        ctc8253_clkfall ( CTC_CS0, g_gdg.elapsed_screen_ticks );
+        ctc8253_clkfall ( CTC_CS0, g_gdg.total_elapsed.ticks );
 
         /* TODO: prozatim si sem povesime i pomaly cmt_step() */
         if ( TEST_CMT_PLAYING ) {
@@ -559,7 +559,7 @@ static inline void mz800_sync_ctc0_and_cmt ( unsigned instruction_ticks ) {
     };
 
     g_gdg.ctc0clk = instruction_ticks;
-    g_gdg.elapsed_screen_ticks += instruction_ticks;
+    g_gdg.total_elapsed.ticks += instruction_ticks;
 }
 
 #endif
@@ -589,8 +589,8 @@ static inline void mz800_sync_insideop ( const en_INSIDEOP insideop ) {
 
     switch ( insideop ) {
         case INSIDEOP_MREQ_MZ700_VRAMCTRL:
-            /* V tuto chvili pocitame s tim, ze uz mame synchronizovano po g_gdg.elapsed_screen_ticks */
-            ticks_to_sync = VIDEO_BEAM_HBLN_FIRST_COLUMN - VIDEO_GET_SCREEN_COL ( g_gdg.elapsed_screen_ticks );
+            /* V tuto chvili pocitame s tim, ze uz mame synchronizovano po g_gdg.total_elapsed.ticks */
+            ticks_to_sync = VIDEO_BEAM_HBLN_FIRST_COLUMN - VIDEO_GET_SCREEN_COL ( g_gdg.total_elapsed.ticks );
             ticks_to_sync += GDGCLK2CPU_DIVIDER - ( ticks_to_sync % GDGCLK2CPU_DIVIDER );
             z80ex_w_states ( g_mz800.cpu, ( ticks_to_sync / GDGCLK2CPU_DIVIDER ) );
             instruction_ticks = g_mz800.instruction_insideop_sync_ticks + ticks_to_sync;
@@ -619,7 +619,7 @@ static inline void mz800_sync_insideop ( const en_INSIDEOP insideop ) {
 #ifdef MZ800EMU_CFG_CLK1M1_SLOW
     mz800_sync_ctc0_and_cmt ( ticks_to_sync );
 #else
-    g_gdg.elapsed_screen_ticks += ticks_to_sync;
+    g_gdg.total_elapsed.ticks += ticks_to_sync;
 #endif
 
     g_mz800.instruction_insideop_sync_ticks = instruction_ticks;
@@ -679,7 +679,7 @@ void mz800_sync_insideop_iorq_psg_write ( void ) {
  * muze legalne vracet i zaporne cislo!
  */
 inline int mz800_get_instruction_start_ticks ( void ) {
-    return g_gdg.elapsed_screen_ticks - g_mz800.instruction_insideop_sync_ticks;
+    return g_gdg.total_elapsed.ticks - g_mz800.instruction_insideop_sync_ticks;
 }
 
 
@@ -696,7 +696,7 @@ static inline void mz800_do_emulation_paused ( void ) {
     if ( !DMD_TEST_MZ700 ) {
         framebuffer_MZ800_screen_changed ( );
     };
-    unsigned screen_elapsed_ticks = g_gdg.elapsed_screen_ticks;
+    unsigned screen_elapsed_ticks = g_gdg.total_elapsed.ticks;
     iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos, screen_elapsed_ticks );
     g_gdg.screen_is_already_rendered_at_beam_pos = screen_elapsed_ticks;
 
@@ -718,7 +718,7 @@ static inline void mz800_do_emulation_paused ( void ) {
 #else // MZ800_DEBUGGER neni povolen
 
     iface_sdl_render_status_line ( );
-    iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos, g_gdg.elapsed_screen_ticks );
+    iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos, g_gdg.total_elapsed.ticks );
 
 
     while ( TEST_EMULATION_PAUSED ) {
@@ -826,10 +826,10 @@ static inline void mz800_interrupt_service ( void ) {
 #ifdef MZ800EMU_CFG_CLK1M1_SLOW
         mz800_sync_ctc0_and_cmt ( innterrupt_ticks );
 #else
-        g_gdg.elapsed_screen_ticks += innterrupt_ticks;
+        g_gdg.total_elapsed.ticks += innterrupt_ticks;
 #endif
 
-        if ( g_gdg.elapsed_screen_ticks >= g_mz800.event.ticks ) {
+        if ( g_gdg.total_elapsed.ticks >= g_mz800.event.ticks ) {
             mz800_sync ( );
         };
 
@@ -900,13 +900,13 @@ void mz800_main ( void ) {
 #ifdef MZ800EMU_CFG_CLK1M1_SLOW
         mz800_sync_ctc0_and_cmt ( ( ( g_mz800.instruction_tstates * GDGCLK2CPU_DIVIDER ) - g_mz800.instruction_insideop_sync_ticks ) );
 #else
-        g_gdg.elapsed_screen_ticks += ( ( g_mz800.instruction_tstates * GDGCLK2CPU_DIVIDER ) - g_mz800.instruction_insideop_sync_ticks );
+        g_gdg.total_elapsed.ticks += ( ( g_mz800.instruction_tstates * GDGCLK2CPU_DIVIDER ) - g_mz800.instruction_insideop_sync_ticks );
 #endif
 
         g_mz800.instruction_tstates = 0;
         g_mz800.instruction_insideop_sync_ticks = 0;
 
-        if ( g_gdg.elapsed_screen_ticks >= g_mz800.event.ticks ) {
+        if ( g_gdg.total_elapsed.ticks >= g_mz800.event.ticks ) {
 
             mz800_sync ( );
 

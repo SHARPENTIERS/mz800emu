@@ -161,8 +161,8 @@ void framebuffer_border_changed ( void ) {
 
     g_gdg.border_changes = SCRSTS_THIS_IS_CHANGED;
 
-    unsigned beam_col = VIDEO_GET_SCREEN_COL ( g_gdg.elapsed_screen_ticks );
-    unsigned beam_row = VIDEO_GET_SCREEN_ROW ( g_gdg.elapsed_screen_ticks );
+    unsigned beam_col = VIDEO_GET_SCREEN_COL ( g_gdg.total_elapsed.ticks );
+    unsigned beam_row = VIDEO_GET_SCREEN_ROW ( g_gdg.total_elapsed.ticks );
 
 
     /* Osetreni situace, kdy OUT provedl zmenu na hranici mezi dvema snimky. */
@@ -225,7 +225,7 @@ void framebuffer_border_changed ( void ) {
 
 void framebuffer_MZ800_screen_changed ( void ) {
     g_gdg.screen_changes = SCRSTS_THIS_IS_CHANGED;
-    unsigned column = VIDEO_GET_SCREEN_COL ( g_gdg.elapsed_screen_ticks );
+    unsigned column = VIDEO_GET_SCREEN_COL ( g_gdg.total_elapsed.ticks );
     if ( ( column < VIDEO_BEAM_CANVAS_FIRST_COLUMN + 3 ) || ( column > VIDEO_BEAM_CANVAS_LAST_COLUMN ) || ( g_gdg.beam_row < VIDEO_BEAM_CANVAS_FIRST_ROW ) || ( g_gdg.beam_row > VIDEO_BEAM_CANVAS_LAST_ROW ) ) return;
     framebuffer_MZ800_screen_row_fill ( column - VIDEO_BEAM_CANVAS_FIRST_COLUMN );
 }

@@ -87,7 +87,7 @@ void psg_real_write_byte ( Z80EX_BYTE value ) {
         en_ATTENUATOR new_attn = value & 0x0f;
         if ( new_attn != channel->attn ) {
 #ifdef AUDIO_FILLBUFF_v1
-            audio_fill_buffer_v1 ( g_gdg.elapsed_screen_ticks );
+            audio_fill_buffer_v1 ( g_gdg.total_elapsed.ticks );
 #endif
             channel->attn = new_attn;
         };
@@ -98,7 +98,7 @@ void psg_real_write_byte ( Z80EX_BYTE value ) {
             unsigned new_divider = ( value << 4 ) | channel->tone.latch_divider;
             if ( new_divider != channel->tone.divider ) {
 #ifdef AUDIO_FILLBUFF_v1
-                audio_fill_buffer_v1 ( g_gdg.elapsed_screen_ticks );
+                audio_fill_buffer_v1 ( g_gdg.total_elapsed.ticks );
 #endif
                 channel->tone.divider = new_divider;
             };
@@ -107,7 +107,7 @@ void psg_real_write_byte ( Z80EX_BYTE value ) {
             en_NOISE_TYPE new_type = ( value >> 2 ) & 1;
             if ( ( new_div_type != channel->noise.div_type ) || ( new_type != channel->noise.type ) ) {
 #ifdef AUDIO_FILLBUFF_v1
-                audio_fill_buffer_v1 ( g_gdg.elapsed_screen_ticks );
+                audio_fill_buffer_v1 ( g_gdg.total_elapsed.ticks );
 #endif
                 channel->noise.div_type = new_div_type;
                 channel->noise.type = new_type;
@@ -125,12 +125,12 @@ void psg_write_byte ( Z80EX_BYTE value ) {
 
 #ifdef AUDIO_FILLBUFF_v1
     psg_real_write_byte ( value );
-    //    printf ( "REAL WRITE: %d - %d: 0x%02x\n", gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks ), gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks ), value );
-    //    printf ( "REAL WRITE: %d: 0x%02x\n", gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks ), value );
+    //    printf ( "REAL WRITE: %d - %d: 0x%02x\n", gdg_compute_total_ticks ( g_gdg.total_elapsed.ticks ), gdg_compute_total_ticks ( g_gdg.total_elapsed.ticks ), value );
+    //    printf ( "REAL WRITE: %d: 0x%02x\n", gdg_compute_total_ticks ( g_gdg.total_elapsed.ticks ), value );
 #endif
 
 #ifdef AUDIO_FILLBUFF_v2
-    unsigned total_ticks = gdg_compute_total_ticks ( g_gdg.elapsed_screen_ticks );
+    unsigned total_ticks = gdg_compute_total_ticks ( g_gdg.total_elapsed.ticks );
     if ( g_psg_audio.samples[0].value != -1 ) g_psg_audio.count++;
     g_psg_audio.samples[g_psg_audio.count].timestamp = total_ticks;
     g_psg_audio.samples[g_psg_audio.count].value = value;
