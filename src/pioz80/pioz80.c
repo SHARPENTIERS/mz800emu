@@ -294,7 +294,7 @@ static inline void pioz80_interrupt_manager ( en_PIOZ80_PORT_EVENT port_event ) 
 
         // ve stavu INT_RECEIVED muze byt vzdy bud jen jeden port, nebo zadny
         if ( port->port_int == PIOZ80_PORT_INT_RECEIVED ) {
-            DBGPRINTF ( DBGINF, "INTERRUPT_RECEIVED - screens: %d, ticks: %d\n", g_gdg.elapsed_total_screens, gdg_get_insigeop_ticks ( ) );
+            DBGPRINTF ( DBGINF, "INTERRUPT_RECEIVED - screens: %d, ticks: %d\n", g_gdg.total_elapsed.screens, gdg_get_insigeop_ticks ( ) );
             g_pioz80.interrupt = PIOZ80_INTERRUPT_RECEIVED;
             g_pioz80.interrupt_port_id = port_id;
             // tohle je zarucene novy stav a projevi se okamzite - predchozi stav byl "1"
@@ -313,7 +313,7 @@ static inline void pioz80_interrupt_manager ( en_PIOZ80_PORT_EVENT port_event ) 
         if ( g_pioz80.interrupt == PIOZ80_INTERRUPT_NONE ) return;
 
         // prechazime ze stavu INT do klidoveho stavu - vzdy okamzite
-        DBGPRINTF ( DBGINF, "INTERRUPT_NONE - screens: %d, ticks: %d\n", g_gdg.elapsed_total_screens, gdg_get_insigeop_ticks ( ) );
+        DBGPRINTF ( DBGINF, "INTERRUPT_NONE - screens: %d, ticks: %d\n", g_gdg.total_elapsed.screens, gdg_get_insigeop_ticks ( ) );
 
         g_pioz80.interrupt = PIOZ80_INTERRUPT_NONE;
         mz800_interrupt_manager ( );
@@ -325,7 +325,7 @@ static inline void pioz80_interrupt_manager ( en_PIOZ80_PORT_EVENT port_event ) 
     if ( g_pioz80.interrupt == PIOZ80_INTERRUPT_PENDING ) return;
 
     // prechazime z klidoveho stavu do INT
-    DBGPRINTF ( DBGINF, "INTERRUPT_PENDING - screens: %d, ticks: %d\n", g_gdg.elapsed_total_screens, gdg_get_insigeop_ticks ( ) );
+    DBGPRINTF ( DBGINF, "INTERRUPT_PENDING - screens: %d, ticks: %d\n", g_gdg.total_elapsed.screens, gdg_get_insigeop_ticks ( ) );
     g_pioz80.interrupt = PIOZ80_INTERRUPT_PENDING;
     mz800_interrupt_manager ( );
 }
@@ -956,7 +956,7 @@ void pioz80_interrupt_reti_cb ( Z80EX_CONTEXT *cpu, void *user_data ) {
 
 #if DBGLEVEL
     unsigned dbg_interrupt_ticks = gdg_get_total_ticks ( ) - dbg_interrupt_ack_ticks;
-    DBGPRINTF ( DBGINF, "port: %c, INTERRUPT_RETI, screens: %d, ticks: %d, interrupt_ticks = %d, PC = 0x%04x\n", pioz80_dbg_get_port_name ( port->port_id ), g_gdg.elapsed_total_screens, gdg_get_insigeop_ticks ( ), dbg_interrupt_ticks, g_mz800.instruction_addr );
+    DBGPRINTF ( DBGINF, "port: %c, INTERRUPT_RETI, screens: %d, ticks: %d, interrupt_ticks = %d, PC = 0x%04x\n", pioz80_dbg_get_port_name ( port->port_id ), g_gdg.total_elapsed.screens, gdg_get_insigeop_ticks ( ), dbg_interrupt_ticks, g_mz800.instruction_addr );
 #endif
 
 

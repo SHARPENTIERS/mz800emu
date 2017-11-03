@@ -35,6 +35,7 @@ extern "C" {
 
 
     extern FILE* ui_utils_fopen ( const char *filename_in_utf8, const char *mode );
+    extern void ui_utils_fclose ( FILE *fh );
     
     extern unsigned int ui_utils_fread ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh );
     extern unsigned int ui_utils_fwrite ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh );
@@ -59,6 +60,8 @@ extern "C" {
     extern void ui_utils_free ( void *ptr );
     
     extern int ui_utils_rename_file ( char *path, char *oldname, char *newname );
+    
+    extern char* ui_utils_strerror ( void );
 
 #define ui_utils_build_filepath( path, filename ) ui_utils_ditem_get_filepath ( path, filename )
 #define ui_utils_free_free_filepath( filepath ) ui_utils_free ( (void *) filepath )
