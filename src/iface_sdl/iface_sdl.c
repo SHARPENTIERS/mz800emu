@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <SDL_version.h>
 
 //#include <SDL_ttf.h>
 
@@ -332,8 +333,17 @@ void iface_sdl_init ( void ) {
         SDL_Log ( "SDL_VERSION %i.%i.%i is less than 2.0.2", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL );
         main_app_quit ( EXIT_FAILURE );
     };
-    SDL_Log ( "SDL_VERSION %i.%i.%i", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL );
 
+    SDL_version compiled;
+    SDL_version linked;
+
+    SDL_VERSION ( &compiled );
+    SDL_GetVersion ( &linked );
+
+    if ( ( compiled.major != linked.major ) || ( compiled.minor != linked.minor ) || ( compiled.patch != linked.patch ) ) {
+        SDL_Log ( "Compiled SDL ver.: %d.%d.%d", compiled.major, compiled.minor, compiled.patch );
+    };
+    SDL_Log ( "Linked SDL ver.: %d.%d.%d", linked.major, linked.minor, linked.patch );
 
     /* Inicializace video interface */
     if ( SDL_Init ( SDL_INIT_VIDEO ) ) {
@@ -411,7 +421,9 @@ void iface_sdl_init ( void ) {
     };
 #endif
 
-    iface_sdl_audio_init ( );
+    if ( EXIT_FAILURE == iface_sdl_audio_init ( NULL, -1 ) ) {
+        main_app_quit ( EXIT_FAILURE );
+    }
 }
 
 

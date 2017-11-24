@@ -75,38 +75,15 @@ WINDRES			:= windres
 # Pokud kompilujeme v Linuxu
 #
 
-else ifeq (${BUILD_HOST_OS},GNU/Linux)
-
-# definice pro CROSS WIN_X86
-WIN_X86_MINGW32_PLATFORM	:= i686-w64-mingw32
-WIN_X86_MINGW32_TOOLS_PREFIX	:= ${WIN_X86_MINGW32_PLATFORM}-
-WIN_X86_MINGW32_PKGCONFIG	:= ${WIN_X86_MINGW32_TOOLS_PREFIX}pkg-config
-WIN_X86_MINGW32_SDL2_CONFIG	:= /usr/local/cross-tools/$(WIN_X86_MINGW32_PLATFORM)/bin/sdl2-config
-# ve windows verzi odstranenim -mwindows vynutime vystupni consoli
-WIN_X86_MINGW32_SDL2_LIBS	:= ${shell ${WIN_X86_MINGW32_SDL2_CONFIG} --libs | /bin/sed -e 's/-mwindows//' } -lSDL2
-WIN_X86_WINDRES			:= ${WIN_X86_MINGW32_TOOLS_PREFIX}windres
-
-# definice pro CROSS WIN_X64
-WIN_X64_MINGW32_PLATFORM	:= x86_64-w64-mingw32
-WIN_X64_MINGW32_TOOLS_PREFIX	:= ${WIN_X64_MINGW32_PLATFORM}-
-WIN_X64_MINGW32_PKGCONFIG	:= ${WIN_X64_MINGW32_TOOLS_PREFIX}pkg-config
-WIN_X64_MINGW32_SDL2_CONFIG	:= /usr/local/cross-tools/$(WIN_X64_MINGW32_PLATFORM)/bin/sdl2-config
-# ve windows verzi odstranenim -mwindows vynutime vystupni consoli
-WIN_X64_MINGW32_SDL2_LIBS	:= ${shell ${WIN_X64_MINGW32_SDL2_CONFIG} --libs | /bin/sed -e 's/-mwindows//' } -lSDL2
-WIN_X64_WINDRES			:= ${WIN_X64_MINGW32_TOOLS_PREFIX}windres
-
-# definice pro NATIVE LINUX
-LINUX_TOOLS_PREFIX	:=
-LINUX_PKGCONFIG		:= ${TOOLS_PREFIX}pkg-config 
-LINUX_SDL2_CONFIG	:= sdl2-config
-LINUX_SDL2_LIBS         := ${shell ${LINUX_SDL2_CONFIG} --libs} -lSDL2
-
-else
-
-$(error  "Unknovn build host OS! '${BUILD_HOST_OS}'")
-
+#else ifeq (${BUILD_HOST_OS},GNU/Linux)
+#else
+#$(error  "Unknown build host OS! '${BUILD_HOST_OS}'")
 endif
 
+
+SDL2_CONFIG_LINUX=/usr/local/bin/sdl2-config
+SDL2_CONFIG_MINGW32=/usr/local/cross-tools/i686-w64-mingw32/bin/sdl2-config
+SDL2_CONFIG_MINGW64=/usr/local/cross-tools/x86_64-w64-mingw32/bin/sdl2-config
 
 
 # build
@@ -208,6 +185,9 @@ test: .test-post
 
 # help
 help: .help-post
+	@echo "CFLAGS config:"
+	@echo -e "\tshowcfg - copy&paste inc. dirs, definitions and additional opts"
+	@echo -e "\n"
 	@echo "Targets available only for WIN_X86:"
 	@echo -e "\tpackage"
 	@echo -e "\n"
@@ -226,26 +206,63 @@ include nbproject/Makefile-impl.mk
 # include project make variables
 include nbproject/Makefile-variables.mk
 
+PROJECT_CFLAGS=
+PROJECT_LIBS=-lm
+
+ifeq (${CONF},Release-Linux)
+    SDL2_CONFIG=${SDL2_CONFIG_LINUX}
+    TOOLS_PREFIX=
+else ifeq (${CONF},Debug-Linux)
+    SDL2_CONFIG=${SDL2_CONFIG_LINUX}
+    TOOLS_PREFIX=
+else ifeq (${CONF},Release-Win32)
+    SDL2_CONFIG=${SDL2_CONFIG_MINGW32}
+    TOOLS_PREFIX=mingw32-
+    WINDRES_PREFIX=i686-w64-mingw32-
+else ifeq (${CONF},Release-Win64)
+    SDL2_CONFIG=${SDL2_CONFIG_MINGW64}
+    TOOLS_PREFIX=mingw64-
+    WINDRES_PREFIX=x86_64-w64-mingw32-
+else
+    $(error  "Unknown config! '${CONF}'")
+endif
+
+PKGCONFIG=${TOOLS_PREFIX}pkg-config
+WINDRES=${WINDRES_PREFIX}windres
+
+PROJECT_CFLAGS += ${shell ${SDL2_CONFIG} --cflags}
+PROJECT_CFLAGS += ${shell ${PKGCONFIG} --cflags ${PKG_OBJECTS}}
+
+# ve windows verzi odstranenim -mwindows vynutime vystupni consoli
+PROJECT_LIBS += ${shell ${SDL2_CONFIG} --libs | /bin/sed -e 's/-mwindows//'}
+PROJECT_LIBS += ${shell ${PKGCONFIG} --libs ${PKG_OBJECTS}}
 
 #
+# PROJECT_CFLAGS is unused, because netbeans not accept this config into editor :(
 #
+# For any cfg changes use "make showcfg" and copy&paste CFLAGS into project 
+# include dirs, definitions and additional options.
 #
 
 # windows icon
 src/windows_icon/app.o: src/windows_icon/app.rc src/windows_icon/mz800emu.ico
 	${MKDIR} -p ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/src/windows_icon
-	@#$(WINDRES) src/windows_icon/app.rc -o ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/$@
-	
-	@if [ "${CONF}" = "Release-Win32" ]; then \
-	    $(WIN_X86_WINDRES) src/windows_icon/app.rc -o ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/$@; \
-	elif [ "${CONF}" = "Release-Win64" ]; then \
-	    $(WIN_X64_WINDRES) src/windows_icon/app.rc -o ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/$@; \
-	else \
-	    $(WINDRES) src/windows_icon/app.rc -o ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/$@; \
-	fi
+	${WINDRES} src/windows_icon/app.rc -o ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/$@; \
 
 
 package: build
 	./tools/create_package-Release-Win32.sh "${CONF}"
+
+
+showcfg:
+	@echo
+	@echo "cflags:"
+	@echo
+	@echo "${PROJECT_CFLAGS}"
+	@echo
 	
+	@echo "libs:"
+	@echo
+	@echo "${PROJECT_LIBS}"
+	@echo
 	                

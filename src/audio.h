@@ -60,8 +60,6 @@ extern "C" {
         AUDIO_BUF_t state;
     } st_AUDIO_SAMPLE;
 
-
-
 #if ( GDGCLK_1M1_DIVIDER == 16 ) && ( MZ800EMU_CFG_MAX_SYNC_SPEED == 1000 )
 #define AUDIO_MIN_CTC0_EVENT_WIDTH  ( GDGCLK_1M1_DIVIDER * 1.5 )  /* ( 24 = 16 * 1.5 ) */
 #define AUDIO_MAX_SCAN_WIDTH  ( MZ800EMU_CFG_MAX_SYNC_SPEED * 0.01 * VIDEO_SCREEN_TICKS )  /* ( 3544320 = 1000 * 0.01 * 354432 ) */
@@ -76,7 +74,6 @@ extern "C" {
 #endif
 #endif
 
-
     typedef struct st_AUDIO_CTC {
         st_AUDIO_SAMPLE samples [ AUDIO_MAX_CTC_SAMPLES ];
         unsigned count;
@@ -87,7 +84,7 @@ extern "C" {
 
 
     typedef struct st_AUDIO {
-        AUDIO_BUF_t buffer [ IFACE_AUDIO_20MS_SAMPLES ];
+        AUDIO_BUF_t buffer[IFACE_AUDIO_20MS_SAMPLES];
         unsigned buffer_position;
         unsigned last_update;
         unsigned resample_timer;
