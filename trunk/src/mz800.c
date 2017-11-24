@@ -289,11 +289,12 @@ static inline void mz800_event_speed_synchronisation ( unsigned event_ticks ) {
 #endif
 
 #ifndef MZ800EMU_CFG_AUDIO_DISABLED
-    audio_sdl_wait_to_cycle_done ( );
+    iface_sdl_audio_sync_20ms_cycle ( );
 #endif
 
 #ifdef MZ800EMU_CFG_VARIABLE_SPEED
     g_mz800.speed_sync_event.ticks += g_mz800.speed_frame_width;
+
 #endif
 }
 
@@ -991,6 +992,9 @@ void mz800_switch_emulation_speed ( unsigned value ) {
     } else {
         printf ( "Slow emulation speed.\n" );
     };
+
+    iface_sdl_audio_update_buffer_state ( );
+
     ui_main_update_cpu_speed_menu ( g_mz800.use_max_emulation_speed );
 }
 

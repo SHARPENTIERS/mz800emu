@@ -69,7 +69,7 @@ void pio8255_init ( void ) {
     g_pio8255.signal_PC = 0x00;
 }
 
-static unsigned long bdcounter = 0;
+//static unsigned long bdcounter = 0;
 
 /* data do CMT */
 void static inline pio8255_set_pc01 ( uint8_t new_pc01 ) {

@@ -26,6 +26,7 @@
 #include <math.h>
 #include <stdio.h>
 
+#include "mz800emu_cfg.h"
 #include "audio.h"
 #include "psg/psg.h"
 #include "gdg/gdg.h"
@@ -233,7 +234,8 @@ void audio_fill_buffer_v2 ( unsigned now_total_ticks ) {
 
         if ( already_scaned >= resample_width ) {
             //          printf ( "res: %d = %d\n", dst_sample_pos, audio_last_value );
-            g_audio.buffer [ dst_sample_pos++ ] = audio_last_value;
+            g_audio.buffer [ dst_sample_pos ] = audio_last_value;
+            if ( dst_sample_pos < IFACE_AUDIO_20MS_SAMPLES ) dst_sample_pos++;
             already_scaned -= resample_width;
             last_scan_end = current_scan_time;
         };
