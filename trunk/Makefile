@@ -120,7 +120,7 @@ build: .build-post
 	fi
 		
 	@# Pokud profilujeme
-	@if [ "${CONF}" = "Gprof-Release-Linux" ]; then \
+	@if [ "${CONF}" = "Gprof-Debug-Linux" ]; then \
 	    echo -e "\n\n********** ${CONF} **********\n"; \
 	    echo -e "\nprof1) gprof - http://www.thegeekstuff.com/2012/08/gprof-tutorial/"; \
 	    echo -e "prof2) valgrind --tool=callgrind ${CND_ARTIFACT_PATH_${CONF}}\n(visualise in KCachegrind)"; \
@@ -213,6 +213,9 @@ ifeq (${CONF},Release-Linux)
     SDL2_CONFIG=${SDL2_CONFIG_LINUX}
     TOOLS_PREFIX=
 else ifeq (${CONF},Debug-Linux)
+    SDL2_CONFIG=${SDL2_CONFIG_LINUX}
+    TOOLS_PREFIX=
+else ifeq (${CONF},Gprof-Debug-Linux)
     SDL2_CONFIG=${SDL2_CONFIG_LINUX}
     TOOLS_PREFIX=
 else ifeq (${CONF},Release-Win32)
