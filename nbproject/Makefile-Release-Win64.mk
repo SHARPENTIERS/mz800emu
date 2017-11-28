@@ -106,13 +106,12 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/ui_ramdisk.o \
 	${OBJECTDIR}/src/ui/ui_rom.o \
 	${OBJECTDIR}/src/ui/ui_utils.o \
-	${OBJECTDIR}/src/ui/ui_virtual_keybord.o \
 	${OBJECTDIR}/src/z80ex/z80ex.o \
 	${OBJECTDIR}/src/z80ex/z80ex_dasm.o
 
 
 # C Compiler Flags
-CFLAGS=-pedantic -pipe -Wl,--export-dynamic -mms-bitfields
+CFLAGS=-pedantic -pipe -Wl,--export-dynamic -mms-bitfields ${PROJECT_CFLAGS}
 
 # CC Compiler Flags
 CCFLAGS=
@@ -491,11 +490,6 @@ ${OBJECTDIR}/src/ui/ui_utils.o: src/ui/ui_utils.c
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -I/usr/x86_64-w64-mingw32/sys-root/mingw/include -I/usr/local/cross-tools/x86_64-w64-mingw32/include/SDL2 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/gtk-3.0 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/cairo -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/pango-1.0 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/harfbuzz -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/atk-1.0 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/pixman-1 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/freetype2 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/libpng16 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/gdk-pixbuf-2.0 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/glib-2.0 -I/usr/x86_64-w64-mingw32/sys-root/mingw/lib/glib-2.0/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_utils.o src/ui/ui_utils.c
-
-${OBJECTDIR}/src/ui/ui_virtual_keybord.o: src/ui/ui_virtual_keybord.c 
-	${MKDIR} -p ${OBJECTDIR}/src/ui
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -I/usr/x86_64-w64-mingw32/sys-root/mingw/include -I/usr/local/cross-tools/x86_64-w64-mingw32/include/SDL2 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/gtk-3.0 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/cairo -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/pango-1.0 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/harfbuzz -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/atk-1.0 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/pixman-1 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/freetype2 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/libpng16 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/gdk-pixbuf-2.0 -I/usr/x86_64-w64-mingw32/sys-root/mingw/include/glib-2.0 -I/usr/x86_64-w64-mingw32/sys-root/mingw/lib/glib-2.0/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_virtual_keybord.o src/ui/ui_virtual_keybord.c
 
 ${OBJECTDIR}/src/z80ex/z80ex.o: src/z80ex/z80ex.c 
 	${MKDIR} -p ${OBJECTDIR}/src/z80ex
