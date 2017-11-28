@@ -84,7 +84,6 @@
         <itemPath>src/ui/ui_ramdisk.h</itemPath>
         <itemPath>src/ui/ui_rom.h</itemPath>
         <itemPath>src/ui/ui_utils.h</itemPath>
-        <itemPath>src/ui/ui_virtual_keybord.h</itemPath>
       </logicalFolder>
       <itemPath>src/build_time.h</itemPath>
       <itemPath>src/cfgmain.h</itemPath>
@@ -214,7 +213,6 @@
         <itemPath>src/ui/ui_ramdisk.c</itemPath>
         <itemPath>src/ui/ui_rom.c</itemPath>
         <itemPath>src/ui/ui_utils.c</itemPath>
-        <itemPath>src/ui/ui_virtual_keybord.c</itemPath>
       </logicalFolder>
       <itemPath>src/build_time.c</itemPath>
       <itemPath>src/cfgmain.c</itemPath>
@@ -274,7 +272,7 @@
             <pElem>/usr/i686-w64-mingw32/sys-root/mingw/include/glib-2.0</pElem>
             <pElem>/usr/i686-w64-mingw32/sys-root/mingw/lib/glib-2.0/include</pElem>
           </incDir>
-          <commandLine>-pedantic -pipe -Wl,--export-dynamic -mms-bitfields</commandLine>
+          <commandLine>-pedantic -pipe -Wl,--export-dynamic -mms-bitfields ${PROJECT_CFLAGS}</commandLine>
           <preprocessorList>
             <Elem>WINDOWS</Elem>
             <Elem>WINDOWS_X86</Elem>
@@ -611,10 +609,6 @@
       </item>
       <item path="src/ui/ui_utils.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ui/ui_virtual_keybord.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_virtual_keybord.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/z80ex/include/z80ex.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/z80ex/include/z80ex_dasm.h" ex="false" tool="3" flavor2="0">
@@ -681,7 +675,7 @@
             <pElem>/usr/include/libpng15</pElem>
             <pElem>/usr/include/libdrm</pElem>
           </incDir>
-          <commandLine>-pedantic -pipe -Wl,--export-dynamic -pthread</commandLine>
+          <commandLine>-pedantic -pipe -Wl,--export-dynamic -pthread ${PROJECT_CFLAGS}</commandLine>
           <preprocessorList>
             <Elem>LINUX</Elem>
             <Elem>_REENTRANT</Elem>
@@ -1012,10 +1006,6 @@
       </item>
       <item path="src/ui/ui_utils.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ui/ui_virtual_keybord.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_virtual_keybord.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/z80ex/include/z80ex.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/z80ex/include/z80ex_dasm.h" ex="false" tool="3" flavor2="0">
@@ -1080,7 +1070,7 @@
             <pElem>/usr/include/libpng15</pElem>
             <pElem>/usr/include/libdrm</pElem>
           </incDir>
-          <commandLine>-pedantic -pipe -Wl,--export-dynamic -pthread</commandLine>
+          <commandLine>-pedantic -pipe -Wl,--export-dynamic -pthread ${PROJECT_CFLAGS}</commandLine>
           <preprocessorList>
             <Elem>LINUX</Elem>
             <Elem>_REENTRANT</Elem>
@@ -1404,10 +1394,6 @@
       </item>
       <item path="src/ui/ui_utils.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ui/ui_virtual_keybord.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_virtual_keybord.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/z80ex/include/z80ex.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/z80ex/include/z80ex_dasm.h" ex="false" tool="3" flavor2="0">
@@ -1474,7 +1460,7 @@
             <pElem>/usr/include/libpng15</pElem>
             <pElem>/usr/include/libdrm</pElem>
           </incDir>
-          <commandLine>-pedantic -pipe -Wl,--export-dynamic -pthread</commandLine>
+          <commandLine>-pedantic -pipe -Wl,--export-dynamic -pthread ${PROJECT_CFLAGS}</commandLine>
           <preprocessorList>
             <Elem>LINUX</Elem>
             <Elem>_REENTRANT</Elem>
@@ -1811,10 +1797,6 @@
       </item>
       <item path="src/ui/ui_utils.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ui/ui_virtual_keybord.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_virtual_keybord.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/z80ex/include/z80ex.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/z80ex/include/z80ex_dasm.h" ex="false" tool="3" flavor2="0">
@@ -1874,7 +1856,7 @@
             <pElem>/usr/x86_64-w64-mingw32/sys-root/mingw/include/glib-2.0</pElem>
             <pElem>/usr/x86_64-w64-mingw32/sys-root/mingw/lib/glib-2.0/include</pElem>
           </incDir>
-          <commandLine>-pedantic -pipe -Wl,--export-dynamic -mms-bitfields</commandLine>
+          <commandLine>-pedantic -pipe -Wl,--export-dynamic -mms-bitfields ${PROJECT_CFLAGS}</commandLine>
           <preprocessorList>
             <Elem>WINDOWS</Elem>
             <Elem>WINDOWS_X64</Elem>
@@ -2213,10 +2195,6 @@
       <item path="src/ui/ui_utils.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/ui_utils.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ui/ui_virtual_keybord.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_virtual_keybord.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/z80ex/include/z80ex.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -2601,10 +2579,6 @@
       </item>
       <item path="src/ui/ui_utils.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ui/ui_virtual_keybord.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_virtual_keybord.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/z80ex/include/z80ex.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/z80ex/include/z80ex_dasm.h" ex="false" tool="3" flavor2="0">
@@ -2988,10 +2962,6 @@
       <item path="src/ui/ui_utils.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_utils.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/ui/ui_virtual_keybord.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/ui/ui_virtual_keybord.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/z80ex/include/z80ex.h" ex="false" tool="3" flavor2="0">
       </item>

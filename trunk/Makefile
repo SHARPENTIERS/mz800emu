@@ -237,13 +237,6 @@ PROJECT_CFLAGS += ${shell ${PKGCONFIG} --cflags ${PKG_OBJECTS}}
 PROJECT_LIBS += ${shell ${SDL2_CONFIG} --libs | /bin/sed -e 's/-mwindows//'}
 PROJECT_LIBS += ${shell ${PKGCONFIG} --libs ${PKG_OBJECTS}}
 
-#
-# PROJECT_CFLAGS is unused, because netbeans not accept this config into editor :(
-#
-# For any cfg changes use "make showcfg" and copy&paste CFLAGS into project 
-# include dirs, definitions and additional options.
-#
-
 # windows icon
 src/windows_icon/app.o: src/windows_icon/app.rc src/windows_icon/mz800emu.ico
 	${MKDIR} -p ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/src/windows_icon
