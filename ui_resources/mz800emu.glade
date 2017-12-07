@@ -1209,6 +1209,7 @@ From time when data were real zeros and ones and computers were
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Show / Hide _Virtual Keyboard</property>
                             <property name="use_underline">True</property>
+                            <accelerator key="k" signal="activate" modifiers="GDK_MOD1_MASK"/>
                             <signal name="activate" handler="on_menuitem_keyboard_virtual_show_activate" swapped="no"/>
                           </object>
                         </child>
