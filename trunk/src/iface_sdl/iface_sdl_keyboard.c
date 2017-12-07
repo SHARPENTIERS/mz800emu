@@ -29,6 +29,8 @@
 
 #include "ui/ui_main.h"
 #include "ui/ui_cmt.h"
+#include "ui/vkbd/ui_vkbd.h"
+#include "fdc/fdc.h"
 
 #include "pio8255/pio8255.h"
 
@@ -323,6 +325,7 @@ static inline void iface_sdl_keyboard_scan_col9 ( const Uint8 *state ) {
 
 void iface_sdl_full_keyboard_scan ( void ) {
     const Uint8 *state = SDL_GetKeyboardState ( NULL );
+    if ( state[SDL_SCANCODE_LALT] ) return;
     pio8255_keyboard_matrix_reset ( );
     iface_sdl_keyboard_scan_col0 ( state );
     iface_sdl_keyboard_scan_col1 ( state );
@@ -388,6 +391,36 @@ void iface_sdl_keydown_event ( SDL_Event *event ) {
              */
             mz800_pause_emulation ( ( ~g_mz800.emulation_paused ) & 0x01 );
 
+        } else if ( event->key.keysym.scancode == SDL_SCANCODE_K ) {
+            /*
+             * Virtual keyboard: Alt + K
+             */
+            ui_vkbd_show_hide ( );
+#if 0
+        } else if ( event->key.keysym.scancode == SDL_SCANCODE_1 ) {
+            /*
+             * Mount FD0 DSK image: Alt + 1
+             */
+            fdc_mount ( 0 );
+
+        } else if ( event->key.keysym.scancode == SDL_SCANCODE_2 ) {
+            /*
+             * Mount FD1 DSK image: Alt + 2
+             */
+            fdc_mount ( 1 );
+
+        } else if ( event->key.keysym.scancode == SDL_SCANCODE_3 ) {
+            /*
+             * Mount FD2 DSK image: Alt + 3
+             */
+            fdc_mount ( 2 );
+
+        } else if ( event->key.keysym.scancode == SDL_SCANCODE_4 ) {
+            /*
+             * Mount FD3 DSK image: Alt + 4
+             */
+            fdc_mount ( 3 );
+#endif
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED                    
         } else if ( event->key.keysym.scancode == SDL_SCANCODE_D ) {
             /*

@@ -118,6 +118,11 @@ void fdc_exit ( void ) {
 
 void fdc_mount ( unsigned drive_id ) {
 
+    if ( !g_fdc.connected ) {
+        ui_show_warning ( "Can't mount DSK image into FD%d, because FD controller is not connected.", drive_id );
+        return;
+    };
+
     char window_title[] = "Select DSK file to open";
     char filename [ DSK_FILENAME_LENGTH ];
 
