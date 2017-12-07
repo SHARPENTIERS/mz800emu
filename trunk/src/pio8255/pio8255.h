@@ -24,20 +24,21 @@
  */
 
 #ifndef PIO8255_H
-#define	PIO8255_H
+#define PIO8255_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "z80ex/include/z80ex.h"
 
-    
+
 #define CTC_AUDIO_MASK  ( g_pio8255.signal_pc00 )
-    
-    
+
+
     typedef struct st_PIO8255 {
         Z80EX_BYTE keyboard_matrix [ 10 ];
+        Z80EX_BYTE vkbd_matrix [ 10 ];
         unsigned signal_PA; /* Vystupni port A */
         unsigned signal_PA_keybord_column; /* vzorkovani klavesnice: 0 - 9 */
         unsigned signal_PC; /* Port C: 0 - 3 je vystup, 4 - 7 je vstup */
@@ -65,13 +66,16 @@ extern "C" {
     /* vrati *keyboard_matrix */
     extern Z80EX_BYTE* interface_keyboard_scan ( void );
 
-#define KEYBOARD_MATRIX_RESET()		pio8255_keyboard_matrix_reset()
+#define PIO8255_KEYBOARD_MATRIX_RESET()  pio8255_keyboard_matrix_reset()
+
+#define PIO8255_MZKEYBIT_RESET( column, bit ) g_pio8255.keyboard_matrix [ column ] &= ~ ( 1 << bit );
+#define PIO8255_VKBDBIT_RESET( column, bit ) g_pio8255.vkbd_matrix [ column ] &= ~ ( 1 << bit );
+#define PIO8255_VKBDBIT_SET( column, bit ) g_pio8255.vkbd_matrix [ column ] |= ( 1 << bit );
 
 
-
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* PIO8255_H */
+#endif /* PIO8255_H */
 
