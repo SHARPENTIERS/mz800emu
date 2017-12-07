@@ -63,13 +63,15 @@ void pio8255_keyboard_matrix_reset ( void ) {
 
 
 void pio8255_init ( void ) {
-    KEYBOARD_MATRIX_RESET ( );
+    PIO8255_KEYBOARD_MATRIX_RESET ( );
+    memset ( &g_pio8255.vkbd_matrix, 0xff, sizeof ( g_pio8255.vkbd_matrix ) );
     g_pio8255.signal_PA = 0x00;
     g_pio8255.signal_PA_keybord_column = 0x00;
     g_pio8255.signal_PC = 0x00;
 }
 
 //static unsigned long bdcounter = 0;
+
 
 /* data do CMT */
 void static inline pio8255_set_pc01 ( uint8_t new_pc01 ) {
@@ -211,7 +213,7 @@ Z80EX_BYTE pio8255_read ( int addr ) {
 
             iface_sdl_pool_keyboard_events ( );
             //g_pio8255.keyboard_matrix [ 2 ] &= 0xdf;
-            Z80EX_BYTE retval = g_pio8255.keyboard_matrix [ g_pio8255.signal_PA_keybord_column ];
+            Z80EX_BYTE retval = g_pio8255.keyboard_matrix [ g_pio8255.signal_PA_keybord_column ] & g_pio8255.vkbd_matrix [ g_pio8255.signal_PA_keybord_column ];
             //DBGPRINTF ( DBGINF, "addr = 0x%02x, keyboard_matrix[%d] = 0x%02x, PC = 0x%04x\n", addr, g_pio8255.signal_PA_keybord_column, retval, g_mz800.instruction_addr );
             return retval;
 
