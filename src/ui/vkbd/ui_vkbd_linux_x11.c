@@ -23,6 +23,8 @@
  * ---------------------------------------------------------------------------
  */
 
+#include <stdio.h>
+
 #ifdef LINUX
 
 #include <X11/keysym.h>
@@ -179,4 +181,5 @@ en_VKBD_SCANCODE ui_vkbd_linux_x11_KeysymToScancode ( guint keysym ) {
 
     return VKBD_SCANCODE_UNKNOWN;
 }
+
 #endif
