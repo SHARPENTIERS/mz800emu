@@ -37,7 +37,7 @@ extern "C" {
 #include "ui_vkbd_scancode.h"
 #include <gtk/gtk.h>
 
-    extern en_VKBD_SCANCODE ui_vkbd_windows_KeycToScancode ( guint16 hardware_keycode );
+    extern en_VKBD_SCANCODE ui_vkbd_windows_KeycodeToScancode ( guint16 hardware_keycode );
 
 #endif
 
