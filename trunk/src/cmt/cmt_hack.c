@@ -44,7 +44,10 @@
 
 #include "ui/ui_utils.h"
 
+#include "ui/vkbd/ui_vkbd.h"
+
 st_CMTHACK g_cmthack;
+
 
 typedef enum en_LOADRET {
     LOADRET_OK = 0,
@@ -208,6 +211,9 @@ void cmthack_result ( en_LOADRET result ) {
  */
 void cmthack_load_file ( void ) {
 
+    /* BUGFIX: po otevreni file selektoru se zakousne stav vkbd */
+    ui_vkbd_reset_keyboard_state ( );
+
     mz800_flush_full_screen ( );
 
     char filename [ CMTHACK_FILENAME_LENGTH ];
@@ -219,7 +225,7 @@ void cmthack_load_file ( void ) {
         cmthack_result ( LOADRET_BREAK );
         return;
     };
-    
+
     cmthack_load_filename ( filename );
 }
 
@@ -278,7 +284,7 @@ void cmthack_read_body ( void ) {
     /* precteme prvnich regBC bajtu z MZF souboru a ulozime je do RAM na adresu z regHL */
     reg_hl = z80ex_get_reg ( g_mz800.cpu, regHL );
     reg_bc = z80ex_get_reg ( g_mz800.cpu, regBC );
-    
+
     while ( reg_bc ) {
 
         unsigned length = 0xffff - reg_hl;
