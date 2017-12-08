@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
     extern void ui_vkbd_show_hide ( void );
+    extern void ui_vkbd_reset_keyboard_state ( void );
 
 #ifdef __cplusplus
 }

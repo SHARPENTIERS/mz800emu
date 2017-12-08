@@ -62,6 +62,11 @@ void pio8255_keyboard_matrix_reset ( void ) {
 }
 
 
+void pio8255_vkbd_matrix_reset ( void ) {
+    memset ( &g_pio8255.vkbd_matrix, 0xff, sizeof ( g_pio8255.vkbd_matrix ) );
+}
+
+
 void pio8255_init ( void ) {
     PIO8255_KEYBOARD_MATRIX_RESET ( );
     memset ( &g_pio8255.vkbd_matrix, 0xff, sizeof ( g_pio8255.vkbd_matrix ) );

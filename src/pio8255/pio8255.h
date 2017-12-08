@@ -67,6 +67,7 @@ extern "C" {
     extern Z80EX_BYTE* interface_keyboard_scan ( void );
 
 #define PIO8255_KEYBOARD_MATRIX_RESET()  pio8255_keyboard_matrix_reset()
+#define PIO8255_VKBD_MATRIX_RESET()  pio8255_vkbd_matrix_reset()
 
 #define PIO8255_MZKEYBIT_RESET( column, bit ) g_pio8255.keyboard_matrix [ column ] &= ~ ( 1 << bit );
 #define PIO8255_VKBDBIT_RESET( column, bit ) g_pio8255.vkbd_matrix [ column ] &= ~ ( 1 << bit );

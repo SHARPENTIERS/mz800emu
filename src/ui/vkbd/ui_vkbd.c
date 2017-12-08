@@ -61,7 +61,10 @@
 
 #include "pio8255/pio8255.h"
 
-
+/* BUG: v Linuxu se mi nepodarilo zprovoznit refresh stavu klavesy */
+#ifdef LINUX
+#define UI_VKBD_ANIMATION_DISABLED
+#endif
 
 #define VKBD_BMP_DIR "ui_resources/vkbd/"
 
@@ -218,6 +221,8 @@ typedef enum en_VKBD_ACT_CALLER {
     VK_ACTCALL_KEY2 = 4,
 } en_VKBD_ACT_CALLER;
 
+#define VK_ALL_ACTCALLERS ( VK_ACTCALL_MOUSE | VK_ACTCALL_KEY1 | VK_ACTCALL_KEY2 )
+
 
 typedef struct st_VKBD_KEY {
     const st_VKBD_KEYDEF *keydef;
@@ -288,6 +293,20 @@ static st_VKBD g_vkbd;
 
 #define VKBD_LSHIFT g_vkbd.row4.key[0]
 #define VKBD_RSHIFT g_vkbd.row4.key[13]
+
+static void *g_vkbd_allRows[] = {
+                                 &g_vkbd.row0a,
+                                 &g_vkbd.row0b,
+                                 &g_vkbd.row1,
+                                 &g_vkbd.row2,
+                                 &g_vkbd.row3,
+                                 &g_vkbd.row4,
+                                 &g_vkbd.row5,
+                                 &g_vkbd.cursors,
+                                 NULL,
+};
+
+static gboolean g_vkbd_is_initialised = FALSE;
 
 #define UI_VKBD_DSTIMG_ADD_WIDTH    1
 #define UI_VKBD_DSTIMG_ADD_HEIGHT   1
@@ -542,26 +561,36 @@ static void ui_vkbd_key_event ( st_VKBD_KEY *vk_key, en_VKBD_ACT_CALLER act_call
 
     if ( ( vk_key == &VKBD_LSHIFT ) || ( vk_key == &VKBD_RSHIFT ) ) {
         if ( VKBD_LSHIFT.act_caller | VKBD_RSHIFT.act_caller ) {
+#ifndef UI_VKBD_ANIMATION_DISABLED
             ui_vkbd_make_dst_key_down ( &VKBD_LSHIFT );
             ui_vkbd_make_dst_key_down ( &VKBD_RSHIFT );
+#endif
             PIO8255_VKBDBIT_RESET ( vk_key->keydef->mzcolumn, vk_key->keydef->mzbit );
         } else {
+#ifndef UI_VKBD_ANIMATION_DISABLED
             ui_vkbd_make_dst_key_up ( &VKBD_LSHIFT );
             ui_vkbd_make_dst_key_up ( &VKBD_RSHIFT );
+#endif
             PIO8255_VKBDBIT_SET ( vk_key->keydef->mzcolumn, vk_key->keydef->mzbit );
         };
     } else {
         if ( vk_key->act_caller ) {
+#ifndef UI_VKBD_ANIMATION_DISABLED
             ui_vkbd_make_dst_key_down ( vk_key );
+#endif
             PIO8255_VKBDBIT_RESET ( vk_key->keydef->mzcolumn, vk_key->keydef->mzbit );
         } else {
+#ifndef UI_VKBD_ANIMATION_DISABLED
             ui_vkbd_make_dst_key_up ( vk_key );
+#endif
             PIO8255_VKBDBIT_SET ( vk_key->keydef->mzcolumn, vk_key->keydef->mzbit );
         };
     };
 
     // TODO: tohle funguje jen ve WINDOWS verzi. Proc?
+#ifndef UI_VKBD_ANIMATION_DISABLED
     gtk_widget_queue_draw ( g_vkbd.fixed );
+#endif
 }
 
 
@@ -653,21 +682,9 @@ static void ui_vkbd_key_press_release_event ( guint16 hardware_keycode, gboolean
         i++;
     };
 
-    void *allRows[] = {
-                       &g_vkbd.row0a,
-                       &g_vkbd.row0b,
-                       &g_vkbd.row1,
-                       &g_vkbd.row2,
-                       &g_vkbd.row3,
-                       &g_vkbd.row4,
-                       &g_vkbd.row5,
-                       &g_vkbd.cursors,
-                       NULL,
-    };
-
     int row_block = 0;
-    while ( allRows[row_block] != NULL ) {
-        st_VKBD_ROW_SZ15 *r = allRows[row_block];
+    while ( g_vkbd_allRows[row_block] != NULL ) {
+        st_VKBD_ROW_SZ15 *r = g_vkbd_allRows[row_block];
         int i;
         for ( i = 0; i < r->numkeys; i++ ) {
             st_VKBD_KEY *k = &r->key[i];
@@ -880,11 +897,9 @@ static void ui_vkbd_create ( void ) {
 
 void ui_vkbd_show_hide ( void ) {
 
-    static gboolean is_initialised = FALSE;
-
-    if ( !is_initialised ) {
+    if ( !g_vkbd_is_initialised ) {
         ui_vkbd_create ( );
-        is_initialised = TRUE;
+        g_vkbd_is_initialised = TRUE;
     };
 
     if ( gtk_widget_get_visible ( g_vkbd.window ) ) {
@@ -905,3 +920,22 @@ G_MODULE_EXPORT void on_menuitem_keyboard_virtual_show_activate ( GtkCheckMenuIt
     ui_vkbd_show_hide ( );
 }
 
+
+void ui_vkbd_reset_keyboard_state ( void ) {
+
+    if ( !g_vkbd_is_initialised ) return;
+    if ( !gtk_widget_get_visible ( g_vkbd.window ) ) return;
+
+    //PIO8255_VKBD_MATRIX_RESET ( );
+
+    int row_block = 0;
+    while ( g_vkbd_allRows[row_block] != NULL ) {
+        st_VKBD_ROW_SZ15 *r = g_vkbd_allRows[row_block];
+        int i;
+        for ( i = 0; i < r->numkeys; i++ ) {
+            st_VKBD_KEY *k = &r->key[i];
+            ui_vkbd_key_event ( k, VK_ALL_ACTCALLERS, FALSE );
+        };
+        row_block++;
+    };
+}
