@@ -61,11 +61,6 @@
 
 #include "pio8255/pio8255.h"
 
-/* BUG: v Linuxu se mi nepodarilo zprovoznit refresh stavu klavesy */
-#ifdef LINUX
-#define UI_VKBD_ANIMATION_DISABLED
-#endif
-
 #define VKBD_BMP_DIR "ui_resources/vkbd/"
 
 
@@ -176,10 +171,20 @@ static const st_VKBD_KEYDEF vk_row5_def[] = {
 };
 
 
-static const st_VKBD_KEYDEF vk_cursors_def[] = {
+static const st_VKBD_KEYDEF vk_cursorUp_def[] = {
     { VKBD_SCANCODE_UP, 7, 5, "cursor_keys/up.bmp" },
+    { 0, 0, 0, (char*) NULL },
+};
+
+
+static const st_VKBD_KEYDEF vk_cursorLR_def[] = {
     { VKBD_SCANCODE_LEFT, 7, 2, "cursor_keys/left.bmp" },
     { VKBD_SCANCODE_RIGHT, 7, 3, "cursor_keys/right.bmp" },
+    { 0, 0, 0, (char*) NULL },
+};
+
+
+static const st_VKBD_KEYDEF vk_cursorDown_def[] = {
     { VKBD_SCANCODE_DOWN, 7, 4, "cursor_keys/down.bmp" },
     { 0, 0, 0, (char*) NULL },
 };
@@ -230,6 +235,7 @@ typedef struct st_VKBD_KEY {
     GtkWidget *src_img;
     GtkWidget *dst_img;
     GtkWidget *eventbox;
+    GtkWidget *drawing_area;
 } st_VKBD_KEY;
 
 
@@ -268,13 +274,6 @@ typedef struct st_VKBD_ROW_SZ15 {
 } st_VKBD_ROW_SZ15;
 
 
-typedef struct st_VKBD_CURSORS {
-    GtkWidget *grid;
-    int numkeys;
-    st_VKBD_KEY key[4];
-} st_VKBD_CURSORS;
-
-
 typedef struct st_VKBD {
     GtkWidget *window;
     GtkWidget *fixed;
@@ -285,7 +284,9 @@ typedef struct st_VKBD {
     st_VKBD_ROW_SZ14 row3;
     st_VKBD_ROW_SZ14 row4;
     st_VKBD_ROW_SZ1 row5;
-    st_VKBD_CURSORS cursors;
+    st_VKBD_ROW_SZ1 cursorUp;
+    st_VKBD_ROW_SZ2 cursorLR;
+    st_VKBD_ROW_SZ1 cursorDown;
     int spacebar_src_width_requested;
 } st_VKBD;
 
@@ -302,7 +303,9 @@ static void *g_vkbd_allRows[] = {
                                  &g_vkbd.row3,
                                  &g_vkbd.row4,
                                  &g_vkbd.row5,
-                                 &g_vkbd.cursors,
+                                 &g_vkbd.cursorUp,
+                                 &g_vkbd.cursorLR,
+                                 &g_vkbd.cursorDown,
                                  NULL,
 };
 
@@ -561,36 +564,26 @@ static void ui_vkbd_key_event ( st_VKBD_KEY *vk_key, en_VKBD_ACT_CALLER act_call
 
     if ( ( vk_key == &VKBD_LSHIFT ) || ( vk_key == &VKBD_RSHIFT ) ) {
         if ( VKBD_LSHIFT.act_caller | VKBD_RSHIFT.act_caller ) {
-#ifndef UI_VKBD_ANIMATION_DISABLED
             ui_vkbd_make_dst_key_down ( &VKBD_LSHIFT );
             ui_vkbd_make_dst_key_down ( &VKBD_RSHIFT );
-#endif
             PIO8255_VKBDBIT_RESET ( vk_key->keydef->mzcolumn, vk_key->keydef->mzbit );
         } else {
-#ifndef UI_VKBD_ANIMATION_DISABLED
             ui_vkbd_make_dst_key_up ( &VKBD_LSHIFT );
             ui_vkbd_make_dst_key_up ( &VKBD_RSHIFT );
-#endif
             PIO8255_VKBDBIT_SET ( vk_key->keydef->mzcolumn, vk_key->keydef->mzbit );
         };
+        gtk_widget_queue_draw ( VKBD_LSHIFT.drawing_area );
+        gtk_widget_queue_draw ( VKBD_RSHIFT.drawing_area );
     } else {
         if ( vk_key->act_caller ) {
-#ifndef UI_VKBD_ANIMATION_DISABLED
             ui_vkbd_make_dst_key_down ( vk_key );
-#endif
             PIO8255_VKBDBIT_RESET ( vk_key->keydef->mzcolumn, vk_key->keydef->mzbit );
         } else {
-#ifndef UI_VKBD_ANIMATION_DISABLED
             ui_vkbd_make_dst_key_up ( vk_key );
-#endif
             PIO8255_VKBDBIT_SET ( vk_key->keydef->mzcolumn, vk_key->keydef->mzbit );
         };
+        gtk_widget_queue_draw ( vk_key->drawing_area );
     };
-
-    // TODO: tohle funguje jen ve WINDOWS verzi. Proc?
-#ifndef UI_VKBD_ANIMATION_DISABLED
-    gtk_widget_queue_draw ( g_vkbd.fixed );
-#endif
 }
 
 
@@ -717,7 +710,16 @@ static gboolean on_window_delete_event ( GtkWidget *widget, GdkEvent *event, gpo
 }
 
 
-static void ui_vkbd_make_key ( GtkWidget *parent, st_VKBD_KEY *vk_key, const st_VKBD_KEYDEF *keydef, int seqnum ) {
+static gboolean on_drawing_area_draw ( GtkWidget *widget, cairo_t *cr, gpointer user_data ) {
+    st_VKBD_KEY *vk_key = user_data;
+    GdkPixbuf *pixbuf = gtk_image_get_pixbuf ( GTK_IMAGE ( vk_key->dst_img ) );
+    gdk_cairo_set_source_pixbuf ( cr, pixbuf, 0, 0 );
+    cairo_paint ( cr );
+    return TRUE;
+}
+
+
+static void ui_vkbd_make_key ( GtkWidget *parent, st_VKBD_KEY *vk_key, const st_VKBD_KEYDEF *keydef ) {
 
     ui_vkbd_init_key_img ( vk_key, keydef );
 
@@ -725,46 +727,20 @@ static void ui_vkbd_make_key ( GtkWidget *parent, st_VKBD_KEY *vk_key, const st_
     gtk_widget_show ( vk_key->eventbox );
     gtk_widget_set_size_request ( vk_key->eventbox, 0, 0 );
 
-    if ( GTK_IS_BOX ( parent ) ) {
-        gtk_box_pack_start ( GTK_BOX ( parent ), vk_key->eventbox, TRUE, TRUE, 0 );
-    } else if ( GTK_IS_GRID ( parent ) ) {
+    gtk_box_pack_start ( GTK_BOX ( parent ), vk_key->eventbox, TRUE, TRUE, 0 );
 
-        int cells = 0, cellX = 0, cellY = 0;
+    vk_key->drawing_area = gtk_drawing_area_new ( );
 
-        switch ( seqnum ) {
+    GdkPixbuf *pixbuf = gtk_image_get_pixbuf ( GTK_IMAGE ( vk_key->dst_img ) );
 
-            case 0:
-                cellX = 0;
-                cellY = 0;
-                cells = 2;
-                break;
+    gtk_widget_set_size_request ( vk_key->drawing_area, gdk_pixbuf_get_width ( pixbuf ), gdk_pixbuf_get_height ( pixbuf ) );
 
-            case 1:
-                cellX = 0;
-                cellY = 1;
-                cells = 1;
-                break;
+    g_signal_connect ( G_OBJECT ( vk_key->drawing_area ), "draw",
+                       G_CALLBACK ( on_drawing_area_draw ), vk_key );
 
-            case 2:
-                cellX = 1;
-                cellY = 1;
-                cells = 1;
-                break;
+    gtk_widget_show ( vk_key->drawing_area );
 
-            case 3:
-                cellX = 0;
-                cellY = 2;
-                cells = 2;
-                break;
-        };
-
-        gtk_grid_attach ( GTK_GRID ( parent ), vk_key->eventbox, cellX, cellY, cells, 1 );
-    };
-
-    gtk_widget_show ( vk_key->dst_img );
-    gtk_widget_set_size_request ( vk_key->dst_img, 0, 0 );
-
-    gtk_container_add ( GTK_CONTAINER ( vk_key->eventbox ), vk_key->dst_img );
+    gtk_container_add ( GTK_CONTAINER ( vk_key->eventbox ), vk_key->drawing_area );
 
     g_signal_connect ( (gpointer) vk_key->eventbox, "button_press_event",
                        G_CALLBACK ( on_dst_img_button_press_event ),
@@ -786,7 +762,6 @@ static void ui_vkbd_make_row ( int posY, int posX, void *row, const st_VKBD_KEYD
         r->numkeys++;
     };
 
-
     r->box = gtk_box_new ( GTK_ORIENTATION_HORIZONTAL, r->numkeys );
     gtk_widget_show ( r->box );
 
@@ -797,26 +772,7 @@ static void ui_vkbd_make_row ( int posY, int posX, void *row, const st_VKBD_KEYD
 
     int i;
     for ( i = 0; i < r->numkeys; i++ ) {
-        ui_vkbd_make_key ( r->box, &r->key[i], &keydef[i], i );
-    };
-}
-
-
-static void ui_vkbd_make_cursor_keys ( int posY, int posX, st_VKBD_CURSORS *cursors, const st_VKBD_KEYDEF *keydef ) {
-
-    cursors->numkeys = 4;
-    cursors->grid = gtk_grid_new ( );
-    gtk_widget_show ( cursors->grid );
-    gtk_fixed_put ( GTK_FIXED ( g_vkbd.fixed ), cursors->grid, posX, posY );
-    gtk_grid_set_row_homogeneous ( GTK_GRID ( cursors->grid ), FALSE );
-    gtk_grid_set_column_homogeneous ( GTK_GRID ( cursors->grid ), FALSE );
-    gtk_grid_set_row_spacing ( GTK_GRID ( cursors->grid ), 0 );
-    gtk_grid_set_column_spacing ( GTK_GRID ( cursors->grid ), 0 );
-    gtk_widget_set_size_request ( cursors->grid, 0, 0 );
-
-    int i;
-    for ( i = 0; i < 4; i++ ) {
-        ui_vkbd_make_key ( cursors->grid, &cursors->key[i], &keydef[i], i );
+        ui_vkbd_make_key ( r->box, &r->key[i], &keydef[i] );
     };
 }
 
@@ -884,8 +840,16 @@ static void ui_vkbd_create ( void ) {
     gint f1_width = ui_vkbd_get_dst_imgs_width ( &g_vkbd.row0a.key[0], 0, 1 );
     gint row3_width = ui_vkbd_get_dst_imgs_width ( &g_vkbd.row3.key[0], 0, 14 );
 
-    ui_vkbd_make_row ( UI_VKB_TOP_BORDER, UI_VKB_LEFT_BORDER + row3_width + f1_width, &g_vkbd.row0b, vk_row0b_def );
-    ui_vkbd_make_cursor_keys ( UI_VKB_TOP_BORDER + 2 * UI_VKB_ROW_HEIGHT, UI_VKB_LEFT_BORDER + row3_width + f1_width, &g_vkbd.cursors, vk_cursors_def );
+    gint rightKeysX = UI_VKB_LEFT_BORDER + row3_width + f1_width;
+
+    ui_vkbd_make_row ( UI_VKB_TOP_BORDER, rightKeysX, &g_vkbd.row0b, vk_row0b_def );
+
+    ui_vkbd_make_row ( UI_VKB_TOP_BORDER + 3 * UI_VKB_ROW_HEIGHT, rightKeysX, &g_vkbd.cursorLR, vk_cursorLR_def );
+
+    gint half_cursorKey_width = ui_vkbd_get_dst_imgs_width ( &g_vkbd.cursorLR.key[0], 0, 1 ) / 2;
+
+    ui_vkbd_make_row ( UI_VKB_TOP_BORDER + 2 * UI_VKB_ROW_HEIGHT, rightKeysX + half_cursorKey_width, &g_vkbd.cursorUp, vk_cursorUp_def );
+    ui_vkbd_make_row ( UI_VKB_TOP_BORDER + 4 * UI_VKB_ROW_HEIGHT, rightKeysX + half_cursorKey_width, &g_vkbd.cursorDown, vk_cursorDown_def );
 
     gint row0b_width = ui_vkbd_get_dst_imgs_width ( &g_vkbd.row0b.key[0], 0, 2 );
 
