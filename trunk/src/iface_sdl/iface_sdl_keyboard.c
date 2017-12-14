@@ -340,20 +340,8 @@ void iface_sdl_full_keyboard_scan ( void ) {
 }
 
 
-void iface_sdl_keydown_event ( SDL_Event *event ) {
-
-    if ( event->key.keysym.scancode == SDL_SCANCODE_F12 ) {
-        mz800_reset ( );
-#if 0
-    } else if ( event.key.keysym.scancode == SDL_SCANCODE_F11 ) {
-        if ( g_mz800.debug_pc == 0 ) {
-            printf ( "Turn ON debug PC\n" );
-        } else {
-            printf ( "Turn OFF debug PC\n" );
-        };
-        g_mz800.debug_pc = ~g_mz800.debug_pc & 1;
-#endif
-    } else if ( event->key.keysym.scancode == SDL_SCANCODE_F10 ) {
+static inline int iface_sdl_keydown_in_development_mode ( SDL_Event *event ) {
+    if ( event->key.keysym.scancode == SDL_SCANCODE_F10 ) {
         printf ( "F10 - INTERRUPT\n" );
         unsigned interrupt_ticks = z80ex_int ( g_mz800.cpu );
         if ( interrupt_ticks ) {
@@ -362,16 +350,30 @@ void iface_sdl_keydown_event ( SDL_Event *event ) {
         } else {
             printf ( "Interrupt NOT received!\n" );
         }
+        return 1;
+    };
+#if 0
+    if ( event.key.keysym.scancode == SDL_SCANCODE_F11 ) {
+        if ( g_mz800.debug_pc == 0 ) {
+            printf ( "Turn ON debug PC\n" );
+        } else {
+            printf ( "Turn OFF debug PC\n" );
+        };
+        g_mz800.debug_pc = ~g_mz800.debug_pc & 1;
+        return 1;
+    };
+#endif
+    return 0;
+}
 
-    } else if ( event->key.keysym.scancode == SDL_SCANCODE_LALT ) {
-        g_iface_alt_key = 1;
 
-        /*
-         * 
-         *  Obsluha klavesovych zkratek ALT+xx
-         * 
-         */
-    } else if ( g_iface_alt_key ) {
+static inline void iface_sdl_keydown_hotkeys ( SDL_Event *event ) {
+    /*
+     * 
+     *  Obsluha klavesovych zkratek ALT+xx
+     * 
+     */
+    if ( g_iface_alt_key ) {
 
         if ( event->key.keysym.scancode == SDL_SCANCODE_C ) {
             /*
@@ -435,12 +437,27 @@ void iface_sdl_keydown_event ( SDL_Event *event ) {
             ui_breakpoints_show_hide_window ( );
 #endif
         };
-
     };
 }
 
 
-void iface_sdl_keyup_event ( SDL_Event *event ) {
+void iface_sdl_keydown_event ( SDL_Event *event ) {
+
+    if ( event->key.keysym.scancode == SDL_SCANCODE_F12 ) {
+        mz800_reset ( );
+    } else if ( event->key.keysym.scancode == SDL_SCANCODE_LALT ) {
+        g_iface_alt_key = 1;
+    } else {
+        if ( ( g_mz800.development_mode ) && ( iface_sdl_keydown_in_development_mode ( event ) ) ) {
+            return;
+        } else if ( !g_ui.disable_hotkeys ) {
+            iface_sdl_keydown_hotkeys ( event );
+        };
+    };
+}
+
+
+void iface_sdl_keyup_event ( SDL_Event * event ) {
     if ( event->key.keysym.scancode == SDL_SCANCODE_LALT ) {
         g_iface_alt_key = 0;
     };

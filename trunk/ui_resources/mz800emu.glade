@@ -1194,30 +1194,6 @@ From time when data were real zeros and ones and computers were
                   </object>
                 </child>
                 <child>
-                  <object class="GtkMenuItem" id="menuitem_keyboard">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">_Keyboard</property>
-                    <property name="use_underline">True</property>
-                    <child type="submenu">
-                      <object class="GtkMenu" id="menu18">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <child>
-                          <object class="GtkMenuItem" id="menuitem_keyboard_virtual_show">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Show / Hide _Virtual Keyboard</property>
-                            <property name="use_underline">True</property>
-                            <accelerator key="k" signal="activate" modifiers="GDK_MOD1_MASK"/>
-                            <signal name="activate" handler="on_menuitem_keyboard_virtual_show_activate" swapped="no"/>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
                   <object class="GtkMenuItem" id="menuitem_rom">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
@@ -1365,7 +1341,70 @@ From time when data were real zeros and ones and computers were
                   </object>
                 </child>
                 <child>
-                  <object class="GtkSeparatorMenuItem" id="separatormenuitem9">
+                  <object class="GtkMenuItem" id="menuitem_keyboard">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">_Keyboard</property>
+                    <property name="use_underline">True</property>
+                    <child type="submenu">
+                      <object class="GtkMenu" id="menu18">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_keyboard_virtual_show">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Show / Hide _Virtual Keyboard</property>
+                            <property name="use_underline">True</property>
+                            <accelerator key="k" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                            <signal name="activate" handler="on_menuitem_keyboard_virtual_show_activate" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem22">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="menuitem_keyboard_disable_hotkeys">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_Disable Main Window Hotkeys</property>
+                            <property name="use_underline">True</property>
+                            <signal name="toggled" handler="on_menuitem_keyboard_disable_hotkeys_toggled" swapped="no"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="menuitem_dip_switch">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">Rear Dip _Switch</property>
+                    <property name="use_underline">True</property>
+                    <child type="submenu">
+                      <object class="GtkMenu" id="menu20">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="menuitem_disp_switch_mz800_mode">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="tooltip_text" translatable="yes">Default mode is MZ700 - switch OFF</property>
+                            <property name="label" translatable="yes">MZ_800 / MZ700 Mode </property>
+                            <property name="use_underline">True</property>
+                            <signal name="toggled" handler="on_menuitem_disp_switch_mz800_mode_toggled" swapped="no"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSeparatorMenuItem" id="separatormenuitem12">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                   </object>
@@ -1401,7 +1440,7 @@ From time when data were real zeros and ones and computers were
                   </object>
                 </child>
                 <child>
-                  <object class="GtkSeparatorMenuItem" id="separatormenuitem12">
+                  <object class="GtkSeparatorMenuItem" id="separatormenuitem9">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                   </object>

@@ -24,32 +24,35 @@
  */
 
 #ifndef CFGMODULE_H
-#define	CFGMODULE_H
+#define CFGMODULE_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "cfgelement.h"
-    
+
     typedef void (*cfgmodule_propagate_cb_t ) (void *m, void *data );
     typedef void (*cfgmodule_save_cb_t ) (void *m, void *data );
+
 
     typedef struct st_CFGMODPROPCB {
         cfgmodule_propagate_cb_t exec;
         void *data;
     } st_CFGMODPROPCB;
 
+
     typedef struct st_CFGMODSAVECB {
         cfgmodule_save_cb_t exec;
         void *data;
     } st_CFGMODSAVECB;
 
+
     typedef struct st_CFGMODULE {
         char *name;
-        
+
         void *parent;
-        
+
         int elements_count;
         st_CFGELEMENT **elements;
 
@@ -85,7 +88,7 @@ extern "C" {
     extern void cfgmodule_propagate ( st_CFGMODULE *m );
     extern void cfgmodule_save ( st_CFGMODULE *m );
 
-    extern void cfgmodule_parse ( st_CFGMODULE *m );
+    extern int cfgmodule_parse ( st_CFGMODULE *m );
 
     /*
      * Privatni funkce
@@ -93,9 +96,9 @@ extern "C" {
     extern st_CFGMODULE* cfgcommon_new_module ( void *parent, char *module_name );
     extern void cfgcommon_destroy_module ( st_CFGMODULE *m );
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* CFGMODULE_H */
+#endif /* CFGMODULE_H */
 

@@ -86,7 +86,9 @@ void cfgmain_init ( void ) {
     cfgmodule_register_new_element ( cmod, "config_creation_timestamp", CFGENTYPE_TEXT, "" );
     cfgmodule_register_new_element ( cmod, "config_creation_platform", CFGENTYPE_TEXT, "" );
 
-    cfgmodule_parse ( cmod );
+    if ( EXIT_SUCCESS == cfgmodule_parse ( cmod ) ) {
+        printf ( "INFO: restore configuration from %s\n", CFGFILE_INI_FILENAME );
+    };
 }
 
 

@@ -24,9 +24,9 @@
  */
 
 #ifndef UI_MAIN_H
-#define	UI_MAIN_H
+#define UI_MAIN_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -65,10 +65,12 @@ extern "C" {
 #define ui_get_entry(name) GTK_ENTRY ( ui_get_object ( name ) )
 #define ui_get_toggle(name) GTK_TOGGLE_BUTTON ( ui_get_object ( name ) )
 
+
     typedef struct st_UIWINPOS {
         gint x;
         gint y;
     } st_UIWINPOS;
+
 
     typedef enum en_FILETYPE {
         FILETYPE_MZF,
@@ -79,6 +81,7 @@ extern "C" {
         FILETYPES_COUNT
     } en_FILETYPE;
 
+
     typedef enum en_OPENMODE {
         OPENMODE_READ = 1,
         OPENMODE_SAVE = 2,
@@ -86,13 +89,14 @@ extern "C" {
         OPENMODE_DIRECTORY = 4,
     } en_OPENMODE;
 
+
     typedef struct st_UI {
         GtkBuilder *builder;
         unsigned calback_lock;
         char *last_folder [ FILETYPES_COUNT ];
         en_FILETYPE last_filetype;
-
         st_UIWINPOS filebrowser_pos;
+        unsigned disable_hotkeys;
     } st_UI;
 
     extern st_UI g_ui;
@@ -118,16 +122,18 @@ extern "C" {
 
     extern void ui_main_update_cpu_speed_menu ( unsigned state );
     extern void ui_main_update_emulation_state ( unsigned state );
-    
+
     extern void ui_update_last_folder_value ( en_FILETYPE file_type, char *value );
+
+    extern void ui_main_update_rear_dip_switch_mz800_mode ( unsigned state );
 
 #ifdef UI_TOPMENU_IS_WINDOW
     extern void ui_hide_main_menu ( void );
 #endif
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* UI_MAIN_H */
+#endif /* UI_MAIN_H */
 

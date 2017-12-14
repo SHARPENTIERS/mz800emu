@@ -1023,11 +1023,26 @@ void mz800_pause_emulation ( unsigned value ) {
 }
 
 
+void mz800_rear_dip_switch_mz800_mode ( unsigned value ) {
+
+    value &= 1;
+    if ( value == g_mz800.mz800_switch ) return;
+
+    g_mz800.mz800_switch = value;
+    ui_main_update_rear_dip_switch_mz800_mode ( g_mz800.mz800_switch );
+}
+
+
 /*******************************************************************************
  *
  * Inicializace MZ-800
  * 
  *******************************************************************************/
+
+void mz800_propagatecfg_mz800_switch ( void *e, void *data ) {
+    ui_main_update_rear_dip_switch_mz800_mode ( cfgelement_get_bool_value ( (CFGELM *) e ) );
+}
+
 
 void mz800_init ( void ) {
 
@@ -1041,11 +1056,10 @@ void mz800_init ( void ) {
 
     cfgelement_set_handlers ( elm, (void*) &g_mz800.development_mode, (void*) &g_mz800.development_mode );
 
-    elm = cfgmodule_register_new_element ( cmod, "mz800_switch", CFGENTYPE_KEYWORD, MZ800SWITCH_OFF,
-                                           MZ800SWITCH_OFF, "OFF",
-                                           MZ800SWITCH_ON, "ON",
-                                           -1 );
 
+    elm = cfgmodule_register_new_element ( cmod, "mz800_switch", CFGENTYPE_BOOL, MZ800SWITCH_OFF );
+    
+    cfgelement_set_propagate_cb ( elm, mz800_propagatecfg_mz800_switch, NULL );
     cfgelement_set_handlers ( elm, (void*) &g_mz800.mz800_switch, (void*) &g_mz800.mz800_switch );
 
     cfgmodule_parse ( cmod );

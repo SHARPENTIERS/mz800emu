@@ -75,6 +75,9 @@
           <itemPath>src/ui/debugger/ui_debugger_iasm.h</itemPath>
           <itemPath>src/ui/debugger/ui_memdump.h</itemPath>
         </logicalFolder>
+        <logicalFolder name="f3" displayName="Tools" projectFiles="true">
+          <itemPath>src/ui/tools/ui_tool_pixbuf.h</itemPath>
+        </logicalFolder>
         <logicalFolder name="f2" displayName="Virtual Keyboard" projectFiles="true">
           <itemPath>src/ui/vkbd/ui_vkbd.h</itemPath>
           <itemPath>src/ui/vkbd/ui_vkbd_linux_x11.h</itemPath>
@@ -210,6 +213,9 @@
           <itemPath>src/ui/debugger/ui_debugger_callbacks.c</itemPath>
           <itemPath>src/ui/debugger/ui_debugger_iasm.c</itemPath>
           <itemPath>src/ui/debugger/ui_memdump.c</itemPath>
+        </logicalFolder>
+        <logicalFolder name="f4" displayName="Tools" projectFiles="true">
+          <itemPath>src/ui/tools/ui_tool_pixbuf.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f2" displayName="Virtual Keyboard" projectFiles="true">
           <itemPath>src/ui/vkbd/ui_vkbd.c</itemPath>
@@ -572,6 +578,10 @@
       <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/tools/ui_tool_pixbuf.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/tools/ui_tool_pixbuf.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_cmt.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -970,6 +980,10 @@
       </item>
       <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/ui/tools/ui_tool_pixbuf.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/tools/ui_tool_pixbuf.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ui/ui_cmt.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_cmt.h" ex="false" tool="3" flavor2="0">
@@ -1357,6 +1371,10 @@
       <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/tools/ui_tool_pixbuf.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/tools/ui_tool_pixbuf.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_cmt.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1760,6 +1778,10 @@
       <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/tools/ui_tool_pixbuf.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/tools/ui_tool_pixbuf.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_cmt.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -2166,6 +2188,10 @@
       </item>
       <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/ui/tools/ui_tool_pixbuf.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/tools/ui_tool_pixbuf.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ui/ui_cmt.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/ui_cmt.h" ex="false" tool="3" flavor2="0">
@@ -2567,6 +2593,10 @@
       <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/tools/ui_tool_pixbuf.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/tools/ui_tool_pixbuf.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_cmt.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -2970,6 +3000,10 @@
       <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/tools/ui_tool_pixbuf.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/tools/ui_tool_pixbuf.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_cmt.c" ex="false" tool="0" flavor2="10">
       </item>
