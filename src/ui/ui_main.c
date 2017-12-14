@@ -133,7 +133,30 @@ void ui_savecfg_folder ( void *e, void *data ) {
     cfgelement_set_text_value ( (CFGELM *) e, g_ui.last_folder [ (en_FILETYPE) data ] );
 }
 
-//void ui_init ( int argc, char *argv[] ) {
+
+void ui_main_update_menuitem_disabled_hotkeys ( unsigned state ) {
+    LOCK_UICALLBACKS ( );
+    if ( state ) {
+        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_keyboard_disable_hotkeys" ), TRUE );
+    } else {
+        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_keyboard_disable_hotkeys" ), FALSE );
+    };
+    UNLOCK_UICALLBACKS ( );
+}
+
+
+void ui_disable_hotkeys ( unsigned value ) {
+    value &= 1;
+    if ( value == g_ui.disable_hotkeys ) return;
+    g_ui.disable_hotkeys = value;
+    ui_main_update_menuitem_disabled_hotkeys ( value );
+    printf ( "INFO: Hotkeys in the main emulator window are %s.\n", ( !value ) ? "ENABLED" : "DISABLED" );
+}
+
+
+void ui_propagatecfg_disable_hotkeys ( void *e, void *data ) {
+    ui_disable_hotkeys ( cfgelement_get_bool_value ( (CFGELM *) e ) );
+}
 
 
 void ui_init ( void ) {
@@ -228,7 +251,7 @@ void ui_init ( void ) {
                                       "   -GtkWindow-resize-grip-height: 0;\n"
                                       "   -GtkWindow-resize-grip-width: 0;\n"
                                       /* The next 4 lines are just 4 different ways to make the background blue. Each one overrides the last one.
-                Their just different color units: named color units, rgb,  rgba, hexidecimal, and shade*/
+            Their just different color units: named color units, rgb,  rgba, hexidecimal, and shade*/
                                       "   background-color: blue;\n"
                                       "   background-color: rgb (0, 0, 255);\n"
                                       "   background-color: rgba (0,0,255,1);\n"
@@ -284,6 +307,11 @@ void ui_init ( void ) {
                                            FILETYPE_DIR, "DIR",
                                            -1 );
     cfgelement_set_handlers ( elm, (void*) &g_ui.last_filetype, (void*) &g_ui.last_filetype );
+
+    elm = cfgmodule_register_new_element ( cmod, "disable_hot_keys", CFGENTYPE_BOOL, 0 );
+
+    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_disable_hotkeys, NULL );
+    cfgelement_set_handlers ( elm, (void*) &g_ui.disable_hotkeys, (void*) &g_ui.disable_hotkeys );
 
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );
@@ -779,3 +807,49 @@ G_MODULE_EXPORT gboolean on_emulator_aboutdialog_delete_event ( GtkWidget *widge
     return TRUE;
 }
 
+
+void ui_main_update_rear_dip_switch_mz800_mode ( unsigned state ) {
+    LOCK_UICALLBACKS ( );
+    if ( state ) {
+        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_disp_switch_mz800_mode" ), TRUE );
+    } else {
+        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_disp_switch_mz800_mode" ), FALSE );
+    };
+    UNLOCK_UICALLBACKS ( );
+}
+
+
+G_MODULE_EXPORT void on_menuitem_disp_switch_mz800_mode_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+
+    if ( FALSE == gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_disp_switch_mz800_mode" ) ) ) {
+        mz800_rear_dip_switch_mz800_mode ( 0 );
+    } else {
+        mz800_rear_dip_switch_mz800_mode ( 1 );
+    };
+}
+
+
+G_MODULE_EXPORT void on_menuitem_keyboard_disable_hotkeys_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+
+    if ( FALSE == gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_keyboard_disable_hotkeys" ) ) ) {
+        ui_disable_hotkeys ( 0 );
+    } else {
+        ui_disable_hotkeys ( 1 );
+    };
+}

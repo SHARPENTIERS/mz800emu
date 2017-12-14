@@ -49,10 +49,12 @@
 #define BPT_DEFAULT_GROUP   "Breakpoint Group"
 #define BPT_DEFAULT_EVENT   "Addr: 0x"
 
+
 typedef enum en_BRKTYPE {
     BRKTYPE_GROUP,
     BRKTYPE_EVENT,
 } en_BRKTYPE;
+
 
 typedef enum en_DBG_BREAKPOINTS {
     BRK_ID = 0,
@@ -75,11 +77,13 @@ typedef enum en_DBG_BREAKPOINTS {
     BRK_COUNT_COLUMNS
 } en_DBG_BREAKPOINTS;
 
+
 typedef enum en_UIPBDND {
     UIPBDND_DONE,
     UIPBDND_ACTION,
     UIPBDND_BAD_DESTINATION
 } en_UIPBDND;
+
 
 typedef struct st_UIBPOINTS {
     unsigned id;
@@ -148,21 +152,21 @@ gboolean ui_breakpoints_add_item ( GtkTreeModel *model, GtkTreeIter *iter, GtkTr
     };
 
     gtk_tree_store_set ( GTK_TREE_STORE ( model ), iter,
-            BRK_ID, id,
-            BRK_TYPE, type,
-            BRK_NAME, name,
-            BRK_ENABLED, enabled,
-            BRK_ADDR, addr,
-            BRK_ADDR_TXT, addr_txt,
-            BRK_FG_COLOR, fg_color,
-            BRK_BG_COLOR, bg_color,
-            BRK_FG_R, fg_color->red,
-            BRK_FG_G, fg_color->green,
-            BRK_FG_B, fg_color->blue,
-            BRK_BG_R, bg_color->red,
-            BRK_BG_G, bg_color->green,
-            BRK_BG_B, bg_color->blue,
-            -1 );
+                         BRK_ID, id,
+                         BRK_TYPE, type,
+                         BRK_NAME, name,
+                         BRK_ENABLED, enabled,
+                         BRK_ADDR, addr,
+                         BRK_ADDR_TXT, addr_txt,
+                         BRK_FG_COLOR, fg_color,
+                         BRK_BG_COLOR, bg_color,
+                         BRK_FG_R, fg_color->red,
+                         BRK_FG_G, fg_color->green,
+                         BRK_FG_B, fg_color->blue,
+                         BRK_BG_R, bg_color->red,
+                         BRK_BG_G, bg_color->green,
+                         BRK_BG_B, bg_color->blue,
+                         -1 );
 
     return TRUE;
 }
@@ -312,21 +316,21 @@ void ui_breakpoints_copy_iter ( GtkTreeModel *model, GtkTreeIter *dst_iter, GtkT
     bg_color.alpha = 0xffff;
 
     gtk_tree_store_set ( GTK_TREE_STORE ( model ), dst_iter,
-            BRK_ID, g_value_get_uint ( &gv_id ),
-            BRK_TYPE, g_value_get_uint ( &gv_type ),
-            BRK_NAME, g_value_get_string ( &gv_name ),
-            BRK_ENABLED, g_value_get_boolean ( &gv_enabled ),
-            BRK_ADDR, g_value_get_uint ( &gv_addr ),
-            BRK_ADDR_TXT, g_value_get_string ( &gv_addr_txt ),
-            BRK_FG_COLOR, &fg_color,
-            BRK_BG_COLOR, &bg_color,
-            BRK_FG_R, g_value_get_double ( &gv_fg_r ),
-            BRK_FG_G, g_value_get_double ( &gv_fg_g ),
-            BRK_FG_B, g_value_get_double ( &gv_fg_b ),
-            BRK_BG_R, g_value_get_double ( &gv_bg_r ),
-            BRK_BG_G, g_value_get_double ( &gv_bg_g ),
-            BRK_BG_B, g_value_get_double ( &gv_bg_b ),
-            -1 );
+                         BRK_ID, g_value_get_uint ( &gv_id ),
+                         BRK_TYPE, g_value_get_uint ( &gv_type ),
+                         BRK_NAME, g_value_get_string ( &gv_name ),
+                         BRK_ENABLED, g_value_get_boolean ( &gv_enabled ),
+                         BRK_ADDR, g_value_get_uint ( &gv_addr ),
+                         BRK_ADDR_TXT, g_value_get_string ( &gv_addr_txt ),
+                         BRK_FG_COLOR, &fg_color,
+                         BRK_BG_COLOR, &bg_color,
+                         BRK_FG_R, g_value_get_double ( &gv_fg_r ),
+                         BRK_FG_G, g_value_get_double ( &gv_fg_g ),
+                         BRK_FG_B, g_value_get_double ( &gv_fg_b ),
+                         BRK_BG_R, g_value_get_double ( &gv_bg_r ),
+                         BRK_BG_G, g_value_get_double ( &gv_bg_g ),
+                         BRK_BG_B, g_value_get_double ( &gv_bg_b ),
+                         -1 );
 
     GtkTreeIter child_src_iter;
 
@@ -650,9 +654,9 @@ void ui_breakpoints_prepare_cfgfile ( st_CFGROOT *cfgroot, GtkTreeModel *model, 
         en_BRKTYPE type = g_value_get_uint ( &gv_type );
 
         cfgmodule_register_new_element ( cmod, "type", CFGENTYPE_KEYWORD, type,
-                BRKTYPE_GROUP, "GROUP",
-                BRKTYPE_EVENT, "EVENT",
-                -1 );
+                                         BRKTYPE_GROUP, "GROUP",
+                                         BRKTYPE_EVENT, "EVENT",
+                                         -1 );
         cfgmodule_register_new_element ( cmod, "enabled", CFGENTYPE_BOOL, g_value_get_boolean ( &gv_enabled ) );
         cfgmodule_register_new_element ( cmod, "name", CFGENTYPE_TEXT, g_value_get_string ( &gv_name ) );
 
@@ -748,9 +752,9 @@ void ui_breakpoints_parse_cfg ( st_CFGROOT *cfgroot, GtkTreeModel *model, GtkTre
 
 
         CFGELM *elm_type = cfgmodule_register_new_element ( cmod, "type", CFGENTYPE_KEYWORD, BRKTYPE_GROUP,
-                BRKTYPE_GROUP, "GROUP",
-                BRKTYPE_EVENT, "EVENT",
-                -1 );
+                                                            BRKTYPE_GROUP, "GROUP",
+                                                            BRKTYPE_EVENT, "EVENT",
+                                                            -1 );
         CFGELM *elm_enabled = cfgmodule_register_new_element ( cmod, "enabled", CFGENTYPE_BOOL, 0 );
         CFGELM *elm_name = cfgmodule_register_new_element ( cmod, "name", CFGENTYPE_TEXT, "Default Name" );
         CFGELM *elm_fg_color = cfgmodule_register_new_element ( cmod, "fg_color", CFGENTYPE_TEXT, "rgba(0,0,0,255)" );
@@ -813,7 +817,13 @@ void ui_breakpoints_init ( void ) {
     CFGMOD *cmod = cfgroot_register_new_module ( cfgroot, "BREAKPOINTS" );
     CFGELM *elm = cfgmodule_register_new_element ( cmod, "childs", CFGENTYPE_TEXT, "" );
 
+#if 0
+    if ( EXIT_SUCCESS == cfgmodule_parse ( cmod ) ) {
+        printf ( "INFO: restore breakpoints from %s\n", BREAKPOINTS_INI_FILENAME );
+    }
+#else
     cfgmodule_parse ( cmod );
+#endif
 
     GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_breakpoints_treestore" ) );
 
@@ -911,10 +921,10 @@ G_MODULE_EXPORT void on_dbg_breakpoints_treestore_row_changed ( GtkTreeModel *tr
 
     lock = 1;
     gtk_tree_store_set ( GTK_TREE_STORE ( tree_model ), iter,
-            BRK_MAY_BE_ENABLED, this_may_be_enabled,
-            BRK_NAME_STRIKETHROUGH, ~this_may_be_enabled & 1,
-            BRK_NAME_WEIGHT, name_weight,
-            -1 );
+                         BRK_MAY_BE_ENABLED, this_may_be_enabled,
+                         BRK_NAME_STRIKETHROUGH, ~this_may_be_enabled & 1,
+                         BRK_NAME_WEIGHT, name_weight,
+                         -1 );
     lock = 0;
 
     GtkTreeIter child_iter;
@@ -1123,7 +1133,7 @@ G_MODULE_EXPORT gboolean on_dbg_breakpoints_treeview_button_press_event ( GtkWid
 G_MODULE_EXPORT void on_bpt_edit_menuitem_activate ( GtkMenuItem *menuitem, gpointer data ) {
     (
 
-            void) menuitem;
+      void) menuitem;
     (void) data;
 
     GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_breakpoints_treestore" ) );
@@ -1272,25 +1282,25 @@ G_MODULE_EXPORT void on_bpt_settings_ok_button_clicked ( GtkButton *button, gpoi
 
         if ( g_uibpoints.edit_id == -1 ) {
             ui_breakpoints_add_group ( tree_model, &iter,
-                    parent_iter,
-                    g_uibpoints.id++,
-                    gtk_entry_get_text ( ui_get_entry ( "bpt_name_entry" ) ),
-                    gtk_toggle_button_get_active ( ui_get_toggle ( "bpt_enabled_checkbutton" ) ),
-                    &fg_color,
-                    &bg_color );
+                                       parent_iter,
+                                       g_uibpoints.id++,
+                                       gtk_entry_get_text ( ui_get_entry ( "bpt_name_entry" ) ),
+                                       gtk_toggle_button_get_active ( ui_get_toggle ( "bpt_enabled_checkbutton" ) ),
+                                       &fg_color,
+                                       &bg_color );
         } else {
             gtk_tree_store_set ( GTK_TREE_STORE ( tree_model ), &iter,
-                    BRK_NAME, gtk_entry_get_text ( ui_get_entry ( "bpt_name_entry" ) ),
-                    BRK_ENABLED, gtk_toggle_button_get_active ( ui_get_toggle ( "bpt_enabled_checkbutton" ) ),
-                    BRK_FG_COLOR, &fg_color,
-                    BRK_BG_COLOR, &bg_color,
-                    BRK_FG_R, fg_color.red,
-                    BRK_FG_G, fg_color.green,
-                    BRK_FG_B, fg_color.blue,
-                    BRK_BG_R, bg_color.red,
-                    BRK_BG_G, bg_color.green,
-                    BRK_BG_B, bg_color.blue,
-                    -1 );
+                                 BRK_NAME, gtk_entry_get_text ( ui_get_entry ( "bpt_name_entry" ) ),
+                                 BRK_ENABLED, gtk_toggle_button_get_active ( ui_get_toggle ( "bpt_enabled_checkbutton" ) ),
+                                 BRK_FG_COLOR, &fg_color,
+                                 BRK_BG_COLOR, &bg_color,
+                                 BRK_FG_R, fg_color.red,
+                                 BRK_FG_G, fg_color.green,
+                                 BRK_FG_B, fg_color.blue,
+                                 BRK_BG_R, bg_color.red,
+                                 BRK_BG_G, bg_color.green,
+                                 BRK_BG_B, bg_color.blue,
+                                 -1 );
         };
 
     } else {
@@ -1341,27 +1351,27 @@ G_MODULE_EXPORT void on_bpt_settings_ok_button_clicked ( GtkButton *button, gpoi
 
         if ( g_uibpoints.edit_id == -1 ) {
             ui_breakpoints_add_event ( tree_model, &iter, parent_iter,
-                    g_uibpoints.id++,
-                    set_name,
-                    gtk_toggle_button_get_active ( ui_get_toggle ( "bpt_enabled_checkbutton" ) ),
-                    addr,
-                    &fg_color,
-                    &bg_color );
+                                       g_uibpoints.id++,
+                                       set_name,
+                                       gtk_toggle_button_get_active ( ui_get_toggle ( "bpt_enabled_checkbutton" ) ),
+                                       addr,
+                                       &fg_color,
+                                       &bg_color );
         } else {
             gtk_tree_store_set ( GTK_TREE_STORE ( tree_model ), &iter,
-                    BRK_NAME, set_name,
-                    BRK_ADDR, addr,
-                    BRK_ADDR_TXT, addr_txt,
-                    BRK_ENABLED, gtk_toggle_button_get_active ( ui_get_toggle ( "bpt_enabled_checkbutton" ) ),
-                    BRK_FG_COLOR, &fg_color,
-                    BRK_BG_COLOR, &bg_color,
-                    BRK_FG_R, fg_color.red,
-                    BRK_FG_G, fg_color.green,
-                    BRK_FG_B, fg_color.blue,
-                    BRK_BG_R, bg_color.red,
-                    BRK_BG_G, bg_color.green,
-                    BRK_BG_B, bg_color.blue,
-                    -1 );
+                                 BRK_NAME, set_name,
+                                 BRK_ADDR, addr,
+                                 BRK_ADDR_TXT, addr_txt,
+                                 BRK_ENABLED, gtk_toggle_button_get_active ( ui_get_toggle ( "bpt_enabled_checkbutton" ) ),
+                                 BRK_FG_COLOR, &fg_color,
+                                 BRK_BG_COLOR, &bg_color,
+                                 BRK_FG_R, fg_color.red,
+                                 BRK_FG_G, fg_color.green,
+                                 BRK_FG_B, fg_color.blue,
+                                 BRK_BG_R, bg_color.red,
+                                 BRK_BG_G, bg_color.green,
+                                 BRK_BG_B, bg_color.blue,
+                                 -1 );
         };
 
         g_free ( set_name );

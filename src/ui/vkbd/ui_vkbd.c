@@ -41,6 +41,10 @@
  * 
  * CURSOR LEFT je od CR vzdalen na delku 1 a 1/5 klavesy.
  * 
+ * F1 - F5, INS, DEL ma vysku 1/2 klavesy.
+ * 
+ * Mezera mezi row0 a row1 je 1/2 klavesy.
+ * 
  */
 
 #include <stdlib.h>
@@ -60,6 +64,8 @@
 #endif
 
 #include "pio8255/pio8255.h"
+
+#include "ui/tools/ui_tool_pixbuf.h"
 
 #define VKBD_BMP_DIR "ui_resources/vkbd/"
 
@@ -311,50 +317,11 @@ static void *g_vkbd_allRows[] = {
 
 static gboolean g_vkbd_is_initialised = FALSE;
 
-#define UI_VKBD_DSTIMG_ADD_WIDTH    1
-#define UI_VKBD_DSTIMG_ADD_HEIGHT   1
+#define UI_VKBD_DSTIMG_TOP_BORDER   1
+#define UI_VKBD_DSTIMG_LEFT_BORDER  1
 
-
-static void ui_vkbd_pixbuf_put_pixel ( GdkPixbuf *pixbuf, int x, int y, guchar red, guchar green, guchar blue, guchar alpha ) {
-
-    gint width;
-    gint height;
-    gint rowstride;
-    gint n_channels;
-    guchar *pixels, *p;
-    gboolean has_alpha;
-
-    n_channels = gdk_pixbuf_get_n_channels ( pixbuf );
-    has_alpha = gdk_pixbuf_get_has_alpha ( pixbuf );
-
-    g_assert ( gdk_pixbuf_get_colorspace ( pixbuf ) == GDK_COLORSPACE_RGB );
-    g_assert ( gdk_pixbuf_get_bits_per_sample ( pixbuf ) == 8 );
-
-    if ( has_alpha ) {
-        g_assert ( n_channels == 4 );
-    } else {
-        g_assert ( n_channels == 3 );
-    };
-
-    width = gdk_pixbuf_get_width ( pixbuf );
-    height = gdk_pixbuf_get_height ( pixbuf );
-
-    g_assert ( x >= 0 && x < width );
-    g_assert ( y >= 0 && y < height );
-
-    rowstride = gdk_pixbuf_get_rowstride ( pixbuf );
-    pixels = gdk_pixbuf_get_pixels ( pixbuf );
-
-    p = pixels + y * rowstride + x * n_channels;
-
-    p[0] = red;
-    p[1] = green;
-    p[2] = blue;
-
-    if ( has_alpha ) {
-        p[3] = alpha;
-    };
-}
+#define UI_VKBD_PRESSED_X_SHIFT     2
+#define UI_VKBD_PRESSED_Y_SHIFT     2
 
 
 static void ui_vkbd_copy_src2dst ( st_VKBD_KEY *vk_key, int shiftX, int shiftY ) {
@@ -401,25 +368,21 @@ static void ui_vkbd_copy_src2dst ( st_VKBD_KEY *vk_key, int shiftX, int shiftY )
 
 static void ui_vkbd_make_dst_key_up ( st_VKBD_KEY *vk_key ) {
 
+    ui_vkbd_copy_src2dst ( vk_key, UI_VKBD_DSTIMG_TOP_BORDER, UI_VKBD_DSTIMG_LEFT_BORDER );
+
+#if UI_VKBD_DSTIMG_TOP_BORDER || UI_VKBD_DSTIMG_LEFT_BORDER
     GdkPixbuf *dst_pixbuf = gtk_image_get_pixbuf ( GTK_IMAGE ( vk_key->dst_img ) );
+#endif
 
+#if UI_VKBD_DSTIMG_TOP_BORDER
     gint width = gdk_pixbuf_get_width ( dst_pixbuf );
+    ui_tool_pixbuf_create_horizontal_line ( dst_pixbuf, 0, 0, width, UI_VKBD_DSTIMG_TOP_BORDER, 0xffffff );
+#endif
+
+#if UI_VKBD_DSTIMG_LEFT_BORDER
     gint height = gdk_pixbuf_get_height ( dst_pixbuf );
-
-    ui_vkbd_copy_src2dst ( vk_key, UI_VKBD_DSTIMG_ADD_WIDTH, UI_VKBD_DSTIMG_ADD_HEIGHT );
-
-    int i;
-    if ( UI_VKBD_DSTIMG_ADD_WIDTH ) {
-        for ( i = 0; i < width; i++ ) {
-            ui_vkbd_pixbuf_put_pixel ( dst_pixbuf, i, 0, 0xff, 0xff, 0xff, 0 );
-        };
-    };
-
-    if ( UI_VKBD_DSTIMG_ADD_HEIGHT ) {
-        for ( i = 0; i < height; i++ ) {
-            ui_vkbd_pixbuf_put_pixel ( dst_pixbuf, 0, i, 0xff, 0xff, 0xff, 0 );
-        };
-    };
+    ui_tool_pixbuf_create_vertical_line ( dst_pixbuf, 0, 0, height, UI_VKBD_DSTIMG_LEFT_BORDER, 0xffffff );
+#endif
 
 }
 
@@ -431,24 +394,25 @@ static void ui_vkbd_make_dst_key_down ( st_VKBD_KEY *vk_key ) {
     gint width = gdk_pixbuf_get_width ( dst_pixbuf );
     gint height = gdk_pixbuf_get_height ( dst_pixbuf );
 
-    ui_vkbd_copy_src2dst ( vk_key, UI_VKBD_DSTIMG_ADD_WIDTH + 2, UI_VKBD_DSTIMG_ADD_HEIGHT + 2 );
+#if UI_VKBD_PRESSED_X_SHIFT || UI_VKBD_PRESSED_Y_SHIFT
+    ui_vkbd_copy_src2dst ( vk_key, UI_VKBD_DSTIMG_TOP_BORDER + UI_VKBD_PRESSED_Y_SHIFT, UI_VKBD_DSTIMG_LEFT_BORDER + UI_VKBD_PRESSED_X_SHIFT );
+#endif
 
-    int i;
-    if ( UI_VKBD_DSTIMG_ADD_WIDTH ) {
-        for ( i = 0; i < width; i++ ) {
-            ui_vkbd_pixbuf_put_pixel ( dst_pixbuf, i, 0, 0x80, 0x80, 0x80, 0 );
-            ui_vkbd_pixbuf_put_pixel ( dst_pixbuf, i, 1, 0x00, 0x00, 0x00, 0 );
-            ui_vkbd_pixbuf_put_pixel ( dst_pixbuf, i, 2, 0x00, 0x00, 0x00, 0 );
-        };
-    };
+#if UI_VKBD_DSTIMG_TOP_BORDER
+    ui_tool_pixbuf_create_horizontal_line ( dst_pixbuf, 0, 0, width, UI_VKBD_DSTIMG_TOP_BORDER, 0x808080 );
+#endif
 
-    if ( UI_VKBD_DSTIMG_ADD_HEIGHT ) {
-        for ( i = 0; i < height; i++ ) {
-            ui_vkbd_pixbuf_put_pixel ( dst_pixbuf, 0, i, 0x80, 0x80, 0x80, 0 );
-            ui_vkbd_pixbuf_put_pixel ( dst_pixbuf, 1, i, 0x00, 0x00, 0x00, 0 );
-            ui_vkbd_pixbuf_put_pixel ( dst_pixbuf, 2, i, 0x00, 0x00, 0x00, 0 );
-        };
-    };
+#if UI_VKBD_PRESSED_Y_SHIFT
+    ui_tool_pixbuf_create_horizontal_line ( dst_pixbuf, 0, 0 + UI_VKBD_DSTIMG_TOP_BORDER, width, UI_VKBD_PRESSED_Y_SHIFT, 0x000000 );
+#endif
+
+#if UI_VKBD_DSTIMG_LEFT_BORDER
+    ui_tool_pixbuf_create_vertical_line ( dst_pixbuf, 0, 0, height, UI_VKBD_DSTIMG_LEFT_BORDER, 0x808080 );
+#endif
+
+#if UI_VKBD_PRESSED_X_SHIFT
+    ui_tool_pixbuf_create_vertical_line ( dst_pixbuf, 0 + UI_VKBD_DSTIMG_LEFT_BORDER, 0 + UI_VKBD_DSTIMG_TOP_BORDER, height - UI_VKBD_DSTIMG_TOP_BORDER, UI_VKBD_PRESSED_X_SHIFT, 0x000000 );
+#endif
 }
 
 
@@ -475,7 +439,7 @@ static void ui_vkbd_init_key_img ( st_VKBD_KEY *vk_key, const st_VKBD_KEYDEF *ke
     vk_key->src_img = NULL;
     vk_key->act_caller = VK_ACTCALL_NONE;
 
-    if ( ( keydef->scancode == VKBD_SCANCODE_SPACE ) && ( g_vkbd.spacebar_src_width_requested ) && ( UI_VKBD_DSTIMG_ADD_WIDTH ) ) {
+    if ( ( keydef->scancode == VKBD_SCANCODE_SPACE ) && ( g_vkbd.spacebar_src_width_requested ) && ( UI_VKBD_DSTIMG_TOP_BORDER ) ) {
         GtkWidget *loaded_img = ui_vkbd_create_src_key_img ( keydef->filename );
         GdkPixbuf *loaded_pixbuf = gtk_image_get_pixbuf ( GTK_IMAGE ( loaded_img ) );
         gint loaded_width = gdk_pixbuf_get_width ( loaded_pixbuf );
@@ -545,8 +509,8 @@ static void ui_vkbd_init_key_img ( st_VKBD_KEY *vk_key, const st_VKBD_KEYDEF *ke
     GdkPixbuf *dst_pixbuf = gdk_pixbuf_new ( gdk_pixbuf_get_colorspace ( src_pixbuf ),
                                              gdk_pixbuf_get_has_alpha ( src_pixbuf ),
                                              gdk_pixbuf_get_bits_per_sample ( src_pixbuf ),
-                                             gdk_pixbuf_get_width ( src_pixbuf ) + UI_VKBD_DSTIMG_ADD_WIDTH,
-                                             gdk_pixbuf_get_height ( src_pixbuf ) + UI_VKBD_DSTIMG_ADD_HEIGHT );
+                                             gdk_pixbuf_get_width ( src_pixbuf ) + UI_VKBD_DSTIMG_TOP_BORDER,
+                                             gdk_pixbuf_get_height ( src_pixbuf ) + UI_VKBD_DSTIMG_LEFT_BORDER );
 
     vk_key->dst_img = gtk_image_new_from_pixbuf ( dst_pixbuf );
 
@@ -781,7 +745,6 @@ static void ui_vkbd_make_row ( int posY, int posX, void *row, const st_VKBD_KEYD
 #define UI_VKB_LEFT_BORDER    15
 #define UI_VKB_RIGHT_BORDER   15
 #define UI_VKB_BOTOM_BORDER   15
-#define UI_VKB_ROW_HEIGHT     30
 
 
 static gint ui_vkbd_get_dst_imgs_width ( st_VKBD_KEY *vk_key, int from, int count ) {
@@ -821,20 +784,30 @@ static void ui_vkbd_create ( void ) {
     gtk_widget_show ( g_vkbd.fixed );
     gtk_container_add ( GTK_CONTAINER ( g_vkbd.window ), g_vkbd.fixed );
 
-    int y = UI_VKB_TOP_BORDER;
-    ui_vkbd_make_row ( y, UI_VKB_LEFT_BORDER, &g_vkbd.row0a, vk_row0a_def );
-    y += UI_VKB_ROW_HEIGHT;
-    ui_vkbd_make_row ( y, UI_VKB_LEFT_BORDER, &g_vkbd.row1, vk_row1_def );
-    y += UI_VKB_ROW_HEIGHT;
-    ui_vkbd_make_row ( y, UI_VKB_LEFT_BORDER, &g_vkbd.row2, vk_row2_def );
-    y += UI_VKB_ROW_HEIGHT;
-    ui_vkbd_make_row ( y, UI_VKB_LEFT_BORDER, &g_vkbd.row3, vk_row3_def );
-    y += UI_VKB_ROW_HEIGHT;
-    ui_vkbd_make_row ( y, UI_VKB_LEFT_BORDER, &g_vkbd.row4, vk_row4_def );
-    int spacebar_startX = UI_VKB_LEFT_BORDER + ui_vkbd_get_dst_imgs_width ( &g_vkbd.row4.key[0], 0, 3 );
-    g_vkbd.spacebar_src_width_requested = ui_vkbd_get_dst_imgs_width ( &g_vkbd.row4.key[0], 3, 9 ) - UI_VKBD_DSTIMG_ADD_WIDTH;
 
-    y += UI_VKB_ROW_HEIGHT;
+    int y = UI_VKB_TOP_BORDER;
+
+    ui_vkbd_make_row ( y, UI_VKB_LEFT_BORDER, &g_vkbd.row0a, vk_row0a_def );
+
+    GdkPixbuf *pixbuf = gtk_image_get_pixbuf ( GTK_IMAGE ( g_vkbd.row0a.key[0].dst_img ) );
+    int key_height = 2 * gdk_pixbuf_get_height ( pixbuf );
+    y += key_height;
+
+    ui_vkbd_make_row ( y, UI_VKB_LEFT_BORDER, &g_vkbd.row1, vk_row1_def );
+    y += key_height;
+
+    ui_vkbd_make_row ( y, UI_VKB_LEFT_BORDER, &g_vkbd.row2, vk_row2_def );
+    y += key_height;
+
+    ui_vkbd_make_row ( y, UI_VKB_LEFT_BORDER, &g_vkbd.row3, vk_row3_def );
+    y += key_height;
+
+    ui_vkbd_make_row ( y, UI_VKB_LEFT_BORDER, &g_vkbd.row4, vk_row4_def );
+
+    int spacebar_startX = UI_VKB_LEFT_BORDER + ui_vkbd_get_dst_imgs_width ( &g_vkbd.row4.key[0], 0, 3 );
+    g_vkbd.spacebar_src_width_requested = ui_vkbd_get_dst_imgs_width ( &g_vkbd.row4.key[0], 3, 9 ) - UI_VKBD_DSTIMG_TOP_BORDER;
+
+    y += key_height;
     ui_vkbd_make_row ( y, spacebar_startX, &g_vkbd.row5, vk_row5_def );
 
     gint f1_width = ui_vkbd_get_dst_imgs_width ( &g_vkbd.row0a.key[0], 0, 1 );
@@ -844,18 +817,18 @@ static void ui_vkbd_create ( void ) {
 
     ui_vkbd_make_row ( UI_VKB_TOP_BORDER, rightKeysX, &g_vkbd.row0b, vk_row0b_def );
 
-    ui_vkbd_make_row ( UI_VKB_TOP_BORDER + 3 * UI_VKB_ROW_HEIGHT, rightKeysX, &g_vkbd.cursorLR, vk_cursorLR_def );
+    ui_vkbd_make_row ( UI_VKB_TOP_BORDER + 3 * key_height, rightKeysX, &g_vkbd.cursorLR, vk_cursorLR_def );
 
     gint half_cursorKey_width = ui_vkbd_get_dst_imgs_width ( &g_vkbd.cursorLR.key[0], 0, 1 ) / 2;
 
-    ui_vkbd_make_row ( UI_VKB_TOP_BORDER + 2 * UI_VKB_ROW_HEIGHT, rightKeysX + half_cursorKey_width, &g_vkbd.cursorUp, vk_cursorUp_def );
-    ui_vkbd_make_row ( UI_VKB_TOP_BORDER + 4 * UI_VKB_ROW_HEIGHT, rightKeysX + half_cursorKey_width, &g_vkbd.cursorDown, vk_cursorDown_def );
+    ui_vkbd_make_row ( UI_VKB_TOP_BORDER + 2 * key_height, rightKeysX + half_cursorKey_width, &g_vkbd.cursorUp, vk_cursorUp_def );
+    ui_vkbd_make_row ( UI_VKB_TOP_BORDER + 4 * key_height, rightKeysX + half_cursorKey_width, &g_vkbd.cursorDown, vk_cursorDown_def );
 
     gint row0b_width = ui_vkbd_get_dst_imgs_width ( &g_vkbd.row0b.key[0], 0, 2 );
 
     gtk_widget_set_size_request ( g_vkbd.fixed,
                                   UI_VKB_LEFT_BORDER + row3_width + f1_width + row0b_width + UI_VKB_RIGHT_BORDER,
-                                  UI_VKB_TOP_BORDER + 6 * UI_VKB_ROW_HEIGHT + UI_VKB_BOTOM_BORDER );
+                                  UI_VKB_TOP_BORDER + 6 * key_height + UI_VKB_BOTOM_BORDER );
 }
 
 

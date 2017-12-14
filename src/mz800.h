@@ -169,6 +169,8 @@ extern "C" {
 
     extern void mz800_switch_emulation_speed ( unsigned emulation_speed );
     extern void mz800_pause_emulation ( unsigned value );
+    
+    extern void mz800_rear_dip_switch_mz800_mode ( unsigned value );
 
     extern int mz800_get_instruction_start_ticks ( void );
 

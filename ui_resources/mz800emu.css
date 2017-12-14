@@ -25,36 +25,6 @@ GtkMenu GtkLabel {
 }
 
 
-.class_dbg_mmap_RAM {
-	background-color: green;
-}
-
-
-.class_dbg_mmap_ROM {
-	background-color: red;
-}
-
-
-.class_dbg_mmap_CGROM {
-	background-color: black;
-}
-
-
-.class_dbg_mmap_CGRAM {
-	background-color: white;
-}
-
-
-.class_dbg_mmap_VRAM {
-	background-color: pink;
-}
-
-
-.class_dbg_mmap_PORTS {
-	background-color: blue;
-}
-
-
 * {
 	/* Arial, etc... */
 	/* font-family: Segoe UI, Arial, Helvetica, sans-serif; */
