@@ -41,7 +41,7 @@ int fs_layer_fopen ( FILE **fh, char *path, char *mode ) {
     
     int retval;
     //    *fh = fopen ( path, mode );
-    *fh = ui_utils_fopen ( path, mode );
+    *fh = ui_utils_file_open ( path, mode );
 
     if ( *fh != NULL ) {
         retval = FS_LAYER_FR_OK;
@@ -54,7 +54,7 @@ int fs_layer_fopen ( FILE **fh, char *path, char *mode ) {
 int fs_layer_fread ( FILE **fh, void *buffer, int count_bytes, unsigned int *readlen ) {
     char retval;
 
-    *readlen = ui_utils_fread ( buffer, 1, count_bytes, *fh );
+    *readlen = ui_utils_file_read ( buffer, 1, count_bytes, *fh );
     if ( *readlen == count_bytes ) {
         retval = FS_LAYER_FR_OK;
     } else {
@@ -67,7 +67,7 @@ int fs_layer_fread ( FILE **fh, void *buffer, int count_bytes, unsigned int *rea
 int fs_layer_fwrite ( FILE **fh, void *buffer, int count_bytes, unsigned int *writelen ) {
     char retval;
 
-    *writelen = ui_utils_fwrite ( buffer, 1, count_bytes, *fh );
+    *writelen = ui_utils_file_write ( buffer, 1, count_bytes, *fh );
     if ( *writelen == count_bytes ) {
         retval = FS_LAYER_FR_OK;
     } else {

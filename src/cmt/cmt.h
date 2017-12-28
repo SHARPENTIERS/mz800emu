@@ -141,8 +141,17 @@ extern "C" {
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
     extern void cmt_ctc1m1_event ( unsigned event_ticks );
-    extern void cmt_on_screen_done_event ( void );
 #endif
+
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+#include "gdg/video.h"
+#define cmt_on_screen_done_event() {\
+        if ( g_cmt.clk1m1_event.ticks != -1 ) {\
+            g_cmt.clk1m1_event.ticks -= VIDEO_SCREEN_TICKS;\
+        };\
+}
+#endif
+
 
 #ifdef __cplusplus
 }

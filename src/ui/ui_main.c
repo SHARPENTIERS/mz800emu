@@ -68,7 +68,6 @@
 #include "build_time.h"
 
 
-
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 #include "debugger/debugger.h"
 #include "ui/debugger/ui_breakpoints.h"
@@ -372,7 +371,7 @@ void ui_show_error_dialog ( char *error_message ) {
 
 void ui_write_errorlog ( char *lvl, char *msg ) {
     FILE *fp;
-    if ( NULL == ( fp = ui_utils_fopen ( UI_ERRORLOG_FILE, "a" ) ) ) {
+    if ( NULL == ( fp = ui_utils_file_open ( UI_ERRORLOG_FILE, "a" ) ) ) {
         fprintf ( stderr, "%s():%d - '%s' - fopen error: %s", __func__, __LINE__, UI_ERRORLOG_FILE, strerror ( errno ) );
     } else {
         fprintf ( fp, "%s %s:\t%s\n", cfgmain_create_timestamp ( ), lvl, msg );

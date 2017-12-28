@@ -30,10 +30,6 @@
 #include "ctc8253.h"
 #include "gdg/gdg.h"
 
-#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
-#include "gdg/video.h"
-#endif
-
 #include "mz800.h"
 #include "pioz80/pioz80.h"
 #include "pio8255/pio8255.h"
@@ -728,11 +724,4 @@ void ctc8253_ctc1m1_event ( unsigned event_ticks ) {
     };
 }
 
-
-inline void ctc8253_on_screen_done_event ( void ) {
-    st_CTC8253 *ctc0 = &g_ctc8253[CTC_CS0];
-    if ( ctc0->clk1m1_event.ticks != -1 ) {
-        ctc0->clk1m1_event.ticks -= VIDEO_SCREEN_TICKS;
-    };
-}
 #endif

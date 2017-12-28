@@ -1,8 +1,8 @@
 /* 
- * File:   hwscroll.h
+ * File:   endianity.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 18. června 2015, 19:45
+ * Created on 18. února 2017, 10:23
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -23,38 +23,26 @@
  * ---------------------------------------------------------------------------
  */
 
-#ifndef HWSCROLL_H
-#define HWSCROLL_H
+
+#ifndef ENDIANITY_H
+#define ENDIANITY_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "z80ex/include/z80ex.h"
-
-
-    typedef struct st_HWSCROLL {
-        int regSSA;
-        int regSEA;
-        int regSW;
-        int regSOF;
-        int enabled;
-
-    } st_HWSCROLL;
-
-    extern st_HWSCROLL g_hwscroll;
-
-    extern void hwscroll_init ( void );
-    extern void hwscroll_reset ( void );
-    extern void hwscroll_set_reg ( int addr, Z80EX_BYTE value );
-
-#define TEST_HWSCRL_ENABLED (g_hwscroll.enabled)
-#define TEST_HWSCRL_ADDR_IN_SCRL_AREA(addr) ( ( addr >= g_hwscroll.regSSA ) && ( addr < g_hwscroll.regSEA ) )
-#define hwscroll_shift_addr(addr) ( ( TEST_HWSCRL_ENABLED && TEST_HWSCRL_ADDR_IN_SCRL_AREA(addr) ) ? ( ( addr >= ( g_hwscroll.regSEA - g_hwscroll.regSOF ) ) ? ( addr + g_hwscroll.regSOF - g_hwscroll.regSW ) : ( addr + g_hwscroll.regSOF ) ) : addr )
+#include <stdint.h>
+    
+    extern uint16_t endianity_bswap16_BE ( uint16_t n );
+    extern uint16_t endianity_bswap16_LE ( uint16_t n );
+    extern uint32_t endianity_bswap32_BE ( uint32_t n );
+    extern uint32_t endianity_bswap32_LE ( uint32_t n );
+    extern uint64_t endianity_bswap64_BE ( uint64_t n );
+    extern uint64_t endianity_bswap64_LE ( uint64_t n );
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* HWSCROLL_H */
+#endif /* ENDIANITY_H */
 

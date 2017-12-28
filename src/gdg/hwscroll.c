@@ -174,8 +174,10 @@ void hwscroll_set_reg ( int addr, Z80EX_BYTE value ) {
 
 }
 
+#if 0
 
-inline unsigned hwscroll_shift_addr ( unsigned addr ) {
+
+unsigned hwscroll_shift_addr ( unsigned addr ) {
 
     if ( g_hwscroll.enabled ) {
 
@@ -191,3 +193,5 @@ inline unsigned hwscroll_shift_addr ( unsigned addr ) {
 
     return addr;
 }
+
+#endif

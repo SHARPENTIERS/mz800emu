@@ -37,6 +37,7 @@ extern "C" {
     extern void ui_tool_pixbuf_put_pixel ( GdkPixbuf *pixbuf, guint x, guint y, uint32_t argb );
 
     extern void ui_tool_pixbuf_fill ( GdkPixbuf *pixbuf, uint32_t argb );
+    extern void ui_tool_pixbuf_fill_box ( GdkPixbuf *pixbuf, guint x, guint y, guint box_width, guint box_height, uint32_t argb );
 
     extern void ui_tool_pixbuf_create_horizontal_line ( GdkPixbuf *pixbuf, guint x, guint y, guint length, guint strength, uint32_t argb );
     extern void ui_tool_pixbuf_create_vertical_line ( GdkPixbuf *pixbuf, guint x, guint y, guint length, guint strength, uint32_t argb );

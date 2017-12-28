@@ -163,16 +163,26 @@ extern "C" {
     extern void mz800_sync_insideop_mreq_e00x ( void );
     extern void mz800_sync_insideop_mreq_mz700_vramctrl ( void );
     extern void mz800_sync_insideop_iorq_psg_write ( void );
-    extern void mz800_sync_insideop_mreq_mz800_vramctrl ( void );
-    
+
+#include "gdg/gdg.h"
+
+#define mz800_sync_insideop_mreq_mz800_vramctrl() {\
+    int ticks_to_sync = 16 - ( gdg_get_total_ticks ( ) % 16 );\
+    if ( ticks_to_sync <= 7 ) {\
+        ticks_to_sync += 8;\
+    };\
+    ticks_to_sync += 16;\
+    g_mz800.instruction_insideop_sync_ticks -= ticks_to_sync;\
+}
+
     extern void mz800_flush_full_screen ( void );
 
     extern void mz800_switch_emulation_speed ( unsigned emulation_speed );
     extern void mz800_pause_emulation ( unsigned value );
-    
+
     extern void mz800_rear_dip_switch_mz800_mode ( unsigned value );
 
-    extern int mz800_get_instruction_start_ticks ( void );
+#define mz800_get_instruction_start_ticks() ( g_gdg.total_elapsed.ticks - g_mz800.instruction_insideop_sync_ticks ) /* muze legalne vracet i zaporne cislo! */
 
 #ifdef __cplusplus
 }

@@ -85,7 +85,7 @@ extern "C" {
 #define FS_LAYER_DITEM_GET_NAME(ditem) ui_utils_ditem_get_name ( ditem )
 #define FS_LAYER_GET_ERROR_MESSAGE() ui_utils_get_error_message ( )
 #define FS_LAYER_DITEM_GET_FILEPATH(path, ditem) ui_utils_ditem_get_filepath ( path, ditem )
-#define FS_LAYER_DITEM_FREE_FILEPATH(filepath) ui_utils_free ( (void*) filepath )
+#define FS_LAYER_DITEM_FREE_FILEPATH(filepath) ui_utils_mem_free ( (void*) filepath )
     
 #ifdef WINDOWS
 

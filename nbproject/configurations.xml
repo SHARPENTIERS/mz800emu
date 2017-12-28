@@ -16,6 +16,28 @@
         <itemPath>src/iface_sdl/iface_sdl_keyboard.h</itemPath>
         <itemPath>src/iface_sdl/iface_sdl_log.h</itemPath>
       </logicalFolder>
+      <logicalFolder name="f5" displayName="Libs" projectFiles="true">
+        <logicalFolder name="f3" displayName="DSK" projectFiles="true">
+          <itemPath>src/libs/dsk/dsk.h</itemPath>
+          <itemPath>src/libs/dsk/dsk_tools.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="f1" displayName="Endianity" projectFiles="true">
+          <itemPath>src/libs/endianity/endianity.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="f2" displayName="Generic driver" projectFiles="true">
+          <itemPath>src/libs/generic_driver/generic_driver.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="f4" displayName="MZF" projectFiles="true">
+          <itemPath>src/libs/mzf/mzf.h</itemPath>
+          <itemPath>src/libs/mzf/mzf_tools.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="f5" displayName="QD" projectFiles="true">
+          <itemPath>src/libs/qd/qd.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="f6" displayName="WAV" projectFiles="true">
+          <itemPath>src/libs/wav/wav.h</itemPath>
+        </logicalFolder>
+      </logicalFolder>
       <logicalFolder name="f2" displayName="MZ-800" projectFiles="true">
         <logicalFolder name="f2" displayName="CMT" projectFiles="true">
           <itemPath>src/cmt/cmt.h</itemPath>
@@ -69,6 +91,10 @@
         <itemPath>src/port.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f3" displayName="User Interface" projectFiles="true">
+        <logicalFolder name="f5" displayName="Generic driver" projectFiles="true">
+          <itemPath>src/ui/generic_driver/ui_file_driver.h</itemPath>
+          <itemPath>src/ui/generic_driver/ui_memory_driver.h</itemPath>
+        </logicalFolder>
         <logicalFolder name="f1" displayName="MZ-800 Debugger" projectFiles="true">
           <itemPath>src/ui/debugger/ui_breakpoints.h</itemPath>
           <itemPath>src/ui/debugger/ui_debugger.h</itemPath>
@@ -121,6 +147,28 @@
         <itemPath>src/iface_sdl/iface_sdl_audio.c</itemPath>
         <itemPath>src/iface_sdl/iface_sdl_keyboard.c</itemPath>
         <itemPath>src/iface_sdl/iface_sdl_log.c</itemPath>
+      </logicalFolder>
+      <logicalFolder name="f5" displayName="Libs" projectFiles="true">
+        <logicalFolder name="f3" displayName="DSK" projectFiles="true">
+          <itemPath>src/libs/dsk/dsk.c</itemPath>
+          <itemPath>src/libs/dsk/dsk_tools.c</itemPath>
+        </logicalFolder>
+        <logicalFolder name="f1" displayName="Endianity" projectFiles="true">
+          <itemPath>src/libs/endianity/endianity.c</itemPath>
+        </logicalFolder>
+        <logicalFolder name="f2" displayName="Generic driver" projectFiles="true">
+          <itemPath>src/libs/generic_driver/generic_driver.c</itemPath>
+        </logicalFolder>
+        <logicalFolder name="f4" displayName="MZF" projectFiles="true">
+          <itemPath>src/libs/mzf/mzf.c</itemPath>
+          <itemPath>src/libs/mzf/mzf_tools.c</itemPath>
+        </logicalFolder>
+        <logicalFolder name="f5" displayName="QD" projectFiles="true">
+          <itemPath>src/libs/qd/qd.c</itemPath>
+        </logicalFolder>
+        <logicalFolder name="f6" displayName="WAV" projectFiles="true">
+          <itemPath>src/libs/wav/wav.c</itemPath>
+        </logicalFolder>
       </logicalFolder>
       <logicalFolder name="f3" displayName="MZ-800" projectFiles="true">
         <logicalFolder name="f1" displayName="CMT" projectFiles="true">
@@ -207,6 +255,10 @@
         <itemPath>src/port.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="User Interface" projectFiles="true">
+        <logicalFolder name="f5" displayName="Generic driver" projectFiles="true">
+          <itemPath>src/ui/generic_driver/ui_file_driver.c</itemPath>
+          <itemPath>src/ui/generic_driver/ui_memory_driver.c</itemPath>
+        </logicalFolder>
         <logicalFolder name="f1" displayName="MZ-800 Debugger" projectFiles="true">
           <itemPath>src/ui/debugger/ui_breakpoints.c</itemPath>
           <itemPath>src/ui/debugger/ui_debugger.c</itemPath>
@@ -411,6 +463,44 @@
       </item>
       <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk_tools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/endianity/endianity.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/endianity/endianity.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/generic_driver/generic_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/libs/generic_driver/generic_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf_tools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/qd/qd.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/qd/qd.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/wav/wav.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/wav/wav.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/main.h" ex="false" tool="3" flavor2="0">
@@ -578,6 +668,26 @@
       <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_file_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_file_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_memory_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_memory_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/ui/tools/ui_tool_pixbuf.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -812,6 +922,44 @@
       </item>
       <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk_tools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/endianity/endianity.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/endianity/endianity.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/generic_driver/generic_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/libs/generic_driver/generic_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf_tools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/qd/qd.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/qd/qd.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/wav/wav.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/wav/wav.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/main.h" ex="false" tool="3" flavor2="0">
@@ -979,6 +1127,26 @@
       <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_file_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_file_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_memory_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_memory_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/ui/tools/ui_tool_pixbuf.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1204,6 +1372,44 @@
       </item>
       <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk_tools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/endianity/endianity.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/endianity/endianity.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/generic_driver/generic_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/libs/generic_driver/generic_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf_tools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/qd/qd.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/qd/qd.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/wav/wav.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/wav/wav.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/main.h" ex="false" tool="3" flavor2="0">
@@ -1371,6 +1577,26 @@
       <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_file_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_file_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_memory_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_memory_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/ui/tools/ui_tool_pixbuf.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1608,6 +1834,44 @@
       </item>
       <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk_tools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/endianity/endianity.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/endianity/endianity.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/generic_driver/generic_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/libs/generic_driver/generic_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf_tools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/qd/qd.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/qd/qd.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/wav/wav.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/wav/wav.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/main.h" ex="false" tool="3" flavor2="0">
@@ -1778,6 +2042,26 @@
       <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_file_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_file_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_memory_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_memory_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/ui/tools/ui_tool_pixbuf.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2017,6 +2301,44 @@
       </item>
       <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk_tools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/endianity/endianity.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/endianity/endianity.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/generic_driver/generic_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/libs/generic_driver/generic_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf_tools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/qd/qd.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/qd/qd.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/wav/wav.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/wav/wav.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/main.h" ex="false" tool="3" flavor2="0">
@@ -2187,6 +2509,26 @@
       <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_file_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_file_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_memory_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_memory_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/ui/tools/ui_tool_pixbuf.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2426,6 +2768,44 @@
       </item>
       <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk_tools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/endianity/endianity.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/endianity/endianity.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/generic_driver/generic_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/libs/generic_driver/generic_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf_tools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/qd/qd.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/qd/qd.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/wav/wav.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/wav/wav.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/main.h" ex="false" tool="3" flavor2="0">
@@ -2593,6 +2973,26 @@
       <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_file_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_file_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_memory_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_memory_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/ui/tools/ui_tool_pixbuf.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2833,6 +3233,44 @@
       </item>
       <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk_tools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/dsk/dsk_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/endianity/endianity.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/endianity/endianity.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/generic_driver/generic_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/libs/generic_driver/generic_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf_tools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mzf/mzf_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/qd/qd.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/qd/qd.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/wav/wav.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/wav/wav.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/main.h" ex="false" tool="3" flavor2="0">
@@ -3000,6 +3438,26 @@
       <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_file_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_file_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_memory_driver.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/generic_driver/ui_memory_driver.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/ui/tools/ui_tool_pixbuf.c" ex="false" tool="0" flavor2="0">
       </item>

@@ -93,9 +93,9 @@ void ramdisk_load_backup_file ( uint8_t *memory, char *filepath, unsigned ramdis
 
     FILE *fp;
 
-    if ( ui_utils_access ( filepath, F_OK ) != -1 ) {
-        if ( ( fp = ui_utils_fopen ( filepath, "rb" ) ) ) {
-            unsigned filesize = ui_utils_fread ( memory, 1, ramdisk_size, fp );
+    if ( ui_utils_file_access ( filepath, F_OK ) != -1 ) {
+        if ( ( fp = ui_utils_file_open ( filepath, "rb" ) ) ) {
+            unsigned filesize = ui_utils_file_read ( memory, 1, ramdisk_size, fp );
             if ( filesize != ramdisk_size ) {
                 ui_show_warning ( "Your RD file has only %d bytes of requested %d bytes. Peace, this is not problem ... this is only warning :)", filesize, ramdisk_size );
             };
@@ -111,8 +111,8 @@ void ramdisk_save_backup_file ( uint8_t *memory, char *filepath, unsigned ramdis
 
     FILE *fp;
 
-    if ( ( fp = ui_utils_fopen ( filepath, "wb" ) ) ) {
-        unsigned filesize = ui_utils_fwrite ( memory, 1, ramdisk_size, fp );
+    if ( ( fp = ui_utils_file_open ( filepath, "wb" ) ) ) {
+        unsigned filesize = ui_utils_file_write ( memory, 1, ramdisk_size, fp );
         if ( filesize != ramdisk_size ) {
             ui_show_error ( "%s() - saved only %d bytes of %d - file '%s': %s", __func__, filesize, ramdisk_size, filepath, strerror ( errno ) );
         };

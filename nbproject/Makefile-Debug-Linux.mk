@@ -59,6 +59,14 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_audio.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_keyboard.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_log.o \
+	${OBJECTDIR}/src/libs/dsk/dsk.o \
+	${OBJECTDIR}/src/libs/dsk/dsk_tools.o \
+	${OBJECTDIR}/src/libs/endianity/endianity.o \
+	${OBJECTDIR}/src/libs/generic_driver/generic_driver.o \
+	${OBJECTDIR}/src/libs/mzf/mzf.o \
+	${OBJECTDIR}/src/libs/mzf/mzf_tools.o \
+	${OBJECTDIR}/src/libs/qd/qd.o \
+	${OBJECTDIR}/src/libs/wav/wav.o \
 	${OBJECTDIR}/src/main.o \
 	${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.o \
 	${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.o \
@@ -97,6 +105,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger_callbacks.o \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger_iasm.o \
 	${OBJECTDIR}/src/ui/debugger/ui_memdump.o \
+	${OBJECTDIR}/src/ui/generic_driver/ui_file_driver.o \
+	${OBJECTDIR}/src/ui/generic_driver/ui_memory_driver.o \
 	${OBJECTDIR}/src/ui/tools/ui_tool_pixbuf.o \
 	${OBJECTDIR}/src/ui/ui_cmt.o \
 	${OBJECTDIR}/src/ui/ui_display.o \
@@ -257,6 +267,46 @@ ${OBJECTDIR}/src/iface_sdl/iface_sdl_log.o: src/iface_sdl/iface_sdl_log.c
 	${MKDIR} -p ${OBJECTDIR}/src/iface_sdl
 	${RM} "$@.d"
 	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/iface_sdl/iface_sdl_log.o src/iface_sdl/iface_sdl_log.c
+
+${OBJECTDIR}/src/libs/dsk/dsk.o: src/libs/dsk/dsk.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/dsk
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/dsk/dsk.o src/libs/dsk/dsk.c
+
+${OBJECTDIR}/src/libs/dsk/dsk_tools.o: src/libs/dsk/dsk_tools.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/dsk
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/dsk/dsk_tools.o src/libs/dsk/dsk_tools.c
+
+${OBJECTDIR}/src/libs/endianity/endianity.o: src/libs/endianity/endianity.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/endianity
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/endianity/endianity.o src/libs/endianity/endianity.c
+
+${OBJECTDIR}/src/libs/generic_driver/generic_driver.o: src/libs/generic_driver/generic_driver.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/generic_driver
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/generic_driver/generic_driver.o src/libs/generic_driver/generic_driver.c
+
+${OBJECTDIR}/src/libs/mzf/mzf.o: src/libs/mzf/mzf.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/mzf
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/mzf/mzf.o src/libs/mzf/mzf.c
+
+${OBJECTDIR}/src/libs/mzf/mzf_tools.o: src/libs/mzf/mzf_tools.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/mzf
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/mzf/mzf_tools.o src/libs/mzf/mzf_tools.c
+
+${OBJECTDIR}/src/libs/qd/qd.o: src/libs/qd/qd.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/qd
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/qd/qd.o src/libs/qd/qd.c
+
+${OBJECTDIR}/src/libs/wav/wav.o: src/libs/wav/wav.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/wav
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/wav/wav.o src/libs/wav/wav.c
 
 ${OBJECTDIR}/src/main.o: src/main.c 
 	${MKDIR} -p ${OBJECTDIR}/src
@@ -447,6 +497,16 @@ ${OBJECTDIR}/src/ui/debugger/ui_memdump.o: src/ui/debugger/ui_memdump.c
 	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger
 	${RM} "$@.d"
 	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_memdump.o src/ui/debugger/ui_memdump.c
+
+${OBJECTDIR}/src/ui/generic_driver/ui_file_driver.o: src/ui/generic_driver/ui_file_driver.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui/generic_driver
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/generic_driver/ui_file_driver.o src/ui/generic_driver/ui_file_driver.c
+
+${OBJECTDIR}/src/ui/generic_driver/ui_memory_driver.o: src/ui/generic_driver/ui_memory_driver.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui/generic_driver
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/generic_driver/ui_memory_driver.o src/ui/generic_driver/ui_memory_driver.c
 
 ${OBJECTDIR}/src/ui/tools/ui_tool_pixbuf.o: src/ui/tools/ui_tool_pixbuf.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui/tools

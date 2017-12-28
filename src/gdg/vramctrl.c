@@ -140,7 +140,7 @@ void vramctrl_reset ( void ) {
     g_vramctrl.mz700_wr_latch_is_used = 0;
 }
 
-
+#if 0
 /*******************************************************************************
  *
  * VRAM kontroler pro rezimy MZ-700
@@ -184,7 +184,6 @@ static inline void vramctrl_mz700_memop_write_byte_internal ( Z80EX_WORD addr, Z
     /* TODO: meli by jsme nastavovat jen pokud se zapisuje do CG-RAM, nebo do VRAM, ktera je opravdu videt */
     g_gdg.screen_changes = SCRSTS_THIS_IS_CHANGED;
     g_memory.VRAM [ addr ] = value;
-
 }
 
 
@@ -215,6 +214,7 @@ inline void vramctrl_mz700_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
     vramctrl_mz700_memop_write_byte_internal ( addr, value );
 }
 
+#endif
 
 /*******************************************************************************
  *
