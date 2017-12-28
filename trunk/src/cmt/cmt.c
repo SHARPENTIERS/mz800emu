@@ -122,10 +122,6 @@
 
 #include "ui/ui_utils.h"
 
-#ifdef MZ800EMU_CFG_CLK1M1_FAST
-#include "gdg/video.h"
-#endif
-
 st_CMT g_cmt;
 
 
@@ -239,19 +235,19 @@ int cmt_open_mzf_file ( char *filename ) {
     int i, found;
 
     /* TODO: zatim podporujeme jen cteni */
-    if ( !( g_cmt.fh = ui_utils_fopen ( filename, "rb" ) ) ) {
+    if ( !( g_cmt.fh = ui_utils_file_open ( filename, "rb" ) ) ) {
         ui_show_error ( "Can't open MZF file '%s': %s\n", filename, strerror ( errno ) );
         return RET_CMT_ERROR;
     };
 
     fseek ( g_cmt.fh, 0, SEEK_SET );
 
-    if ( 1 != ui_utils_fread ( &g_cmt.mzf_filetype, 1, 1, g_cmt.fh ) ) {
+    if ( 1 != ui_utils_file_read ( &g_cmt.mzf_filetype, 1, 1, g_cmt.fh ) ) {
         ui_show_error ( "Can't read MZ filetype from MZF file '%s': %s\n", filename, strerror ( errno ) );
         return RET_CMT_ERROR;
     };
 
-    if ( sizeof ( g_cmt.mzf_filename ) != ui_utils_fread ( &g_cmt.mzf_filename, 1, sizeof ( g_cmt.mzf_filename ), g_cmt.fh ) ) {
+    if ( sizeof ( g_cmt.mzf_filename ) != ui_utils_file_read ( &g_cmt.mzf_filename, 1, sizeof ( g_cmt.mzf_filename ), g_cmt.fh ) ) {
         ui_show_error ( "Can't read MZ filename from MZF file '%s': %s\n", filename, strerror ( errno ) );
         return RET_CMT_ERROR;
     };
@@ -280,20 +276,20 @@ int cmt_open_mzf_file ( char *filename ) {
         i++;
     };
 
-    if ( sizeof ( c ) != ui_utils_fread ( &c, 1, sizeof ( c ), g_cmt.fh ) ) {
+    if ( sizeof ( c ) != ui_utils_file_read ( &c, 1, sizeof ( c ), g_cmt.fh ) ) {
         ui_show_error ( "Can't read MZ size from MZF file '%s': %s\n", filename, strerror ( errno ) );
         return RET_CMT_ERROR;
     };
     g_cmt.mzf_size = ( c [ 1 ] << 8 ) | c [ 0 ];
 
-    if ( sizeof ( c ) != ui_utils_fread ( &c, 1, sizeof ( c ), g_cmt.fh ) ) {
+    if ( sizeof ( c ) != ui_utils_file_read ( &c, 1, sizeof ( c ), g_cmt.fh ) ) {
         ui_show_error ( "Can't read MZ exec from MZF file '%s': %s\n", filename, strerror ( errno ) );
         return RET_CMT_ERROR;
     };
     g_cmt.mzf_exec = ( c [ 1 ] << 8 ) | c [ 0 ];
 
 
-    if ( sizeof ( c ) != ui_utils_fread ( &c, 1, sizeof ( c ), g_cmt.fh ) ) {
+    if ( sizeof ( c ) != ui_utils_file_read ( &c, 1, sizeof ( c ), g_cmt.fh ) ) {
         ui_show_error ( "Can't read MZ start addr from MZF file '%s': %s\n", filename, strerror ( errno ) );
         return RET_CMT_ERROR;
     };
@@ -515,7 +511,7 @@ void cmt_step ( void ) {
                         if ( g_cmt.data_bit_position == 7 ) {
                             if ( g_cmt.bit_counter > 1 ) {
                                 /* nacist dalsi bajt */
-                                if ( 1 != ui_utils_fread ( &g_cmt.data, 1, 1, g_cmt.fh ) ) {
+                                if ( 1 != ui_utils_file_read ( &g_cmt.data, 1, 1, g_cmt.fh ) ) {
                                     ui_show_error ( "Can't read MZF file '%s': %s\n", g_cmt.filename, strerror ( errno ) );
                                     cmt_stop ( );
                                     return;
@@ -643,13 +639,6 @@ void cmt_ctc1m1_event ( unsigned event_ticks ) {
         g_cmt.clk1m1_event.ticks = event_ticks + ( proximate_event * GDGCLK_1M1_DIVIDER );
     } else {
         g_cmt.clk1m1_event.ticks = -1;
-    };
-}
-
-
-inline void cmt_on_screen_done_event ( void ) {
-    if ( g_cmt.clk1m1_event.ticks != -1 ) {
-        g_cmt.clk1m1_event.ticks -= VIDEO_SCREEN_TICKS;
     };
 }
 

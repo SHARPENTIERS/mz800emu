@@ -160,13 +160,13 @@ extern "C" {
     extern Z80EX_BYTE gdg_read_dmd_status ( void );
     extern void gdg_write_byte ( unsigned addr, Z80EX_BYTE value );
 
-    extern unsigned gdg_compute_total_ticks ( unsigned now_ticks );
-    extern unsigned gdg_get_total_ticks ( void );
-    extern unsigned gdg_get_insigeop_ticks ( void );
-#ifdef MZ800EMU_CFG_CLK1M1_FAST
-    extern unsigned gdg_proximate_clk1m1_event ( unsigned now_ticks );
-#endif    
+#define gdg_compute_total_ticks( now_ticks ) ( now_ticks + ( g_gdg.total_elapsed.screens * VIDEO_SCREEN_TICKS ) )
+#define gdg_get_total_ticks() gdg_compute_total_ticks( g_gdg.total_elapsed.ticks )
+#define gdg_get_insigeop_ticks() ( g_gdg.total_elapsed.ticks + g_mz800.instruction_insideop_sync_ticks )
 
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+#define gdg_proximate_clk1m1_event( now_ticks ) ( now_ticks + ( 0x10 - ( gdg_compute_total_ticks ( now_ticks ) & 0x0f ) ) )
+#endif
 
 #ifdef __cplusplus
 }

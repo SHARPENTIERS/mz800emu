@@ -1,8 +1,8 @@
 /* 
- * File:   hwscroll.h
+ * File:   ui_file_driver.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 18. června 2015, 19:45
+ * Created on 20. února 2017, 13:19
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -23,38 +23,33 @@
  * ---------------------------------------------------------------------------
  */
 
-#ifndef HWSCROLL_H
-#define HWSCROLL_H
+
+#ifndef UI_FILE_DRIVER_H
+#define UI_FILE_DRIVER_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "z80ex/include/z80ex.h"
+
+#include "libs/generic_driver/generic_driver.h"
+
+    extern st_DRIVER g_ui_file_driver;
 
 
-    typedef struct st_HWSCROLL {
-        int regSSA;
-        int regSEA;
-        int regSW;
-        int regSOF;
-        int enabled;
+    typedef enum en_FILE_DRIVER_MODE {
+        FILED_RIVER_MODE_RO = 0,
+        FILED_RIVER_MODE_RW,
+        FILED_RIVER_MODE_W,
+    } en_FILE_DRIVER_MODE;
 
-    } st_HWSCROLL;
-
-    extern st_HWSCROLL g_hwscroll;
-
-    extern void hwscroll_init ( void );
-    extern void hwscroll_reset ( void );
-    extern void hwscroll_set_reg ( int addr, Z80EX_BYTE value );
-
-#define TEST_HWSCRL_ENABLED (g_hwscroll.enabled)
-#define TEST_HWSCRL_ADDR_IN_SCRL_AREA(addr) ( ( addr >= g_hwscroll.regSSA ) && ( addr < g_hwscroll.regSEA ) )
-#define hwscroll_shift_addr(addr) ( ( TEST_HWSCRL_ENABLED && TEST_HWSCRL_ADDR_IN_SCRL_AREA(addr) ) ? ( ( addr >= ( g_hwscroll.regSEA - g_hwscroll.regSOF ) ) ? ( addr + g_hwscroll.regSOF - g_hwscroll.regSW ) : ( addr + g_hwscroll.regSOF ) ) : addr )
+    extern void ui_file_driver_init ( void );
+    extern int ui_file_driver_open ( void *handler, st_DRIVER *d, char *filename, en_FILE_DRIVER_MODE mode );
+    extern int ui_file_driver_close ( void *handler, st_DRIVER *d );
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* HWSCROLL_H */
+#endif /* UI_FILE_DRIVER_H */
 

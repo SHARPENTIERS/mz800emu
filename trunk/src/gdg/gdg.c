@@ -115,30 +115,6 @@ const struct st_GDGEVENT g_gdgevent [] = {
 };
 
 
-inline unsigned gdg_compute_total_ticks ( unsigned now_ticks ) {
-    return now_ticks + ( g_gdg.total_elapsed.screens * VIDEO_SCREEN_TICKS );
-}
-
-
-inline unsigned gdg_get_total_ticks ( void ) {
-    return gdg_compute_total_ticks ( g_gdg.total_elapsed.ticks );
-}
-
-
-inline unsigned gdg_get_insigeop_ticks ( void ) {
-    return g_gdg.total_elapsed.ticks + g_mz800.instruction_insideop_sync_ticks;
-}
-
-
-#ifdef MZ800EMU_CFG_CLK1M1_FAST
-
-
-inline unsigned gdg_proximate_clk1m1_event ( unsigned now_ticks ) {
-    return now_ticks + ( 0x10 - ( gdg_compute_total_ticks ( now_ticks ) & 0x0f ) );
-}
-#endif
-
-
 void gdg_init ( void ) {
 
     g_gdg.total_elapsed.ticks = 0;

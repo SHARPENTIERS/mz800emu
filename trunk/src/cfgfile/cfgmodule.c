@@ -289,7 +289,7 @@ int cfgmodule_parse ( st_CFGMODULE *m ) {
 
     if ( access ( r->filename, F_OK ) == -1 ) return EXIT_FAILURE; /* Konfiguracni soubor neexistuje */
 
-    if ( !( r->ini_fp = ui_utils_fopen ( r->filename, "r" ) ) ) {
+    if ( !( r->ini_fp = ui_utils_file_open ( r->filename, "r" ) ) ) {
         ui_show_error ( "%s() - Can't open file '%s' to read: %s", __func__, r->filename, strerror ( errno ) );
         return EXIT_FAILURE;
     };

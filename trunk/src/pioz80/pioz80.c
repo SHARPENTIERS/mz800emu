@@ -991,9 +991,3 @@ void pioz80_icena_event ( void ) {
     g_pioz80.icena_event_port_id = PIOZ80_PORT_NONE;
 }
 
-
-inline void pioz80_on_screen_done_event ( void ) {
-    if ( g_pioz80.icena_event.ticks != -1 ) {
-        g_pioz80.icena_event.ticks -= VIDEO_SCREEN_TICKS;
-    };
-}

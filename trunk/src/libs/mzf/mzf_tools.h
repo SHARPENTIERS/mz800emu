@@ -1,8 +1,8 @@
 /* 
- * File:   hwscroll.h
+ * File:   mzf_tools.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 18. června 2015, 19:45
+ * Created on 28. prosince 2017, 16:13
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -23,38 +23,23 @@
  * ---------------------------------------------------------------------------
  */
 
-#ifndef HWSCROLL_H
-#define HWSCROLL_H
+
+#ifndef MZF_TOOLS_H
+#define MZF_TOOLS_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "z80ex/include/z80ex.h"
+#include "mzf.h"
 
-
-    typedef struct st_HWSCROLL {
-        int regSSA;
-        int regSEA;
-        int regSW;
-        int regSOF;
-        int enabled;
-
-    } st_HWSCROLL;
-
-    extern st_HWSCROLL g_hwscroll;
-
-    extern void hwscroll_init ( void );
-    extern void hwscroll_reset ( void );
-    extern void hwscroll_set_reg ( int addr, Z80EX_BYTE value );
-
-#define TEST_HWSCRL_ENABLED (g_hwscroll.enabled)
-#define TEST_HWSCRL_ADDR_IN_SCRL_AREA(addr) ( ( addr >= g_hwscroll.regSSA ) && ( addr < g_hwscroll.regSEA ) )
-#define hwscroll_shift_addr(addr) ( ( TEST_HWSCRL_ENABLED && TEST_HWSCRL_ADDR_IN_SCRL_AREA(addr) ) ? ( ( addr >= ( g_hwscroll.regSEA - g_hwscroll.regSOF ) ) ? ( addr + g_hwscroll.regSOF - g_hwscroll.regSW ) : ( addr + g_hwscroll.regSOF ) ) : addr )
+    extern void mzf_tools_set_fname ( st_MZF_HEADER *mzfhdr, char *ascii_filename );
+    uint8_t mzf_tools_get_fname_length ( st_MZF_HEADER *mzfhdr );
+    void mzf_tools_get_fname ( st_MZF_HEADER *mzfhdr, char *ascii_filename );
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* HWSCROLL_H */
+#endif /* MZF_TOOLS_H */
 

@@ -138,7 +138,7 @@ void psg_write_byte ( Z80EX_BYTE value ) {
 }
 
 
-inline void psg_step ( void ) {
+void psg_step ( void ) {
 
     unsigned cs;
 

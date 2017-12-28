@@ -74,6 +74,65 @@ void ui_tool_pixbuf_put_pixel ( GdkPixbuf *pixbuf, guint x, guint y, uint32_t ar
 }
 
 
+void ui_tool_pixbuf_fill_box ( GdkPixbuf *pixbuf, guint x, guint y, guint box_width, guint box_height, uint32_t argb ) {
+
+    gint width;
+    gint height;
+    gint rowstride;
+    gint n_channels;
+    guchar *pixels, *p, *pp;
+    gboolean has_alpha;
+
+    guchar alpha = (guchar) ( ( argb >> 24 ) & 0xff );
+    guchar red = (guchar) ( ( argb >> 16 ) & 0xff );
+    guchar green = (guchar) ( ( argb >> 8 ) & 0xff );
+    guchar blue = (guchar) ( argb & 0xff );
+
+    n_channels = gdk_pixbuf_get_n_channels ( pixbuf );
+    has_alpha = gdk_pixbuf_get_has_alpha ( pixbuf );
+
+    g_assert ( gdk_pixbuf_get_colorspace ( pixbuf ) == GDK_COLORSPACE_RGB );
+    g_assert ( gdk_pixbuf_get_bits_per_sample ( pixbuf ) == 8 );
+
+    if ( has_alpha ) {
+        g_assert ( n_channels == 4 );
+    } else {
+        g_assert ( n_channels == 3 );
+    };
+
+    width = gdk_pixbuf_get_width ( pixbuf );
+    height = gdk_pixbuf_get_height ( pixbuf );
+
+    g_assert ( x >= 0 && x < width );
+    g_assert ( y >= 0 && y < height );
+    g_assert ( ( x + box_width ) >= 1 && ( x + box_width ) <= width );
+    g_assert ( ( y + box_height ) >= 1 && ( y + box_height ) <= height );
+
+    rowstride = gdk_pixbuf_get_rowstride ( pixbuf );
+    pixels = gdk_pixbuf_get_pixels ( pixbuf );
+
+    p = pixels + y * rowstride + x * n_channels;
+
+    p[0] = red;
+    p[1] = green;
+    p[2] = blue;
+
+    if ( has_alpha ) {
+        p[3] = alpha;
+    };
+
+    int i;
+    for ( i = 1; i < box_width; i++ ) {
+        memcpy ( &p[i * n_channels], p, n_channels );
+    };
+
+    for ( i = 1; i < box_height; i++ ) {
+        pp = pixels + ( y + i ) * rowstride + x * n_channels;
+        memcpy ( pp, p, n_channels * box_width );
+    };
+}
+
+
 void ui_tool_pixbuf_fill ( GdkPixbuf *pixbuf, uint32_t argb ) {
 
     gint width;
@@ -111,20 +170,14 @@ void ui_tool_pixbuf_fill ( GdkPixbuf *pixbuf, uint32_t argb ) {
 
     int i;
     for ( i = 1; i < ( width * height ); i++ ) {
-        memcpy ( &pixels[i * n_channels], &pixels[0], n_channels );
+        memcpy ( &pixels[i * n_channels], pixels, n_channels );
     };
 
 }
 
 
 void ui_tool_pixbuf_create_horizontal_line ( GdkPixbuf *pixbuf, guint x, guint y, guint length, guint strength, uint32_t argb ) {
-    int i;
-    for ( i = 0; i < length; i++ ) {
-        int j;
-        for ( j = 0; j < strength; j++ ) {
-            ui_tool_pixbuf_put_pixel ( pixbuf, x + i, y + j, argb );
-        };
-    };
+    ui_tool_pixbuf_fill_box ( pixbuf, x, y, length, strength, argb );
 }
 
 
@@ -148,13 +201,7 @@ void ui_tool_pixbuf_create_horizontal_dashline ( GdkPixbuf *pixbuf, guint x, gui
 
 
 void ui_tool_pixbuf_create_vertical_line ( GdkPixbuf *pixbuf, guint x, guint y, guint length, guint strength, uint32_t argb ) {
-    int i;
-    for ( i = 0; i < length; i++ ) {
-        int j;
-        for ( j = 0; j < strength; j++ ) {
-            ui_tool_pixbuf_put_pixel ( pixbuf, x + j, y + i, argb );
-        };
-    };
+    ui_tool_pixbuf_fill_box ( pixbuf, x, y, strength, length, argb );
 }
 
 

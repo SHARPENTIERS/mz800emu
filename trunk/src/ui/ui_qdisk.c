@@ -270,7 +270,7 @@ G_MODULE_EXPORT void on_button_qdisk_new_ok_clicked ( GtkButton *button, gpointe
 
     gchar *full_name_mzq = g_build_filename ( path, fname_mzq, (gchar*) NULL );
 
-    if ( ui_utils_access ( full_name_mzq, F_OK ) == -1 ) {
+    if ( ui_utils_file_access ( full_name_mzq, F_OK ) == -1 ) {
         qdisk_create_image ( full_name_mzq );
         gtk_widget_hide ( window );
     } else {

@@ -137,7 +137,7 @@ void qdisk_virt_open_mzf_for_read ( const char *dirpath, const char *filename ) 
         ui_show_error ( "%s() - Can't create open file '%s': %s", __func__, filepath, strerror ( errno ) );
 #endif
     };
-    ui_utils_free_free_filepath ( filepath );
+    ui_utils_free_filepath ( filepath );
 }
 
 
@@ -384,7 +384,7 @@ void qdisk_open_image ( char *filepath ) {
             char *open_file_mode;
             unsigned read_only_flag;
 
-            if ( ( 0 != cfgelement_get_bool_value ( g_elm_wrprt ) ) || ( ui_utils_access ( filepath, W_OK ) == -1 ) ) {
+            if ( ( 0 != cfgelement_get_bool_value ( g_elm_wrprt ) ) || ( ui_utils_file_access ( filepath, W_OK ) == -1 ) ) {
                 open_file_mode = FS_LAYER_FMODE_RO;
                 read_only_flag = QDSTS_IMG_READONLY;
             } else {
@@ -475,7 +475,7 @@ void qdisk_mount ( void ) {
 
         } while ( err );
 
-        if ( ui_utils_access ( filename, F_OK ) == -1 ) {
+        if ( ui_utils_file_access ( filename, F_OK ) == -1 ) {
             /* soubor neexistuje - vyrobime novy */
             //printf ( "create new: '%s'\n", filename );
             qdisk_create_image ( filename );
@@ -844,7 +844,7 @@ void qdisk_write_byte_into_drive ( Z80EX_BYTE value ) {
                     strcat ( g_qdisk.virt_saved_filename, ".mzf" );
 
                     char *dirpath = cfgelement_get_text_value ( g_elm_virt_fp );
-                    if ( 0 != ui_utils_rename_file ( dirpath, QDISK_VIRT_TEMP_FNAME, g_qdisk.virt_saved_filename ) ) {
+                    if ( 0 != ui_utils_file_rename ( dirpath, QDISK_VIRT_TEMP_FNAME, g_qdisk.virt_saved_filename ) ) {
                         DBGPRINTF ( DBGERR, "rename() error\n" );
                     };
 
@@ -1149,7 +1149,7 @@ void qdisk_write_byte ( en_QDSIO_ADDR SIO_addr, Z80EX_BYTE value ) {
                                                 ui_show_error ( "%s() - Can't create open file '%s': %s", __func__, filepath, strerror ( errno ) );
 #endif
                                             } else {
-                                                ui_utils_free_free_filepath ( filepath );
+                                                ui_utils_free_filepath ( filepath );
                                                 g_qdisk.virt_status = QDISK_VRTSTS_WR_MZFHEAD;
                                             };
 

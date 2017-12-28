@@ -306,9 +306,9 @@ void memory_init ( void ) {
 
     FILE *fp;
 
-    if ( ui_utils_access ( MEMORY_STATISTIC_DAT_FILE, F_OK ) != -1 ) {
-        if ( ( fp = ui_utils_fopen ( MEMORY_STATISTIC_DAT_FILE, "rb" ) ) ) {
-            ui_utils_fread ( &g_memory_statistics, 1, sizeof (g_memory_statistics ), fp );
+    if ( ui_utils_file_access ( MEMORY_STATISTIC_DAT_FILE, F_OK ) != -1 ) {
+        if ( ( fp = ui_utils_file_open ( MEMORY_STATISTIC_DAT_FILE, "rb" ) ) ) {
+            ui_utils_file_read ( &g_memory_statistics, 1, sizeof (g_memory_statistics ), fp );
         } else {
             ui_show_error ( "%s() - Can't open file '%s': %s", __func__, MEMORY_STATISTIC_DAT_FILE, strerror ( errno ) );
         };
@@ -337,16 +337,16 @@ void memory_init ( void ) {
 void memory_write_vram ( void ) {
     FILE *fp;
 
-    if ( !( fp = ui_utils_fopen ( MEMORY_DUMP_VRAM_FILE, "wb" ) ) ) {
+    if ( !( fp = ui_utils_file_open ( MEMORY_DUMP_VRAM_FILE, "wb" ) ) ) {
         ui_show_error ( "Can't open file '%s': %s\n", MEMORY_DUMP_VRAM_FILE, strerror ( errno ) );
         return;
     };
 
-    if ( sizeof (g_memory.VRAM ) != ui_utils_fwrite ( &g_memory.VRAM, 1, sizeof (g_memory.VRAM ), fp ) ) {
+    if ( sizeof (g_memory.VRAM ) != ui_utils_file_write ( &g_memory.VRAM, 1, sizeof (g_memory.VRAM ), fp ) ) {
         ui_show_error ( "Can't write to file '%s': %s\n", MEMORY_DUMP_VRAM_FILE, strerror ( errno ) );
     };
 
-    if ( sizeof (g_memory.EXVRAM ) != ui_utils_fwrite ( &g_memory.EXVRAM, 1, sizeof (g_memory.VRAM ), fp ) ) {
+    if ( sizeof (g_memory.EXVRAM ) != ui_utils_file_write ( &g_memory.EXVRAM, 1, sizeof (g_memory.VRAM ), fp ) ) {
         ui_show_error ( "Can't write to file '%s': %s\n", MEMORY_DUMP_VRAM_FILE, strerror ( errno ) );
     };
 
@@ -362,18 +362,18 @@ void memory_write_vram ( void ) {
 void memory_write_memory_statistics ( void ) {
     FILE *fp;
 
-    if ( !( fp = ui_utils_fopen ( MEMORY_STATISTIC_DAT_FILE, "wb" ) ) ) {
+    if ( !( fp = ui_utils_file_open ( MEMORY_STATISTIC_DAT_FILE, "wb" ) ) ) {
         ui_show_error ( "Can't open file '%s': %s\n", MEMORY_STATISTIC_DAT_FILE, strerror ( errno ) );
         return;
     };
 
-    if ( sizeof (g_memory_statistics ) != ui_utils_fwrite ( &g_memory_statistics, 1, sizeof (g_memory_statistics ), fp ) ) {
+    if ( sizeof (g_memory_statistics ) != ui_utils_file_write ( &g_memory_statistics, 1, sizeof (g_memory_statistics ), fp ) ) {
         ui_show_error ( "Can't write to file '%s': %s\n", MEMORY_STATISTIC_DAT_FILE, strerror ( errno ) );
     };
 
     fclose ( fp );
 
-    if ( !( fp = ui_utils_fopen ( MEMORY_STATISTIC_TXT_FILE, "wt" ) ) ) {
+    if ( !( fp = ui_utils_file_open ( MEMORY_STATISTIC_TXT_FILE, "wt" ) ) ) {
         ui_show_error ( "Can't open file '%s': %s\n", MEMORY_STATISTIC_TXT_FILE, strerror ( errno ) );
         return;
     };

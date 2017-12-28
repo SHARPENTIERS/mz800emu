@@ -239,7 +239,7 @@ void cmthack_load_filename ( char *filename ) {
         g_cmthack.fp = NULL;
     };
 
-    if ( !( g_cmthack.fp = ui_utils_fopen ( filename, "rb" ) ) ) {
+    if ( !( g_cmthack.fp = ui_utils_file_open ( filename, "rb" ) ) ) {
         /* Nejde otevrit soubor: nastavit Err + Break */
         ui_show_error ( "Can't open MZF file '%s': %s\n", filename, strerror ( errno ) );
         cmthack_result ( LOADRET_BREAK );
@@ -251,7 +251,7 @@ void cmthack_load_filename ( char *filename ) {
     /* precteme prvnich 128 bajtu z MZF souboru a ulozime je do RAM na adresu z regHL */
 
     reg_hl = z80ex_get_reg ( g_mz800.cpu, regHL );
-    if ( 0x80 != ui_utils_fread ( &g_memory.RAM [ reg_hl ], 1, 0x80, g_cmthack.fp ) ) {
+    if ( 0x80 != ui_utils_file_read ( &g_memory.RAM [ reg_hl ], 1, 0x80, g_cmthack.fp ) ) {
         /* Vadny soubor: nastavit Err + Checksum */
         cmthack_result ( LOADRET_ERROR );
         fclose ( g_cmthack.fp );
@@ -293,7 +293,7 @@ void cmthack_read_body ( void ) {
             length = reg_bc;
         };
 
-        if ( length != ui_utils_fread ( &g_memory.RAM [ reg_hl ], 1, length, g_cmthack.fp ) ) {
+        if ( length != ui_utils_file_read ( &g_memory.RAM [ reg_hl ], 1, length, g_cmthack.fp ) ) {
             /* Vadny soubor: nastavit Err + Checksum */
             cmthack_result ( LOADRET_ERROR );
             fclose ( g_cmthack.fp );

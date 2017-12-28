@@ -659,28 +659,8 @@ void mz800_sync_insideop_mreq_mz700_vramctrl ( void ) {
 }
 
 
-inline void mz800_sync_insideop_mreq_mz800_vramctrl ( void ) {
-    int ticks_to_sync = 16 - ( gdg_get_total_ticks ( ) % 16 );
-
-    if ( ticks_to_sync <= 7 ) {
-        ticks_to_sync += 8;
-    };
-
-    ticks_to_sync += 16;
-    g_mz800.instruction_insideop_sync_ticks -= ticks_to_sync;
-}
-
-
 void mz800_sync_insideop_iorq_psg_write ( void ) {
     mz800_sync_insideop ( INSIDEOP_IORQ_PSG_WRITE );
-}
-
-
-/*
- * muze legalne vracet i zaporne cislo!
- */
-inline int mz800_get_instruction_start_ticks ( void ) {
-    return g_gdg.total_elapsed.ticks - g_mz800.instruction_insideop_sync_ticks;
 }
 
 
@@ -1058,7 +1038,7 @@ void mz800_init ( void ) {
 
 
     elm = cfgmodule_register_new_element ( cmod, "mz800_switch", CFGENTYPE_BOOL, MZ800SWITCH_OFF );
-    
+
     cfgelement_set_propagate_cb ( elm, mz800_propagatecfg_mz800_switch, NULL );
     cfgelement_set_handlers ( elm, (void*) &g_mz800.mz800_switch, (void*) &g_mz800.mz800_switch );
 
