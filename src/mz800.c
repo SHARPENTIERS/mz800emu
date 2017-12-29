@@ -839,10 +839,10 @@ void mz800_main ( void ) {
 #if 0
     g_memory.map = MEMORY_MAP_FLAG_ROM_0000 | MEMORY_MAP_FLAG_ROM_E000;
     z80ex_set_reg ( g_mz800.cpu, regHL, 0x10f0 );
-    cmthack_load_filename ( "Galao.mzf" );
+    cmthack_load_mzf_filename ( "Galao.mzf" );
     z80ex_set_reg ( g_mz800.cpu, regHL, 0x1200 );
     z80ex_set_reg ( g_mz800.cpu, regBC, 0x4e51 );
-    cmthack_read_body ( );
+    cmthack_read_mzf_body ( );
     z80ex_set_reg ( g_mz800.cpu, regSP, 0x10f0 );
     z80ex_set_reg ( g_mz800.cpu, regPC, 0x6000 );
 #endif
@@ -896,6 +896,8 @@ void mz800_main ( void ) {
 
             /* jsme v pauze? */
             if ( TEST_EMULATION_PAUSED ) {
+
+
                 mz800_do_emulation_paused ( );
             };
         };
@@ -954,6 +956,8 @@ void mz800_flush_full_screen ( void ) {
 
 
     if ( g_gdg.framebuffer_state || g_iface_sdl.redraw_full_screen_request ) {
+
+
         iface_sdl_update_window ( );
         g_gdg.framebuffer_state = FB_STATE_NOT_CHANGED;
     };
@@ -970,6 +974,8 @@ void mz800_switch_emulation_speed ( unsigned value ) {
     if ( g_mz800.use_max_emulation_speed ) {
         printf ( "Fast emulation speed.\n" );
     } else {
+
+
         printf ( "Slow emulation speed.\n" );
     };
 
@@ -996,6 +1002,8 @@ void mz800_pause_emulation ( unsigned value ) {
         if ( value ) {
             ui_debugger_hide_spinner_window ( );
         } else {
+
+
             ui_debugger_show_spinner_window ( );
         };
     };
@@ -1006,6 +1014,8 @@ void mz800_pause_emulation ( unsigned value ) {
 void mz800_rear_dip_switch_mz800_mode ( unsigned value ) {
 
     value &= 1;
+
+
     if ( value == g_mz800.mz800_switch ) return;
 
     g_mz800.mz800_switch = value;
@@ -1020,6 +1030,8 @@ void mz800_rear_dip_switch_mz800_mode ( unsigned value ) {
  *******************************************************************************/
 
 void mz800_propagatecfg_mz800_switch ( void *e, void *data ) {
+
+
     ui_main_update_rear_dip_switch_mz800_mode ( cfgelement_get_bool_value ( (CFGELM *) e ) );
 }
 
@@ -1061,7 +1073,7 @@ void mz800_init ( void ) {
                                  );
 
     /*
-        z80ex_set_tstate_callback ( g_mz800.cpu, mz800_tstate_cb, NULL );
+          z80ex_set_tstate_callback ( g_mz800.cpu, mz800_tstate_cb, NULL );
      */
 
     z80ex_set_reti_callback ( g_mz800.cpu, pioz80_interrupt_reti_cb, NULL );

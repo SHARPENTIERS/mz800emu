@@ -86,18 +86,33 @@ extern "C" {
     } en_HANDLER_STATUS;
 
 
-    typedef struct st_HANDLER_MEM {
+    typedef enum en_FILE_DRIVER_OPEN_MODE {
+        FILE_DRIVER_OPMODE_RO = 0,
+        FILE_DRIVER_OPMODE_RW,
+        FILE_DRIVER_OPMODE_W,
+    } en_FILE_DRIVER_OPEN_MODE;
+
+
+    typedef struct st_HANDLER_MEMSPC {
         uint8_t *ptr;
+        size_t open_size;
         size_t size;
-    } st_HANDLER_MEM;
+    } st_HANDLER_MEMSPC;
+
+
+    typedef struct st_HANDLER_FILESPC {
+        FILE *fh;
+        en_FILE_DRIVER_OPEN_MODE open_mode;
+        char *filename;
+    } st_HANDLER_FILESPC;
 
 
     typedef union un_HANDLER_SPEC {
 #ifdef GENERIC_DRIVER_FILE
-        FILE *fh;
+        st_HANDLER_FILESPC filespec;
 #endif
 #ifdef GENERIC_DRIVER_MEMORY
-        st_HANDLER_MEM mem;
+        st_HANDLER_MEMSPC memspec;
 #endif
     } un_HANDLER_SPEC;
 
@@ -110,6 +125,8 @@ extern "C" {
     } st_HANDLER;
 
 
+    typedef int (*generic_driver_open_cb )(void *handler, void *driver );
+    typedef int (*generic_driver_close_cb )(void *handler, void *driver );
     typedef int (*generic_driver_prepare_cb )(void *handler, void *driver, uint32_t offset, void **prepared_buffer, uint32_t count_bytes );
     typedef int (*generic_driver_read_cb )(void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen );
     typedef int (*generic_driver_write_cb )(void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen );
@@ -117,6 +134,8 @@ extern "C" {
 
 
     typedef struct st_DRIVER {
+        generic_driver_open_cb open_cb;
+        generic_driver_close_cb close_cb;
         generic_driver_read_cb read_cb;
         generic_driver_write_cb write_cb;
         generic_driver_prepare_cb prepare_cb;
@@ -125,10 +144,14 @@ extern "C" {
     } st_DRIVER;
 
 
-    extern void generic_driver_setup ( st_DRIVER *d, generic_driver_read_cb rdcb, generic_driver_write_cb wrcb, generic_driver_prepare_cb prepcb, generic_driver_truncate_cb trunccb );
-    extern const char* generic_driver_error_message ( void *handler, st_DRIVER *d );
-    extern void generic_driver_register_handler ( void *handler, en_HANDLER_TYPE type );
-    extern void generic_driver_manage_handler_readonly_sts ( void *handler, int readonly );
+    extern void generic_driver_setup ( st_DRIVER *d, generic_driver_open_cb opcb, generic_driver_close_cb clcb, generic_driver_read_cb rdcb, generic_driver_write_cb wrcb, generic_driver_prepare_cb prepcb, generic_driver_truncate_cb trunccb );
+    extern const char* generic_driver_error_message ( st_HANDLER *h, st_DRIVER *d );
+    extern void generic_driver_register_handler ( st_HANDLER *h, en_HANDLER_TYPE type );
+    extern st_HANDLER* generic_driver_open_memory ( st_HANDLER *h, st_DRIVER *d, uint32_t size );
+    extern st_HANDLER* generic_driver_open_file ( st_HANDLER *h, st_DRIVER *d, char *filename, en_FILE_DRIVER_OPEN_MODE open_mode );
+    extern st_HANDLER* generic_driver_open_memory_from_file ( st_HANDLER *handler, st_DRIVER *d, char *filename );
+    extern int generic_driver_close ( st_HANDLER *h, st_DRIVER *d );
+    extern void generic_driver_set_handler_readonly_status ( void *handler, int readonly );
 
     extern int generic_driver_prepare ( void *handler, st_DRIVER *d, uint32_t offset, void **buffer, void *tmpbuffer, uint32_t size );
     extern int generic_driver_ppread ( void *handler, st_DRIVER *d, uint32_t offset, void *buffer, uint32_t size );
@@ -157,6 +180,67 @@ extern "C" {
     extern int generic_driver_truncate_memory_cb ( void *handler, void *driver, uint32_t size );
 #endif
 
+
+    static inline int generic_driver_memory_operation_internal_bootstrap ( st_HANDLER *h, st_DRIVER *d ) {
+
+        if ( h == NULL ) {
+            d->err = GENERIC_DRIVER_ERROR_HANDLER;
+            return EXIT_FAILURE;
+        };
+
+        st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
+
+        h->err = HANDLER_ERROR_NONE;
+        d->err = GENERIC_DRIVER_ERROR_NONE;
+
+        if ( h->type != HANDLER_TYPE_MEMORY ) {
+            d->err = GENERIC_DRIVER_ERROR_HANDLER_TYPE;
+            return EXIT_FAILURE;
+        };
+
+        if ( !( h->status & HANDLER_STATUS_READY ) ) {
+            h->err = HANDLER_ERROR_NOT_READY;
+            return EXIT_FAILURE;
+        };
+
+        if ( memspec->ptr == NULL ) {
+            d->err = GENERIC_DRIVER_ERROR_NOT_READY;
+            return EXIT_FAILURE;
+        };
+
+        return EXIT_SUCCESS;
+    }
+
+
+    static inline int generic_driver_file_operation_internal_bootstrap ( st_HANDLER *h, st_DRIVER *d ) {
+
+        if ( h == NULL ) {
+            d->err = GENERIC_DRIVER_ERROR_HANDLER;
+            return EXIT_FAILURE;
+        };
+
+        st_HANDLER_FILESPC *filespec = &h->spec.filespec;
+
+        h->err = HANDLER_ERROR_NONE;
+        d->err = GENERIC_DRIVER_ERROR_NONE;
+
+        if ( h->type != HANDLER_TYPE_FILE ) {
+            d->err = GENERIC_DRIVER_ERROR_HANDLER_TYPE;
+            return EXIT_FAILURE;
+        };
+
+        if ( !( h->status & HANDLER_STATUS_READY ) ) {
+            h->err = HANDLER_ERROR_NOT_READY;
+            return EXIT_FAILURE;
+        };
+
+        if ( filespec->fh == NULL ) {
+            d->err = GENERIC_DRIVER_ERROR_NOT_READY;
+            return EXIT_FAILURE;
+        };
+
+        return EXIT_SUCCESS;
+    }
 
 #ifdef __cplusplus
 }

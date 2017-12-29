@@ -74,6 +74,9 @@
 #include "ui/debugger/ui_memdump.h"
 #endif
 
+#include "generic_driver/ui_file_driver.h"
+#include "generic_driver/ui_memory_driver.h"
+
 
 st_UI g_ui;
 static int g_ui_is_initialised = 0;
@@ -321,6 +324,10 @@ void ui_init ( void ) {
 
     /* display bylo nacteno jeste pred inicializaci ui, proto udelame update_menu nyni */
     ui_display_update_menu ( );
+
+    /* inicializace generickych driveru */
+    ui_file_driver_init ( );
+    ui_memory_driver_init ( );
 }
 
 
@@ -476,7 +483,20 @@ void ui_show_warning ( char *format, ... ) {
 }
 
 
-unsigned ui_open_file ( char *filename, char *predefined_filename, unsigned max_filename_size, en_FILETYPE filetype, char *window_title, en_OPENMODE openmode ) {
+/**
+ * 
+ * Pokud filename != NULL, tak se do nej nakopiruje max_filename_size znaku.
+ * Pokud filename == NULL, tak vratime nove naalokovany filename, ktery je potom potreba uvolnit.
+ * 
+ * @param filename
+ * @param predefined_filename
+ * @param max_filename_size
+ * @param filetype
+ * @param window_title
+ * @param openmode
+ * @return 
+ */
+unsigned ui_open_file ( char **filename, char *predefined_filename, unsigned max_filename_size, en_FILETYPE filetype, char *window_title, en_OPENMODE openmode ) {
 
     GtkWidget *filechooserdialog;
     GtkFileFilter *filter = NULL;
@@ -556,15 +576,24 @@ unsigned ui_open_file ( char *filename, char *predefined_filename, unsigned max_
         ui_update_last_folder_value ( filetype, current_folder );
         g_ui.last_filetype = filetype;
 
-        if ( strlen ( (char*) gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) ) ) < max_filename_size ) {
-            gchar *fname = gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) );
-            strncpy ( filename, (char*) fname, max_filename_size );
-            g_free ( fname );
-            filename [ max_filename_size - 1 ] = 0x00;
+        int filename_length = strlen ( (char*) gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) ) );
+
+        if ( *filename != NULL ) {
+            if ( filename_length < max_filename_size ) {
+                gchar *fname = gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) );
+                char *filename_cp = *filename;
+                strncpy ( filename_cp, (char*) fname, max_filename_size );
+                g_free ( fname );
+                filename_cp [ max_filename_size - 1 ] = 0x00;
+                uiret = UIRET_OK;
+                break;
+            } else {
+                ui_show_error ( "Sorry, filepath is too big!" );
+            };
+        } else {
+            *filename = gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) );
             uiret = UIRET_OK;
             break;
-        } else {
-            ui_show_error ( "Sorry, filepath is too big!" );
         };
     };
 

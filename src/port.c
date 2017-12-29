@@ -213,7 +213,7 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
             break;
 
         case 0x02:
-            cmthack_read_body ( );
+            cmthack_read_mzf_body ( );
             break;
 
         case 0x68:

@@ -32,6 +32,8 @@
 #include "libs/endianity/endianity.h"
 #include "libs/generic_driver/generic_driver.h"
 
+#if 0
+
 
 int wav_check_riff_header ( void *handler, st_DRIVER *d ) {
 
@@ -150,7 +152,7 @@ void wav_test ( void ) {
     generic_driver_register_handler ( &wav_handler, HANDLER_TYPE_FILE );
 
 
-    if ( EXIT_SUCCESS != ui_file_driver_open ( &wav_handler, &g_ui_file_driver, WAV_TST_FILE, FILED_RIVER_MODE_RO ) ) {
+    if ( EXIT_SUCCESS != ui_file_driver_open ( &wav_handler, &g_ui_file_driver, WAV_TST_FILE, FILE_DRIVER_OPMODE_RO ) ) {
         ui_show_error ( "%s() - Can't open file '%s': %s", __func__, WAV_TST_FILE, ui_utils_strerror ( ) );
     };
 
@@ -206,22 +208,23 @@ void wav_test ( void ) {
                 generic_driver_register_handler ( &handler, HANDLER_TYPE_FILE );
 
 
-                if ( EXIT_SUCCESS != ui_file_driver_open ( &handler, &g_ui_file_driver, "output.bin", FILED_RIVER_MODE_W ) ) {
+                if ( EXIT_SUCCESS != ui_file_driver_open ( &handler, &g_ui_file_driver, "output.bin", FILE_DRIVER_OPMODE_W ) ) {
                     ui_show_error ( "%s() - Can't open file '%s': %s", __func__, "output.bin", ui_utils_strerror ( ) );
                 };
 
                 generic_driver_write ( &handler, &g_ui_file_driver, 0, bitmap, bitmap_byte_size );
 
-                ui_file_driver_close ( &handler, &g_ui_file_driver );
+                ui_file_driver_close_cb ( &handler, &g_ui_file_driver );
             };
 
             free ( bitmap );
         };
     };
 
-    ui_file_driver_close ( &wav_handler, &g_ui_file_driver );
+    ui_file_driver_close_cb ( &wav_handler, &g_ui_file_driver );
 
     printf ( "OK\n" );
 }
 
+#endif
 

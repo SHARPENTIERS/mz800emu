@@ -196,7 +196,8 @@ void on_fcbutton_pezik_settings_clicked ( GtkButton *button, st_UI_FCBUTTON *fcb
     filename[0] = 0x00;
 
     char window_title[] = "Select Backup File for Pezik";
-    ui_open_file ( filename, fcb->filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_SAVE );
+    char *filename_p = filename; // TODO: fixni mne
+    ui_open_file ( &filename_p, fcb->filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_SAVE );
 
     if ( filename[0] != 0x00 ) {
         ui_fcbutton_set_filepath ( fcb, filename );

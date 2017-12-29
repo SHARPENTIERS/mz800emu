@@ -24,9 +24,9 @@
  */
 
 #ifndef FS_LAYER_H
-#define	FS_LAYER_H
+#define FS_LAYER_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -72,11 +72,12 @@ extern "C" {
 #define FS_LAYER_FCLOSE(fh) fclose ( fh )
 
 #define FS_LAYER_FSEEK(fh,offset)   fseek ( fh, offset, SEEK_SET )
-    
+
 #define FS_LAYER_FREAD(fh,buffer,count_bytes,readlen) fs_layer_fread( &fh, buffer, count_bytes, readlen )
 #define FS_LAYER_FWRITE(fh,buffer,count_bytes,writelen) fs_layer_fwrite( &fh, buffer, count_bytes, writelen )
 
 #define FS_LAYER_FSYNC(fh) fflush ( fh )
+#define FS_LAYER_FTELL(fh) ftell ( fh )
 
 #define FS_LAYER_DIR_OPEN(path) ui_utils_dir_open ( path )
 #define FS_LAYER_DIR_CLOSE(dh) ui_utils_dir_close ( dh )
@@ -86,7 +87,7 @@ extern "C" {
 #define FS_LAYER_GET_ERROR_MESSAGE() ui_utils_get_error_message ( )
 #define FS_LAYER_DITEM_GET_FILEPATH(path, ditem) ui_utils_ditem_get_filepath ( path, ditem )
 #define FS_LAYER_DITEM_FREE_FILEPATH(filepath) ui_utils_mem_free ( (void*) filepath )
-    
+
 #ifdef WINDOWS
 
 #include <windows.h>
@@ -109,9 +110,9 @@ extern "C" {
 
 #endif /* ! FS_LAYER_FATFS */
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* FS_LAYER_H */
+#endif /* FS_LAYER_H */
 

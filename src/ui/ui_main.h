@@ -112,7 +112,7 @@ extern "C" {
     extern void ui_main_win_move_to_pos ( GtkWindow *w, st_UIWINPOS *wpos );
     extern void ui_main_win_get_pos ( GtkWindow *w, st_UIWINPOS *wpos );
 
-    extern unsigned ui_open_file ( char *filename, char *predefined_filename, unsigned filename_size, en_FILETYPE filetype, char *window_title, en_OPENMODE mode );
+    extern unsigned ui_open_file ( char **filename, char *predefined_filename, unsigned filename_size, en_FILETYPE filetype, char *window_title, en_OPENMODE mode );
 
     extern void ui_iteration ( void );
     extern void ui_show_hide_main_menu ( void );

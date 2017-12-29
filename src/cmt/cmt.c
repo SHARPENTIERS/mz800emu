@@ -326,9 +326,11 @@ int cmt_open ( void ) {
     char window_title[] = "Select MZF file to open";
     char filename [ CMT_FILENAME_LENGTH ];
     filename[0] = 0x00;
-
+    
     /* TODO: zatim podporujeme jen mzf */
-    if ( UIRET_OK == ui_open_file ( filename, g_cmt.filename, sizeof ( filename ), FILETYPE_MZF, window_title, OPENMODE_READ ) ) {
+    
+    char *filename_p = filename; // TODO: fixni mne
+    if ( UIRET_OK == ui_open_file ( &filename_p, g_cmt.filename, sizeof ( filename ), FILETYPE_MZF, window_title, OPENMODE_READ ) ) {
 
         cmt_eject ( );
 

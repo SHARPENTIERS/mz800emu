@@ -49,44 +49,24 @@ int ui_memory_driver_prepare_static_cb ( void *handler, void *driver, uint32_t o
 
     st_HANDLER *h = handler;
     st_DRIVER *d = driver;
+    st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
-    h->err = HANDLER_ERROR_NONE;
-    d->err = GENERIC_DRIVER_ERROR_NONE;
-
-    if ( h == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
-
-    if ( h->type != HANDLER_TYPE_MEMORY ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER_TYPE;
-        return EXIT_FAILURE;
-    };
-
-    if ( !( h->status & HANDLER_STATUS_READY ) ) {
-        h->err = HANDLER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
-
-    if ( h->spec.mem.ptr == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
 
     uint32_t need_size = offset + count_bytes;
     *buffer = NULL;
 
-    if ( offset > h->spec.mem.size ) {
+    if ( offset > memspec->size ) {
         d->err = GENERIC_DRIVER_ERROR_SEEK;
         return EXIT_FAILURE;
     };
 
-    if ( need_size > h->spec.mem.size ) {
+    if ( need_size > memspec->size ) {
         d->err = GENERIC_DRIVER_ERROR_SIZE;
         return EXIT_FAILURE;
     };
 
-    *buffer = &h->spec.mem.ptr[offset];
+    *buffer = &memspec->ptr[offset];
 
     return EXIT_SUCCESS;
 }
@@ -106,47 +86,32 @@ int ui_memory_driver_prepare_realloc_cb ( void *handler, void *driver, uint32_t 
 
     st_HANDLER *h = handler;
     st_DRIVER *d = driver;
+    st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
-    h->err = HANDLER_ERROR_NONE;
-    d->err = GENERIC_DRIVER_ERROR_NONE;
-
-    if ( h == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
-
-    if ( h->type != HANDLER_TYPE_MEMORY ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER_TYPE;
-        return EXIT_FAILURE;
-    };
-
-    if ( !( h->status & HANDLER_STATUS_READY ) ) {
-        h->err = HANDLER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
 
     uint32_t need_size = offset + count_bytes;
     *buffer = NULL;
 
-    if ( ( offset > h->spec.mem.size ) || ( need_size > h->spec.mem.size ) ) {
+    if ( ( offset > memspec->size ) || ( need_size > memspec->size ) ) {
 
         if ( h->status & HANDLER_STATUS_READ_ONLY ) {
             h->err = HANDLER_ERROR_WRITE_PROTECTED;
             return EXIT_FAILURE;
         };
 
-        uint8_t *new = ui_utils_mem_realloc ( h->spec.mem.ptr, need_size );
+        uint8_t *new = ui_utils_mem_realloc ( memspec->ptr, need_size );
 
         if ( new == NULL ) {
             d->err = GENERIC_DRIVER_ERROR_REALLOC;
             return EXIT_FAILURE;
         };
 
-        h->spec.mem.ptr = new;
-        h->spec.mem.size = need_size;
+        memspec->ptr = new;
+        memspec->size = need_size;
     };
 
-    *buffer = &h->spec.mem.ptr[offset];
+    *buffer = &memspec->ptr[offset];
 
     return EXIT_SUCCESS;
 }
@@ -167,45 +132,26 @@ int ui_memory_driver_read_cb ( void *handler, void *driver, uint32_t offset, voi
 
     st_HANDLER *h = handler;
     st_DRIVER *d = driver;
+    st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
-    h->err = HANDLER_ERROR_NONE;
-    d->err = GENERIC_DRIVER_ERROR_NONE;
     *readlen = 0;
 
-    if ( h == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
 
-    if ( h->type != HANDLER_TYPE_MEMORY ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER_TYPE;
-        return EXIT_FAILURE;
-    };
-
-    if ( !( h->status & HANDLER_STATUS_READY ) ) {
-        h->err = HANDLER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
-
-    if ( h->spec.mem.ptr == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
-
-    if ( offset > h->spec.mem.size ) {
+    if ( offset > memspec->size ) {
         d->err = GENERIC_DRIVER_ERROR_SEEK;
         return EXIT_FAILURE;
     };
 
     uint32_t need_size = offset + count_bytes;
-    if ( need_size > h->spec.mem.size ) {
+    if ( need_size > memspec->size ) {
         d->err = GENERIC_DRIVER_ERROR_SIZE;
         return EXIT_FAILURE;
     };
 
     *readlen = count_bytes;
-    if ( &h->spec.mem.ptr[offset] != buffer ) {
-        memmove ( buffer, &h->spec.mem.ptr[offset], count_bytes );
+    if ( &memspec->ptr[offset] != buffer ) {
+        memmove ( buffer, &memspec->ptr[offset], count_bytes );
     };
 
     return EXIT_SUCCESS;
@@ -227,51 +173,31 @@ int ui_memory_driver_write_cb ( void *handler, void *driver, uint32_t offset, vo
 
     st_HANDLER *h = handler;
     st_DRIVER *d = driver;
+    st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
-    h->err = HANDLER_ERROR_NONE;
-    d->err = GENERIC_DRIVER_ERROR_NONE;
     *writelen = 0;
 
-    if ( h == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
-
-    if ( h->type != HANDLER_TYPE_MEMORY ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER_TYPE;
-        return EXIT_FAILURE;
-    };
-
-    if ( !( h->status & HANDLER_STATUS_READY ) ) {
-        h->err = HANDLER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
-
-    if ( h->spec.mem.ptr == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
 
     if ( h->status & HANDLER_STATUS_READ_ONLY ) {
         h->err = HANDLER_ERROR_WRITE_PROTECTED;
         return EXIT_FAILURE;
     };
 
-
-    if ( offset > h->spec.mem.size ) {
+    if ( offset > memspec->size ) {
         d->err = GENERIC_DRIVER_ERROR_SEEK;
         return EXIT_FAILURE;
     };
 
     uint32_t need_size = offset + count_bytes;
-    if ( need_size > h->spec.mem.size ) {
+    if ( need_size > memspec->size ) {
         d->err = GENERIC_DRIVER_ERROR_SIZE;
         return EXIT_FAILURE;
     };
 
     *writelen = count_bytes;
-    if ( &h->spec.mem.ptr[offset] != buffer ) {
-        memmove ( &h->spec.mem.ptr[offset], buffer, count_bytes );
+    if ( &memspec->ptr[offset] != buffer ) {
+        memmove ( &memspec->ptr[offset], buffer, count_bytes );
     };
 
     return EXIT_SUCCESS;
@@ -290,63 +216,47 @@ int ui_memory_driver_truncate_cb ( void *handler, void *driver, uint32_t size ) 
 
     st_HANDLER *h = handler;
     st_DRIVER *d = driver;
+    st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
-    h->err = HANDLER_ERROR_NONE;
-    d->err = GENERIC_DRIVER_ERROR_NONE;
-
-    if ( h == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
-
-    if ( h->type != HANDLER_TYPE_MEMORY ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER_TYPE;
-        return EXIT_FAILURE;
-    };
-
-    if ( !( h->status & HANDLER_STATUS_READY ) ) {
-        h->err = HANDLER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
-
-    if ( h->spec.mem.ptr == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
 
     if ( h->status & HANDLER_STATUS_READ_ONLY ) {
         h->err = HANDLER_ERROR_WRITE_PROTECTED;
         return EXIT_FAILURE;
     };
 
-    uint8_t *new = ui_utils_mem_realloc ( h->spec.mem.ptr, size );
+    if ( size < 1 ) {
+        d->err = GENERIC_DRIVER_ERROR_SIZE;
+        return EXIT_FAILURE;
+    };
+
+    uint8_t *new = ui_utils_mem_realloc ( memspec->ptr, size );
 
     if ( new == NULL ) {
         d->err = GENERIC_DRIVER_ERROR_REALLOC;
         return EXIT_FAILURE;
     };
 
-    h->spec.mem.ptr = new;
-    h->spec.mem.size = size;
+    memspec->ptr = new;
+    memspec->size = size;
 
     return EXIT_SUCCESS;
 }
 
 
-void ui_memory_driver_init ( void ) {
-    generic_driver_setup ( &g_ui_memory_driver_static, ui_memory_driver_read_cb, ui_memory_driver_write_cb, ui_memory_driver_prepare_static_cb, ui_memory_driver_truncate_cb );
-    generic_driver_setup ( &g_ui_memory_driver_realloc, ui_memory_driver_read_cb, ui_memory_driver_write_cb, ui_memory_driver_prepare_realloc_cb, ui_memory_driver_truncate_cb );
-}
-
-
-int ui_memory_driver_open ( void *handler, st_DRIVER *d, uint32_t size ) {
+int ui_memory_driver_open_cb ( void *handler, void *driver ) {
 
     st_HANDLER *h = handler;
+    st_DRIVER *d = driver;
+    st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
     if ( h == NULL ) {
         d->err = GENERIC_DRIVER_ERROR_HANDLER;
         return EXIT_FAILURE;
     };
+    
+    h->err = HANDLER_ERROR_NONE;
+    d->err = GENERIC_DRIVER_ERROR_NONE;
 
     if ( h->status & HANDLER_STATUS_READY ) {
         d->err = GENERIC_DRIVER_ERROR_HANDLER_IS_BUSY;
@@ -358,23 +268,28 @@ int ui_memory_driver_open ( void *handler, st_DRIVER *d, uint32_t size ) {
         return EXIT_FAILURE;
     };
 
-    if ( h->spec.mem.ptr != NULL ) {
+    if ( memspec->ptr != NULL ) {
         d->err = GENERIC_DRIVER_ERROR_HANDLER_IS_BUSY;
+        return EXIT_FAILURE;
+    };
+
+    if ( memspec->open_size < 1 ) {
+        d->err = GENERIC_DRIVER_ERROR_SIZE;
         return EXIT_FAILURE;
     };
 
     d->err = GENERIC_DRIVER_ERROR_NONE;
     h->status = HANDLER_STATUS_NOT_READY;
 
-    uint8_t *new_ptr = ui_utils_mem_alloc0 ( size );
+    uint8_t *new_ptr = ui_utils_mem_alloc0 ( memspec->open_size );
 
     if ( new_ptr == NULL ) {
         d->err = GENERIC_DRIVER_ERROR_MALLOC;
         return EXIT_FAILURE;
     };
 
-    h->spec.mem.ptr = new_ptr;
-    h->spec.mem.size = size;
+    memspec->ptr = new_ptr;
+    memspec->size = memspec->open_size;
 
     h->status = HANDLER_STATUS_READY;
 
@@ -382,39 +297,18 @@ int ui_memory_driver_open ( void *handler, st_DRIVER *d, uint32_t size ) {
 }
 
 
-int ui_memory_driver_close ( void *handler, st_DRIVER *d ) {
+int ui_memory_driver_close_cb ( void *handler, void *driver ) {
 
     st_HANDLER *h = handler;
+    st_DRIVER *d = driver;
+    st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
-    if ( h == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
 
-    if ( h->status & HANDLER_STATUS_READY ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
+    ui_utils_mem_free ( memspec->ptr );
 
-    if ( h->type != HANDLER_TYPE_MEMORY ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER_TYPE;
-        return EXIT_FAILURE;
-    };
-
-    if ( !( h->status & HANDLER_STATUS_READY ) ) {
-        h->err = HANDLER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
-
-    if ( h->spec.mem.ptr == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
-
-    ui_utils_mem_free ( h->spec.mem.ptr );
-
-    h->spec.mem.ptr = NULL;
-    h->spec.mem.size = 0;
+    memspec->ptr = NULL;
+    memspec->size = 0;
 
     h->err = HANDLER_ERROR_NONE;
     d->err = GENERIC_DRIVER_ERROR_NONE;
@@ -422,3 +316,10 @@ int ui_memory_driver_close ( void *handler, st_DRIVER *d ) {
 
     return EXIT_SUCCESS;
 }
+
+
+void ui_memory_driver_init ( void ) {
+    generic_driver_setup ( &g_ui_memory_driver_static, ui_memory_driver_open_cb, ui_memory_driver_close_cb, ui_memory_driver_read_cb, ui_memory_driver_write_cb, ui_memory_driver_prepare_static_cb, ui_memory_driver_truncate_cb );
+    generic_driver_setup ( &g_ui_memory_driver_realloc, ui_memory_driver_open_cb, ui_memory_driver_close_cb, ui_memory_driver_read_cb, ui_memory_driver_write_cb, ui_memory_driver_prepare_realloc_cb, ui_memory_driver_truncate_cb );
+}
+

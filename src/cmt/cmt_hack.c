@@ -43,10 +43,20 @@
 #include "cfgmain.h"
 
 #include "ui/ui_utils.h"
+#include "libs/generic_driver/generic_driver.h"
+#include "ui/generic_driver/ui_memory_driver.h"
+#include "libs/mzf/mzf.h"
+#include "libs/mzf/mzf_tools.h"
+
 
 #include "ui/vkbd/ui_vkbd.h"
+#include "libs/mzf/mzf.h"
 
 st_CMTHACK g_cmthack;
+
+
+static st_DRIVER *g_driver = &g_ui_memory_driver_static;
+#define CMT_HACK_DEFAULT_HANDLER_TYPE HANDLER_TYPE_MEMORY
 
 
 typedef enum en_LOADRET {
@@ -145,20 +155,17 @@ void cmthack_load_rom_patch ( unsigned enabled ) {
 
 
 void cmthack_reset ( void ) {
-    /* pokud jsme meli otevreny MZF soubor, tak ho zavrem */
-    if ( g_cmthack.fp ) {
-        fclose ( g_cmthack.fp );
-        g_cmthack.fp = NULL;
-    };
+    /* pokud jsme rozecteny MZF soubor, tak ho zavrem */
+    generic_driver_close ( &g_cmthack.mzf_handler, g_driver );
 }
 
 
 void cmthack_exit ( void ) {
-    /* pokud jsme meli otevreny MZF soubor, tak ho zavrem */
-    if ( g_cmthack.fp ) {
-        fclose ( g_cmthack.fp );
-        g_cmthack.fp = NULL;
-    };
+    /* pokud jsme rozecteny MZF soubor, tak ho zavrem */
+    generic_driver_close ( &g_cmthack.mzf_handler, g_driver );
+    if ( g_cmthack.last_filename ) {
+        ui_utils_mem_free ( g_cmthack.last_filename );
+    }
 }
 
 
@@ -172,10 +179,9 @@ void cmthack_propagatecfg_load_rom_patch ( void *e, void *data ) {
 
 void cmthack_init ( void ) {
 
-    g_cmthack.fp = NULL;
-    g_cmthack.filename[0] = 0x00;
+    generic_driver_register_handler ( &g_cmthack.mzf_handler, CMT_HACK_DEFAULT_HANDLER_TYPE );
+    g_cmthack.last_filename = ui_utils_mem_alloc0 ( 1 );
     g_cmthack.load_patch_installed = 0;
-
 
     CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "CMTHACK" );
 
@@ -216,46 +222,69 @@ void cmthack_load_file ( void ) {
 
     mz800_flush_full_screen ( );
 
-    char filename [ CMTHACK_FILENAME_LENGTH ];
+    char *filename = NULL;
 
     char window_title[] = "Select MZF file to open";
-    filename[0] = 0x00;
-    if ( UIRET_OK != ui_open_file ( filename, g_cmthack.filename, sizeof ( filename ), FILETYPE_MZF, window_title, OPENMODE_READ ) ) {
+
+    if ( UIRET_OK != ui_open_file ( &filename, g_cmthack.last_filename, 0, FILETYPE_MZF, window_title, OPENMODE_READ ) ) {
         /* Zruseno: nastavit Err + Break */
         cmthack_result ( LOADRET_BREAK );
         return;
     };
 
-    cmthack_load_filename ( filename );
+    if ( filename == NULL ) {
+        filename = ui_utils_mem_alloc0 ( 1 );
+    };
+
+    cmthack_load_mzf_filename ( filename );
+    ui_utils_mem_free ( filename );
 }
 
 
-void cmthack_load_filename ( char *filename ) {
+void cmthack_load_mzf_filename ( char *filename ) {
 
     unsigned reg_hl;
 
-    if ( g_cmthack.fp != NULL ) {
-        fclose ( g_cmthack.fp );
-        g_cmthack.fp = NULL;
-    };
+    /* pokud jsme rozecteny MZF soubor, tak ho zavrem */
+    generic_driver_close ( &g_cmthack.mzf_handler, g_driver );
 
-    if ( !( g_cmthack.fp = ui_utils_file_open ( filename, "rb" ) ) ) {
-        /* Nejde otevrit soubor: nastavit Err + Break */
-        ui_show_error ( "Can't open MZF file '%s': %s\n", filename, strerror ( errno ) );
+    if ( ( NULL == generic_driver_open_memory_from_file ( &g_cmthack.mzf_handler, g_driver, filename ) ) || ( g_cmthack.mzf_handler.err ) || ( g_driver->err ) ) {
+        /* Nejde otevrit soubor, nebo inicializovat handler: nastavit Err + Break */
+        ui_show_error ( "CMT HACK can't open MZF file '%s': %s, gdriver_err: %s\n", filename, strerror ( errno ), generic_driver_error_message ( &g_cmthack.mzf_handler, g_driver ) );
         cmthack_result ( LOADRET_BREAK );
         return;
     };
 
-    strncpy ( g_cmthack.filename, filename, sizeof ( g_cmthack.filename ) );
+    g_cmthack.last_filename = ui_utils_mem_realloc ( g_cmthack.last_filename, strlen ( filename ) + 1 );
+    strncpy ( g_cmthack.last_filename, filename, strlen ( filename ) );
 
     /* precteme prvnich 128 bajtu z MZF souboru a ulozime je do RAM na adresu z regHL */
 
     reg_hl = z80ex_get_reg ( g_mz800.cpu, regHL );
-    if ( 0x80 != ui_utils_file_read ( &g_memory.RAM [ reg_hl ], 1, 0x80, g_cmthack.fp ) ) {
+
+    if ( EXIT_SUCCESS != generic_driver_read ( &g_cmthack.mzf_handler, g_driver, 0, &g_memory.RAM [ reg_hl ], sizeof ( st_MZF_HEADER ) ) ) {
         /* Vadny soubor: nastavit Err + Checksum */
+        ui_show_error ( "CMT HACK can't load MZF header '%s': %s, gdriver_err: %s\n", filename, strerror ( errno ), generic_driver_error_message ( &g_cmthack.mzf_handler, g_driver ) );
+        generic_driver_close ( &g_cmthack.mzf_handler, g_driver );
         cmthack_result ( LOADRET_ERROR );
-        fclose ( g_cmthack.fp );
-        g_cmthack.fp = NULL;
+        return;
+    };
+
+    st_MZF_HEADER mzfhdr;
+
+    if ( EXIT_SUCCESS == mzf_read_header ( &g_cmthack.mzf_handler, g_driver, &mzfhdr ) ) {
+        char ascii_filename[MZF_FNAME_FULL_LENGTH];
+        mzf_tools_get_fname ( &mzfhdr, ascii_filename );
+        printf ( "\nCMT hack: load MZF header on 0x%04x.\n\n", reg_hl );
+        printf ( "fname: %s\n", ascii_filename );
+        printf ( "ftype: 0x%02x\n", mzfhdr.ftype );
+        printf ( "fstrt: 0x%04x\n", mzfhdr.fstrt );
+        printf ( "fsize: 0x%04x\n", mzfhdr.fsize );
+        printf ( "fexec: 0x%04x\n", mzfhdr.fexec );
+    } else {
+        ui_show_error ( "CMT HACK can't read MZF header '%s': %s, gdriver_err: %s\n", filename, strerror ( errno ), generic_driver_error_message ( &g_cmthack.mzf_handler, g_driver ) );
+        generic_driver_close ( &g_cmthack.mzf_handler, g_driver );
+        cmthack_result ( LOADRET_ERROR );
         return;
     };
 
@@ -269,13 +298,13 @@ void cmthack_load_filename ( char *filename ) {
  * Pozadavek na precteni tela souboru
  * 
  */
-void cmthack_read_body ( void ) {
+void cmthack_read_mzf_body ( void ) {
 
     unsigned reg_hl;
     unsigned reg_bc;
 
     /* Mame otevren nejaky MZF? */
-    if ( !g_cmthack.fp ) {
+    if ( !( g_cmthack.mzf_handler.status & HANDLER_STATUS_READY ) ) {
         /* Zruseno: nastavit Err + Break */
         cmthack_result ( LOADRET_BREAK );
         return;
@@ -285,29 +314,20 @@ void cmthack_read_body ( void ) {
     reg_hl = z80ex_get_reg ( g_mz800.cpu, regHL );
     reg_bc = z80ex_get_reg ( g_mz800.cpu, regBC );
 
-    while ( reg_bc ) {
+    /* precteme prvnich regBC bajtu z MZF body a ulozime je do RAM na adresu z regHL */
 
-        unsigned length = 0xffff - reg_hl;
-
-        if ( length > reg_bc ) {
-            length = reg_bc;
-        };
-
-        if ( length != ui_utils_file_read ( &g_memory.RAM [ reg_hl ], 1, length, g_cmthack.fp ) ) {
-            /* Vadny soubor: nastavit Err + Checksum */
-            cmthack_result ( LOADRET_ERROR );
-            fclose ( g_cmthack.fp );
-            g_cmthack.fp = NULL;
-            return;
-        };
-
-        reg_hl = 0x0000;
-        reg_bc -= length;
+    if ( EXIT_SUCCESS != mzf_read_body ( &g_cmthack.mzf_handler, g_driver, &g_memory.RAM [ reg_hl ], reg_bc ) ) {
+        /* Vadny soubor: nastavit Err + Checksum */
+        ui_show_error ( "CMT HACK can't load MZF header '%s': %s, gdriver_err: %s\n", g_cmthack.last_filename, strerror ( errno ), generic_driver_error_message ( &g_cmthack.mzf_handler, g_driver ) );
+        generic_driver_close ( &g_cmthack.mzf_handler, g_driver );
+        cmthack_result ( LOADRET_ERROR );
+        return;
     };
 
+    printf ( "\nCMT hack: load 0x%04x bytes from MZF body on 0x%04x.\n", reg_bc, reg_hl );
+
     /* Nacteno OK */
+    generic_driver_close ( &g_cmthack.mzf_handler, g_driver );
     cmthack_result ( LOADRET_OK );
-    fclose ( g_cmthack.fp );
-    g_cmthack.fp = NULL;
 }
 

@@ -127,7 +127,8 @@ void fdc_mount ( unsigned drive_id ) {
     char filename [ DSK_FILENAME_LENGTH ];
 
     filename[0] = 0x00;
-    ui_open_file ( filename, g_fdc.wd279x.drive[drive_id].filename, sizeof ( filename ), FILETYPE_DSK, window_title, OPENMODE_READ );
+    char *filename_p = filename; // TODO: fixni mne
+    ui_open_file ( &filename_p, g_fdc.wd279x.drive[drive_id].filename, sizeof ( filename ), FILETYPE_DSK, window_title, OPENMODE_READ );
     fdc_mount_dskfile ( drive_id, filename );
 }
 
