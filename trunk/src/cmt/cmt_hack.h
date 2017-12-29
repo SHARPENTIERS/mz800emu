@@ -24,20 +24,19 @@
  */
 
 #ifndef CMT_HACK_H
-#define	CMT_HACK_H
+#define CMT_HACK_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stdio.h>
-
-#define CMTHACK_FILENAME_LENGTH 1024
-
+#include "libs/generic_driver/generic_driver.h"
+    
     typedef struct st_CMTHACK {
-        FILE *fp;
+        st_HANDLER mzf_handler;
+        char *last_filename;
         unsigned load_patch_installed;
-        char filename [ CMTHACK_FILENAME_LENGTH ];
     } st_CMTHACK;
 
     extern st_CMTHACK g_cmthack;
@@ -50,13 +49,13 @@ extern "C" {
     extern void cmthack_exit ( void );
 
     extern void cmthack_load_file ( void );
-    extern void cmthack_load_filename ( char *filename );
-    extern void cmthack_read_body ( void );
+    extern void cmthack_load_mzf_filename ( char *filename );
+    extern void cmthack_read_mzf_body ( void );
 
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* CMT_HACK_H */
+#endif /* CMT_HACK_H */
 

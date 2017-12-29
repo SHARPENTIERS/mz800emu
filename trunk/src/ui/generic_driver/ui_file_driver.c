@@ -55,32 +55,13 @@ int ui_file_driver_read_cb ( void *handler, void *driver, uint32_t offset, void 
 
     st_HANDLER *h = handler;
     st_DRIVER *d = driver;
+    st_HANDLER_FILESPC *filespec = &h->spec.filespec;
 
-    h->err = HANDLER_ERROR_NONE;
-    d->err = GENERIC_DRIVER_ERROR_NONE;
     *readlen = 0;
 
-    if ( h == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
+    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
 
-    if ( h->type != HANDLER_TYPE_FILE ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER_TYPE;
-        return EXIT_FAILURE;
-    };
-
-    if ( !( h->status & HANDLER_STATUS_READY ) ) {
-        h->err = HANDLER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
-
-    FILE *fh = h->spec.fh;
-
-    if ( fh == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
+    FILE *fh = filespec->fh;
 
     if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( fh, offset ) ) {
         d->err = GENERIC_DRIVER_ERROR_SEEK;
@@ -111,37 +92,18 @@ int ui_file_driver_write_cb ( void *handler, void *driver, uint32_t offset, void
 
     st_HANDLER *h = handler;
     st_DRIVER *d = driver;
+    st_HANDLER_FILESPC *filespec = &h->spec.filespec;
 
-    h->err = HANDLER_ERROR_NONE;
-    d->err = GENERIC_DRIVER_ERROR_NONE;
     *writelen = 0;
 
-    if ( h == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
-
-    if ( h->type != HANDLER_TYPE_FILE ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER_TYPE;
-        return EXIT_FAILURE;
-    };
-
-    if ( !( h->status & HANDLER_STATUS_READY ) ) {
-        h->err = HANDLER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
+    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
 
     if ( h->status & HANDLER_STATUS_READ_ONLY ) {
         h->err = HANDLER_ERROR_WRITE_PROTECTED;
         return EXIT_FAILURE;
     };
 
-    FILE *fh = h->spec.fh;
-
-    if ( fh == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
+    FILE *fh = filespec->fh;
 
     if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( fh, offset ) ) {
         d->err = GENERIC_DRIVER_ERROR_SEEK;
@@ -169,31 +131,11 @@ int ui_file_driver_truncate_cb ( void *handler, void *driver, uint32_t size ) {
 
     st_HANDLER *h = handler;
     st_DRIVER *d = driver;
+    st_HANDLER_FILESPC *filespec = &h->spec.filespec;
 
-    h->err = HANDLER_ERROR_NONE;
-    d->err = GENERIC_DRIVER_ERROR_NONE;
+    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
 
-    if ( h == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
-
-    if ( h->type != HANDLER_TYPE_FILE ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER_TYPE;
-        return EXIT_FAILURE;
-    };
-
-    if ( !( h->status & HANDLER_STATUS_READY ) ) {
-        h->err = HANDLER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
-
-    FILE *fh = h->spec.fh;
-
-    if ( fh == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
+    FILE *fh = filespec->fh;
 
     if ( h->status & HANDLER_STATUS_READ_ONLY ) {
         h->err = HANDLER_ERROR_WRITE_PROTECTED;
@@ -214,14 +156,11 @@ int ui_file_driver_truncate_cb ( void *handler, void *driver, uint32_t size ) {
 }
 
 
-void ui_file_driver_init ( void ) {
-    generic_driver_setup ( &g_ui_file_driver, ui_file_driver_read_cb, ui_file_driver_write_cb, NULL, ui_file_driver_truncate_cb );
-}
-
-
-int ui_file_driver_open ( void *handler, st_DRIVER *d, char *filename, en_FILE_DRIVER_MODE mode ) {
+int ui_file_driver_open ( void *handler, void *driver ) {
 
     st_HANDLER *h = handler;
+    st_DRIVER *d = driver;
+    st_HANDLER_FILESPC *filespec = &h->spec.filespec;
 
     int fl_readonly = 1;
     char *txt_mode = FS_LAYER_FMODE_RO;
@@ -230,6 +169,9 @@ int ui_file_driver_open ( void *handler, st_DRIVER *d, char *filename, en_FILE_D
         d->err = GENERIC_DRIVER_ERROR_HANDLER;
         return EXIT_FAILURE;
     };
+
+    h->err = HANDLER_ERROR_NONE;
+    d->err = GENERIC_DRIVER_ERROR_NONE;
 
     if ( h->status & HANDLER_STATUS_READY ) {
         d->err = GENERIC_DRIVER_ERROR_HANDLER_IS_BUSY;
@@ -241,7 +183,7 @@ int ui_file_driver_open ( void *handler, st_DRIVER *d, char *filename, en_FILE_D
         return EXIT_FAILURE;
     };
 
-    if ( h->spec.fh != NULL ) {
+    if ( filespec->fh != NULL ) {
         d->err = GENERIC_DRIVER_ERROR_HANDLER_IS_BUSY;
         return EXIT_FAILURE;
     };
@@ -249,24 +191,24 @@ int ui_file_driver_open ( void *handler, st_DRIVER *d, char *filename, en_FILE_D
     d->err = GENERIC_DRIVER_ERROR_NONE;
     h->status = HANDLER_STATUS_NOT_READY;
 
-    switch ( mode ) {
-        case FILED_RIVER_MODE_RO:
+    switch ( filespec->open_mode ) {
+        case FILE_DRIVER_OPMODE_RO:
             txt_mode = FS_LAYER_FMODE_RO;
             fl_readonly = 1;
             break;
 
-        case FILED_RIVER_MODE_RW:
+        case FILE_DRIVER_OPMODE_RW:
             txt_mode = FS_LAYER_FMODE_RW;
             fl_readonly = 0;
             break;
 
-        case FILED_RIVER_MODE_W:
+        case FILE_DRIVER_OPMODE_W:
             txt_mode = FS_LAYER_FMODE_W;
             fl_readonly = 0;
             break;
     };
 
-    if ( FS_LAYER_DISK_ERR == FS_LAYER_FOPEN ( h->spec.fh, filename, txt_mode ) ) {
+    if ( FS_LAYER_DISK_ERR == FS_LAYER_FOPEN ( filespec->fh, filespec->filename, txt_mode ) ) {
         d->err = GENERIC_DRIVER_ERROR_FOPEN;
         return EXIT_FAILURE;
     };
@@ -281,42 +223,26 @@ int ui_file_driver_open ( void *handler, st_DRIVER *d, char *filename, en_FILE_D
 }
 
 
-int ui_file_driver_close ( void *handler, st_DRIVER *d ) {
+int ui_file_driver_close_cb ( void *handler, void *driver ) {
 
     st_HANDLER *h = handler;
+    st_DRIVER *d = driver;
+    st_HANDLER_FILESPC *filespec = &h->spec.filespec;
 
-    if ( h == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
+    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
 
-    if ( h->status & HANDLER_STATUS_READY ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
+    FS_LAYER_FCLOSE ( filespec->fh );
 
-    if ( h->type != HANDLER_TYPE_FILE ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER_TYPE;
-        return EXIT_FAILURE;
-    };
-
-    if ( !( h->status & HANDLER_STATUS_READY ) ) {
-        h->err = HANDLER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
-
-    if ( h->spec.mem.ptr == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
-        return EXIT_FAILURE;
-    };
-
-    FS_LAYER_FCLOSE ( h->spec.fh );
-
-    h->spec.fh = NULL;
+    filespec->fh = NULL;
 
     h->err = HANDLER_ERROR_NONE;
     d->err = GENERIC_DRIVER_ERROR_NONE;
     h->status = HANDLER_STATUS_NOT_READY;
 
     return EXIT_SUCCESS;
+}
+
+
+void ui_file_driver_init ( void ) {
+    generic_driver_setup ( &g_ui_file_driver, ui_file_driver_open, ui_file_driver_close_cb, ui_file_driver_read_cb, ui_file_driver_write_cb, NULL, ui_file_driver_truncate_cb );
 }

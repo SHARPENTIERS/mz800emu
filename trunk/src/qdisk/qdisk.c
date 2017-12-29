@@ -451,7 +451,8 @@ void qdisk_mount ( void ) {
             err = 0;
 
             filename[0] = 0x00;
-            ui_open_file ( filename, cfgelement_get_text_value ( g_elm_std_fp ), sizeof ( filename ), FILETYPE_MZQ, window_title, OPENMODE_READ_OR_NEW );
+            char *filename_p = filename; // TODO: fixni mne
+            ui_open_file ( &filename_p, cfgelement_get_text_value ( g_elm_std_fp ), sizeof ( filename ), FILETYPE_MZQ, window_title, OPENMODE_READ_OR_NEW );
 
             unsigned len = strlen ( filename );
 
@@ -490,7 +491,8 @@ void qdisk_mount ( void ) {
         char window_title[] = "Select directory for virtual Quick Disk";
         char dirpath [ QDISKK_FILENAME_LENGTH ];
         dirpath[0] = 0x00;
-        ui_open_file ( dirpath, cfgelement_get_text_value ( g_elm_virt_fp ), sizeof ( dirpath ), FILETYPE_DIR, window_title, OPENMODE_DIRECTORY );
+        char *dirpath_p = dirpath; // TODO: fixni mne
+        ui_open_file ( &dirpath_p, cfgelement_get_text_value ( g_elm_virt_fp ), sizeof ( dirpath ), FILETYPE_DIR, window_title, OPENMODE_DIRECTORY );
         if ( dirpath[0] != 0x00 ) {
             qdisk_virt_open_directory ( dirpath );
             ui_qdisk_set_path ( cfgelement_get_text_value ( g_elm_virt_fp ) );

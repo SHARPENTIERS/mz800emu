@@ -38,8 +38,6 @@ extern "C" {
     extern st_DRIVER g_ui_memory_driver_realloc;
 
     extern void ui_memory_driver_init ( void );
-    extern int ui_memory_driver_open ( void *handler, st_DRIVER *d, uint32_t size );
-    extern int ui_memory_driver_close ( void *handler, st_DRIVER *d );
 
 #ifdef __cplusplus
 }

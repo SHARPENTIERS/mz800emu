@@ -36,16 +36,7 @@ extern "C" {
 
     extern st_DRIVER g_ui_file_driver;
 
-
-    typedef enum en_FILE_DRIVER_MODE {
-        FILED_RIVER_MODE_RO = 0,
-        FILED_RIVER_MODE_RW,
-        FILED_RIVER_MODE_W,
-    } en_FILE_DRIVER_MODE;
-
     extern void ui_file_driver_init ( void );
-    extern int ui_file_driver_open ( void *handler, st_DRIVER *d, char *filename, en_FILE_DRIVER_MODE mode );
-    extern int ui_file_driver_close ( void *handler, st_DRIVER *d );
 
 #ifdef __cplusplus
 }

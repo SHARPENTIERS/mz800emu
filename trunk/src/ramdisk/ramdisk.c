@@ -222,12 +222,13 @@ void ramdisk_std_open_file ( void ) {
     char filename [ RAMDISK_FILENAME_LENGTH ];
 
     filename[0] = 0x00;
+    char *filename_p = filename; // TODO: fix me
     if ( g_ramdisk.std.type == RAMDISK_TYPE_SRAM ) {
         char window_title[] = "Select SRAM disk DAT file to open";
-        ui_open_file ( filename, g_ramdisk.std.filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_SAVE );
+        ui_open_file ( &filename_p, g_ramdisk.std.filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_SAVE );
     } else {
         char window_title[] = "Select ROM disk DAT file to open";
-        ui_open_file ( filename, g_ramdisk.std.filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_READ );
+        ui_open_file ( &filename_p, g_ramdisk.std.filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_READ );
     };
 
     if ( filename[0] != 0x00 ) {
