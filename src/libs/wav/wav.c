@@ -152,7 +152,7 @@ void wav_test ( void ) {
     generic_driver_register_handler ( &wav_handler, HANDLER_TYPE_FILE );
 
 
-    if ( EXIT_SUCCESS != ui_file_driver_open ( &wav_handler, &g_ui_file_driver, WAV_TST_FILE, FILE_DRIVER_OPMODE_RO ) ) {
+    if ( EXIT_SUCCESS != ui_file_driver_open_cb ( &wav_handler, &g_ui_file_driver, WAV_TST_FILE, FILE_DRIVER_OPMODE_RO ) ) {
         ui_show_error ( "%s() - Can't open file '%s': %s", __func__, WAV_TST_FILE, ui_utils_strerror ( ) );
     };
 
@@ -208,7 +208,7 @@ void wav_test ( void ) {
                 generic_driver_register_handler ( &handler, HANDLER_TYPE_FILE );
 
 
-                if ( EXIT_SUCCESS != ui_file_driver_open ( &handler, &g_ui_file_driver, "output.bin", FILE_DRIVER_OPMODE_W ) ) {
+                if ( EXIT_SUCCESS != ui_file_driver_open_cb ( &handler, &g_ui_file_driver, "output.bin", FILE_DRIVER_OPMODE_W ) ) {
                     ui_show_error ( "%s() - Can't open file '%s': %s", __func__, "output.bin", ui_utils_strerror ( ) );
                 };
 

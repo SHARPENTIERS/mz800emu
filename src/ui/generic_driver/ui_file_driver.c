@@ -135,13 +135,13 @@ int ui_file_driver_truncate_cb ( void *handler, void *driver, uint32_t size ) {
 
     if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
 
-    FILE *fh = filespec->fh;
-
     if ( h->status & HANDLER_STATUS_READ_ONLY ) {
         h->err = HANDLER_ERROR_WRITE_PROTECTED;
         return EXIT_FAILURE;
     };
 
+    FILE *fh = filespec->fh;
+    
     if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( fh, size ) ) {
         d->err = GENERIC_DRIVER_ERROR_SEEK;
         return EXIT_FAILURE;
@@ -156,7 +156,7 @@ int ui_file_driver_truncate_cb ( void *handler, void *driver, uint32_t size ) {
 }
 
 
-int ui_file_driver_open ( void *handler, void *driver ) {
+int ui_file_driver_open_cb ( void *handler, void *driver ) {
 
     st_HANDLER *h = handler;
     st_DRIVER *d = driver;
@@ -244,5 +244,5 @@ int ui_file_driver_close_cb ( void *handler, void *driver ) {
 
 
 void ui_file_driver_init ( void ) {
-    generic_driver_setup ( &g_ui_file_driver, ui_file_driver_open, ui_file_driver_close_cb, ui_file_driver_read_cb, ui_file_driver_write_cb, NULL, ui_file_driver_truncate_cb );
+    generic_driver_setup ( &g_ui_file_driver, ui_file_driver_open_cb, ui_file_driver_close_cb, ui_file_driver_read_cb, ui_file_driver_write_cb, NULL, ui_file_driver_truncate_cb );
 }

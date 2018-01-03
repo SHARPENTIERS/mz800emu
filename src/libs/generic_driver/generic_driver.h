@@ -170,6 +170,8 @@ extern "C" {
     extern int generic_driver_read_file_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen );
     extern int generic_driver_write_file_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen );
     extern int generic_driver_truncate_file_cb ( void *handler, void *driver, uint32_t size );
+    extern int generic_driver_close_file_cb ( void *handler, void *driver, uint32_t size );
+    extern int generic_driver_open_file_cb ( void *handler, void *driver, uint32_t size );
 #endif
 
 
@@ -178,6 +180,8 @@ extern "C" {
     extern int generic_driver_read_memory_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen );
     extern int generic_driver_write_memory_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen );
     extern int generic_driver_truncate_memory_cb ( void *handler, void *driver, uint32_t size );
+    extern int generic_driver_close_memory_cb ( void *handler, void *driver, uint32_t size );
+    extern int generic_driver_open_memory_cb ( void *handler, void *driver, uint32_t size );
 #endif
 
 

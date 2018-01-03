@@ -85,6 +85,10 @@ void* ui_utils_mem_alloc_raw ( guint32 size, int initialize0, const char *func, 
 
 void* ui_utils_mem_realloc_raw ( void *ptr, guint32 size, const char *func, int line ) {
     if ( ( ptr == NULL ) && ( size == 0 ) ) return NULL;
+    if ( size == 0 ) {
+        ui_utils_mem_free ( ptr );
+        return NULL;
+    };
     void *newptr = g_realloc ( ptr, size );
     if ( newptr == NULL ) {
         fprintf ( stderr, "%s():%d - Could not reallocate %u bytes in memory: %s\n", func, line, size, ui_utils_strerror ( ) );
