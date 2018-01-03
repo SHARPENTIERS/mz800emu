@@ -56,7 +56,7 @@ void dsk_tools_assign_description ( st_DSK_DESCRIPTION *desc, uint8_t rule, uint
     rules[rule].ssize = ssize;
     rules[rule].sector_order = sector_order;
     rules[rule].sector_map = sector_map;
-    rules[rule].default_value = default_value;
+    rules[rule].filler = default_value;
 }
 
 
@@ -273,7 +273,7 @@ int dsk_tools_create_image_tracks ( void *handler, st_DRIVER *d, st_DSK_DESCRIPT
     uint8_t sectors = rules[0].sectors;
     en_DSK_SECTOR_SIZE ssize = rules[0].ssize;
     en_DSK_SECTOR_ORDER_TYPE sector_order = rules[0].sector_order;
-    uint8_t default_value = rules[0].default_value;
+    uint8_t default_value = rules[0].filler;
     uint8_t rule = 0;
 
     uint8_t abs_track = 0;
@@ -298,7 +298,7 @@ int dsk_tools_create_image_tracks ( void *handler, st_DRIVER *d, st_DSK_DESCRIPT
                     sectors = rules[rule].sectors;
                     ssize = rules[rule].ssize;
                     sector_order = rules[rule].sector_order;
-                    default_value = rules[rule].default_value;
+                    default_value = rules[rule].filler;
 
 
                     if ( ( sector_order == DSK_SEC_ORDER_CUSTOM ) && ( rules[rule].sector_map != NULL ) ) {

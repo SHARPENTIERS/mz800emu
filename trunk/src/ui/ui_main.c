@@ -77,6 +77,7 @@
 #include "generic_driver/ui_file_driver.h"
 #include "generic_driver/ui_memory_driver.h"
 
+#include "dsk_tool/ui_dsk_tool.h"
 
 st_UI g_ui;
 static int g_ui_is_initialised = 0;
@@ -205,11 +206,9 @@ void ui_init ( void ) {
     if ( 0 == gtk_builder_add_from_file ( g_ui.builder, UI_RESOURCES_DIR "mz800emu_cmt.glade", &err ) ) {
         printf ( "GtkBuilder error: %s\n", err->message );
     };
-#if 0
     if ( 0 == gtk_builder_add_from_file ( g_ui.builder, UI_RESOURCES_DIR "dsk_tool.glade", &err ) ) {
         printf ( "GtkBuilder error: %s\n", err->message );
     };
-#endif
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     /* TODO: prozkoumat GtkCssProvider - nastavit rules hint pro disassembled a stack treeview */
@@ -388,6 +387,57 @@ void ui_write_errorlog ( char *lvl, char *msg ) {
 #endif
 
 
+/* modalni okno s [YES/NO] dialogem */
+int ui_show_yesno_dialog ( char *format, ... ) {
+
+    char *msg = NULL;
+    va_list args;
+    va_start ( args, format );
+
+#if 0
+    /* TODO: W32NAT nezna vasprintf - asi by bylo reseni pouzit vsnprintf (pokud jej tam existuje) */
+#if W32NAT
+    msg = "Unknown Error Message: your build is completed on host without vasprintf()\nCheck console for details.";
+    vprintf ( format, args );
+#else
+    vasprintf ( &msg, format, args );
+#endif
+#else
+    g_vasprintf ( &msg, format, args );
+#endif    
+    va_end ( args );
+
+    GtkWidget *dialog = NULL;
+    if ( g_ui_is_initialised == 1 ) {
+        dialog = gtk_message_dialog_new ( ui_get_window ( "main_window" ), GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, msg );
+    };
+
+#if 0
+#ifndef W32NAT
+    char *msg_in_locale;
+    msg_in_locale = g_locale_from_utf8 ( msg, -1, NULL, NULL, NULL );
+    fprintf ( stderr, "\nUI_ERROR: %s\n", msg_in_locale );
+    g_free ( msg_in_locale );
+#endif
+#endif
+
+    free ( msg );
+
+    gint result = GTK_RESPONSE_NO;
+
+    if ( g_ui_is_initialised == 1 ) {
+        result = gtk_dialog_run ( GTK_DIALOG ( dialog ) );
+        gtk_widget_destroy ( dialog );
+    };
+
+    if ( result == GTK_RESPONSE_YES ) {
+        return EXIT_SUCCESS;
+    };
+
+    return EXIT_FAILURE;
+}
+
+
 /* modalni okno s chybou */
 void ui_show_error ( char *format, ... ) {
 
@@ -410,7 +460,7 @@ void ui_show_error ( char *format, ... ) {
 
     GtkWidget *dialog = NULL;
     if ( g_ui_is_initialised == 1 ) {
-        dialog = gtk_message_dialog_new ( NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, msg );
+        dialog = gtk_message_dialog_new ( ui_get_window ( "main_window" ), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, msg );
     };
 
 #if 0
@@ -458,7 +508,7 @@ void ui_show_warning ( char *format, ... ) {
 
     GtkWidget *dialog = NULL;
     if ( g_ui_is_initialised == 1 ) {
-        dialog = gtk_message_dialog_new ( NULL, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, msg );
+        dialog = gtk_message_dialog_new ( ui_get_window ( "main_window" ), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, msg );
     };
 
 #if 0
@@ -880,4 +930,18 @@ G_MODULE_EXPORT void on_menuitem_keyboard_disable_hotkeys_toggled ( GtkCheckMenu
     } else {
         ui_disable_hotkeys ( 1 );
     };
+}
+
+
+G_MODULE_EXPORT void on_menuitem_dsk_tool_activate ( GtkMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+
+    ui_dsk_tool_show_window ( );
 }

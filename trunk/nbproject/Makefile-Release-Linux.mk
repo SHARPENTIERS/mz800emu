@@ -105,6 +105,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger_callbacks.o \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger_iasm.o \
 	${OBJECTDIR}/src/ui/debugger/ui_memdump.o \
+	${OBJECTDIR}/src/ui/dsk_tool/ui_dsk_tool.o \
 	${OBJECTDIR}/src/ui/generic_driver/ui_file_driver.o \
 	${OBJECTDIR}/src/ui/generic_driver/ui_memory_driver.o \
 	${OBJECTDIR}/src/ui/tools/ui_tool_pixbuf.o \
@@ -112,6 +113,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/ui_display.o \
 	${OBJECTDIR}/src/ui/ui_fcbutton.o \
 	${OBJECTDIR}/src/ui/ui_fdc.o \
+	${OBJECTDIR}/src/ui/ui_hexeditable.o \
 	${OBJECTDIR}/src/ui/ui_main.o \
 	${OBJECTDIR}/src/ui/ui_qdisk.o \
 	${OBJECTDIR}/src/ui/ui_ramdisk.o \
@@ -498,6 +500,11 @@ ${OBJECTDIR}/src/ui/debugger/ui_memdump.o: src/ui/debugger/ui_memdump.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_memdump.o src/ui/debugger/ui_memdump.c
 
+${OBJECTDIR}/src/ui/dsk_tool/ui_dsk_tool.o: src/ui/dsk_tool/ui_dsk_tool.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui/dsk_tool
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/dsk_tool/ui_dsk_tool.o src/ui/dsk_tool/ui_dsk_tool.c
+
 ${OBJECTDIR}/src/ui/generic_driver/ui_file_driver.o: src/ui/generic_driver/ui_file_driver.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui/generic_driver
 	${RM} "$@.d"
@@ -532,6 +539,11 @@ ${OBJECTDIR}/src/ui/ui_fdc.o: src/ui/ui_fdc.c
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_fdc.o src/ui/ui_fdc.c
+
+${OBJECTDIR}/src/ui/ui_hexeditable.o: src/ui/ui_hexeditable.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_hexeditable.o src/ui/ui_hexeditable.c
 
 ${OBJECTDIR}/src/ui/ui_main.o: src/ui/ui_main.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui

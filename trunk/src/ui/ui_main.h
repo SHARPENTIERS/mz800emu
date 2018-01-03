@@ -64,6 +64,7 @@ extern "C" {
 #define ui_get_window(name) GTK_WINDOW ( ui_get_object ( name ) )
 #define ui_get_entry(name) GTK_ENTRY ( ui_get_object ( name ) )
 #define ui_get_toggle(name) GTK_TOGGLE_BUTTON ( ui_get_object ( name ) )
+#define ui_get_adjustment(name) GTK_ADJUSTMENT ( ui_get_object ( name ) )
 
 
     typedef struct st_UIWINPOS {
@@ -117,6 +118,7 @@ extern "C" {
     extern void ui_iteration ( void );
     extern void ui_show_hide_main_menu ( void );
 
+    extern int ui_show_yesno_dialog ( char *format, ... );
     extern void ui_show_error ( char *format, ... );
     extern void ui_show_warning ( char *format, ... );
 

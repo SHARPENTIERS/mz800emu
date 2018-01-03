@@ -40,7 +40,7 @@ GtkMenu GtkLabel {
         font-weight: normal;
         
         /* font-size: [absolute-size|relative-size|percentage]; */
-	/* font-size: 12; */
+	/* font-size: 11; */
 	/* font-size: small; */
 	/* font-size: large; */
 }

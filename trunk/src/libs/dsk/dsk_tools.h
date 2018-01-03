@@ -49,7 +49,7 @@ extern "C" {
         en_DSK_SECTOR_SIZE ssize;
         en_DSK_SECTOR_ORDER_TYPE sector_order;
         uint8_t *sector_map;
-        uint8_t default_value;
+        uint8_t filler;
     } st_DSK_DESCRIPTION_RULE;
 
 
