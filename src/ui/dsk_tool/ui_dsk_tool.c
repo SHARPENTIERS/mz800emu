@@ -958,8 +958,8 @@ static int ui_dsk_tool_create_dsk ( char *path, char *filename, st_DSK_DESCRIPTI
 
     printf ( "Creating new FD image '%s'...\n", filename );
 
-    if ( EXIT_SUCCESS != dsk_tools_create_image ( handler, driver, dskdesc ) ) {
-        ui_show_error ( "%s() - Can't create DSK image: %s\n", __func__, generic_driver_error_message ( handler, driver ) );
+    if ( EXIT_SUCCESS != dsk_tools_create_image ( handler, dskdesc ) ) {
+        ui_show_error ( "%s() - Can't create DSK image: %s\n", __func__, dsk_error_message ( handler, driver ) );
         return EXIT_FAILURE;
     };
 
@@ -990,7 +990,9 @@ static int ui_dsk_tool_create_dsk ( char *path, char *filename, st_DSK_DESCRIPTI
 
 #endif
 
-    generic_driver_close ( handler, driver );
+    generic_driver_close ( handler );
+
+    ui_utils_mem_free ( handler );
 
     return EXIT_SUCCESS;
 }

@@ -39,19 +39,17 @@ st_DRIVER g_ui_memory_driver_realloc;
  * Obecny driver pro pripravu pozadovane casti obrazu do pameti - bez realokace.
  * 
  * @param handler
- * @param driver
  * @param offset
  * @param buffer
  * @param count_bytes
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int ui_memory_driver_prepare_static_cb ( void *handler, void *driver, uint32_t offset, void **buffer, uint32_t count_bytes ) {
+int ui_memory_driver_prepare_static_cb ( st_HANDLER *h, uint32_t offset, void **buffer, uint32_t count_bytes ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
-    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     uint32_t need_size = offset + count_bytes;
     *buffer = NULL;
@@ -76,19 +74,17 @@ int ui_memory_driver_prepare_static_cb ( void *handler, void *driver, uint32_t o
  * Obecny driver pro pripravu pozadovane casti obrazu do pameti - s povolenou realokaci.
  * 
  * @param handler
- * @param driver
  * @param offset
  * @param buffer
  * @param count_bytes
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int ui_memory_driver_prepare_realloc_cb ( void *handler, void *driver, uint32_t offset, void **buffer, uint32_t count_bytes ) {
+int ui_memory_driver_prepare_realloc_cb ( st_HANDLER *h, uint32_t offset, void **buffer, uint32_t count_bytes ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
-    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     uint32_t need_size = offset + count_bytes;
     *buffer = NULL;
@@ -121,22 +117,20 @@ int ui_memory_driver_prepare_realloc_cb ( void *handler, void *driver, uint32_t 
  * Obecny driver pro cteni z pameti.
  * 
  * @param handler
- * @param driver
  * @param offset
  * @param buffer
  * @param count_bytes
  * @param readlen
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int ui_memory_driver_read_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen ) {
+int ui_memory_driver_read_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
     *readlen = 0;
 
-    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     if ( offset > memspec->size ) {
         d->err = GENERIC_DRIVER_ERROR_SEEK;
@@ -162,22 +156,20 @@ int ui_memory_driver_read_cb ( void *handler, void *driver, uint32_t offset, voi
  * Obecny driver pro zapis do pameti.
  * 
  * @param handler
- * @param driver
  * @param offset
  * @param buffer
  * @param count_bytes
  * @param writelen
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int ui_memory_driver_write_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen ) {
+int ui_memory_driver_write_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
     *writelen = 0;
 
-    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     if ( h->status & HANDLER_STATUS_READ_ONLY ) {
         h->err = HANDLER_ERROR_WRITE_PROTECTED;
@@ -208,17 +200,15 @@ int ui_memory_driver_write_cb ( void *handler, void *driver, uint32_t offset, vo
  * Obecny driver pro zkraceni obrazu ulozeneho v pameti.
  * 
  * @param handler
- * @param driver
  * @param size
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int ui_memory_driver_truncate_cb ( void *handler, void *driver, uint32_t size ) {
+int ui_memory_driver_truncate_cb ( st_HANDLER *h, uint32_t size ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
-    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     if ( h->status & HANDLER_STATUS_READ_ONLY ) {
         h->err = HANDLER_ERROR_WRITE_PROTECTED;
@@ -244,17 +234,11 @@ int ui_memory_driver_truncate_cb ( void *handler, void *driver, uint32_t size ) 
 }
 
 
-int ui_memory_driver_open_cb ( void *handler, void *driver ) {
+int ui_memory_driver_open_cb ( st_HANDLER *h ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
-    if ( h == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
-    
     h->err = HANDLER_ERROR_NONE;
     d->err = GENERIC_DRIVER_ERROR_NONE;
 
@@ -297,13 +281,12 @@ int ui_memory_driver_open_cb ( void *handler, void *driver ) {
 }
 
 
-int ui_memory_driver_close_cb ( void *handler, void *driver ) {
+int ui_memory_driver_close_cb ( st_HANDLER *h ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
-    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     ui_utils_mem_free ( memspec->ptr );
 
