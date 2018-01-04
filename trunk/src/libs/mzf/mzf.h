@@ -63,14 +63,14 @@ extern "C" {
         uint8_t *body;
     } st_MZF;
 
-    extern int mzf_read_header_on_offset ( void *handler, st_DRIVER *d, uint32_t offset, st_MZF_HEADER *mzfhdr );
-    extern int mzf_write_header_on_offset ( void *handler, st_DRIVER *d, uint32_t offset, st_MZF_HEADER *mzfhdr );
+    extern int mzf_read_header_on_offset ( st_HANDLER *h, uint32_t offset, st_MZF_HEADER *mzfhdr );
+    extern int mzf_write_header_on_offset ( st_HANDLER *h, uint32_t offset, st_MZF_HEADER *mzfhdr );
 
-    extern int mzf_read_header ( void *handler, st_DRIVER *d, st_MZF_HEADER *mzfhdr );
-    extern int mzf_write_header ( void *handler, st_DRIVER *d, st_MZF_HEADER *mzfhdr );
-    extern int mzf_read_body_on_offset ( void *handler, st_DRIVER *d, uint32_t offset, uint8_t *buffer, uint16_t buffer_size );
-    extern int mzf_read_body ( void *handler, st_DRIVER *d, uint8_t *buffer, uint16_t buffer_size );
-    extern const char* mzf_error_message ( void *handler, st_DRIVER *d );
+    extern int mzf_read_header ( st_HANDLER *h, st_MZF_HEADER *mzfhdr );
+    extern int mzf_write_header ( st_HANDLER *h, st_MZF_HEADER *mzfhdr );
+    extern int mzf_read_body_on_offset ( st_HANDLER *h, uint32_t offset, uint8_t *buffer, uint16_t buffer_size );
+    extern int mzf_read_body ( st_HANDLER *h, uint8_t *buffer, uint16_t buffer_size );
+    extern const char* mzf_error_message ( st_HANDLER *h, st_DRIVER *d );
 
 #ifdef __cplusplus
 }

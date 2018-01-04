@@ -60,13 +60,7 @@
  * informaci o jeho rozmeru v poctu bajtu a pointer, ktery identifikuje pocatecni 
  * misto v pameti. 
  * Handler pro praci s ramdiskem, ci s unikartou prozatim jeste neexistuje.
- * 
- * V definici hlavicek callbacku se zamerne nepouziva st_HANDLER*, ale jen void*,
- * coz umoznuje lokalne definovat nejakou vlastni strukturu handleru.
- * Lokalne definovane handlery vsak musi striktne dodrzovat to, ze na zacatku struktury jsou stejne, jako
- * genericky st_HANDLER, ale dale mohou mit pripojeny libovolne dalsi prvky, ktere mohou 
- * byt pouzity napr. uvnitr uzivatelskych callbacku.
- * 
+ *  
  * Pro pametove handlery lze pouzit rychly, avsak potencionalne nebezpecny zpusob primeho pristupu:
  * 
  *   uint8_t work_buffer[256];
@@ -97,7 +91,35 @@
 
 #include "generic_driver.h"
 
+#define HAVE_UI_UTILS
+
+#ifdef HAVE_UI_UTILS
 #include "src/ui/ui_utils.h"
+
+#define generic_driver_utils_mem_alloc0( size ) ui_utils_mem_alloc ( size )
+#define generic_driver_utils_mem_free( ptr ) ui_utils_mem_free ( ptr )
+#define generic_driver_utils_file_open( filename, mode ) ui_utils_file_open ( filename, mode )
+#define generic_driver_utils_file_read( buffer, size, count_bytes, fh ) ui_utils_file_read ( buffer, size, count_bytes, fh )
+#define generic_driver_utils_file_write( buffer, size, count_bytes, fh ) ui_utils_file_write ( buffer, size, count_bytes, fh )
+#define generic_driver_utils_file_close( fh ) ui_utils_file_close ( fh )
+
+#else
+
+
+static inline void* generic_driver_utils_mem_alloc0 ( uint32_t size ) {
+    void *ptr = malloc ( size );
+    if ( !ptr ) return NULL;
+    memset ( ptr, 0x00, size );
+    return ptr;
+}
+
+#define generic_driver_utils_mem_free( ptr ) free ( ptr )
+#define generic_driver_utils_file_open( filename, mode ) fopen ( filename, mode )
+#define generic_driver_utils_file_read( buffer, size, count_bytes, fh ) fread ( buffer, size, count_bytes, fh )
+#define generic_driver_utils_file_write( buffer, size, count_bytes, fh ) fwrite ( buffer, size, count_bytes, fh )
+#define generic_driver_utils_file_close( fh ) fclose ( fh )
+
+#endif
 
 
 /**
@@ -182,6 +204,7 @@ void generic_driver_register_handler ( st_HANDLER *h, en_HANDLER_TYPE type ) {
     h->type = type;
     h->err = HANDLER_ERROR_NONE;
     h->status = HANDLER_STATUS_NOT_READY;
+    h->driver = NULL;
 }
 
 
@@ -196,25 +219,31 @@ void generic_driver_register_handler ( st_HANDLER *h, en_HANDLER_TYPE type ) {
  */
 st_HANDLER* generic_driver_open_file ( st_HANDLER *handler, st_DRIVER *d, char *filename, en_FILE_DRIVER_OPEN_MODE open_mode ) {
 
-    if ( !d->open_cb ) {
-        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
+    if ( d == NULL ) {
         return NULL;
     };
 
     st_HANDLER *h;
     if ( handler == NULL ) {
-        h = ui_utils_mem_alloc0 ( sizeof ( st_HANDLER ) );
+        h = generic_driver_utils_mem_alloc0 ( sizeof ( st_HANDLER ) );
     } else {
         h = handler;
     };
 
+    if ( !d->open_cb ) {
+        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
+        return NULL;
+    };
+
     generic_driver_register_handler ( h, HANDLER_TYPE_FILE );
+
     h->spec.filespec.filename = filename;
     h->spec.filespec.open_mode = open_mode;
+    h->driver = d;
 
-    if ( EXIT_FAILURE == d->open_cb ( h, d ) ) {
+    if ( EXIT_FAILURE == d->open_cb ( h ) ) {
         if ( handler == NULL ) {
-            ui_utils_mem_free ( h );
+            generic_driver_utils_mem_free ( h );
         };
         return NULL;
     };
@@ -233,24 +262,29 @@ st_HANDLER* generic_driver_open_file ( st_HANDLER *handler, st_DRIVER *d, char *
  */
 st_HANDLER* generic_driver_open_memory ( st_HANDLER *handler, st_DRIVER *d, uint32_t size ) {
 
-    if ( !d->open_cb ) {
-        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
+    if ( d == NULL ) {
         return NULL;
     };
 
     st_HANDLER *h;
     if ( handler == NULL ) {
-        h = ui_utils_mem_alloc0 ( sizeof ( st_HANDLER ) );
+        h = generic_driver_utils_mem_alloc0 ( sizeof ( st_HANDLER ) );
+        generic_driver_register_handler ( h, HANDLER_TYPE_MEMORY );
     } else {
         h = handler;
     };
 
-    generic_driver_register_handler ( h, HANDLER_TYPE_MEMORY );
-    h->spec.memspec.open_size = size;
+    if ( !d->open_cb ) {
+        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
+        return NULL;
+    };
 
-    if ( EXIT_FAILURE == d->open_cb ( h, d ) ) {
+    h->spec.memspec.open_size = size;
+    h->driver = d;
+
+    if ( EXIT_FAILURE == d->open_cb ( h ) ) {
         if ( handler == NULL ) {
-            ui_utils_mem_free ( h );
+            generic_driver_utils_mem_free ( h );
         };
         return NULL;
     };
@@ -269,9 +303,13 @@ st_HANDLER* generic_driver_open_memory ( st_HANDLER *handler, st_DRIVER *d, uint
  */
 st_HANDLER* generic_driver_open_memory_from_file ( st_HANDLER *handler, st_DRIVER *d, char *filename ) {
 
-    FILE *fh = ui_utils_file_open ( filename, "rb" );
+    if ( d == NULL ) {
+        return NULL;
+    };
 
-    unsigned size = 1;
+    FILE *fh = generic_driver_utils_file_open ( filename, "rb" );
+
+    uint32_t size = 1;
 
     if ( !fh ) {
         //printf ( "%s() - Error - Cant open file: %s\n", __func__, filename );
@@ -285,20 +323,63 @@ st_HANDLER* generic_driver_open_memory_from_file ( st_HANDLER *handler, st_DRIVE
     st_HANDLER *h = generic_driver_open_memory ( handler, d, size );
 
     if ( !( ( !h ) || ( d->err ) || ( h->err ) ) ) {
-        ui_utils_file_read ( h->spec.memspec.ptr, size, 1, fh );
-        ui_utils_file_close ( fh );
+
+        generic_driver_utils_file_read ( h->spec.memspec.ptr, size, 1, fh );
+
+        if ( ferror ( fh ) ) {
+            if ( handler == NULL ) {
+                generic_driver_utils_mem_free ( h );
+            };
+            h = NULL;
+        };
+
+        generic_driver_utils_file_close ( fh );
     };
 
     return h;
 }
 
 
-int generic_driver_close ( st_HANDLER *h, st_DRIVER *d ) {
+/**
+ * Ulozeni pametoveho bloku do souboru.
+ * 
+ * @param handler
+ * @param filename
+ * @return 
+ */
+int generic_driver_save_memory ( st_HANDLER *h, char *filename ) {
+
+    st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
+
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
+
+    FILE *fh = generic_driver_utils_file_open ( filename, "w" );
+
+    if ( !fh ) return EXIT_FAILURE;
+
+    generic_driver_utils_file_write ( memspec->ptr, memspec->size, 1, fh );
+
+    generic_driver_utils_file_close ( fh );
+
+    if ( ferror ( fh ) ) return EXIT_FAILURE;
+
+    return EXIT_SUCCESS;
+}
+
+
+int generic_driver_close ( st_HANDLER *h ) {
+
+    st_DRIVER *d = (st_DRIVER *) h->driver;
+
+    if ( d == NULL ) {
+        return EXIT_FAILURE;
+    };
+
     if ( !d->close_cb ) {
         d->err = GENERIC_DRIVER_ERROR_NOT_READY;
         return EXIT_FAILURE;
     };
-    return d->close_cb ( h, d );
+    return d->close_cb ( h );
 }
 
 
@@ -308,13 +389,12 @@ int generic_driver_close ( st_HANDLER *h, st_DRIVER *d ) {
  * @param handler
  * @param readonly
  */
-void generic_driver_set_handler_readonly_status ( void *handler, int readonly ) {
-    st_HANDLER *h = handler;
+void generic_driver_set_handler_readonly_status ( st_HANDLER *h, int readonly ) {
     if ( readonly == 0 ) {
         h->status &= ~HANDLER_ERROR_WRITE_PROTECTED;
     } else {
         h->status |= HANDLER_ERROR_WRITE_PROTECTED;
-    }
+    };
 }
 
 
@@ -322,16 +402,22 @@ void generic_driver_set_handler_readonly_status ( void *handler, int readonly ) 
  * Priprav driver na nasledujici operaci.
  * 
  * @param handler
- * @param d
  * @param offset
  * @param buffer
  * @param work_buffer
  * @param buffer_size
  * @return 
  */
-int generic_driver_prepare ( void *handler, st_DRIVER *d, uint32_t offset, void **buffer, void *work_buffer, uint32_t buffer_size ) {
+int generic_driver_prepare ( st_HANDLER *h, uint32_t offset, void **buffer, void *work_buffer, uint32_t buffer_size ) {
+
+    st_DRIVER *d = (st_DRIVER *) h->driver;
+
+    if ( d == NULL ) {
+        return EXIT_FAILURE;
+    };
+
     if ( d->prepare_cb != NULL ) {
-        if ( EXIT_SUCCESS != d->prepare_cb ( handler, d, offset, buffer, buffer_size ) ) return EXIT_FAILURE;
+        if ( EXIT_SUCCESS != d->prepare_cb ( h, offset, buffer, buffer_size ) ) return EXIT_FAILURE;
     };
     if ( *buffer == NULL ) {
         *buffer = work_buffer;
@@ -344,16 +430,22 @@ int generic_driver_prepare ( void *handler, st_DRIVER *d, uint32_t offset, void 
  * Cteni z jiz pripraveneho driveru.
  * 
  * @param handler
- * @param d
  * @param offset
  * @param buffer
  * @param buffer_size
  * @return 
  */
-int generic_driver_ppread ( void *handler, st_DRIVER *d, uint32_t offset, void *buffer, uint32_t buffer_size ) {
+int generic_driver_ppread ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t buffer_size ) {
+
+    st_DRIVER *d = (st_DRIVER *) h->driver;
+
+    if ( d == NULL ) {
+        return EXIT_FAILURE;
+    };
+
     if ( d->read_cb != NULL ) {
         uint32_t result_len;
-        int result = d->read_cb ( handler, d, offset, buffer, buffer_size, &result_len );
+        int result = d->read_cb ( h, offset, buffer, buffer_size, &result_len );
         if ( ( result != EXIT_SUCCESS ) || ( result_len != buffer_size ) ) {
             return EXIT_FAILURE;
         };
@@ -372,10 +464,17 @@ int generic_driver_ppread ( void *handler, st_DRIVER *d, uint32_t offset, void *
  * @param buffer_
  * @return 
  */
-int generic_driver_ppwrite ( void *handler, st_DRIVER *d, uint32_t offset, void *buffer, uint32_t buffer_ ) {
+int generic_driver_ppwrite ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t buffer_ ) {
+
+    st_DRIVER *d = (st_DRIVER *) h->driver;
+
+    if ( d == NULL ) {
+        return EXIT_FAILURE;
+    };
+
     if ( d->write_cb != NULL ) {
         uint32_t result_len;
-        int result = d->write_cb ( handler, d, offset, buffer, buffer_, &result_len );
+        int result = d->write_cb ( h, offset, buffer, buffer_, &result_len );
         if ( ( result != EXIT_SUCCESS ) || ( result_len != buffer_ ) ) {
             return EXIT_FAILURE;
         };
@@ -388,16 +487,15 @@ int generic_driver_ppwrite ( void *handler, st_DRIVER *d, uint32_t offset, void 
  * Provede prepare + cteni.
  * 
  * @param handler
- * @param d
  * @param offset
  * @param buffer
  * @param buffer_size
  * @return 
  */
-int generic_driver_read ( void *handler, st_DRIVER *d, uint32_t offset, void *buffer, uint16_t buffer_size ) {
+int generic_driver_read ( st_HANDLER *h, uint32_t offset, void *buffer, uint16_t buffer_size ) {
     void *work_buffer = NULL;
-    if ( EXIT_SUCCESS != generic_driver_prepare ( handler, d, offset, &work_buffer, NULL, buffer_size ) ) return EXIT_FAILURE;
-    return generic_driver_ppread ( handler, d, offset, buffer, buffer_size );
+    if ( EXIT_SUCCESS != generic_driver_prepare ( h, offset, &work_buffer, NULL, buffer_size ) ) return EXIT_FAILURE;
+    return generic_driver_ppread ( h, offset, buffer, buffer_size );
 }
 
 
@@ -405,16 +503,15 @@ int generic_driver_read ( void *handler, st_DRIVER *d, uint32_t offset, void *bu
  * Provede prepare + cteni do predem pripraveneho work_buffer.
  * 
  * @param handler
- * @param d
  * @param offset
  * @param buffer
  * @param work_buffer
  * @param buffer_size
  * @return 
  */
-int generic_driver_direct_read ( void *handler, st_DRIVER *d, uint32_t offset, void **buffer, void *work_buffer, uint32_t buffer_size ) {
-    if ( EXIT_SUCCESS != generic_driver_prepare ( handler, d, offset, buffer, work_buffer, buffer_size ) ) return EXIT_FAILURE;
-    return generic_driver_ppread ( handler, d, offset, *buffer, buffer_size );
+int generic_driver_direct_read ( st_HANDLER *h, uint32_t offset, void **buffer, void *work_buffer, uint32_t buffer_size ) {
+    if ( EXIT_SUCCESS != generic_driver_prepare ( h, offset, buffer, work_buffer, buffer_size ) ) return EXIT_FAILURE;
+    return generic_driver_ppread ( h, offset, *buffer, buffer_size );
 }
 
 
@@ -422,16 +519,15 @@ int generic_driver_direct_read ( void *handler, st_DRIVER *d, uint32_t offset, v
  * Provede prepare + zapis.
  * 
  * @param handler
- * @param d
  * @param offset
  * @param buffer
  * @param buffer_size
  * @return 
  */
-int generic_driver_write ( void *handler, st_DRIVER *d, uint32_t offset, void *buffer, uint16_t buffer_size ) {
+int generic_driver_write ( st_HANDLER *h, uint32_t offset, void *buffer, uint16_t buffer_size ) {
     void *work_buffer = NULL;
-    if ( EXIT_SUCCESS != generic_driver_prepare ( handler, d, offset, &work_buffer, NULL, buffer_size ) ) return EXIT_FAILURE;
-    return generic_driver_ppwrite ( handler, d, offset, buffer, buffer_size );
+    if ( EXIT_SUCCESS != generic_driver_prepare ( h, offset, &work_buffer, NULL, buffer_size ) ) return EXIT_FAILURE;
+    return generic_driver_ppwrite ( h, offset, buffer, buffer_size );
 }
 
 
@@ -439,13 +535,19 @@ int generic_driver_write ( void *handler, st_DRIVER *d, uint32_t offset, void *b
  * Provede zarovnani media.
  * 
  * @param handler
- * @param d
  * @param size
  * @return 
  */
-int generic_driver_truncate ( void *handler, st_DRIVER *d, uint32_t size ) {
+int generic_driver_truncate ( st_HANDLER *h, uint32_t size ) {
+
+    st_DRIVER *d = (st_DRIVER *) h->driver;
+
+    if ( d == NULL ) {
+        return EXIT_FAILURE;
+    };
+
     if ( d->truncate_cb != NULL ) {
-        if ( EXIT_SUCCESS != d->truncate_cb ( handler, d, size ) ) return EXIT_FAILURE;
+        if ( EXIT_SUCCESS != d->truncate_cb ( h, size ) ) return EXIT_FAILURE;
     };
     return EXIT_SUCCESS;
 }
@@ -473,22 +575,20 @@ int generic_driver_truncate ( void *handler, st_DRIVER *d, uint32_t size ) {
  * Obecny driver pro cteni ze souboru.
  * 
  * @param handler
- * @param driver
  * @param offset
  * @param buffer
  * @param count_bytes
  * @param readlen
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int generic_driver_read_file_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen ) {
+int generic_driver_read_file_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_FILESPC *filespec = &h->spec.filespec;
 
     *readlen = 0;
 
-    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     FILE *fh = filespec->fh;
 
@@ -516,22 +616,20 @@ int generic_driver_read_file_cb ( void *handler, void *driver, uint32_t offset, 
  * Obecny driver pro zapis do souboru.
  * 
  * @param handler
- * @param driver
  * @param offset
  * @param buffer
  * @param count_bytes
  * @param writelen
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int generic_driver_write_file_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen ) {
+int generic_driver_write_file_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_FILESPC *filespec = &h->spec.filespec;
 
     *writelen = 0;
 
-    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     if ( h->status & HANDLER_STATUS_READ_ONLY ) {
         h->err = HANDLER_ERROR_WRITE_PROTECTED;
@@ -564,17 +662,15 @@ int generic_driver_write_file_cb ( void *handler, void *driver, uint32_t offset,
  * Obecny driver pro zkraceni souboru na pozadovanou delku.
  * 
  * @param handler
- * @param driver
  * @param size
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int generic_driver_truncate_file_cb ( void *handler, void *driver, uint32_t size ) {
+int generic_driver_truncate_file_cb ( st_HANDLER *h, uint32_t size ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_FILESPC *filespec = &h->spec.filespec;
 
-    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     if ( h->status & HANDLER_STATUS_READ_ONLY ) {
         h->err = HANDLER_ERROR_WRITE_PROTECTED;
@@ -612,22 +708,15 @@ int generic_driver_truncate_file_cb ( void *handler, void *driver, uint32_t size
  * Otevreni souboroveho handleru.
  * 
  * @param handler
- * @param driver
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int generic_driver_open_file_cb ( void *handler, void *driver ) {
+int generic_driver_open_file_cb ( st_HANDLER *h ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_FILESPC *filespec = &h->spec.filespec;
 
     int fl_readonly = 1;
     char *txt_mode = "rb";
-
-    if ( h == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
 
     h->err = HANDLER_ERROR_NONE;
     d->err = GENERIC_DRIVER_ERROR_NONE;
@@ -688,16 +777,14 @@ int generic_driver_open_file_cb ( void *handler, void *driver ) {
  * Zavreni souboroveho handleru.
  * 
  * @param handler
- * @param driver
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int generic_driver_close_file_cb ( void *handler, void *driver ) {
+int generic_driver_close_file_cb ( st_HANDLER *h ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_FILESPC *filespec = &h->spec.filespec;
 
-    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     fclose ( filespec->fh );
 
@@ -727,19 +814,17 @@ int generic_driver_close_file_cb ( void *handler, void *driver ) {
  * Obecny driver pro pripravu pozadovane casti obrazu do pameti.
  * 
  * @param handler
- * @param driver
  * @param offset
  * @param buffer
  * @param count_bytes
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int generic_driver_prepare_memory_cb ( void *handler, void *driver, uint32_t offset, void **buffer, uint32_t count_bytes ) {
+int generic_driver_prepare_memory_cb ( st_HANDLER *h, uint32_t offset, void **buffer, uint32_t count_bytes ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
-    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
 #ifndef GENERIC_DRIVER_MEMORY_CB_USE_REALLOC
     if ( memspec->ptr == NULL ) {
@@ -760,7 +845,7 @@ int generic_driver_prepare_memory_cb ( void *handler, void *driver, uint32_t off
             return EXIT_FAILURE;
         };
 
-        uint8_t *new = realloc ( memspec->ptr, need_size );
+        uint8_t * new = realloc ( memspec->ptr, need_size );
 
         if ( new == NULL ) {
             d->err = GENERIC_DRIVER_ERROR_REALLOC;
@@ -795,22 +880,20 @@ int generic_driver_prepare_memory_cb ( void *handler, void *driver, uint32_t off
  * Obecny driver pro cteni z pameti.
  * 
  * @param handler
- * @param driver
  * @param offset
  * @param buffer
  * @param count_bytes
  * @param readlen
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int generic_driver_read_memory_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen ) {
+int generic_driver_read_memory_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
     *readlen = 0;
 
-    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     if ( offset > memspec->size ) {
         d->err = GENERIC_DRIVER_ERROR_SEEK;
@@ -836,22 +919,20 @@ int generic_driver_read_memory_cb ( void *handler, void *driver, uint32_t offset
  * Obecny driver pro zapis do pameti.
  * 
  * @param handler
- * @param driver
  * @param offset
  * @param buffer
  * @param count_bytes
  * @param writelen
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int generic_driver_write_memory_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen ) {
+int generic_driver_write_memory_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
     *writelen = 0;
 
-    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     if ( h->status & HANDLER_STATUS_READ_ONLY ) {
         h->err = HANDLER_ERROR_WRITE_PROTECTED;
@@ -882,17 +963,15 @@ int generic_driver_write_memory_cb ( void *handler, void *driver, uint32_t offse
  * Obecny driver pro zkraceni obrazu ulozeneho v pameti.
  * 
  * @param handler
- * @param driver
  * @param size
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int generic_driver_truncate_memory_cb ( void *handler, void *driver, uint32_t size ) {
+int generic_driver_truncate_memory_cb ( st_HANDLER *h, uint32_t size ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
-    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     if ( h->status & HANDLER_STATUS_READ_ONLY ) {
         h->err = HANDLER_ERROR_WRITE_PROTECTED;
@@ -904,7 +983,7 @@ int generic_driver_truncate_memory_cb ( void *handler, void *driver, uint32_t si
         return EXIT_FAILURE;
     };
 
-    uint8_t *new = realloc ( memspec->ptr, size );
+    uint8_t * new = realloc ( memspec->ptr, size );
 
     if ( new == NULL ) {
         d->err = GENERIC_DRIVER_ERROR_REALLOC;
@@ -922,19 +1001,12 @@ int generic_driver_truncate_memory_cb ( void *handler, void *driver, uint32_t si
  * Otevreni noveho memory handleru.
  * 
  * @param handler
- * @param driver
  * @return 
  */
-int generic_driver_open_memory_cb ( void *handler, void *driver ) {
+int generic_driver_open_memory_cb ( st_HANDLER *h ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
-
-    if ( h == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
 
     h->err = HANDLER_ERROR_NONE;
     d->err = GENERIC_DRIVER_ERROR_NONE;
@@ -985,13 +1057,12 @@ int generic_driver_open_memory_cb ( void *handler, void *driver ) {
  * @param driver
  * @return 
  */
-int generic_driver_close_memory_cb ( void *handler, void *driver ) {
+int generic_driver_close_memory_cb ( st_HANDLER *h ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
 
-    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     free ( memspec->ptr );
 

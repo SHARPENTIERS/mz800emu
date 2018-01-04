@@ -44,22 +44,20 @@ st_DRIVER g_ui_file_driver;
  * Obecny driver pro cteni ze souboru.
  * 
  * @param handler
- * @param driver
  * @param offset
  * @param buffer
  * @param count_bytes
  * @param readlen
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int ui_file_driver_read_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen ) {
+int ui_file_driver_read_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_FILESPC *filespec = &h->spec.filespec;
 
     *readlen = 0;
 
-    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     FILE *fh = filespec->fh;
 
@@ -81,22 +79,20 @@ int ui_file_driver_read_cb ( void *handler, void *driver, uint32_t offset, void 
  * Obecny driver pro zapis do souboru.
  * 
  * @param handler
- * @param driver
  * @param offset
  * @param buffer
  * @param count_bytes
  * @param writelen
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int ui_file_driver_write_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen ) {
+int ui_file_driver_write_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_FILESPC *filespec = &h->spec.filespec;
 
     *writelen = 0;
 
-    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     if ( h->status & HANDLER_STATUS_READ_ONLY ) {
         h->err = HANDLER_ERROR_WRITE_PROTECTED;
@@ -123,17 +119,15 @@ int ui_file_driver_write_cb ( void *handler, void *driver, uint32_t offset, void
  * Obecny driver pro zkraceni souboru na pozadovanou delku.
  * 
  * @param handler
- * @param driver
  * @param size
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int ui_file_driver_truncate_cb ( void *handler, void *driver, uint32_t size ) {
+int ui_file_driver_truncate_cb ( st_HANDLER *h, uint32_t size ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_FILESPC *filespec = &h->spec.filespec;
 
-    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     if ( h->status & HANDLER_STATUS_READ_ONLY ) {
         h->err = HANDLER_ERROR_WRITE_PROTECTED;
@@ -141,7 +135,7 @@ int ui_file_driver_truncate_cb ( void *handler, void *driver, uint32_t size ) {
     };
 
     FILE *fh = filespec->fh;
-    
+
     if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( fh, size ) ) {
         d->err = GENERIC_DRIVER_ERROR_SEEK;
         return EXIT_FAILURE;
@@ -156,19 +150,13 @@ int ui_file_driver_truncate_cb ( void *handler, void *driver, uint32_t size ) {
 }
 
 
-int ui_file_driver_open_cb ( void *handler, void *driver ) {
+int ui_file_driver_open_cb ( st_HANDLER *h ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_FILESPC *filespec = &h->spec.filespec;
 
     int fl_readonly = 1;
     char *txt_mode = FS_LAYER_FMODE_RO;
-
-    if ( h == NULL ) {
-        d->err = GENERIC_DRIVER_ERROR_HANDLER;
-        return EXIT_FAILURE;
-    };
 
     h->err = HANDLER_ERROR_NONE;
     d->err = GENERIC_DRIVER_ERROR_NONE;
@@ -223,13 +211,12 @@ int ui_file_driver_open_cb ( void *handler, void *driver ) {
 }
 
 
-int ui_file_driver_close_cb ( void *handler, void *driver ) {
+int ui_file_driver_close_cb ( st_HANDLER *h ) {
 
-    st_HANDLER *h = handler;
-    st_DRIVER *d = driver;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
     st_HANDLER_FILESPC *filespec = &h->spec.filespec;
 
-    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h, d ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_file_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
     FS_LAYER_FCLOSE ( filespec->fh );
 

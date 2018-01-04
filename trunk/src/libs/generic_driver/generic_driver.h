@@ -65,7 +65,6 @@ extern "C" {
         GENERIC_DRIVER_ERROR_REALLOC,
         GENERIC_DRIVER_ERROR_TRUNCATE,
         GENERIC_DRIVER_ERROR_HANDLER_TYPE,
-        GENERIC_DRIVER_ERROR_HANDLER,
         GENERIC_DRIVER_ERROR_HANDLER_IS_BUSY,
         GENERIC_DRIVER_ERROR_FOPEN,
         GENERIC_DRIVER_ERROR_UNKNOWN
@@ -122,15 +121,16 @@ extern "C" {
         en_HANDLER_STATUS status;
         en_HANDLER_ERROR err;
         un_HANDLER_SPEC spec;
+        void *driver;
     } st_HANDLER;
 
 
-    typedef int (*generic_driver_open_cb )(void *handler, void *driver );
-    typedef int (*generic_driver_close_cb )(void *handler, void *driver );
-    typedef int (*generic_driver_prepare_cb )(void *handler, void *driver, uint32_t offset, void **prepared_buffer, uint32_t count_bytes );
-    typedef int (*generic_driver_read_cb )(void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen );
-    typedef int (*generic_driver_write_cb )(void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen );
-    typedef int (*generic_driver_truncate_cb )(void *handler, void *driver, uint32_t new_size );
+    typedef int (*generic_driver_open_cb )( st_HANDLER *h );
+    typedef int (*generic_driver_close_cb )( st_HANDLER *h );
+    typedef int (*generic_driver_prepare_cb )( st_HANDLER *h, uint32_t offset, void **prepared_buffer, uint32_t count_bytes );
+    typedef int (*generic_driver_read_cb )( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen );
+    typedef int (*generic_driver_write_cb )( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen );
+    typedef int (*generic_driver_truncate_cb )( st_HANDLER *h, uint32_t new_size );
 
 
     typedef struct st_DRIVER {
@@ -147,52 +147,49 @@ extern "C" {
     extern void generic_driver_setup ( st_DRIVER *d, generic_driver_open_cb opcb, generic_driver_close_cb clcb, generic_driver_read_cb rdcb, generic_driver_write_cb wrcb, generic_driver_prepare_cb prepcb, generic_driver_truncate_cb trunccb );
     extern const char* generic_driver_error_message ( st_HANDLER *h, st_DRIVER *d );
     extern void generic_driver_register_handler ( st_HANDLER *h, en_HANDLER_TYPE type );
-    extern st_HANDLER* generic_driver_open_memory ( st_HANDLER *h, st_DRIVER *d, uint32_t size );
-    extern st_HANDLER* generic_driver_open_file ( st_HANDLER *h, st_DRIVER *d, char *filename, en_FILE_DRIVER_OPEN_MODE open_mode );
+    extern st_HANDLER* generic_driver_open_memory ( st_HANDLER *handler, st_DRIVER *d, uint32_t size );
+    extern st_HANDLER* generic_driver_open_file ( st_HANDLER *handler, st_DRIVER *d, char *filename, en_FILE_DRIVER_OPEN_MODE open_mode );
     extern st_HANDLER* generic_driver_open_memory_from_file ( st_HANDLER *handler, st_DRIVER *d, char *filename );
-    extern int generic_driver_close ( st_HANDLER *h, st_DRIVER *d );
-    extern void generic_driver_set_handler_readonly_status ( void *handler, int readonly );
+    extern int generic_driver_save_memory ( st_HANDLER *h, char *filename );
+    extern int generic_driver_close ( st_HANDLER *h );
+    extern void generic_driver_set_handler_readonly_status ( st_HANDLER *h, int readonly );
 
-    extern int generic_driver_prepare ( void *handler, st_DRIVER *d, uint32_t offset, void **buffer, void *tmpbuffer, uint32_t size );
-    extern int generic_driver_ppread ( void *handler, st_DRIVER *d, uint32_t offset, void *buffer, uint32_t size );
-    extern int generic_driver_ppwrite ( void *handler, st_DRIVER *d, uint32_t offset, void *buffer, uint32_t size );
+    extern int generic_driver_prepare ( st_HANDLER *h, uint32_t offset, void **buffer, void *tmpbuffer, uint32_t size );
+    extern int generic_driver_ppread ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t size );
+    extern int generic_driver_ppwrite ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t size );
 
-    extern int generic_driver_read ( void *handler, st_DRIVER *d, uint32_t offset, void *buffer, uint16_t buffer_size );
-    extern int generic_driver_write ( void *handler, st_DRIVER *d, uint32_t offset, void *buffer, uint16_t buffer_size );
-    extern int generic_driver_truncate ( void *handler, st_DRIVER *d, uint32_t size );
+    extern int generic_driver_read ( st_HANDLER *h, uint32_t offset, void *buffer, uint16_t buffer_size );
+    extern int generic_driver_write ( st_HANDLER *h, uint32_t offset, void *buffer, uint16_t buffer_size );
+    extern int generic_driver_truncate ( st_HANDLER *h, uint32_t size );
 
-    extern int generic_driver_direct_read ( void *handler, st_DRIVER *d, uint32_t offset, void **buffer, void *work_buffer, uint32_t buffer_size );
+    extern int generic_driver_direct_read ( st_HANDLER *h, uint32_t offset, void **buffer, void *work_buffer, uint32_t buffer_size );
 
 
     /* Preddefinovane callbacky */
 
 #ifdef GENERIC_DRIVER_FILE_CB
-    extern int generic_driver_read_file_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen );
-    extern int generic_driver_write_file_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen );
-    extern int generic_driver_truncate_file_cb ( void *handler, void *driver, uint32_t size );
-    extern int generic_driver_close_file_cb ( void *handler, void *driver, uint32_t size );
-    extern int generic_driver_open_file_cb ( void *handler, void *driver, uint32_t size );
+    extern int generic_driver_read_file_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen );
+    extern int generic_driver_write_file_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen );
+    extern int generic_driver_truncate_file_cb ( st_HANDLER *h, uint32_t size );
+    extern int generic_driver_close_file_cb ( st_HANDLER *h );
+    extern int generic_driver_open_file_cb ( st_HANDLER *h );
 #endif
 
 
 #ifdef GENERIC_DRIVER_MEMORY_CB
-    extern int generic_driver_prepare_memory_cb ( void *handler, void *driver, uint32_t offset, void **buffer, uint32_t count_bytes );
-    extern int generic_driver_read_memory_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen );
-    extern int generic_driver_write_memory_cb ( void *handler, void *driver, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen );
-    extern int generic_driver_truncate_memory_cb ( void *handler, void *driver, uint32_t size );
-    extern int generic_driver_close_memory_cb ( void *handler, void *driver, uint32_t size );
-    extern int generic_driver_open_memory_cb ( void *handler, void *driver, uint32_t size );
+    extern int generic_driver_prepare_memory_cb ( st_HANDLER *h, uint32_t offset, void **buffer, uint32_t count_bytes );
+    extern int generic_driver_read_memory_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen );
+    extern int generic_driver_write_memory_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen );
+    extern int generic_driver_truncate_memory_cb ( st_HANDLER *h, uint32_t size );
+    extern int generic_driver_close_memory_cb ( st_HANDLER *h );
+    extern int generic_driver_open_memory_cb ( st_HANDLER *h );
 #endif
 
 
-    static inline int generic_driver_memory_operation_internal_bootstrap ( st_HANDLER *h, st_DRIVER *d ) {
-
-        if ( h == NULL ) {
-            d->err = GENERIC_DRIVER_ERROR_HANDLER;
-            return EXIT_FAILURE;
-        };
+    static inline int generic_driver_memory_operation_internal_bootstrap ( st_HANDLER *h ) {
 
         st_HANDLER_MEMSPC *memspec = &h->spec.memspec;
+        st_DRIVER *d = (st_DRIVER *) h->driver;
 
         h->err = HANDLER_ERROR_NONE;
         d->err = GENERIC_DRIVER_ERROR_NONE;
@@ -216,14 +213,10 @@ extern "C" {
     }
 
 
-    static inline int generic_driver_file_operation_internal_bootstrap ( st_HANDLER *h, st_DRIVER *d ) {
-
-        if ( h == NULL ) {
-            d->err = GENERIC_DRIVER_ERROR_HANDLER;
-            return EXIT_FAILURE;
-        };
+    static inline int generic_driver_file_operation_internal_bootstrap ( st_HANDLER *h ) {
 
         st_HANDLER_FILESPC *filespec = &h->spec.filespec;
+        st_DRIVER *d = (st_DRIVER *) h->driver;
 
         h->err = HANDLER_ERROR_NONE;
         d->err = GENERIC_DRIVER_ERROR_NONE;

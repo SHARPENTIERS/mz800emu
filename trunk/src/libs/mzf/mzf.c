@@ -34,9 +34,9 @@
 #define MZF_FIX_FILENAME_TERMINATOR
 
 
-int mzf_read_header_on_offset ( void *handler, st_DRIVER *d, uint32_t offset, st_MZF_HEADER *mzfhdr ) {
+int mzf_read_header_on_offset ( st_HANDLER *h, uint32_t offset, st_MZF_HEADER *mzfhdr ) {
 
-    if ( EXIT_SUCCESS != generic_driver_read ( handler, d, offset, mzfhdr, sizeof ( st_MZF_HEADER ) ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_read ( h, offset, mzfhdr, sizeof ( st_MZF_HEADER ) ) ) return EXIT_FAILURE;
 
     mzfhdr->fsize = endianity_bswap16_LE ( mzfhdr->fsize );
     mzfhdr->fstrt = endianity_bswap16_LE ( mzfhdr->fstrt );
@@ -50,58 +50,58 @@ int mzf_read_header_on_offset ( void *handler, st_DRIVER *d, uint32_t offset, st
 }
 
 
-static int mzf_write_word_on_offset ( void *handler, st_DRIVER *d, uint32_t offset, uint16_t w ) {
+static int mzf_write_word_on_offset ( st_HANDLER *h, uint32_t offset, uint16_t w ) {
     uint8_t buffer = w & 0xff;
-    if ( EXIT_SUCCESS != generic_driver_write ( handler, d, offset, &buffer, 1 ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_write ( h, offset, &buffer, 1 ) ) return EXIT_FAILURE;
     buffer = w >> 8;
-    return generic_driver_write ( handler, d, ( offset + 1 ), &buffer, 1 );
+    return generic_driver_write ( h, ( offset + 1 ), &buffer, 1 );
 }
 
 
-int mzf_write_header_on_offset ( void *handler, st_DRIVER *d, uint32_t offset, st_MZF_HEADER *mzfhdr ) {
+int mzf_write_header_on_offset ( st_HANDLER *h, uint32_t offset, st_MZF_HEADER *mzfhdr ) {
 
 #ifdef MZF_FIX_FILENAME_TERMINATOR
     mzfhdr->fname.terminator = MZF_FNAME_TERMINATOR;
 #endif
 
-    if ( EXIT_SUCCESS != generic_driver_read ( handler, d, offset, mzfhdr, sizeof (mzfhdr->ftype ) + MZF_FNAME_FULL_LENGTH ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_read ( h, offset, mzfhdr, sizeof (mzfhdr->ftype ) + MZF_FNAME_FULL_LENGTH ) ) return EXIT_FAILURE;
     offset += sizeof (mzfhdr->ftype ) + MZF_FNAME_FULL_LENGTH;
 
-    if ( EXIT_SUCCESS != mzf_write_word_on_offset ( handler, d, offset, mzfhdr->fsize ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != mzf_write_word_on_offset ( h, offset, mzfhdr->fsize ) ) return EXIT_FAILURE;
     offset += sizeof (mzfhdr->fsize );
 
-    if ( EXIT_SUCCESS != mzf_write_word_on_offset ( handler, d, offset, mzfhdr->fstrt ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != mzf_write_word_on_offset ( h, offset, mzfhdr->fstrt ) ) return EXIT_FAILURE;
     offset += sizeof (mzfhdr->fstrt );
 
-    if ( EXIT_SUCCESS != mzf_write_word_on_offset ( handler, d, offset, mzfhdr->fexec ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != mzf_write_word_on_offset ( h, offset, mzfhdr->fexec ) ) return EXIT_FAILURE;
     offset += sizeof (mzfhdr->fexec );
 
-    if ( EXIT_SUCCESS != generic_driver_write ( handler, d, offset, &mzfhdr->cmnt, MZF_CMNT_LENGTH ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_write ( h, offset, &mzfhdr->cmnt, MZF_CMNT_LENGTH ) ) return EXIT_FAILURE;
     return EXIT_SUCCESS;
 }
 
 
-int mzf_read_header ( void *handler, st_DRIVER *d, st_MZF_HEADER *mzfhdr ) {
-    return mzf_read_header_on_offset ( handler, d, 0, mzfhdr );
+int mzf_read_header ( st_HANDLER *h, st_MZF_HEADER *mzfhdr ) {
+    return mzf_read_header_on_offset ( h, 0, mzfhdr );
 }
 
 
-int mzf_write_header ( void *handler, st_DRIVER *d, st_MZF_HEADER *mzfhdr ) {
-    return mzf_write_header_on_offset ( handler, d, 0, mzfhdr );
+int mzf_write_header ( st_HANDLER *h, st_MZF_HEADER *mzfhdr ) {
+    return mzf_write_header_on_offset ( h, 0, mzfhdr );
 }
 
 
-int mzf_read_body_on_offset ( void *handler, st_DRIVER *d, uint32_t offset, uint8_t *buffer, uint16_t buffer_size ) {
-    return generic_driver_read ( handler, d, offset, buffer, buffer_size );
+int mzf_read_body_on_offset ( st_HANDLER *h, uint32_t offset, uint8_t *buffer, uint16_t buffer_size ) {
+    return generic_driver_read ( h, offset, buffer, buffer_size );
 }
 
 
-int mzf_read_body ( void *handler, st_DRIVER *d, uint8_t *buffer, uint16_t buffer_size ) {
-    return mzf_read_body_on_offset ( handler, d, sizeof ( st_MZF_HEADER ), buffer, buffer_size );
+int mzf_read_body ( st_HANDLER *h, uint8_t *buffer, uint16_t buffer_size ) {
+    return mzf_read_body_on_offset ( h, sizeof ( st_MZF_HEADER ), buffer, buffer_size );
 }
 
 
-const char* mzf_error_message ( void *handler, st_DRIVER *d ) {
-    return generic_driver_error_message ( handler, d );
+const char* mzf_error_message ( st_HANDLER *h, st_DRIVER *d ) {
+    return generic_driver_error_message ( h, d );
 }
 

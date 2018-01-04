@@ -31,11 +31,9 @@
 #include "../generic_driver/generic_driver.h"
 
 
-const char* dsk_error_message ( void *handler, st_DRIVER *d ) {
+const char* dsk_error_message ( st_HANDLER *h, st_DRIVER *d ) {
 
-    st_HANDLER *h = handler;
-
-    if ( d->err != GENERIC_DRIVER_ERROR_NONE ) return generic_driver_error_message ( handler, d );
+    if ( d->err != GENERIC_DRIVER_ERROR_NONE ) return generic_driver_error_message ( h, d );
 
     char *unknown_err_msg = "unknown error";
 
@@ -95,13 +93,12 @@ int32_t dsk_compute_sector_offset ( uint8_t sector, st_DSK_SHORT_TRACK_INFO *tin
  * Precte image info a ulozi jej do short_image_info struktury.
  * 
  * @param handler
- * @param d
  * @param short_image_info - vysledek snazeni
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int dsk_read_short_image_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE_INFO *short_image_info ) {
+int dsk_read_short_image_info ( st_HANDLER *h, st_DSK_SHORT_IMAGE_INFO *short_image_info ) {
 
-    st_HANDLER *h = handler;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
 
     h->err = HANDLER_ERROR_NONE;
     d->err = GENERIC_DRIVER_ERROR_NONE;
@@ -111,8 +108,8 @@ int dsk_read_short_image_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE_
 
     uint32_t offset = DSK_FILEINFO_FIELD_LENGTH + DSK_CREATOR_FIELD_LENGTH;
 
-    if ( EXIT_SUCCESS != generic_driver_prepare ( handler, d, offset, (void**) &buffer, &tmpbuffer, 2 ) ) return EXIT_FAILURE;
-    if ( EXIT_SUCCESS != generic_driver_read ( handler, d, offset, buffer, 2 ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_prepare ( h, offset, (void**) &buffer, &tmpbuffer, 2 ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_read ( h, offset, buffer, 2 ) ) return EXIT_FAILURE;
 
     short_image_info->sides = ( buffer[1] <= 1 ) ? 1 : 2;
     short_image_info->tracks = buffer[0];
@@ -126,8 +123,8 @@ int dsk_read_short_image_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE_
 
     offset += 4;
 
-    if ( EXIT_SUCCESS != generic_driver_prepare ( handler, d, offset, (void**) &buffer, &tmpbuffer, total_tracks ) ) return EXIT_FAILURE;
-    if ( EXIT_SUCCESS != generic_driver_read ( handler, d, offset, buffer, total_tracks ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_prepare ( h, offset, (void**) &buffer, &tmpbuffer, total_tracks ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_read ( h, offset, buffer, total_tracks ) ) return EXIT_FAILURE;
 
     memcpy ( short_image_info->tsize, buffer, total_tracks );
 
@@ -139,14 +136,13 @@ int dsk_read_short_image_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE_
  * Precteme informaci o velikosti a rozlozeni sectoru na stope, kterou jsme urcili offsetem.
  * 
  * @param handler
- * @param d
  * @param track_offset
  * @param short_track_info - vysledek snazeni
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int dsk_read_short_track_info_on_offset ( void *handler, st_DRIVER *d, uint32_t track_offset, st_DSK_SHORT_TRACK_INFO *short_track_info ) {
+int dsk_read_short_track_info_on_offset ( st_HANDLER *h, uint32_t track_offset, st_DSK_SHORT_TRACK_INFO *short_track_info ) {
 
-    st_HANDLER *h = handler;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
 
     h->err = HANDLER_ERROR_NONE;
     d->err = GENERIC_DRIVER_ERROR_NONE;
@@ -156,8 +152,8 @@ int dsk_read_short_track_info_on_offset ( void *handler, st_DRIVER *d, uint32_t 
 
     uint32_t offset = track_offset + DSK_TRACKINFO_FIELD_LENGTH + 4;
 
-    if ( EXIT_SUCCESS != generic_driver_prepare ( handler, d, offset, (void**) &buffer, &tmpbuffer, 6 ) ) return EXIT_FAILURE;
-    if ( EXIT_SUCCESS != generic_driver_read ( handler, d, offset, buffer, 6 ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_prepare ( h, offset, (void**) &buffer, &tmpbuffer, 6 ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_read ( h, offset, buffer, 6 ) ) return EXIT_FAILURE;
 
     short_track_info->track = buffer[0];
     short_track_info->side = buffer[1];
@@ -170,8 +166,8 @@ int dsk_read_short_track_info_on_offset ( void *handler, st_DRIVER *d, uint32_t 
     for ( i = 0; i < short_track_info->sectors; i++ ) {
         st_DSK_SECTOR_INFO tmpbuffer;
         st_DSK_SECTOR_INFO *buffer = NULL;
-        if ( EXIT_SUCCESS != generic_driver_prepare ( handler, d, offset, (void**) &buffer, &tmpbuffer, sizeof ( st_DSK_SECTOR_INFO ) ) ) return EXIT_FAILURE;
-        if ( EXIT_SUCCESS != generic_driver_read ( handler, d, offset, buffer, sizeof ( st_DSK_SECTOR_INFO ) ) ) return EXIT_FAILURE;
+        if ( EXIT_SUCCESS != generic_driver_prepare ( h, offset, (void**) &buffer, &tmpbuffer, sizeof ( st_DSK_SECTOR_INFO ) ) ) return EXIT_FAILURE;
+        if ( EXIT_SUCCESS != generic_driver_read ( h, offset, buffer, sizeof ( st_DSK_SECTOR_INFO ) ) ) return EXIT_FAILURE;
         offset += sizeof ( st_DSK_SECTOR_INFO );
         short_track_info->sinfo[i] = buffer->sector;
     };
@@ -184,15 +180,14 @@ int dsk_read_short_track_info_on_offset ( void *handler, st_DRIVER *d, uint32_t 
  * Precteme informaci o velikosti a rozlozeni sectoru na absolutni stope.
  * 
  * @param handler
- * @param d
  * @param short_image_info - pokud je NULL, tak si jej nejprve nacteme
  * @param abstrack
  * @param short_track_info - vysledek snazeni
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int dsk_read_short_track_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE_INFO *short_image_info, uint8_t abstrack, st_DSK_SHORT_TRACK_INFO *short_track_info ) {
+int dsk_read_short_track_info ( st_HANDLER *h, st_DSK_SHORT_IMAGE_INFO *short_image_info, uint8_t abstrack, st_DSK_SHORT_TRACK_INFO *short_track_info ) {
 
-    st_HANDLER *h = handler;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
 
     h->err = HANDLER_ERROR_NONE;
     d->err = GENERIC_DRIVER_ERROR_NONE;
@@ -204,7 +199,7 @@ int dsk_read_short_track_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE_
         st_DSK_SHORT_IMAGE_INFO *iinfo = short_image_info;
 
         if ( iinfo == NULL ) {
-            if ( EXIT_SUCCESS != dsk_read_short_image_info ( handler, d, &local_short_image_info ) ) return EXIT_FAILURE;
+            if ( EXIT_SUCCESS != dsk_read_short_image_info ( h, &local_short_image_info ) ) return EXIT_FAILURE;
             iinfo = &local_short_image_info;
         };
 
@@ -216,7 +211,7 @@ int dsk_read_short_track_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE_
         track_offset = dsk_compute_track_offset ( abstrack, iinfo->tsize );
     };
 
-    if ( EXIT_SUCCESS != dsk_read_short_track_info_on_offset ( handler, d, track_offset, short_track_info ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != dsk_read_short_track_info_on_offset ( h, track_offset, short_track_info ) ) return EXIT_FAILURE;
 
     return EXIT_SUCCESS;
 }
@@ -226,7 +221,6 @@ int dsk_read_short_track_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE_
  * Pro pozadovany sector na konkretni stope ziskame offset a velikost v bajtech.
  * 
  * @param handler
- * @param d
  * @param short_image_info - muze byt NULL, pak si jej nacteme sami
  * @param short_track_info - muze byt NULL, pak si jej nacteme sami
  * @param abstrack
@@ -235,9 +229,9 @@ int dsk_read_short_track_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE_
  * @param ssize_bytes - velikost sektoru v bajtech
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int dsk_read_short_sector_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE_INFO *short_image_info, st_DSK_SHORT_TRACK_INFO *short_track_info, uint8_t abstrack, uint8_t sector, uint32_t *sector_offset, uint16_t *ssize_bytes ) {
+int dsk_read_short_sector_info ( st_HANDLER *h, st_DSK_SHORT_IMAGE_INFO *short_image_info, st_DSK_SHORT_TRACK_INFO *short_track_info, uint8_t abstrack, uint8_t sector, uint32_t *sector_offset, uint16_t *ssize_bytes ) {
 
-    st_HANDLER *h = handler;
+    st_DRIVER *d = (st_DRIVER *) h->driver;
 
     h->err = HANDLER_ERROR_NONE;
     d->err = GENERIC_DRIVER_ERROR_NONE;
@@ -249,7 +243,7 @@ int dsk_read_short_sector_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE
     st_DSK_SHORT_IMAGE_INFO *iinfo = short_image_info;
 
     if ( iinfo == NULL ) {
-        if ( EXIT_SUCCESS != dsk_read_short_image_info ( handler, d, &local_short_image_info ) ) return EXIT_FAILURE;
+        if ( EXIT_SUCCESS != dsk_read_short_image_info ( h, &local_short_image_info ) ) return EXIT_FAILURE;
         iinfo = &local_short_image_info;
     };
 
@@ -264,7 +258,7 @@ int dsk_read_short_sector_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE
     st_DSK_SHORT_TRACK_INFO *tinfo = short_track_info;
 
     if ( tinfo == NULL ) {
-        if ( EXIT_SUCCESS != dsk_read_short_track_info_on_offset ( handler, d, track_offset, &local_short_track_info ) ) return EXIT_FAILURE;
+        if ( EXIT_SUCCESS != dsk_read_short_track_info_on_offset ( h, track_offset, &local_short_track_info ) ) return EXIT_FAILURE;
         tinfo = &local_short_track_info;
     };
 
@@ -286,7 +280,6 @@ int dsk_read_short_sector_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE
  * Provede operaci cteni, nebo zapisu na konkretnim absolutnim sektoru.
  * 
  * @param handler
- * @param d
  * @param rwop  - typ operace 0 READ, 1 WRITE
  * @param short_image_info
  * @param short_track_info
@@ -295,32 +288,33 @@ int dsk_read_short_sector_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE
  * @param buffer
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int dsk_rw_sector ( void *handler, st_DRIVER *d, en_DSK_RWOP rwop, st_DSK_SHORT_IMAGE_INFO *short_image_info, st_DSK_SHORT_TRACK_INFO *short_track_info, uint8_t abstrack, uint8_t sector, void *buffer ) {
+int dsk_rw_sector ( st_HANDLER *h, en_DSK_RWOP rwop, st_DSK_SHORT_IMAGE_INFO *short_image_info, st_DSK_SHORT_TRACK_INFO *short_track_info, uint8_t abstrack, uint8_t sector, void *buffer ) {
+
     uint32_t sector_offset = 0;
     uint16_t ssize_bytes = 0;
 
-    if ( EXIT_SUCCESS != dsk_read_short_sector_info ( handler, d, short_image_info, short_track_info, abstrack, sector, &sector_offset, &ssize_bytes ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != dsk_read_short_sector_info ( h, short_image_info, short_track_info, abstrack, sector, &sector_offset, &ssize_bytes ) ) return EXIT_FAILURE;
 
-    if ( DSK_RWOP_READ == rwop ) return generic_driver_read ( handler, d, sector_offset, buffer, ssize_bytes );
-    return generic_driver_write ( handler, d, sector_offset, buffer, ssize_bytes );
+    if ( DSK_RWOP_READ == rwop ) return generic_driver_read ( h, sector_offset, buffer, ssize_bytes );
+    return generic_driver_write ( h, sector_offset, buffer, ssize_bytes );
 }
 
 
-int dsk_read_on_offset ( void *handler, st_DRIVER *d, uint32_t offset, void *buffer, uint16_t buffer_size ) {
-    return generic_driver_read ( handler, d, offset, buffer, buffer_size );
+int dsk_read_on_offset ( st_HANDLER *h, uint32_t offset, void *buffer, uint16_t buffer_size ) {
+    return generic_driver_read ( h, offset, buffer, buffer_size );
 }
 
 
-int dsk_write_on_offset ( void *handler, st_DRIVER *d, uint32_t offset, void *buffer, uint16_t buffer_size ) {
-    return generic_driver_write ( handler, d, offset, buffer, buffer_size );
+int dsk_write_on_offset ( st_HANDLER *h, uint32_t offset, void *buffer, uint16_t buffer_size ) {
+    return generic_driver_write ( h, offset, buffer, buffer_size );
 }
 
 
-int dsk_read_sector ( void *handler, st_DRIVER *d, uint8_t abstrack, uint8_t sector, void *buffer ) {
-    return dsk_rw_sector ( handler, d, DSK_RWOP_READ, NULL, NULL, abstrack, sector, buffer );
+int dsk_read_sector ( st_HANDLER *h, uint8_t abstrack, uint8_t sector, void *buffer ) {
+    return dsk_rw_sector ( h, DSK_RWOP_READ, NULL, NULL, abstrack, sector, buffer );
 }
 
 
-int dsk_write_sector ( void *handler, st_DRIVER *d, uint8_t abstrack, uint8_t sector, void *buffer ) {
-    return dsk_rw_sector ( handler, d, DSK_RWOP_WRITE, NULL, NULL, abstrack, sector, buffer );
+int dsk_write_sector ( st_HANDLER *h, uint8_t abstrack, uint8_t sector, void *buffer ) {
+    return dsk_rw_sector ( h, DSK_RWOP_WRITE, NULL, NULL, abstrack, sector, buffer );
 }

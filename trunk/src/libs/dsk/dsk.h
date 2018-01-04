@@ -170,15 +170,15 @@ extern "C" {
     } st_DSK_SHORT_TRACK_INFO;
 
 
-    extern const char* dsk_error_message ( void *handler, st_DRIVER *d );
+    extern const char* dsk_error_message ( st_HANDLER *h, st_DRIVER *d );
 
     extern uint32_t dsk_compute_track_offset ( uint8_t abstrack, uint8_t *tsizes );
     extern int32_t dsk_compute_sector_offset ( uint8_t sector, st_DSK_SHORT_TRACK_INFO *tinfo );
 
-    extern int dsk_read_short_image_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE_INFO *short_image_info );
-    extern int dsk_read_short_track_info_on_offset ( void *handler, st_DRIVER *d, uint32_t track_offset, st_DSK_SHORT_TRACK_INFO *short_track_info );
-    extern int dsk_read_short_track_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE_INFO *short_image_info, uint8_t abstrack, st_DSK_SHORT_TRACK_INFO *short_track_info );
-    extern int dsk_read_short_sector_info ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE_INFO *short_image_info, st_DSK_SHORT_TRACK_INFO *short_track_info, uint8_t abstrack, uint8_t sector, uint32_t *sector_offset, uint16_t *ssize_bytes );
+    extern int dsk_read_short_image_info ( st_HANDLER *h, st_DSK_SHORT_IMAGE_INFO *short_image_info );
+    extern int dsk_read_short_track_info_on_offset ( st_HANDLER *h, uint32_t track_offset, st_DSK_SHORT_TRACK_INFO *short_track_info );
+    extern int dsk_read_short_track_info ( st_HANDLER *h, st_DSK_SHORT_IMAGE_INFO *short_image_info, uint8_t abstrack, st_DSK_SHORT_TRACK_INFO *short_track_info );
+    extern int dsk_read_short_sector_info ( st_HANDLER *h, st_DSK_SHORT_IMAGE_INFO *short_image_info, st_DSK_SHORT_TRACK_INFO *short_track_info, uint8_t abstrack, uint8_t sector, uint32_t *sector_offset, uint16_t *ssize_bytes );
 
 
     typedef enum en_DSK_RWOP {
@@ -186,13 +186,13 @@ extern "C" {
         DSK_RWOP_WRITE,
     } en_DSK_RWOP;
 
-    extern int dsk_rw_sector ( void *handler, st_DRIVER *d, en_DSK_RWOP rwop, st_DSK_SHORT_IMAGE_INFO *short_image_info, st_DSK_SHORT_TRACK_INFO *short_track_info, uint8_t abstrack, uint8_t sector, void *buffer );
+    extern int dsk_rw_sector ( st_HANDLER *h, en_DSK_RWOP rwop, st_DSK_SHORT_IMAGE_INFO *short_image_info, st_DSK_SHORT_TRACK_INFO *short_track_info, uint8_t abstrack, uint8_t sector, void *buffer );
 
 
-    extern int dsk_read_on_offset ( void *handler, st_DRIVER *d, uint32_t offset, void *buffer, uint16_t buffer_size );
-    extern int dsk_write_on_offset ( void *handler, st_DRIVER *d, uint32_t offset, void *buffer, uint16_t buffer_size );
-    extern int dsk_read_sector ( void *handler, st_DRIVER *d, uint8_t abstrack, uint8_t sector, void *buffer );
-    extern int dsk_write_sector ( void *handler, st_DRIVER *d, uint8_t abstrack, uint8_t sector, void *buffer );
+    extern int dsk_read_on_offset ( st_HANDLER *h, uint32_t offset, void *buffer, uint16_t buffer_size );
+    extern int dsk_write_on_offset ( st_HANDLER *h, uint32_t offset, void *buffer, uint16_t buffer_size );
+    extern int dsk_read_sector ( st_HANDLER *h, uint8_t abstrack, uint8_t sector, void *buffer );
+    extern int dsk_write_sector ( st_HANDLER *h, uint8_t abstrack, uint8_t sector, void *buffer );
 
 #ifdef __cplusplus
 }

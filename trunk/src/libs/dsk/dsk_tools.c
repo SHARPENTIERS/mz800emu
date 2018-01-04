@@ -64,16 +64,15 @@ void dsk_tools_assign_description ( st_DSK_DESCRIPTION *desc, uint8_t rule, uint
  * Vytvori DSK header podle description.
  * 
  * @param handler
- * @param d
  * @param desc
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int dsk_tools_create_image_header ( void *handler, st_DRIVER *d, st_DSK_DESCRIPTION *desc ) {
+int dsk_tools_create_image_header ( st_HANDLER *h, st_DSK_DESCRIPTION *desc ) {
 
     st_DSK_HEADER dskhdr_buffer;
     st_DSK_HEADER *dskhdr = NULL;
 
-    if ( EXIT_SUCCESS != generic_driver_prepare ( handler, d, 0, (void*) &dskhdr, &dskhdr_buffer, sizeof ( st_DSK_HEADER ) ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_prepare ( h, 0, (void*) &dskhdr, &dskhdr_buffer, sizeof ( st_DSK_HEADER ) ) ) return EXIT_FAILURE;
 
     memset ( dskhdr, 0x00, sizeof ( st_DSK_HEADER ) );
     memcpy ( dskhdr->file_info, DSK_DEFAULT_FILEINFO, DSK_FILEINFO_FIELD_LENGTH );
@@ -106,7 +105,7 @@ int dsk_tools_create_image_header ( void *handler, st_DRIVER *d, st_DSK_DESCRIPT
         };
     };
 
-    return generic_driver_ppwrite ( handler, d, 0, dskhdr, sizeof ( st_DSK_HEADER ) );
+    return generic_driver_ppwrite ( h, 0, dskhdr, sizeof ( st_DSK_HEADER ) );
 }
 
 
@@ -145,7 +144,6 @@ void dsk_tools_make_sector_map ( uint8_t sectors, en_DSK_SECTOR_ORDER_TYPE secto
  * Vytvoreni hlavicky pro stopu.
  * 
  * @param handler
- * @param d
  * @param dsk_offset
  * @param track
  * @param side
@@ -154,12 +152,12 @@ void dsk_tools_make_sector_map ( uint8_t sectors, en_DSK_SECTOR_ORDER_TYPE secto
  * @param sector_map - seznam ID jednotlivych sektoru tak, jak jdou po sobe
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int dsk_tools_create_track_header ( void *handler, st_DRIVER *d, uint32_t dsk_offset, uint8_t track, uint8_t side, uint8_t sectors, en_DSK_SECTOR_SIZE ssize, uint8_t *sector_map ) {
+int dsk_tools_create_track_header ( st_HANDLER *h, uint32_t dsk_offset, uint8_t track, uint8_t side, uint8_t sectors, en_DSK_SECTOR_SIZE ssize, uint8_t *sector_map ) {
 
     st_DSK_TRACK_INFO trkhdr_buffer;
     st_DSK_TRACK_INFO *trkhdr = NULL;
 
-    if ( EXIT_SUCCESS != generic_driver_prepare ( handler, d, dsk_offset, (void*) &trkhdr, &trkhdr_buffer, sizeof ( st_DSK_TRACK_INFO ) ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_prepare ( h, dsk_offset, (void*) &trkhdr, &trkhdr_buffer, sizeof ( st_DSK_TRACK_INFO ) ) ) return EXIT_FAILURE;
 
     memset ( trkhdr, 0x00, sizeof ( st_DSK_TRACK_INFO ) );
     memcpy ( trkhdr->track_info, DSK_DEFAULT_TRACKINFO, DSK_TRACKINFO_FIELD_LENGTH );
@@ -176,7 +174,7 @@ int dsk_tools_create_track_header ( void *handler, st_DRIVER *d, uint32_t dsk_of
         trkhdr->sinfo[i].ssize = ssize;
     };
 
-    return generic_driver_ppwrite ( handler, d, dsk_offset, trkhdr, sizeof ( st_DSK_TRACK_INFO ) );
+    return generic_driver_ppwrite ( h, dsk_offset, trkhdr, sizeof ( st_DSK_TRACK_INFO ) );
 }
 
 
@@ -184,7 +182,6 @@ int dsk_tools_create_track_header ( void *handler, st_DRIVER *d, uint32_t dsk_of
  * Vyplni vsechny sectory na stope defaultni hodnotou.
  * 
  * @param handler
- * @param d
  * @param dsk_offset
  * @param sectors
  * @param ssize
@@ -192,7 +189,7 @@ int dsk_tools_create_track_header ( void *handler, st_DRIVER *d, uint32_t dsk_of
  * @param sectors_total_bytes
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int dsk_tools_create_track_sectors ( void *handler, st_DRIVER *d, uint32_t dsk_offset, uint8_t sectors, en_DSK_SECTOR_SIZE ssize, uint8_t default_value, uint16_t *sectors_total_bytes ) {
+int dsk_tools_create_track_sectors ( st_HANDLER *h, uint32_t dsk_offset, uint8_t sectors, en_DSK_SECTOR_SIZE ssize, uint8_t default_value, uint16_t *sectors_total_bytes ) {
 
     *sectors_total_bytes = 0;
 
@@ -206,11 +203,11 @@ int dsk_tools_create_track_sectors ( void *handler, st_DRIVER *d, uint32_t dsk_o
             uint8_t data_buffer [ DSK_TOOLS_MIN_SECTOR_SIZE ];
             uint8_t *sector_data = NULL;
 
-            if ( EXIT_SUCCESS != generic_driver_prepare ( handler, d, dsk_offset, (void*) &sector_data, &data_buffer, DSK_TOOLS_MIN_SECTOR_SIZE ) ) return EXIT_FAILURE;
+            if ( EXIT_SUCCESS != generic_driver_prepare ( h, dsk_offset, (void*) &sector_data, &data_buffer, DSK_TOOLS_MIN_SECTOR_SIZE ) ) return EXIT_FAILURE;
 
             memset ( sector_data, default_value, DSK_TOOLS_MIN_SECTOR_SIZE );
 
-            generic_driver_ppwrite ( handler, d, dsk_offset, sector_data, DSK_TOOLS_MIN_SECTOR_SIZE );
+            generic_driver_ppwrite ( h, dsk_offset, sector_data, DSK_TOOLS_MIN_SECTOR_SIZE );
 
             *sectors_total_bytes += DSK_TOOLS_MIN_SECTOR_SIZE;
             dsk_offset += DSK_TOOLS_MIN_SECTOR_SIZE;
@@ -225,7 +222,6 @@ int dsk_tools_create_track_sectors ( void *handler, st_DRIVER *d, uint32_t dsk_o
  * Vytvoreni jedne DSK stopy.
  * 
  * @param handler
- * @param d
  * @param dsk_offset
  * @param track
  * @param side
@@ -236,18 +232,18 @@ int dsk_tools_create_track_sectors ( void *handler, st_DRIVER *d, uint32_t dsk_o
  * @param track_total_bytes Obsahuje celkovou velikost zapsane stopy
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int dsk_tools_create_track ( void *handler, st_DRIVER *d, uint32_t dsk_offset, uint8_t track, uint8_t side, uint8_t sectors, en_DSK_SECTOR_SIZE ssize, uint8_t *sector_map, uint8_t default_value, uint32_t *track_total_bytes ) {
+int dsk_tools_create_track ( st_HANDLER *h, uint32_t dsk_offset, uint8_t track, uint8_t side, uint8_t sectors, en_DSK_SECTOR_SIZE ssize, uint8_t *sector_map, uint8_t default_value, uint32_t *track_total_bytes ) {
 
     *track_total_bytes = 0;
 
     if ( sectors != 0 ) {
-        if ( EXIT_SUCCESS != dsk_tools_create_track_header ( handler, d, dsk_offset, track, side, sectors, ssize, sector_map ) ) return EXIT_FAILURE;
+        if ( EXIT_SUCCESS != dsk_tools_create_track_header ( h, dsk_offset, track, side, sectors, ssize, sector_map ) ) return EXIT_FAILURE;
 
         *track_total_bytes += sizeof ( st_DSK_TRACK_INFO );
         dsk_offset += sizeof ( st_DSK_TRACK_INFO );
 
         uint16_t sectors_total_size = 0;
-        if ( EXIT_SUCCESS != dsk_tools_create_track_sectors ( handler, d, dsk_offset, sectors, ssize, default_value, &sectors_total_size ) ) return EXIT_FAILURE;
+        if ( EXIT_SUCCESS != dsk_tools_create_track_sectors ( h, dsk_offset, sectors, ssize, default_value, &sectors_total_size ) ) return EXIT_FAILURE;
 
         *track_total_bytes += sectors_total_size;
     };
@@ -260,11 +256,10 @@ int dsk_tools_create_track ( void *handler, st_DRIVER *d, uint32_t dsk_offset, u
  * Vytvori postupne vsechny stopy podle description.
  * 
  * @param handler
- * @param d
  * @param desc
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int dsk_tools_create_image_tracks ( void *handler, st_DRIVER *d, st_DSK_DESCRIPTION *desc ) {
+int dsk_tools_create_image_tracks ( st_HANDLER *h, st_DSK_DESCRIPTION *desc ) {
 
     uint32_t dsk_offset = sizeof ( st_DSK_HEADER );
 
@@ -318,7 +313,7 @@ int dsk_tools_create_image_tracks ( void *handler, st_DRIVER *d, st_DSK_DESCRIPT
             /* vytvoreni stopy */
             uint32_t track_total_bytes = 0;
 
-            if ( EXIT_SUCCESS != dsk_tools_create_track ( handler, d, dsk_offset, track, side, sectors, ssize, sector_map, default_value, &track_total_bytes ) ) return EXIT_FAILURE;
+            if ( EXIT_SUCCESS != dsk_tools_create_track ( h, dsk_offset, track, side, sectors, ssize, sector_map, default_value, &track_total_bytes ) ) return EXIT_FAILURE;
             dsk_offset += track_total_bytes;
 
             abs_track++;
@@ -333,13 +328,12 @@ int dsk_tools_create_image_tracks ( void *handler, st_DRIVER *d, st_DSK_DESCRIPT
  * Vytvoreni DSK podle popisu v desc.
  * 
  * @param handler
- * @param d
  * @param desc
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int dsk_tools_create_image ( void *handler, st_DRIVER *d, st_DSK_DESCRIPTION *desc ) {
-    if ( EXIT_SUCCESS != dsk_tools_create_image_header ( handler, d, desc ) ) return EXIT_FAILURE;
-    return dsk_tools_create_image_tracks ( handler, d, desc );
+int dsk_tools_create_image ( st_HANDLER *h, st_DSK_DESCRIPTION *desc ) {
+    if ( EXIT_SUCCESS != dsk_tools_create_image_header ( h, desc ) ) return EXIT_FAILURE;
+    return dsk_tools_create_image_tracks ( h, desc );
 }
 
 
@@ -347,7 +341,6 @@ int dsk_tools_create_image ( void *handler, st_DRIVER *d, st_DSK_DESCRIPTION *de
  * Zmena parametru a default obsahu konkretni absolutni stopy.
  * 
  * @param handler
- * @param d
  * @param short_image_info
  * @param abstrack
  * @param sectors
@@ -356,18 +349,17 @@ int dsk_tools_create_image ( void *handler, st_DRIVER *d, st_DSK_DESCRIPTION *de
  * @param default_value
  * @return EXIT_FAILURE | EXIT_SUCCESS
  */
-int dsk_tools_change_track ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE_INFO *short_image_info, uint8_t abstrack, uint8_t sectors, en_DSK_SECTOR_SIZE ssize, uint8_t *sector_map, uint8_t default_value ) {
+int dsk_tools_change_track ( st_HANDLER *h, st_DSK_SHORT_IMAGE_INFO *short_image_info, uint8_t abstrack, uint8_t sectors, en_DSK_SECTOR_SIZE ssize, uint8_t *sector_map, uint8_t default_value ) {
 
     st_DSK_SHORT_IMAGE_INFO local_short_image_info;
     st_DSK_SHORT_IMAGE_INFO *iinfo = short_image_info;
 
     if ( iinfo == NULL ) {
-        if ( EXIT_SUCCESS != dsk_read_short_image_info ( handler, d, &local_short_image_info ) ) return EXIT_FAILURE;
+        if ( EXIT_SUCCESS != dsk_read_short_image_info ( h, &local_short_image_info ) ) return EXIT_FAILURE;
         iinfo = &local_short_image_info;
     };
 
     if ( abstrack >= ( iinfo->tracks * iinfo->sides ) ) {
-        st_HANDLER *h = handler;
         h->err = DSK_ERROR_TRACK_NOT_FOUND;
         return EXIT_FAILURE;
     };
@@ -410,29 +402,29 @@ int dsk_tools_change_track ( void *handler, st_DRIVER *d, st_DSK_SHORT_IMAGE_INF
 
         uint32_t i;
         for ( i = ( last_image_byte - next_track_offset ); i > 0; i -= sizeof ( buffer ) ) {
-            if ( EXIT_SUCCESS != dsk_read_on_offset ( handler, d, src_offset, &buffer, sizeof ( buffer ) ) ) return EXIT_FAILURE;
-            if ( EXIT_SUCCESS != dsk_write_on_offset ( handler, d, dst_offset, &buffer, sizeof ( buffer ) ) ) return EXIT_FAILURE;
+            if ( EXIT_SUCCESS != dsk_read_on_offset ( h, src_offset, &buffer, sizeof ( buffer ) ) ) return EXIT_FAILURE;
+            if ( EXIT_SUCCESS != dsk_write_on_offset ( h, dst_offset, &buffer, sizeof ( buffer ) ) ) return EXIT_FAILURE;
             src_offset += step;
             dst_offset += step;
         };
 
         if ( track_size > new_track_size ) {
-            if ( EXIT_SUCCESS != generic_driver_truncate ( handler, d, new_last_image_byte ) ) return EXIT_FAILURE;
+            if ( EXIT_SUCCESS != generic_driver_truncate ( h, new_last_image_byte ) ) return EXIT_FAILURE;
         };
 
         iinfo->tsize[abstrack] = dsk_encode_track_size ( sectors, ssize );
         uint32_t offset = DSK_FILEINFO_FIELD_LENGTH + DSK_CREATOR_FIELD_LENGTH + 4 + abstrack;
-        if ( EXIT_SUCCESS != dsk_write_on_offset ( handler, d, offset, &iinfo->tsize[abstrack], 1 ) ) return EXIT_FAILURE;
+        if ( EXIT_SUCCESS != dsk_write_on_offset ( h, offset, &iinfo->tsize[abstrack], 1 ) ) return EXIT_FAILURE;
     };
 
     uint8_t side = ( iinfo->sides == 1 ) ? 0 : ( abstrack & 1 );
     uint8_t track = abstrack / iinfo->sides;
 
     if ( sectors != 0 ) {
-        if ( EXIT_SUCCESS != dsk_tools_create_track_header ( handler, d, track_offset, track, side, sectors, ssize, sector_map ) ) return EXIT_FAILURE;
+        if ( EXIT_SUCCESS != dsk_tools_create_track_header ( h, track_offset, track, side, sectors, ssize, sector_map ) ) return EXIT_FAILURE;
 
         uint16_t sectors_total_bytes;
-        if ( EXIT_SUCCESS != dsk_tools_create_track_sectors ( handler, d, track_offset + sizeof ( st_DSK_TRACK_INFO ), sectors, ssize, default_value, &sectors_total_bytes ) ) return EXIT_FAILURE;
+        if ( EXIT_SUCCESS != dsk_tools_create_track_sectors ( h, track_offset + sizeof ( st_DSK_TRACK_INFO ), sectors, ssize, default_value, &sectors_total_bytes ) ) return EXIT_FAILURE;
     };
 
     return EXIT_SUCCESS;
