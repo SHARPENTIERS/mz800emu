@@ -128,7 +128,7 @@ static const st_VKBD_KEYDEF vk_row2_def[] = {
     { VKBD_SCANCODE_F6, 1, 5, "row2/at.bmp" },
     { VKBD_SCANCODE_LEFTBRACKET, 1, 4, "row2/bracketleft.bmp" },
     { VKBD_SCANCODE_F9, 0, 5, "row2/libra.bmp" },
-    { VKBD_SCANCODE_GRAVE, 6, 7, "row2/blank.bmp" },
+    { VKBD_SCANCODE_GRAVE, 0, 7, "row2/blank.bmp" },
     { 0, 0, 0, (char*) NULL },
 };
 
