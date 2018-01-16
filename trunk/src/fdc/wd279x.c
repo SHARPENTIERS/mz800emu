@@ -1465,7 +1465,8 @@ int wd279x_read_byte ( st_WD279X *FDC, int i_addroffset, unsigned char *io_data 
 
                             DBGPRINTF ( DBGINF, "Sekvencni cteni - predchozi sektor skoncil TIMEOUTEM , tzn. prechod na dalsi.\n" );
 
-                            FDC->regSECTOR = FDC->drive[ FDC->MOTOR & 0x03 ].SECTOR + 1;
+                            FDC->drive[ FDC->MOTOR & 0x03 ].SECTOR++;
+                            FDC->regSECTOR = FDC->drive[ FDC->MOTOR & 0x03 ].SECTOR;
 
                             if ( wd279x_seek_to_sector ( FDC, FDC->MOTOR & 0x03, FDC->regSECTOR ) ) {
                                 // sector not found!
