@@ -1473,7 +1473,7 @@ int wd279x_read_byte ( st_WD279X *FDC, int i_addroffset, unsigned char *io_data 
 
                                 DBGPRINTF ( DBGINF, "Dalsi sector s naslednym poradovym cislem uz tu neni! Posilam RNF\n" );
 
-                                FDC->regSECTOR--;
+                                //FDC->regSECTOR--;
                                 FDC->STATUS_SCRIPT = 4;
                             } else {
 
