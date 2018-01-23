@@ -43,13 +43,13 @@
 
 
 G_MODULE_EXPORT void on_debugger_main_window_size_allocate ( GtkWidget *widget, GdkRectangle *allocation, gpointer user_data ) {
-    if ( g_debugger.animated_updates != 0 ) return;
+    if ( g_debugger.animated_updates != DEBUGGER_ANIMATED_UPDATES_DISABLED ) return;
     ui_debugger_show_spinner_window ( );
 }
 
 
 G_MODULE_EXPORT gboolean on_debugger_main_window_configure_event ( GtkWidget *widget, GdkEventConfigure *event ) {
-    if ( g_debugger.animated_updates == 0 ) ui_debugger_show_spinner_window ( );
+    if ( g_debugger.animated_updates == DEBUGGER_ANIMATED_UPDATES_DISABLED ) ui_debugger_show_spinner_window ( );
     return FALSE;
 }
 
@@ -135,7 +135,7 @@ G_MODULE_EXPORT void on_dbg_animated_enabled_radiomenuitem_toggled ( GtkCheckMen
     (void) data;
 
     if ( g_uidebugger.accelerators_locked != 0 ) return;
-    g_debugger.animated_updates = 1;
+    g_debugger.animated_updates = DEBUGGER_ANIMATED_UPDATES_ENABLED;
     ui_debugger_hide_spinner_window ( );
     debugger_step_call ( 0 );
 }
@@ -146,7 +146,7 @@ G_MODULE_EXPORT void on_dbg_animated_disabled_radiomenuitem_toggled ( GtkCheckMe
     (void) data;
 
     if ( g_uidebugger.accelerators_locked != 0 ) return;
-    g_debugger.animated_updates = 0;
+    g_debugger.animated_updates = DEBUGGER_ANIMATED_UPDATES_DISABLED;
     ui_debugger_show_spinner_window ( );
 }
 
