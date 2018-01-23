@@ -38,6 +38,7 @@
 #include "ramdisk/ramdisk.h"
 #include "sharpmz_ascii.h"
 
+
 typedef enum en_MEMSRC {
     MEMSRC_MAPED = 0,
     MEMSRC_RAM,
@@ -47,10 +48,12 @@ typedef enum en_MEMSRC {
     MEMSRC_MZ1R18,
 } en_MEMSRC;
 
+
 typedef enum en_MEMCHARSET {
     MEMCHAR_ASCII = 0,
     MEMCHAR_SHASCII,
 } en_MEMCHARSET;
+
 
 typedef struct st_UIMEMDUMP {
     st_UIWINPOS main_pos;
@@ -62,9 +65,11 @@ typedef struct st_UIMEMDUMP {
     unsigned pezik_68_bank;
     unsigned pezik_endianity;
     unsigned mr1z18_bank;
+    gboolean comparative_mode;
 } st_UIMEMDUMP;
 
 st_UIMEMDUMP g_uimemdump;
+
 
 typedef enum en_DBG_MEMDUMP {
     DBG_MEMDUMP_ADDR = 0,
@@ -87,7 +92,7 @@ void ui_memdump_update ( void ) {
 
     gtk_combo_box_set_active ( (GtkComboBox*) endianness_combo, g_uimemdump.pezik_endianity );
     gtk_widget_hide ( endianness_combo );
-    
+
     if ( g_uimemdump.memsrc >= MEMSRC_VRAM ) {
 
         gtk_widget_show ( label );
@@ -140,10 +145,18 @@ void ui_memdump_update ( void ) {
         gtk_widget_hide ( label );
         gtk_widget_hide ( spinbutton );
     };
+
+    gtk_toggle_button_set_active ( ui_get_toggle ( "dbg_memdump_comparativemode_checkbutton" ), g_uimemdump.comparative_mode );
+
     gtk_combo_box_set_active ( ui_get_combo_box ( "dbg_memdump_charset_comboboxtext" ), g_uimemdump.charset );
 
     UNLOCK_UICALLBACKS ( );
 }
+
+#define UI_MEMDUMP_MAXDUMP_LENGTH   0x10000
+
+#define UI_MEMDUMP_HEXVAL_CHANGED "<span foreground=\"#FF1010\"><b>%02X</b></span>"
+//#define UI_MEMDUMP_ASCIIVAL_CHANGED "<span background=\"#000080\" foreground=\"#00ff00\">%c</span>"
 
 
 void ui_memdump_load ( void ) {
@@ -153,7 +166,8 @@ void ui_memdump_load ( void ) {
     GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_memdump_liststore" ) );
 
     unsigned addr = 0x0000;
-    unsigned addr_end = 0x10000;
+    unsigned addr_end = UI_MEMDUMP_MAXDUMP_LENGTH;
+    static uint8_t previous_data[UI_MEMDUMP_MAXDUMP_LENGTH];
 
     uint8_t *MEM = NULL;
 
@@ -202,21 +216,26 @@ void ui_memdump_load ( void ) {
 
     GtkTreeIter iter;
 
+    gboolean comparative_mode = FALSE;
+
     if ( last_dump_src != g_uimemdump.memsrc ) {
         if ( ( last_dump_src == -1 ) || ( g_uimemdump.memsrc == MEMSRC_VRAM ) || ( last_dump_src == MEMSRC_VRAM ) ) {
             gtk_list_store_clear ( GTK_LIST_STORE ( model ) );
             last_dump_src = -1;
         };
+    } else {
+        comparative_mode = g_uimemdump.comparative_mode;
     };
 
     do {
         char addr_txt [ 6 ];
         sprintf ( addr_txt, "%04X:", addr );
         unsigned i;
-        char values_row [ ( 16 * 3 ) + 2 ];
-        char ascii_row [ 16 + 1 ];
+        char values_row [ ( 16 * ( sizeof ( UI_MEMDUMP_HEXVAL_CHANGED ) + 1 ) ) + 1 + 1 ];
+        char ascii_row [ ( 16 * 1 ) + 1 ];
         *values_row = 0x00;
         ascii_row [ 16 ] = 0x00;
+
         for ( i = 0; i < 16; i++ ) {
 
             Z80EX_BYTE value;
@@ -234,13 +253,22 @@ void ui_memdump_load ( void ) {
                 };
             };
 
-            char value_txt [ 4 ];
-            if ( i == 0 ) {
+            gboolean value_changed = ( ( comparative_mode ) && ( previous_data[ addr + i ] != value ) ) ? TRUE : FALSE;
+
+            if ( i != 0 ) {
+                strcat ( values_row, "  " );
+            };
+
+            char value_txt [ sizeof (UI_MEMDUMP_HEXVAL_CHANGED ) ];
+
+            if ( !value_changed ) {
                 sprintf ( value_txt, "%02X", value );
             } else {
-                sprintf ( value_txt, " %02X", value );
+                sprintf ( value_txt, UI_MEMDUMP_HEXVAL_CHANGED, value );
             };
+
             strcat ( values_row, value_txt );
+
             if ( i == 7 ) {
                 strcat ( values_row, "  " );
             };
@@ -253,6 +281,8 @@ void ui_memdump_load ( void ) {
             } else {
                 ascii_row [ i ] = '.';
             };
+
+            previous_data[ addr + i ] = value;
         };
 
         //printf ( "%s: %s\n", addr_txt, values_row );
@@ -268,11 +298,11 @@ void ui_memdump_load ( void ) {
         };
 
         gtk_list_store_set ( GTK_LIST_STORE ( model ), &iter,
-                DBG_MEMDUMP_ADDR, addr,
-                DBG_MEMDUMP_ADDR_TXT, addr_txt,
-                DBG_MEMDUMP_VALUES, values_row,
-                DBG_MEMDUMP_ASCII, ascii_row,
-                -1 );
+                             DBG_MEMDUMP_ADDR, addr,
+                             DBG_MEMDUMP_ADDR_TXT, addr_txt,
+                             DBG_MEMDUMP_VALUES, values_row,
+                             DBG_MEMDUMP_ASCII, ascii_row,
+                             -1 );
         addr += i;
     } while ( addr != addr_end );
 
@@ -297,6 +327,7 @@ void ui_memdump_show_window ( void ) {
         g_uimemdump.pezik_endianity = 0;
         g_uimemdump.mr1z18_bank = 0;
         g_uimemdump.vram_plane = 0;
+        g_uimemdump.comparative_mode = TRUE;
     };
     ui_main_win_move_to_pos ( GTK_WINDOW ( window ), &g_uimemdump.main_pos );
     gtk_widget_show ( window );
@@ -405,6 +436,11 @@ G_MODULE_EXPORT void on_dbg_memdump_pezik_endianness_comboboxtext_changed ( GtkC
 
     g_uimemdump.pezik_endianity = gtk_combo_box_get_active ( combobox );
     ui_memdump_load ( );
+}
+
+
+G_MODULE_EXPORT void on_dbg_memdump_comparativemode_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+    g_uimemdump.comparative_mode = gtk_toggle_button_get_active ( togglebutton );
 }
 
 #endif
