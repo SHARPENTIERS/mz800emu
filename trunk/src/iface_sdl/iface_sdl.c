@@ -1076,3 +1076,7 @@ void iface_sdl_update_window_in_beam_interval ( unsigned beam_start, unsigned be
     SDL_RenderPresent ( g_iface_sdl.renderer );
 }
 
+
+void iface_sdl_set_main_window_focus ( void ) {
+    SDL_RaiseWindow ( g_iface_sdl.window );
+}

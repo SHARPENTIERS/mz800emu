@@ -24,14 +24,15 @@
  */
 
 #ifndef IFACE_SDL_H
-#define	IFACE_SDL_H
+#define IFACE_SDL_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <SDL.h>
 #include "iface_sdl/iface_sdl_log.h"
+
 
     typedef struct st_iface_sdl {
         SDL_Window *window;
@@ -52,10 +53,11 @@ extern "C" {
     extern void iface_sdl_render_status_line ( void );
     extern void iface_sdl_set_colors ( uint32_t *colormap );
     extern void iface_sdl_set_window_size ( float scale );
-    
-#ifdef	__cplusplus
+    extern void iface_sdl_set_main_window_focus ( void );
+
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* IFACE_SDL_H */
+#endif /* IFACE_SDL_H */
 

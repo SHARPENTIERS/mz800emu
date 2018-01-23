@@ -32,11 +32,16 @@ extern "C" {
 
 #include "z80ex/include/z80ex.h"
 
+    typedef enum en_DEBUGGER_ANIMATED_UPDATES {
+        DEBUGGER_ANIMATED_UPDATES_DISABLED = 0, // ukazeme spinner
+        DEBUGGER_ANIMATED_UPDATES_ENABLED, // animujeme
+    } en_DEBUGGER_ANIMATED_UPDATES;
+    
     typedef struct st_DEBUGGER {
         unsigned active;
         unsigned step_call;
         unsigned memop_call;
-        unsigned animated_updates;
+        en_DEBUGGER_ANIMATED_UPDATES animated_updates;
         unsigned auto_save_breakpoints;
     } st_DEBUGGER;
 

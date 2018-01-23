@@ -311,7 +311,7 @@ static inline void mz800_event_screen_done ( void ) {
         last_make_picture_time = flag_make_picture_time;
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
-        if ( g_debugger.animated_updates ) debugger_animation ( );
+        if ( g_debugger.animated_updates == DEBUGGER_ANIMATED_UPDATES_ENABLED ) debugger_animation ( );
 #endif
 
         if ( flag_update_status_time ) {
@@ -1002,12 +1002,11 @@ void mz800_pause_emulation ( unsigned value ) {
         if ( value ) {
             ui_debugger_hide_spinner_window ( );
         } else {
-
-
             ui_debugger_show_spinner_window ( );
         };
     };
 #endif
+    iface_sdl_set_main_window_focus ( );
 }
 
 

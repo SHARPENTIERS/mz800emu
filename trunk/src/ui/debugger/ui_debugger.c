@@ -491,7 +491,7 @@ gboolean on_dbg_disassembled_addr_vscale_button_press_event ( GtkWidget *widget,
 
 void ui_debugger_show_spinner_window ( void ) {
 
-    if ( g_debugger.animated_updates != 0 ) return;
+    if ( g_debugger.animated_updates != DEBUGGER_ANIMATED_UPDATES_DISABLED ) return;
     if ( TEST_EMULATION_PAUSED ) return;
 
     GtkWidget *w_main = ui_get_widget ( "debugger_main_window" );
@@ -649,12 +649,14 @@ void ui_debugger_show_main_window ( void ) {
 
     g_uidebugger.accelerators_locked = 1;
 
-    if ( g_debugger.animated_updates == 0 ) {
+    if ( g_debugger.animated_updates == DEBUGGER_ANIMATED_UPDATES_DISABLED ) {
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "dbg_animated_disabled_radiomenuitem" ), TRUE );
         ui_debugger_show_spinner_window ( );
-    } else {
+    } else if ( g_debugger.animated_updates == DEBUGGER_ANIMATED_UPDATES_ENABLED ) {
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "dbg_animated_enabled_radiomenuitem" ), TRUE );
         ui_debugger_hide_spinner_window ( );
+    } else {
+        printf ( "%s() - %d: Error: unknow animation state '%d'\n", __func__, __LINE__, g_debugger.animated_updates );
     };
 
     g_uidebugger.accelerators_locked = 0;

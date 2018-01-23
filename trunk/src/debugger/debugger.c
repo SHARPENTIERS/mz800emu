@@ -79,7 +79,7 @@ void debugger_init ( void ) {
     g_debugger.active = 0;
     g_debugger.memop_call = 0;
     debugger_step_call ( 0 );
-    g_debugger.animated_updates = 0;
+    g_debugger.animated_updates = DEBUGGER_ANIMATED_UPDATES_DISABLED;
     breakpoints_init ( );
 
     CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "DEBUGGER" );
