@@ -976,9 +976,7 @@ void mz800_switch_emulation_speed ( unsigned value ) {
     if ( g_mz800.use_max_emulation_speed ) {
         printf ( "Fast emulation speed.\n" );
     } else {
-
-
-        printf ( "Slow emulation speed.\n" );
+        printf ( "Normal emulation speed.\n" );
     };
 
     iface_sdl_audio_update_buffer_state ( );

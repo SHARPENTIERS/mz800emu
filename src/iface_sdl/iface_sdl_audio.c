@@ -386,10 +386,17 @@ void iface_sdl_audio_update_buffer_state ( void ) {
 
 
 void iface_sdl_audio_pause_emulation ( unsigned value ) {
+    SDL_LockMutex ( g_iface_audio.write_lock );
     if ( value ) {
+        g_iface_audio.state = IFACE_AUDIO_BUFFER_STATE_UNSYNC;
+        SDL_CondSignal ( g_iface_audio.write_cond );
+        SDL_UnlockMutex ( g_iface_audio.write_lock );
         SDL_PauseAudioDevice ( g_iface_audio.dev, 1 );
         memset ( g_iface_audio.buffer, 0x00, sizeof ( g_iface_audio.buffer ) );
     } else {
+        g_iface_audio.state = IFACE_AUDIO_BUFFER_STATE_NORMAL;
+        SDL_CondSignal ( g_iface_audio.write_cond );
+        SDL_UnlockMutex ( g_iface_audio.write_lock );
         SDL_PauseAudioDevice ( g_iface_audio.dev, 0 );
     };
 }
