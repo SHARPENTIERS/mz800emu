@@ -189,8 +189,8 @@ do
 	copyFileToTmpDir "ui_resources/vkbd/row0/${filename}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}/ui_resources/vkbd/row0/${filename}" 0644
 done
 
-# vkbd/row1 arrow_up.bmp
-for filename in backslash.bmp break.bmp graph.bmp minus.bmp 0.bmp 1.bmp 2.bmp 3.bmp 4.bmp 5.bmp 6.bmp 7.bmp 8.bmp 9.bmp
+# vkbd/row1
+for filename in arrow_up.bmp backslash.bmp break.bmp graph.bmp minus.bmp 0.bmp 1.bmp 2.bmp 3.bmp 4.bmp 5.bmp 6.bmp 7.bmp 8.bmp 9.bmp
 do
 	copyFileToTmpDir "ui_resources/vkbd/row1/${filename}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}/ui_resources/vkbd/row1/${filename}" 0644
 done

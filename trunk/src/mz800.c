@@ -1003,10 +1003,10 @@ void mz800_pause_emulation ( unsigned value ) {
             ui_debugger_hide_spinner_window ( );
         } else {
             ui_debugger_show_spinner_window ( );
+            iface_sdl_set_main_window_focus ( );
         };
     };
 #endif
-    iface_sdl_set_main_window_focus ( );
 }
 
 

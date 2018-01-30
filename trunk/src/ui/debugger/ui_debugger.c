@@ -45,8 +45,10 @@
 
 
 #define DEBUGGER_STACK_ROWS             20
-#define DEBUGGER_DISASSEMBLED_ROWS      30
+#define DEBUGGER_DISASSEMBLED_ROWS      32
 #define DEBUGGER_MNEMONIC_MAXLEN        20
+#define DEBUGGER_HISTORY_ROWS           DEBUGGER_HISTORY_LENGTH
+
 
 static const uint32_t g_mmap_color[MMBSTATE_COUNT] = {
                                                       0x008000, /* RAM - green */
@@ -304,6 +306,92 @@ void ui_debugger_init_disassembled ( GtkTreeModel *model, unsigned start_row, un
 }
 
 
+static inline void ui_debugger_init_history ( GtkTreeModel *model, unsigned start_row, unsigned count ) {
+    ui_debugger_init_disassembled ( model, start_row, count );
+}
+
+
+void ui_debugger_update_history ( void ) {
+
+    GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_history_liststore" ) );
+    GtkTreeIter iter;
+
+    if ( 0 == gtk_tree_model_iter_n_children ( model, NULL ) ) ui_debugger_init_history ( model, 0, DEBUGGER_HISTORY_ROWS );
+
+    int row = 0;
+    gtk_tree_model_get_iter_first ( model, &iter );
+
+    unsigned i;
+    for ( i = row; i < DEBUGGER_HISTORY_ROWS; i++ ) {
+
+        uint8_t position = debugger_history_position ( g_debugger_history.position - DEBUGGER_HISTORY_ROWS + 1 + i );
+
+        Z80EX_WORD addr = g_debugger_history.row[position].addr;
+
+        char addr_txt [ 6 ];
+        char byte0 [ 3 ];
+        char byte1 [ 3 ];
+        char byte2 [ 3 ];
+        char byte3 [ 3 ];
+        char mnemonic [ DEBUGGER_MNEMONIC_MAXLEN ];
+        int t_states, t_states2;
+
+        sprintf ( addr_txt, "%04X:", addr );
+        Z80EX_WORD addr_row = addr;
+
+        unsigned bytecode_length = z80ex_dasm ( mnemonic, DEBUGGER_MNEMONIC_MAXLEN - 1, 0, &t_states, &t_states2, debugger_dasm_history_read_cb, addr, &position );
+
+        sprintf ( byte0, "%02X", g_debugger_history.row[position].byte[0] );
+
+        if ( 1 < bytecode_length ) {
+            sprintf ( byte1, "%02X", g_debugger_history.row[position].byte[1] );
+        } else {
+            byte1 [ 0 ] = 0x00;
+        };
+
+        if ( 2 < bytecode_length ) {
+            sprintf ( byte2, "%02X", g_debugger_history.row[position].byte[2] );
+        } else {
+            byte2 [ 0 ] = 0x00;
+        };
+
+        if ( 3 < bytecode_length ) {
+            sprintf ( byte3, "%02X", g_debugger_history.row[position].byte[3] );
+        } else {
+            byte3 [ 0 ] = 0x00;
+        };
+
+        /* mnemonics se mi ctou lepe, kdyz jsou napsany malym pismem */
+        char *c = mnemonic;
+        while ( *c != 0x00 ) {
+            if ( ( *c >= 'A' ) && ( *c <= 'Z' ) ) {
+                *c += 0x20;
+            };
+            c++;
+        };
+
+        gtk_list_store_set ( GTK_LIST_STORE ( model ), &iter,
+                             DBG_DIS_ADDR, addr_row,
+                             DBG_DIS_BYTES, bytecode_length,
+                             DBG_DIS_ADDR_TXT, addr_txt,
+                             DBG_DIS_BYTE0, byte0,
+                             DBG_DIS_BYTE1, byte1,
+                             DBG_DIS_BYTE2, byte2,
+                             DBG_DIS_BYTE3, byte3,
+                             DBG_DIS_MNEMONIC, mnemonic,
+                             -1 );
+
+        if ( i == ( DEBUGGER_HISTORY_ROWS - 1 ) ) {
+            GtkTreePath *path = gtk_tree_model_get_path ( model, &iter );
+            gtk_tree_view_scroll_to_cell ( ui_get_tree_view ( "dbg_history_treeview" ), path, NULL, FALSE, 0.0, 0.0 );
+        };
+
+        gtk_tree_model_iter_next ( model, &iter );
+    };
+
+}
+
+
 /*
  * 
  * Vzdy je potreba nastavit addr.
@@ -378,7 +466,7 @@ void ui_debugger_update_disassembled ( Z80EX_WORD addr, int row ) {
         };
 
         if ( 3 < bytecode_length ) {
-            sprintf ( byte3, "%02X ", debugger_memory_read_byte ( addr++ ) );
+            sprintf ( byte3, "%02X", debugger_memory_read_byte ( addr++ ) );
         } else {
             byte3 [ 0 ] = 0x00;
         };
@@ -434,6 +522,7 @@ void ui_debugger_update_all ( void ) {
     ui_debugger_update_mmap ( );
     ui_debugger_update_stack ( );
     ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
+    ui_debugger_update_history ( );
 }
 
 
@@ -461,7 +550,7 @@ void ui_debugger_update_animated ( void ) {
 
         case 3:
             ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
-            //break;
+            ui_debugger_update_history ( );
 
         case 4:
             animate_phase = 0;
@@ -611,6 +700,10 @@ void ui_debugger_initialize_mmap ( void ) {
 
 void ui_debugger_show_main_window ( void ) {
 
+    // zapneme ukladani historie
+    z80ex_set_memread_callback ( g_mz800.cpu, memory_read_with_history_cb, NULL );
+    debugger_reset_history ( );
+
     GtkWidget *window = ui_get_widget ( "debugger_main_window" );
 
     ui_main_win_move_to_pos ( GTK_WINDOW ( window ), &g_uidebugger.pos );
@@ -645,6 +738,9 @@ void ui_debugger_show_main_window ( void ) {
         g_uidebugger.last_focus_addr = 0x0000;
 
         ui_main_setpos ( &g_uidebugger.pos, -1, -1 );
+
+        GtkTreeSelection *selection = gtk_tree_view_get_selection ( GTK_TREE_VIEW ( ui_get_object ( "dbg_history_treeview" ) ) );
+        gtk_tree_selection_set_mode ( selection, GTK_SELECTION_NONE );
     };
 
     g_uidebugger.accelerators_locked = 1;
@@ -668,6 +764,10 @@ void ui_debugger_show_main_window ( void ) {
 
 
 void ui_debugger_hide_main_window ( void ) {
+
+    // vypneme ukladani historie
+    z80ex_set_memread_callback ( g_mz800.cpu, memory_read_cb, NULL );
+
     ui_debugger_hide_spinner_window ( );
     GtkWidget *window = ui_get_widget ( "debugger_main_window" );
     ui_main_win_get_pos ( GTK_WINDOW ( window ), &g_uidebugger.pos );
@@ -679,7 +779,7 @@ void ui_debugger_pause_emulation ( void ) {
 
     gchar msg[] = "Emulation was paused. Now you can make any changes...";
     mz800_pause_emulation ( 1 );
-    GtkWidget *dialog = gtk_message_dialog_new ( NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, msg );
+    GtkWidget *dialog = gtk_message_dialog_new ( ui_get_window ( "debugger_main_window" ), GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, msg );
     gtk_window_set_position ( GTK_WINDOW ( dialog ), GTK_WIN_POS_MOUSE );
     gtk_dialog_run ( GTK_DIALOG ( dialog ) );
     gtk_widget_destroy ( dialog );

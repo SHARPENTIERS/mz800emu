@@ -543,6 +543,40 @@ Z80EX_BYTE memory_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, v
 }
 
 
+
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+
+
+/**
+ * Cteni z aktualne mapovane pameti se zachovanim synchronizace u VRAM a 0xe00x periferii.
+ * + debugging = ukladani historie poslednich vykonanych bajtu
+ * 
+ * @param cpu
+ * @param addr
+ * @param m1_state
+ * @param user_data
+ * @return 
+ */
+Z80EX_BYTE memory_read_with_history_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, void *user_data ) {
+    Z80EX_BYTE retval = memory_internal_read_sync ( addr );
+    g_mz800.regDBUS_latch = retval;
+
+    if ( ( m1_state ) && ( g_mz800.cpu->prefix == 0x00 ) ) {
+        g_debugger_history.position++;
+        int position = debugger_history_position ( g_debugger_history.position );
+        g_debugger_history.row[position].addr = addr;
+        g_debugger_history.row[position].byte[0] = retval;
+        g_debugger_history.byte_position = 1;
+    } else if ( g_debugger_history.byte_position < DEBUGGER_MAX_INSTR_BYTES ) {
+        int position = debugger_history_position ( g_debugger_history.position );
+        g_debugger_history.row[position].byte[g_debugger_history.byte_position++] = retval;
+    };
+
+    return retval;
+}
+#endif
+
+
 /**
  * Cteni z aktualne mapovane pameti - bez synchronizace.
  * 
