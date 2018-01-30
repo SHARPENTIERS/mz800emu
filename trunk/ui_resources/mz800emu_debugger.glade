@@ -787,16 +787,6 @@
       <column type="gchararray"/>
     </columns>
   </object>
-  <object class="GtkListStore" id="dbg_stack_liststore">
-    <columns>
-      <!-- column-name addr -->
-      <column type="guint"/>
-      <!-- column-name addr_txt -->
-      <column type="gchararray"/>
-      <!-- column-name value -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkMenu" id="dbg_disassembled_menu">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -1649,6 +1639,50 @@
         <col id="3" translatable="yes">00</col>
       </row>
     </data>
+  </object>
+  <object class="GtkWindow" id="dbg_spinner_window">
+    <property name="width_request">200</property>
+    <property name="height_request">200</property>
+    <property name="can_focus">False</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="hide_titlebar_when_maximized">True</property>
+    <property name="type_hint">splashscreen</property>
+    <property name="skip_taskbar_hint">True</property>
+    <property name="skip_pager_hint">True</property>
+    <property name="decorated">False</property>
+    <property name="deletable">False</property>
+    <property name="transient_for">debugger_main_window</property>
+    <property name="has_resize_grip">False</property>
+    <property name="mnemonics_visible">False</property>
+    <signal name="button-press-event" handler="on_dbg_spinner_window_press_event" swapped="no"/>
+    <child>
+      <object class="GtkEventBox" id="eventbox1">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <child>
+          <object class="GtkSpinner" id="dbg_spinner">
+            <property name="width_request">40</property>
+            <property name="height_request">40</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <property name="active">True</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkListStore" id="dbg_stack_liststore">
+    <columns>
+      <!-- column-name addr -->
+      <column type="guint"/>
+      <!-- column-name addr_txt -->
+      <column type="gchararray"/>
+      <!-- column-name value -->
+      <column type="gchararray"/>
+    </columns>
   </object>
   <object class="GtkWindow" id="debugger_iasm_help_window">
     <property name="width_request">700</property>
@@ -3812,7 +3846,7 @@
                                 <property name="title" translatable="yes">Addr</property>
                                 <child>
                                   <object class="GtkCellRendererText" id="cellrenderertext17">
-                                    <property name="width">50</property>
+                                    <property name="width">60</property>
                                   </object>
                                   <attributes>
                                     <attribute name="text">2</attribute>
@@ -3923,7 +3957,7 @@ instruction to open inline assembler, or right click for menu</property>
                                 <property name="title" translatable="yes">Addr</property>
                                 <child>
                                   <object class="GtkCellRendererText" id="cellrenderertext9">
-                                    <property name="width">50</property>
+                                    <property name="width">60</property>
                                   </object>
                                   <attributes>
                                     <attribute name="text">2</attribute>
@@ -4029,40 +4063,6 @@ instruction to open inline assembler, or right click for menu</property>
             <property name="width">1</property>
             <property name="height">1</property>
           </packing>
-        </child>
-      </object>
-    </child>
-  </object>
-  <object class="GtkWindow" id="dbg_spinner_window">
-    <property name="width_request">200</property>
-    <property name="height_request">200</property>
-    <property name="can_focus">False</property>
-    <property name="window_position">center-on-parent</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="hide_titlebar_when_maximized">True</property>
-    <property name="type_hint">splashscreen</property>
-    <property name="skip_taskbar_hint">True</property>
-    <property name="skip_pager_hint">True</property>
-    <property name="decorated">False</property>
-    <property name="deletable">False</property>
-    <property name="transient_for">debugger_main_window</property>
-    <property name="has_resize_grip">False</property>
-    <property name="mnemonics_visible">False</property>
-    <signal name="button-press-event" handler="on_dbg_spinner_window_press_event" swapped="no"/>
-    <child>
-      <object class="GtkEventBox" id="eventbox1">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <child>
-          <object class="GtkSpinner" id="dbg_spinner">
-            <property name="width_request">40</property>
-            <property name="height_request">40</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="halign">center</property>
-            <property name="valign">center</property>
-            <property name="active">True</property>
-          </object>
         </child>
       </object>
     </child>
