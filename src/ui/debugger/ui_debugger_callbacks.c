@@ -450,6 +450,15 @@ G_MODULE_EXPORT gboolean on_dbg_disassembled_treeview_button_press_event ( GtkWi
 }
 
 
+G_MODULE_EXPORT gboolean on_dbg_history_treeview_button_press_event ( GtkWidget *widget, GdkEventButton *event, gpointer user_data ) {
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        ui_debugger_pause_emulation ( );
+    };
+    return FALSE;
+}
+
+
 G_MODULE_EXPORT void on_dbg_disassembled_treeview_row_activated ( GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data ) {
 
     if ( !TEST_EMULATION_PAUSED ) {

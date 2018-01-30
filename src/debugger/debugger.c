@@ -42,6 +42,7 @@
 #include "cfgmain.h"
 
 st_DEBUGGER g_debugger;
+st_DEBUGGER_HISTORY g_debugger_history;
 
 
 void debugger_step_call ( unsigned value ) {
@@ -75,6 +76,11 @@ void debugger_exit ( void ) {
 }
 
 
+void debugger_reset_history ( void ) {
+    memset ( &g_debugger_history, 0x00, sizeof (g_debugger_history ) );
+}
+
+
 void debugger_init ( void ) {
     g_debugger.active = 0;
     g_debugger.memop_call = 0;
@@ -86,9 +92,9 @@ void debugger_init ( void ) {
 
     CFGELM *elm;
     elm = cfgmodule_register_new_element ( cmod, "animated_updates", CFGENTYPE_KEYWORD, 0,
-            0, "DISABLED",
-            1, "ENABLED",
-            -1 );
+                                           0, "DISABLED",
+                                           1, "ENABLED",
+                                           -1 );
     cfgelement_set_handlers ( elm, (void*) &g_debugger.animated_updates, (void*) &g_debugger.animated_updates );
 
     elm = cfgmodule_register_new_element ( cmod, "auto_save_breakpoints", CFGENTYPE_BOOL, 1 );
@@ -96,7 +102,6 @@ void debugger_init ( void ) {
 
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );
-
 }
 
 
@@ -139,6 +144,13 @@ Z80EX_BYTE debugger_dasm_read_cb ( Z80EX_WORD addr, void *user_data ) {
     g_debugger.memop_call = 1;
     Z80EX_BYTE retval = memory_read_byte ( addr );
     g_debugger.memop_call = 0;
+    return retval;
+}
+
+
+Z80EX_BYTE debugger_dasm_history_read_cb ( Z80EX_WORD addr, void *user_data ) {
+    uint8_t *position = user_data;
+    uint8_t retval = g_debugger_history.row[*position].byte[addr - g_debugger_history.row[*position].addr];
     return retval;
 }
 

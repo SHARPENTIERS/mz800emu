@@ -162,6 +162,9 @@ extern "C" {
     /* Callback pro cteni bajtu */
     extern Z80EX_BYTE memory_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, void *user_data );
 
+    /* Callback pro cteni bajtu + debugovaci informace o vykonavanych bajtech */
+    extern Z80EX_BYTE memory_read_with_history_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, void *user_data );
+
     /* Callback pro zapis bajtu */
     extern void memory_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD addr, Z80EX_BYTE value, void *user_data );
 
