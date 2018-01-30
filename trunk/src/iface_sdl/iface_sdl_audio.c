@@ -384,3 +384,12 @@ void iface_sdl_audio_update_buffer_state ( void ) {
     SDL_UnlockMutex ( g_iface_audio.write_lock );
 }
 
+
+void iface_sdl_audio_pause_emulation ( unsigned value ) {
+    if ( value ) {
+        SDL_PauseAudioDevice ( g_iface_audio.dev, 1 );
+        memset ( g_iface_audio.buffer, 0x00, sizeof ( g_iface_audio.buffer ) );
+    } else {
+        SDL_PauseAudioDevice ( g_iface_audio.dev, 0 );
+    };
+}

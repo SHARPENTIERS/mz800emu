@@ -137,7 +137,10 @@ void audio_fill_buffer_v1 ( unsigned event_ticks ) {
         if ( g_audio.resample_timer <= PSG_DIVIDER ) {
             if ( g_audio.buffer_position < IFACE_AUDIO_20MS_SAMPLES ) {
                 //printf ( "res: %d = %d\n", g_audio.buffer_position, last_value );
-                g_audio.buffer [ g_audio.buffer_position++ ] = g_audio.last_value;
+                if ( !TEST_EMULATION_PAUSED ) {
+                    g_audio.buffer [ g_audio.buffer_position ] = g_audio.last_value;
+                };
+                g_audio.buffer_position++;
             };
             g_audio.resample_timer += AUDIO_RESAMPLE_PERIOD;
         };
