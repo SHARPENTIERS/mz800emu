@@ -42,6 +42,7 @@ extern "C" {
     extern void audio_sdl_start_cycle ( void );
     extern void iface_sdl_audio_sync_20ms_cycle ( void );
     extern void iface_sdl_audio_update_buffer_state ( void );
+    extern void iface_sdl_audio_pause_emulation ( unsigned value );
 
 
 #ifdef __cplusplus

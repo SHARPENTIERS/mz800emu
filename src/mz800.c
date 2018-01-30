@@ -289,7 +289,9 @@ static inline void mz800_event_speed_synchronisation ( unsigned event_ticks ) {
 #endif
 
 #ifndef MZ800EMU_CFG_AUDIO_DISABLED
-    iface_sdl_audio_sync_20ms_cycle ( );
+    if ( !TEST_EMULATION_PAUSED ) {
+        iface_sdl_audio_sync_20ms_cycle ( );
+    };
 #endif
 
 #ifdef MZ800EMU_CFG_VARIABLE_SPEED
@@ -995,6 +997,7 @@ void mz800_pause_emulation ( unsigned value ) {
     };
 
     g_mz800.emulation_paused = value;
+    iface_sdl_audio_pause_emulation ( value );
     ui_main_update_emulation_state ( g_mz800.emulation_paused );
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
