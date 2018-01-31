@@ -40,6 +40,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/cfgfile/cfgelement.o \
 	${OBJECTDIR}/src/cfgfile/cfgmodule.o \
 	${OBJECTDIR}/src/cfgfile/cfgroot.o \
+	${OBJECTDIR}/src/cfgfile/cfgtools.o \
 	${OBJECTDIR}/src/cfgmain.o \
 	${OBJECTDIR}/src/cmt/cmt.o \
 	${OBJECTDIR}/src/cmt/cmt_hack.o \
@@ -176,6 +177,11 @@ ${OBJECTDIR}/src/cfgfile/cfgroot.o: src/cfgfile/cfgroot.c
 	${MKDIR} -p ${OBJECTDIR}/src/cfgfile
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cfgfile/cfgroot.o src/cfgfile/cfgroot.c
+
+${OBJECTDIR}/src/cfgfile/cfgtools.o: src/cfgfile/cfgtools.c 
+	${MKDIR} -p ${OBJECTDIR}/src/cfgfile
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cfgfile/cfgtools.o src/cfgfile/cfgtools.c
 
 ${OBJECTDIR}/src/cfgmain.o: src/cfgmain.c 
 	${MKDIR} -p ${OBJECTDIR}/src

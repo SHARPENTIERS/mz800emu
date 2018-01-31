@@ -508,16 +508,44 @@ G_MODULE_EXPORT void on_dbg_set_as_pc_menuitem_activate ( GtkMenuItem *menuitem,
 }
 
 
+static void fill_combo_entry ( GtkWidget *combo ) {
+    gtk_combo_box_text_remove_all ( GTK_COMBO_BOX_TEXT ( combo ) );
+    int i;
+    for ( i = 0; i < g_uidebugger.focus_addr_hist_count; i++ ) {
+        gchar addr_txt [ 5 ];
+        sprintf ( addr_txt, "%04X", g_uidebugger.focus_addr_history[i] );
+        gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( combo ), addr_txt );
+    };
+}
+
+
+static GtkWidget *g_dbg_focus_to_addr_entry;
+
+
 G_MODULE_EXPORT void on_dbg_focus_to_menuitem_activate ( GtkMenuItem *menuitem, gpointer user_data ) {
-    GtkWidget *window = ui_get_widget ( "dbg_focus_to_window" );
-    gtk_widget_show ( window );
-    GtkWidget *entry = ui_get_widget ( "dbg_focus_to_addr_entry" );
-    gtk_entry_set_alignment ( GTK_ENTRY ( entry ), 1 );
+
+    static GtkWidget *combo = NULL;
+
+    if ( combo == NULL ) {
+        combo = gtk_combo_box_text_new_with_entry ( );
+        gtk_widget_show ( combo );
+        gtk_container_add ( GTK_CONTAINER ( ui_get_widget ( "dbg_focus_to_addr_box" ) ), combo );
+        g_dbg_focus_to_addr_entry = gtk_bin_get_child ( GTK_BIN ( combo ) );
+        gtk_entry_set_alignment ( GTK_ENTRY ( g_dbg_focus_to_addr_entry ), 1 );
+        gtk_entry_set_max_length ( GTK_ENTRY ( g_dbg_focus_to_addr_entry ), 4 );
+        g_signal_connect ( g_dbg_focus_to_addr_entry, "changed", G_CALLBACK ( on_dbg_hexeditable_changed ), NULL );
+    };
+
+    fill_combo_entry ( combo );
+
     gchar addr_txt [ 5 ];
     sprintf ( addr_txt, "%04X", g_uidebugger.last_focus_addr );
-    gtk_entry_set_text ( GTK_ENTRY ( entry ), addr_txt );
-    gtk_editable_select_region ( GTK_EDITABLE ( entry ), 0, -1 );
-    gtk_widget_grab_focus ( entry );
+    gtk_entry_set_text ( GTK_ENTRY ( g_dbg_focus_to_addr_entry ), addr_txt );
+    gtk_editable_select_region ( GTK_EDITABLE ( g_dbg_focus_to_addr_entry ), 0, -1 );
+
+    GtkWidget *window = ui_get_widget ( "dbg_focus_to_window" );
+    gtk_widget_show ( window );
+    gtk_widget_grab_focus ( g_dbg_focus_to_addr_entry );
 }
 
 
@@ -551,13 +579,27 @@ G_MODULE_EXPORT void on_dbg_focus_to_cancel_button_clicked ( GtkButton *button, 
 
 
 G_MODULE_EXPORT void on_dbg_focus_to_ok_button_clicked ( GtkButton *button, gpointer user_data ) {
-    GtkWidget *entry = ui_get_widget ( "dbg_focus_to_addr_entry" );
-    const gchar *addr_txt = gtk_entry_get_text ( GTK_ENTRY ( entry ) );
+    const gchar *addr_txt = gtk_entry_get_text ( GTK_ENTRY ( g_dbg_focus_to_addr_entry ) );
     if ( strlen ( addr_txt ) ) {
         g_uidebugger.last_focus_addr = (Z80EX_WORD) debuger_text_to_z80_word ( addr_txt );
         ui_debugger_update_disassembled ( g_uidebugger.last_focus_addr, -1 );
         GtkWidget *window = ui_get_widget ( "dbg_focus_to_window" );
         gtk_widget_hide ( window );
+
+        Z80EX_WORD history[DBG_FOCUS_ADDR_HIST_LENGTH];
+        memcpy ( history, g_uidebugger.focus_addr_history, sizeof ( history ) );
+        int i = 0;
+        g_uidebugger.focus_addr_history[i++] = g_uidebugger.last_focus_addr;
+
+        int j;
+        for ( j = 0; j < DBG_FOCUS_ADDR_HIST_LENGTH; j++ ) {
+            if ( j >= g_uidebugger.focus_addr_hist_count ) break;
+            if ( history[j] != g_uidebugger.last_focus_addr ) {
+                g_uidebugger.focus_addr_history[i++] = history[j];
+            };
+        };
+
+        g_uidebugger.focus_addr_hist_count = ( i > DBG_FOCUS_ADDR_HIST_LENGTH ) ? DBG_FOCUS_ADDR_HIST_LENGTH : i;
     };
 }
 
