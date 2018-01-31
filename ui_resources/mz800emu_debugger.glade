@@ -845,6 +845,9 @@
       </object>
     </child>
   </object>
+  <object class="GtkEntryCompletion" id="dbg_focus_to_addr_entrycompletion">
+    <property name="popup_single_match">False</property>
+  </object>
   <object class="GtkWindow" id="dbg_focus_to_window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Enter Address &lt;0000 - FFFF&gt; to focus</property>
@@ -853,19 +856,19 @@
     <property name="window_position">mouse</property>
     <signal name="delete-event" handler="on_dbg_focus_to_window_delete_event" swapped="no"/>
     <child>
-      <object class="GtkBox" id="box2">
+      <object class="GtkBox" id="dbg_focus_to_addr_box1">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <property name="spacing">5</property>
         <child>
-          <object class="GtkEntry" id="dbg_focus_to_addr_entry">
+          <object class="GtkBox" id="dbg_focus_to_addr_box">
             <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="max_length">4</property>
-            <property name="invisible_char">●</property>
-            <property name="activates_default">True</property>
-            <signal name="changed" handler="on_dbg_hexeditable_changed" swapped="no"/>
+            <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <placeholder/>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -1673,16 +1676,6 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkListStore" id="dbg_stack_liststore">
-    <columns>
-      <!-- column-name addr -->
-      <column type="guint"/>
-      <!-- column-name addr_txt -->
-      <column type="gchararray"/>
-      <!-- column-name value -->
-      <column type="gchararray"/>
-    </columns>
   </object>
   <object class="GtkWindow" id="debugger_iasm_help_window">
     <property name="width_request">700</property>
@@ -4067,17 +4060,27 @@ instruction to open inline assembler, or right click for menu</property>
       </object>
     </child>
   </object>
-  <object class="GtkRadioMenuItem" id="radiogrp_dbg_animated">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="draw_as_radio">True</property>
-  </object>
   <object class="GtkSizeGroup" id="dbg_sizegroup1">
     <property name="mode">both</property>
     <widgets>
       <widget name="dbg_reg0_treeview"/>
       <widget name="dbg_reg1_treeview"/>
     </widgets>
+  </object>
+  <object class="GtkListStore" id="dbg_stack_liststore">
+    <columns>
+      <!-- column-name addr -->
+      <column type="guint"/>
+      <!-- column-name addr_txt -->
+      <column type="gchararray"/>
+      <!-- column-name value -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_dbg_animated">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
   </object>
   <object class="GtkSizeGroup" id="sizegroup1">
     <widgets>

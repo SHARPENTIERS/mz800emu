@@ -104,9 +104,17 @@ extern "C" {
     } en_MMBANK;
 
 
+#define DBG_FOCUS_ADDR_HIST_LENGTH  10
+
+
     typedef struct st_UIDEBUGGER {
         unsigned accelerators_locked; /* pri editaci zasobniku a registru blokujeme nektere akceleratory, protoze jinak by ESC zavrel cele okno */
+
+        // inicializuje se v ui_debugger_focus_to_addr_history_propagatecfg_cb()
         Z80EX_WORD last_focus_addr;
+        int focus_addr_hist_count;
+        Z80EX_WORD focus_addr_history[DBG_FOCUS_ADDR_HIST_LENGTH];
+
         st_UIWINPOS pos;
         st_UIMMAPBANK mmapbank[MMBANK_COUNT];
     } st_UIDEBUGGER;
@@ -129,6 +137,9 @@ extern "C" {
     extern void ui_debugger_update_registers ( void );
     extern void ui_debugger_update_stack ( void );
     extern void ui_debugger_update_disassembled ( Z80EX_WORD addr, int row );
+
+    extern void ui_debugger_focus_to_addr_history_propagatecfg_cb ( void *e, void *data );
+    extern void ui_debugger_focus_to_addr_history_save_cb ( void *e, void *data );
 
 #ifdef __cplusplus
 }

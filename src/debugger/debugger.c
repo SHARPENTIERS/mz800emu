@@ -100,6 +100,10 @@ void debugger_init ( void ) {
     elm = cfgmodule_register_new_element ( cmod, "auto_save_breakpoints", CFGENTYPE_BOOL, 1 );
     cfgelement_set_handlers ( elm, (void*) &g_debugger.auto_save_breakpoints, (void*) &g_debugger.auto_save_breakpoints );
 
+    elm = cfgmodule_register_new_element ( cmod, "focus_to_addr_history", CFGENTYPE_TEXT, "0x0000" );
+    cfgelement_set_propagate_cb ( elm, ui_debugger_focus_to_addr_history_propagatecfg_cb, NULL );
+    cfgelement_set_save_cb ( elm, ui_debugger_focus_to_addr_history_save_cb, NULL );
+
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );
 }

@@ -9,6 +9,7 @@
         <itemPath>src/cfgfile/cfgelement.h</itemPath>
         <itemPath>src/cfgfile/cfgmodule.h</itemPath>
         <itemPath>src/cfgfile/cfgroot.h</itemPath>
+        <itemPath>src/cfgfile/cfgtools.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="Interface SDL" projectFiles="true">
         <itemPath>src/iface_sdl/iface_sdl.h</itemPath>
@@ -145,6 +146,7 @@
         <itemPath>src/cfgfile/cfgelement.c</itemPath>
         <itemPath>src/cfgfile/cfgmodule.c</itemPath>
         <itemPath>src/cfgfile/cfgroot.c</itemPath>
+        <itemPath>src/cfgfile/cfgtools.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="Interface SDL" projectFiles="true">
         <itemPath>src/iface_sdl/iface_sdl.c</itemPath>
@@ -385,6 +387,10 @@
       <item path="src/cfgfile/cfgroot.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cfgfile/cfgroot.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgtools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgtools.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cfgmain.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -856,6 +862,10 @@
       </item>
       <item path="src/cfgfile/cfgroot.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cfgfile/cfgtools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgtools.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cfgmain.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cfgmain.h" ex="false" tool="3" flavor2="0">
@@ -1313,6 +1323,10 @@
       <item path="src/cfgfile/cfgroot.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cfgfile/cfgroot.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgtools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgtools.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cfgmain.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1780,6 +1794,10 @@
       <item path="src/cfgfile/cfgroot.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/cfgfile/cfgroot.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgtools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgtools.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cfgmain.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -2256,6 +2274,10 @@
       </item>
       <item path="src/cfgfile/cfgroot.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cfgfile/cfgtools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgtools.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cfgmain.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/cfgmain.h" ex="false" tool="3" flavor2="0">
@@ -2731,6 +2753,10 @@
       </item>
       <item path="src/cfgfile/cfgroot.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cfgfile/cfgtools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgtools.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cfgmain.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cfgmain.h" ex="false" tool="3" flavor2="0">
@@ -3203,6 +3229,10 @@
       <item path="src/cfgfile/cfgroot.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cfgfile/cfgroot.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgtools.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cfgfile/cfgtools.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cfgmain.c" ex="false" tool="0" flavor2="0">
       </item>

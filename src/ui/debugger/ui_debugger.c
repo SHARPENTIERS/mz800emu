@@ -25,6 +25,7 @@
 
 #include "mz800emu_cfg.h"
 
+#include <string.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
@@ -42,6 +43,10 @@
 #include "memory/memory.h"
 
 #include "src/ui/tools/ui_tool_pixbuf.h"
+
+#include "cfgmain.h"
+#include "ui/ui_utils.h"
+#include "cfgfile/cfgtools.h"
 
 
 #define DEBUGGER_STACK_ROWS             20
@@ -711,9 +716,9 @@ void ui_debugger_show_main_window ( void ) {
     gtk_widget_grab_focus ( window );
 
     /* inicializace prvku, ktere neumime udelat pres glade */
-    static unsigned initialised = 0;
+    static gboolean initialised = FALSE;
     if ( !initialised ) {
-        initialised = 1;
+        initialised = TRUE;
 
         /* Tyto vlastnosti se mi nepovedlo nastavit pomoci glade */
         g_object_set ( ui_get_object ( "dbg_reg0_value_cellrenderertext" ), "editable", TRUE, "xalign", 1.0, NULL );
@@ -735,7 +740,6 @@ void ui_debugger_show_main_window ( void ) {
                            G_CALLBACK ( on_dbg_disassembled_addr_vscale_button_press_event ),
                            NULL );
 
-        g_uidebugger.last_focus_addr = 0x0000;
 
         ui_main_setpos ( &g_uidebugger.pos, -1, -1 );
 
@@ -794,6 +798,52 @@ void ui_debugger_show_hide_mmap_menu ( void ) {
 
 void ui_debugger_show_hide_disassembled_menu ( void ) {
     gtk_menu_popup ( GTK_MENU ( ui_get_widget ( "dbg_disassembled_menu" ) ), NULL, NULL, NULL, NULL, 0, 0 );
+}
+
+
+void ui_debugger_focus_to_addr_history_propagatecfg_cb ( void *e, void *data ) {
+    char *encoded_txt = cfgelement_get_text_value ( (CFGELM *) e );
+
+    int ret = EXIT_FAILURE;
+    long int li_array[DBG_FOCUS_ADDR_HIST_LENGTH];
+    int length = cfgtool_strtol_array ( encoded_txt, li_array, DBG_FOCUS_ADDR_HIST_LENGTH, NULL, &ret );
+
+    if ( ( length == 0 ) || ( ret != EXIT_SUCCESS ) ) {
+        g_uidebugger.focus_addr_hist_count = 1;
+        g_uidebugger.focus_addr_history[0] = 0x0000;
+    } else {
+        int i;
+        for ( i = 0; i < length; i++ ) {
+            g_uidebugger.focus_addr_history[i] = li_array[i];
+        };
+        g_uidebugger.focus_addr_hist_count = length;
+    };
+
+    g_uidebugger.last_focus_addr = g_uidebugger.focus_addr_history[0];
+}
+
+
+void ui_debugger_focus_to_addr_history_save_cb ( void *e, void *data ) {
+
+    const char *separator = ", ";
+    int separator_length = strlen ( separator );
+    int value_length = 6;
+    int count = g_uidebugger.focus_addr_hist_count;
+
+    char *encoded_txt = ui_utils_mem_alloc0 ( ( count * value_length ) + ( ( count - 1 ) * separator_length ) + 1 );
+    char *value_txt = ui_utils_mem_alloc0 ( value_length + 1 );
+
+    int i;
+    for ( i = 0; i < count; i++ ) {
+        if ( i != 0 ) strncat ( encoded_txt, separator, separator_length + 1 );
+        sprintf ( value_txt, "0x%04x", g_uidebugger.focus_addr_history[i] );
+        strncat ( encoded_txt, value_txt, value_length + 1 );
+    };
+
+    cfgelement_set_text_value ( (CFGELM *) e, encoded_txt );
+
+    ui_utils_mem_free ( encoded_txt );
+    ui_utils_mem_free ( value_txt );
 }
 
 #endif
