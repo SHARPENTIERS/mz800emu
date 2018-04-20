@@ -99,6 +99,8 @@ extern "C" {
     typedef struct st_mz800 {
         Z80EX_CONTEXT *cpu; /* Model Z80ex */
 
+        unsigned cursor_timer;
+
         Z80EX_WORD instruction_addr; /* posledni adresa na ktere se nabirala instrukce */
 
         int instruction_tstates; /* citac tstates vykonanych v instrukcnim cyklu */
@@ -184,6 +186,9 @@ extern "C" {
 
 #define mz800_get_instruction_start_ticks() ( g_gdg.total_elapsed.ticks - g_mz800.instruction_insideop_sync_ticks ) /* muze legalne vracet i zaporne cislo! */
 
+#define mz800_cursor_timer_reset() { g_mz800.cursor_timer = 0; }
+#define mz800_get_cursor_timer_state() (  ( g_mz800.cursor_timer / 25 ) & 1 )
+    
 #ifdef __cplusplus
 }
 #endif

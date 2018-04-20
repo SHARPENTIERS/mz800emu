@@ -26,6 +26,7 @@
 #include "mz800emu_cfg.h"
 
 #include "iface_sdl.h"
+#include "iface_sdl_joy.h"
 
 #include "ui/ui_main.h"
 #include "ui/ui_cmt.h"
@@ -33,6 +34,7 @@
 #include "fdc/fdc.h"
 
 #include "pio8255/pio8255.h"
+#include "joy/joy.h"
 
 #include "mz800.h"
 
@@ -323,6 +325,44 @@ static inline void iface_sdl_keyboard_scan_col9 ( const Uint8 *state ) {
 }
 
 
+static inline void iface_sdl_joy_num_keypad_scan ( const Uint8 *state, Z80EX_BYTE *joystate ) {
+    if ( state [ SDL_SCANCODE_KP_8 ] ) {
+        JOY_STATEBIT_RESET ( *joystate, JOY_STATEBIT_UP );
+    };
+    if ( state [ SDL_SCANCODE_KP_2 ] ) {
+        JOY_STATEBIT_RESET ( *joystate, JOY_STATEBIT_DOWN );
+    };
+    if ( state [ SDL_SCANCODE_KP_4 ] ) {
+        JOY_STATEBIT_RESET ( *joystate, JOY_STATEBIT_LEFT );
+    };
+    if ( state [ SDL_SCANCODE_KP_6 ] ) {
+        JOY_STATEBIT_RESET ( *joystate, JOY_STATEBIT_RIGHT );
+    };
+    if ( state [ SDL_SCANCODE_KP_7 ] ) {
+        JOY_STATEBIT_RESET ( *joystate, JOY_STATEBIT_UP );
+        JOY_STATEBIT_RESET ( *joystate, JOY_STATEBIT_LEFT );
+    };
+    if ( state [ SDL_SCANCODE_KP_9 ] ) {
+        JOY_STATEBIT_RESET ( *joystate, JOY_STATEBIT_UP );
+        JOY_STATEBIT_RESET ( *joystate, JOY_STATEBIT_RIGHT );
+    };
+    if ( state [ SDL_SCANCODE_KP_1 ] ) {
+        JOY_STATEBIT_RESET ( *joystate, JOY_STATEBIT_DOWN );
+        JOY_STATEBIT_RESET ( *joystate, JOY_STATEBIT_LEFT );
+    };
+    if ( state [ SDL_SCANCODE_KP_3 ] ) {
+        JOY_STATEBIT_RESET ( *joystate, JOY_STATEBIT_DOWN );
+        JOY_STATEBIT_RESET ( *joystate, JOY_STATEBIT_RIGHT );
+    };
+    if ( state [ SDL_SCANCODE_KP_5 ] ) {
+        JOY_STATEBIT_RESET ( *joystate, JOY_STATEBIT_TRIG1 );
+    };
+    if ( state [ SDL_SCANCODE_KP_0 ] ) {
+        JOY_STATEBIT_RESET ( *joystate, JOY_STATEBIT_TRIG2 );
+    };
+}
+
+
 void iface_sdl_full_keyboard_scan ( void ) {
     const Uint8 *state = SDL_GetKeyboardState ( NULL );
     if ( state[SDL_SCANCODE_LALT] ) return;
@@ -337,6 +377,15 @@ void iface_sdl_full_keyboard_scan ( void ) {
     iface_sdl_keyboard_scan_col7 ( state );
     iface_sdl_keyboard_scan_col8 ( state );
     iface_sdl_keyboard_scan_col9 ( state );
+
+    int device;
+    for ( device = 0; device < JOY_DEVID_COUNT; device++ ) {
+        if ( g_joy.dev[device].type == JOY_TYPE_NUM_KEYPAD ) {
+            joy_reset_dev_state ( device );
+            iface_sdl_joy_num_keypad_scan ( state, &g_joy.dev[device].state );
+            break;
+        };
+    };
 }
 
 
@@ -445,6 +494,8 @@ void iface_sdl_keydown_event ( SDL_Event *event ) {
 
     if ( event->key.keysym.scancode == SDL_SCANCODE_F12 ) {
         mz800_reset ( );
+    } else if ( event->key.keysym.scancode == SDL_SCANCODE_F11 ) {
+        iface_sdl_joy_get_calibration ( );
     } else if ( event->key.keysym.scancode == SDL_SCANCODE_LALT ) {
         g_iface_alt_key = 1;
     } else {

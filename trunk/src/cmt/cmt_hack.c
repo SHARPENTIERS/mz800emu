@@ -179,6 +179,7 @@ void cmthack_propagatecfg_load_rom_patch ( void *e, void *data ) {
 void cmthack_init ( void ) {
 
     generic_driver_register_handler ( &g_cmthack.mzf_handler, CMT_HACK_DEFAULT_HANDLER_TYPE );
+    generic_driver_set_handler_readonly_status ( &g_cmthack.mzf_handler, 1 );
     g_cmthack.last_filename = ui_utils_mem_alloc0 ( 1 );
     g_cmthack.load_patch_installed = 0;
 
@@ -323,7 +324,7 @@ void cmthack_read_mzf_body ( void ) {
         return;
     };
 
-    printf ( "\nCMT hack: load 0x%04x bytes from MZF body on 0x%04x.\n", reg_bc, reg_hl );
+    printf ( "\nCMT hack: load 0x%04x bytes from MZF body to addr 0x%04x.\n", reg_bc, reg_hl );
 
     /* Nacteno OK */
     generic_driver_close ( &g_cmthack.mzf_handler );

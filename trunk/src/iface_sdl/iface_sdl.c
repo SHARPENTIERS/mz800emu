@@ -35,6 +35,7 @@
 #include "iface_sdl.h"
 #include "iface_sdl_audio.h"
 #include "iface_sdl_keyboard.h"
+#include "iface_sdl_joy.h"
 
 #include "main.h"
 #include "display.h"
@@ -424,11 +425,16 @@ void iface_sdl_init ( void ) {
     if ( EXIT_FAILURE == iface_sdl_audio_init ( NULL, -1 ) ) {
         main_app_quit ( EXIT_FAILURE );
     }
+
+    iface_sdl_joy_init ( );
 }
 
 
 void iface_sdl_quit ( void ) {
+
     iface_sdl_audio_quit ( );
+    iface_sdl_joy_quit ( );
+
     //    SDL_DestroyRenderer ( g_iface_sdl.renderer );
     //    SDL_DestroyWindow ( g_iface_sdl.window );
 #if 0

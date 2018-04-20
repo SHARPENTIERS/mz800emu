@@ -14,6 +14,7 @@
       <logicalFolder name="f1" displayName="Interface SDL" projectFiles="true">
         <itemPath>src/iface_sdl/iface_sdl.h</itemPath>
         <itemPath>src/iface_sdl/iface_sdl_audio.h</itemPath>
+        <itemPath>src/iface_sdl/iface_sdl_joy.h</itemPath>
         <itemPath>src/iface_sdl/iface_sdl_keyboard.h</itemPath>
         <itemPath>src/iface_sdl/iface_sdl_log.h</itemPath>
       </logicalFolder>
@@ -61,6 +62,9 @@
           <itemPath>src/gdg/hwscroll.h</itemPath>
           <itemPath>src/gdg/video.h</itemPath>
           <itemPath>src/gdg/vramctrl.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="f13" displayName="JOY" projectFiles="true">
+          <itemPath>src/joy/joy.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f6" displayName="Memory" projectFiles="true">
           <itemPath>src/memory/memory.h</itemPath>
@@ -120,6 +124,7 @@
         <itemPath>src/ui/ui_fcbutton.h</itemPath>
         <itemPath>src/ui/ui_fdc.h</itemPath>
         <itemPath>src/ui/ui_hexeditable.h</itemPath>
+        <itemPath>src/ui/ui_joy.h</itemPath>
         <itemPath>src/ui/ui_main.h</itemPath>
         <itemPath>src/ui/ui_qdisk.h</itemPath>
         <itemPath>src/ui/ui_ramdisk.h</itemPath>
@@ -151,6 +156,7 @@
       <logicalFolder name="f1" displayName="Interface SDL" projectFiles="true">
         <itemPath>src/iface_sdl/iface_sdl.c</itemPath>
         <itemPath>src/iface_sdl/iface_sdl_audio.c</itemPath>
+        <itemPath>src/iface_sdl/iface_sdl_joy.c</itemPath>
         <itemPath>src/iface_sdl/iface_sdl_keyboard.c</itemPath>
         <itemPath>src/iface_sdl/iface_sdl_log.c</itemPath>
       </logicalFolder>
@@ -197,6 +203,9 @@
           <itemPath>src/gdg/gdg.c</itemPath>
           <itemPath>src/gdg/hwscroll.c</itemPath>
           <itemPath>src/gdg/vramctrl.c</itemPath>
+        </logicalFolder>
+        <logicalFolder name="f13" displayName="JOY" projectFiles="true">
+          <itemPath>src/joy/joy.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f6" displayName="Memory" projectFiles="true">
           <logicalFolder name="f1" displayName="ROM" projectFiles="true">
@@ -288,6 +297,7 @@
         <itemPath>src/ui/ui_fcbutton.c</itemPath>
         <itemPath>src/ui/ui_fdc.c</itemPath>
         <itemPath>src/ui/ui_hexeditable.c</itemPath>
+        <itemPath>src/ui/ui_joy.c</itemPath>
         <itemPath>src/ui/ui_main.c</itemPath>
         <itemPath>src/ui/ui_qdisk.c</itemPath>
         <itemPath>src/ui/ui_ramdisk.c</itemPath>
@@ -466,6 +476,10 @@
       </item>
       <item path="src/iface_sdl/iface_sdl_audio.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/iface_sdl/iface_sdl_joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/iface_sdl/iface_sdl_joy.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/iface_sdl/iface_sdl_keyboard.c"
             ex="false"
             tool="0"
@@ -476,6 +490,10 @@
       <item path="src/iface_sdl/iface_sdl_log.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/joy/joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/joy/joy.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -731,6 +749,10 @@
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/ui/ui_joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_joy.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ui/ui_main.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/ui_main.h" ex="false" tool="3" flavor2="0">
@@ -940,6 +962,10 @@
       </item>
       <item path="src/iface_sdl/iface_sdl_audio.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/iface_sdl/iface_sdl_joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/iface_sdl/iface_sdl_joy.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/iface_sdl/iface_sdl_keyboard.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/iface_sdl/iface_sdl_keyboard.h" ex="false" tool="3" flavor2="0">
@@ -947,6 +973,10 @@
       <item path="src/iface_sdl/iface_sdl_log.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/joy/joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/joy/joy.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1201,6 +1231,10 @@
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_joy.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_main.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1402,6 +1436,10 @@
       </item>
       <item path="src/iface_sdl/iface_sdl_audio.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/iface_sdl/iface_sdl_joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/iface_sdl/iface_sdl_joy.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/iface_sdl/iface_sdl_keyboard.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/iface_sdl/iface_sdl_keyboard.h" ex="false" tool="3" flavor2="0">
@@ -1409,6 +1447,10 @@
       <item path="src/iface_sdl/iface_sdl_log.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/joy/joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/joy/joy.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1663,6 +1705,10 @@
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_joy.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_main.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1873,6 +1919,10 @@
       </item>
       <item path="src/iface_sdl/iface_sdl_audio.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/iface_sdl/iface_sdl_joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/iface_sdl/iface_sdl_joy.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/iface_sdl/iface_sdl_keyboard.c"
             ex="false"
             tool="0"
@@ -1883,6 +1933,10 @@
       <item path="src/iface_sdl/iface_sdl_log.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/joy/joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/joy/joy.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2140,6 +2194,10 @@
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_joy.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_main.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -2352,6 +2410,10 @@
       </item>
       <item path="src/iface_sdl/iface_sdl_audio.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/iface_sdl/iface_sdl_joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/iface_sdl/iface_sdl_joy.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/iface_sdl/iface_sdl_keyboard.c"
             ex="false"
             tool="0"
@@ -2362,6 +2424,10 @@
       <item path="src/iface_sdl/iface_sdl_log.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/joy/joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/joy/joy.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2620,6 +2686,10 @@
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/ui/ui_joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_joy.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ui/ui_main.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/ui_main.h" ex="false" tool="3" flavor2="0">
@@ -2831,6 +2901,10 @@
       </item>
       <item path="src/iface_sdl/iface_sdl_audio.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/iface_sdl/iface_sdl_joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/iface_sdl/iface_sdl_joy.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/iface_sdl/iface_sdl_keyboard.c"
             ex="false"
             tool="0"
@@ -2841,6 +2915,10 @@
       <item path="src/iface_sdl/iface_sdl_log.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/joy/joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/joy/joy.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -3095,6 +3173,10 @@
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_joy.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_main.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -3308,6 +3390,10 @@
       </item>
       <item path="src/iface_sdl/iface_sdl_audio.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/iface_sdl/iface_sdl_joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/iface_sdl/iface_sdl_joy.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/iface_sdl/iface_sdl_keyboard.c"
             ex="false"
             tool="0"
@@ -3318,6 +3404,10 @@
       <item path="src/iface_sdl/iface_sdl_log.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/iface_sdl/iface_sdl_log.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/joy/joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/joy/joy.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -3572,6 +3662,10 @@
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_joy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_joy.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_main.c" ex="false" tool="0" flavor2="10">
       </item>

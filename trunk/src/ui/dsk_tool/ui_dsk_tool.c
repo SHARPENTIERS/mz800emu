@@ -965,31 +965,6 @@ static int ui_dsk_tool_create_dsk ( char *path, char *filename, st_DSK_DESCRIPTI
 
     printf ( "Done.\n" );
 
-#if 0
-#if 1
-    //int i;
-    uint8_t buf[512];
-    char c = '1';
-    for ( i = 1; i <= 9; i++ ) {
-        memset ( &buf, c++, sizeof ( buf ) );
-        dsk_write_sector ( handler, driver, 3, i, &buf );
-        printf ( "\nwr ret: %d - 0x%02x \'%s\'\n", ret, driver->err, dsk_error_message ( handler, driver ) );
-    };
-#endif
-
-    //printf ( "size: 0x%02x\n", dskhandler.size );
-
-#if 1
-    uint8_t new_sectors = 0;
-    uint8_t sector_map [ DSK_MAX_SECTORS ];
-    dsk_tools_make_sector_map ( new_sectors, DSK_SEC_ORDER_NORMAL, sector_map );
-
-    ret = dsk_tools_change_track ( handler, driver, NULL, 0, new_sectors, DSK_SECTOR_SIZE_512, sector_map, 0x99 );
-    printf ( "\nct-ret: %d - 0x%02x \'%s\'\n", ret, driver->err, dsk_error_message ( handler, driver ) );
-#endif
-
-#endif
-
     generic_driver_close ( handler );
 
     ui_utils_mem_free ( handler );

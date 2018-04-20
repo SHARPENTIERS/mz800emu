@@ -50,6 +50,8 @@ extern "C" {
 #define DSK_MAX_TOTAL_TRACKS        204
 #define DSK_MAX_SECTORS             29
 
+#define DSK_MAX_SECTOR_SIZE         1024
+
 #define DSK_FILEINFO_FIELD_LENGTH   34
     /* 34 znaku, bez 0x00 ! */
 #define DSK_DEFAULT_FILEINFO        "EXTENDED CPC DSK File\r\nDisk-Info\r\n"
@@ -95,8 +97,8 @@ extern "C" {
         uint8_t unused2 [ 2 ];
         uint8_t ssize;
         uint8_t sectors;
-        uint8_t gap;
-        uint8_t filler;
+        uint8_t gap; // GAP#3 length 
+        uint8_t filler; // filler byte 
         st_DSK_SECTOR_INFO sinfo [ DSK_MAX_SECTORS ];
     } st_DSK_TRACK_INFO; // 256 B
 

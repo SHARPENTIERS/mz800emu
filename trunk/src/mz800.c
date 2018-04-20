@@ -52,8 +52,7 @@
 #include "cmt/cmt.h"
 #include "cmt/cmt_hack.h"
 #include "qdisk/qdisk.h"
-
-#include "qdisk/qdisk.h"
+#include "joy/joy.h"
 
 #include "iface_sdl/iface_sdl.h"
 #include "iface_sdl/iface_sdl_audio.h"
@@ -349,6 +348,7 @@ static inline void mz800_event_screen_done ( void ) {
 #endif
 
     g_gdg.total_elapsed.screens++;
+    g_mz800.cursor_timer++;
 
 #ifdef MZ800EMU_CFG_SPEED_TEST
     if ( g_gdg.total_elapsed.screens > 1000 ) main_app_quit ( EXIT_SUCCESS );
@@ -1088,6 +1088,8 @@ void mz800_init ( void ) {
     g_mz800.instruction_tstates = 0;
     g_mz800.instruction_insideop_sync_ticks = 0;
 
+    mz800_cursor_timer_reset ( );
+
 #ifdef MZ800EMU_CFG_VARIABLE_SPEED
     g_mz800.speed_in_percentage = 100;
     g_mz800.speed_frame_width = VIDEO_SCREEN_TICKS * (float) g_mz800.speed_in_percentage / 100;
@@ -1109,6 +1111,7 @@ void mz800_init ( void ) {
     cmthack_init ( );
     cmt_init ( );
     qdisk_init ( );
+    joy_init ();
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     debugger_init ( );

@@ -203,7 +203,7 @@ int dsk_read_short_track_info ( st_HANDLER *h, st_DSK_SHORT_IMAGE_INFO *short_im
             iinfo = &local_short_image_info;
         };
 
-        if ( abstrack >= iinfo->tracks ) {
+        if ( abstrack >= ( iinfo->tracks * iinfo->sides ) ) {
             h->err = DSK_ERROR_TRACK_NOT_FOUND;
             return EXIT_FAILURE;
         };

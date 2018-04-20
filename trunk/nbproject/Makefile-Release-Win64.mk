@@ -58,8 +58,10 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/gdg/vramctrl.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_audio.o \
+	${OBJECTDIR}/src/iface_sdl/iface_sdl_joy.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_keyboard.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_log.o \
+	${OBJECTDIR}/src/joy/joy.o \
 	${OBJECTDIR}/src/libs/dsk/dsk.o \
 	${OBJECTDIR}/src/libs/dsk/dsk_tools.o \
 	${OBJECTDIR}/src/libs/endianity/endianity.o \
@@ -115,6 +117,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/ui_fcbutton.o \
 	${OBJECTDIR}/src/ui/ui_fdc.o \
 	${OBJECTDIR}/src/ui/ui_hexeditable.o \
+	${OBJECTDIR}/src/ui/ui_joy.o \
 	${OBJECTDIR}/src/ui/ui_main.o \
 	${OBJECTDIR}/src/ui/ui_qdisk.o \
 	${OBJECTDIR}/src/ui/ui_ramdisk.o \
@@ -268,6 +271,11 @@ ${OBJECTDIR}/src/iface_sdl/iface_sdl_audio.o: src/iface_sdl/iface_sdl_audio.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/iface_sdl/iface_sdl_audio.o src/iface_sdl/iface_sdl_audio.c
 
+${OBJECTDIR}/src/iface_sdl/iface_sdl_joy.o: src/iface_sdl/iface_sdl_joy.c 
+	${MKDIR} -p ${OBJECTDIR}/src/iface_sdl
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/iface_sdl/iface_sdl_joy.o src/iface_sdl/iface_sdl_joy.c
+
 ${OBJECTDIR}/src/iface_sdl/iface_sdl_keyboard.o: src/iface_sdl/iface_sdl_keyboard.c 
 	${MKDIR} -p ${OBJECTDIR}/src/iface_sdl
 	${RM} "$@.d"
@@ -277,6 +285,11 @@ ${OBJECTDIR}/src/iface_sdl/iface_sdl_log.o: src/iface_sdl/iface_sdl_log.c
 	${MKDIR} -p ${OBJECTDIR}/src/iface_sdl
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/iface_sdl/iface_sdl_log.o src/iface_sdl/iface_sdl_log.c
+
+${OBJECTDIR}/src/joy/joy.o: src/joy/joy.c 
+	${MKDIR} -p ${OBJECTDIR}/src/joy
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/joy/joy.o src/joy/joy.c
 
 ${OBJECTDIR}/src/libs/dsk/dsk.o: src/libs/dsk/dsk.c 
 	${MKDIR} -p ${OBJECTDIR}/src/libs/dsk
@@ -552,6 +565,11 @@ ${OBJECTDIR}/src/ui/ui_hexeditable.o: src/ui/ui_hexeditable.c
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_hexeditable.o src/ui/ui_hexeditable.c
+
+${OBJECTDIR}/src/ui/ui_joy.o: src/ui/ui_joy.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_joy.o src/ui/ui_joy.c
 
 ${OBJECTDIR}/src/ui/ui_main.o: src/ui/ui_main.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui
