@@ -40,7 +40,9 @@ extern "C" {
         Z80EX_BYTE keyboard_matrix [ 10 ];
         Z80EX_BYTE vkbd_matrix [ 10 ];
         unsigned signal_PA; /* Vystupni port A */
-        unsigned signal_PA_keybord_column; /* vzorkovani klavesnice: 0 - 9 */
+        unsigned signal_PA_keybord_column; /* vzorkovani klavesnice: 0. - 3. bit (0 - 9) */
+        unsigned signal_PA_joy1_enabled; /* vzorkovani JOY1: 4. bit (L) */
+        unsigned signal_PA_joy2_enabled; /* vzorkovani JOY2: 5. bit (L) */
         unsigned signal_PC; /* Port C: 0 - 3 je vystup, 4 - 7 je vstup */
         unsigned signal_pc00; /* OUT: blokovani zvuku z CTC0 */
         unsigned signal_pc01; /* OUT: data do CMT */

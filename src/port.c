@@ -39,6 +39,7 @@
 #include "fdc/fdc.h"
 #include "ramdisk/ramdisk.h"
 #include "qdisk/qdisk.h"
+#include "joy/joy.h"
 
 
 
@@ -171,10 +172,21 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
             break;
 
         case 0xf0:
+            /* cteme JOY1 */
+            if ( g_pio8255.signal_PA_joy1_enabled ) {
+                retval = joy_read_byte ( JOY_DEVID_0 );
+            } else {
+                retval = g_mz800.regDBUS_latch;
+            };
+            break;
+            
         case 0xf1:
-            /* cteme JOY1, JOY2: 0xf0 - 0xf1 */
-            /* BUGFIX: aby nedochazelo k falesne identifikaci */
-            retval = 0xff;
+            /* cteme JOY2 */
+            if ( g_pio8255.signal_PA_joy2_enabled ) {
+                retval = joy_read_byte ( JOY_DEVID_1 );
+            } else {
+                retval = g_mz800.regDBUS_latch;
+            };
             break;
 
         case 0xfc:

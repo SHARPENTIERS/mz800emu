@@ -60,7 +60,7 @@ void iface_sdl_audio_callback ( void *userdata, Uint8 *stream, int len ) {
 
     if ( g_iface_audio.state == IFACE_AUDIO_BUFFER_STATE_EXITING ) {
         memset ( stream, 0x00, len );
-        printf ( "SDL player exiting\r\n" );
+        printf ( "SDL audio player exiting\r\n" );
         SDL_UnlockMutex ( g_iface_audio.write_lock );
         return;
     } else {

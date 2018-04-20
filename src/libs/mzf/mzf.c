@@ -101,6 +101,16 @@ int mzf_read_body ( st_HANDLER *h, uint8_t *buffer, uint16_t buffer_size ) {
 }
 
 
+int mzf_write_body_on_offset ( st_HANDLER *h, uint32_t offset, uint8_t *buffer, uint16_t buffer_size ) {
+    return generic_driver_write ( h, offset, buffer, buffer_size );
+}
+
+
+int mzf_write_body ( st_HANDLER *h, uint8_t *buffer, uint16_t buffer_size ) {
+    return mzf_write_body_on_offset ( h, sizeof ( st_MZF_HEADER ), buffer, buffer_size );
+}
+
+
 const char* mzf_error_message ( st_HANDLER *h, st_DRIVER *d ) {
     return generic_driver_error_message ( h, d );
 }

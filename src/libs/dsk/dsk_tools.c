@@ -101,7 +101,11 @@ int dsk_tools_create_image_header ( st_HANDLER *h, st_DSK_DESCRIPTION *desc ) {
                     rule++;
                 };
             };
-            dskhdr->tsize[abs_track++] = dsk_encode_track_size ( sectors, ssize );
+            dskhdr->tsize[abs_track] = dsk_encode_track_size ( sectors, ssize );
+            if ( ( ssize == DSK_SECTOR_SIZE_128 ) && ( sectors & 1 ) ) {
+                dskhdr->tsize[abs_track] += 1;
+            };
+            abs_track++;
         };
     };
 
@@ -244,6 +248,22 @@ int dsk_tools_create_track ( st_HANDLER *h, uint32_t dsk_offset, uint8_t track, 
 
         uint16_t sectors_total_size = 0;
         if ( EXIT_SUCCESS != dsk_tools_create_track_sectors ( h, dsk_offset, sectors, ssize, default_value, &sectors_total_size ) ) return EXIT_FAILURE;
+
+        if ( ( ssize == DSK_SECTOR_SIZE_128 ) && ( sectors & 1 ) ) {
+
+            uint8_t data_buffer [ DSK_TOOLS_MIN_SECTOR_SIZE ];
+            uint8_t *sector_data = NULL;
+
+            uint32_t zero_filling_offset = dsk_offset + sectors_total_size;
+            
+            if ( EXIT_SUCCESS != generic_driver_prepare ( h, zero_filling_offset, (void*) &sector_data, &data_buffer, DSK_TOOLS_MIN_SECTOR_SIZE ) ) return EXIT_FAILURE;
+
+            memset ( sector_data, 0x00, DSK_TOOLS_MIN_SECTOR_SIZE );
+
+            generic_driver_ppwrite ( h, zero_filling_offset, sector_data, DSK_TOOLS_MIN_SECTOR_SIZE );
+
+            sectors_total_size += DSK_TOOLS_MIN_SECTOR_SIZE;
+        };
 
         *track_total_bytes += sectors_total_size;
     };
@@ -429,3 +449,508 @@ int dsk_tools_change_track ( st_HANDLER *h, st_DSK_SHORT_IMAGE_INFO *short_image
 
     return EXIT_SUCCESS;
 }
+
+
+int dsk_tools_get_dsk_fileinfo ( st_HANDLER *h, uint8_t *dsk_fileinfo_buffer ) {
+    uint32_t offset = 0;
+    return dsk_read_on_offset ( h, offset, dsk_fileinfo_buffer, DSK_FILEINFO_FIELD_LENGTH );
+}
+
+
+int dsk_tools_check_dsk_fileinfo ( st_HANDLER *h ) {
+    uint8_t dsk_fileinfo_buffer[DSK_FILEINFO_FIELD_LENGTH + 1];
+    if ( EXIT_FAILURE == dsk_tools_get_dsk_fileinfo ( h, dsk_fileinfo_buffer ) ) return EXIT_FAILURE;
+    dsk_fileinfo_buffer[DSK_FILEINFO_FIELD_LENGTH] = 0x00;
+    if ( 0 != strcmp ( (char*) dsk_fileinfo_buffer, DSK_DEFAULT_FILEINFO ) ) return EXIT_FAILURE;
+    return EXIT_SUCCESS;
+}
+
+
+int dsk_tools_get_dsk_creator ( st_HANDLER *h, uint8_t *dsk_creator_buffer ) {
+    uint32_t offset = DSK_FILEINFO_FIELD_LENGTH;
+    return dsk_read_on_offset ( h, offset, dsk_creator_buffer, DSK_CREATOR_FIELD_LENGTH );
+}
+
+
+en_DSK_TOOLS_CHCKTRKINFO dsk_tools_check_dsk_trackinfo_on_offset ( st_HANDLER *h, uint32_t offset ) {
+    uint8_t dsk_trackinfo_buffer[DSK_TRACKINFO_FIELD_LENGTH + 1];
+    if ( EXIT_FAILURE == dsk_read_on_offset ( h, offset, dsk_trackinfo_buffer, DSK_TRACKINFO_FIELD_LENGTH ) ) return DSK_TOOLS_CHCKTRKINFO_READ_ERROR;
+    dsk_trackinfo_buffer[DSK_TRACKINFO_FIELD_LENGTH] = 0x00;
+    if ( 0 != strcmp ( (char*) dsk_trackinfo_buffer, DSK_DEFAULT_TRACKINFO ) ) return DSK_TOOLS_CHCKTRKINFO_FAILURE;
+    return DSK_TOOLS_CHCKTRKINFO_SUCCESS;
+}
+
+
+int dsk_tools_check_dsk_OLD ( st_HANDLER *h, int autofix ) {
+
+    if ( autofix != 0 ) {
+        printf ( "Checking DSK format (in autofix mode) ...\n\n" );
+    } else {
+        printf ( "Checking DSK format ...\n\n" );
+    };
+
+    if ( EXIT_FAILURE == dsk_tools_check_dsk_fileinfo ( h ) ) {
+        fprintf ( stderr, "%s():%d - DSK file info check failed\n", __func__, __LINE__ );
+        return EXIT_FAILURE;
+    } else {
+        printf ( "DSK fileinfo: OK\n" );
+    };
+
+    uint8_t dsk_creator_buffer[DSK_CREATOR_FIELD_LENGTH + 1];
+    if ( EXIT_FAILURE == dsk_tools_get_dsk_creator ( h, dsk_creator_buffer ) ) {
+        fprintf ( stderr, "%s():%d - can't get DSK creator info\n", __func__, __LINE__ );
+        return EXIT_FAILURE;
+    } else {
+        dsk_creator_buffer[DSK_CREATOR_FIELD_LENGTH] = 0x00;
+        uint8_t *c = dsk_creator_buffer;
+        printf ( "DSK creator: " );
+        while ( *c >= 0x20 ) {
+            printf ( "%c", *c );
+            c++;
+        };
+        printf ( "\n\n" );
+    };
+
+    st_DSK_SHORT_IMAGE_INFO sh_img_info;
+    if ( EXIT_FAILURE == dsk_read_short_image_info ( h, &sh_img_info ) ) {
+        fprintf ( stderr, "%s():%d - can't get DSK image info\n", __func__, __LINE__ );
+        return EXIT_FAILURE;
+    };
+
+    printf ( "Header DSK sides: %d\n", sh_img_info.sides );
+    printf ( "Header DSK tracks: %d\n", sh_img_info.tracks );
+
+    printf ( "\nAnalyzing tracks ...\n\n" );
+
+    st_DSK_SHORT_IMAGE_INFO analyzed_sh_img_info;
+    memset ( &analyzed_sh_img_info, 0x00, sizeof ( analyzed_sh_img_info ) );
+
+    analyzed_sh_img_info.sides = 1;
+    int abs_tracks = 0;
+    int last_side = -1;
+
+    uint32_t offset = sizeof ( st_DSK_HEADER );
+
+    while ( EXIT_SUCCESS == dsk_tools_check_dsk_trackinfo_on_offset ( h, offset ) ) {
+
+        st_DSK_SHORT_TRACK_INFO sh_trk_info;
+        if ( EXIT_FAILURE == dsk_read_short_track_info_on_offset ( h, offset, &sh_trk_info ) ) {
+            fprintf ( stderr, "%s():%d - can't get track info on 0x%08x\n", __func__, __LINE__, offset );
+            return EXIT_FAILURE;
+        };
+
+        if ( sh_trk_info.side > 1 ) {
+            fprintf ( stderr, "%s():%d - bad side '%d' on 0x%08x\n", __func__, __LINE__, sh_trk_info.side, offset );
+            return EXIT_FAILURE;
+        };
+
+        if ( ( abs_tracks == 0 ) && ( sh_trk_info.side != 0 ) ) {
+            fprintf ( stderr, "%s():%d - bad side '%d' on 0x%08x, abstrack: %d\n", __func__, __LINE__, sh_trk_info.side, offset, abs_tracks );
+            return EXIT_FAILURE;
+        };
+
+        if ( abs_tracks == 1 ) {
+            if ( ( sh_trk_info.track == 1 ) && ( sh_trk_info.side == 0 ) ) {
+                analyzed_sh_img_info.sides = 1;
+            } else if ( ( sh_trk_info.track == 0 ) && ( sh_trk_info.side == 1 ) ) {
+                analyzed_sh_img_info.sides = 2;
+            } else {
+                fprintf ( stderr, "%s():%d - can't identify count sides (track: %d, side: %d) on 0x%08x, abstrack: %d\n", __func__, __LINE__, sh_trk_info.track, sh_trk_info.side, offset, abs_tracks );
+                return EXIT_FAILURE;
+            };
+        } else if ( abs_tracks > 1 ) {
+            if ( analyzed_sh_img_info.sides == 1 ) {
+                if ( last_side != sh_trk_info.side ) {
+                    fprintf ( stderr, "%s():%d - bad side '%d' (expected '%d') on 0x%08x, abstrack: %d\n", __func__, __LINE__, sh_trk_info.side, last_side, offset, abs_tracks );
+                    return EXIT_FAILURE;
+                };
+            } else if ( last_side == sh_trk_info.side ) {
+                fprintf ( stderr, "%s():%d - bad side '%d' (expected '%d') on 0x%08x, abstrack: %d\n", __func__, __LINE__, sh_trk_info.side, ( last_side + 1 ) & 0x01, offset, abs_tracks );
+                return EXIT_FAILURE;
+            };
+        };
+
+        last_side = sh_trk_info.side;
+
+        uint8_t expected_track = ( analyzed_sh_img_info.sides == 1 ) ? abs_tracks : ( abs_tracks / 2 );
+
+        if ( sh_trk_info.track != expected_track ) {
+            fprintf ( stderr, "%s():%d - bad track '%d' (expected '%d') on 0x%08x, abstrack: %d\n", __func__, __LINE__, sh_trk_info.track, expected_track, offset, abs_tracks );
+            return EXIT_FAILURE;
+        };
+
+        if ( ( sh_trk_info.sectors < 1 ) || ( sh_trk_info.sectors >= DSK_MAX_SECTORS ) ) {
+            fprintf ( stderr, "%s():%d - bad sectors count '%d' on 0x%08x, abstrack: %d\n", __func__, __LINE__, sh_trk_info.sectors, offset, abs_tracks );
+            return EXIT_FAILURE;
+        };
+
+        if ( sh_trk_info.ssize > DSK_SECTOR_SIZE_1024 ) {
+            fprintf ( stderr, "%s():%d - bad ssize '0x%02x' on 0x%08x, abstrack: %d\n", __func__, __LINE__, sh_trk_info.ssize, offset, abs_tracks );
+            return EXIT_FAILURE;
+        };
+
+        uint16_t sectors_size = dsk_decode_sector_size ( sh_trk_info.ssize ) * sh_trk_info.sectors;
+
+        if ( ( sh_trk_info.ssize == DSK_SECTOR_SIZE_128 ) && ( sh_trk_info.sectors & 1 ) ) {
+            sectors_size += 0x80;
+        };
+
+        uint8_t sector_buffer[0x80];
+
+        uint16_t read_offset;
+        for ( read_offset = 0; read_offset < sectors_size; read_offset += sizeof (sector_buffer ) ) {
+            if ( EXIT_FAILURE == dsk_read_on_offset ( h, offset + sizeof (st_DSK_TRACK_INFO ) + read_offset, sector_buffer, sizeof ( sector_buffer ) ) ) {
+                fprintf ( stderr, "%s():%d - error when reading 0x%04x from track on 0x%04x, abstrack: %d\n", __func__, __LINE__, (unsigned) ( read_offset + sizeof (st_DSK_TRACK_INFO ) ), (unsigned) offset, abs_tracks );
+                return EXIT_FAILURE;
+            };
+        };
+
+        uint16_t track_size = sectors_size + sizeof (st_DSK_TRACK_INFO );
+        analyzed_sh_img_info.tsize[abs_tracks++] = track_size / 0x0100;
+        offset += track_size;
+    };
+
+    printf ( "Analyzed sides: %d\n", analyzed_sh_img_info.sides );
+    printf ( "Analyzed total tracks: %d\n\n", abs_tracks );
+
+    int errors = 0;
+
+    if ( analyzed_sh_img_info.sides != sh_img_info.sides ) {
+        printf ( "DSK BUG: Bad sides info in DSK header.\n" );
+        errors++;
+    };
+
+    if ( abs_tracks != sh_img_info.tracks * analyzed_sh_img_info.sides ) {
+        printf ( "DSK BUG: Bad tracks info in DSK header.\n" );
+        errors++;
+    };
+
+    if ( ( analyzed_sh_img_info.sides == 2 ) && ( abs_tracks & 1 ) ) {
+        printf ( "DSK BUG: The disc is double-sided, but the count of tracks is not odd.\n" );
+        errors++;
+    };
+
+    int tsize_diferences = 0;
+
+    int i;
+    for ( i = 0; i < abs_tracks; i++ ) {
+        if ( analyzed_sh_img_info.tsize[i] != sh_img_info.tsize[i] ) {
+            tsize_diferences++;
+        };
+    };
+
+    if ( tsize_diferences != 0 ) {
+        printf ( "DSK BUG: Some tracks have bad size info in DSK header.\n" );
+        errors++;
+    };
+
+    if ( errors ) {
+        if ( autofix ) {
+
+            if ( ( analyzed_sh_img_info.sides == 2 ) && ( abs_tracks & 1 ) ) {
+                /* TODO: pri lichem poctu stop pridat dalsi stopu */
+            };
+
+            analyzed_sh_img_info.tracks = abs_tracks / analyzed_sh_img_info.sides;
+
+            st_DSK_HEADER dhdr;
+
+            if ( dsk_read_on_offset ( h, 0, &dhdr, sizeof ( dhdr ) ) ) {
+                fprintf ( stderr, "%s():%d - can't get DSK image info\n", __func__, __LINE__ );
+                return EXIT_FAILURE;
+            };
+
+            //dhdr.tracks = analyzed_sh_img_info.tracks;
+            dhdr.sides = analyzed_sh_img_info.sides;
+            memcpy ( dhdr.tsize, analyzed_sh_img_info.tsize, sizeof ( dhdr.tsize ) );
+
+            if ( dsk_write_on_offset ( h, 0, &dhdr, sizeof ( dhdr ) ) ) {
+                fprintf ( stderr, "%s():%d - can't write DSK image info\n", __func__, __LINE__ );
+                return EXIT_FAILURE;
+            };
+
+            printf ( "Result: %d error(s) repaired. DSK is OK!\n", errors );
+
+        } else {
+            printf ( "Result: this DSK have %d repairable error(s).\n", errors );
+        };
+    } else {
+        printf ( "Result: DSK is OK!\n" );
+    }
+
+    return EXIT_SUCCESS;
+}
+
+
+int dsk_tools_check_dsk ( st_HANDLER *h, int autofix ) {
+
+    if ( autofix != 0 ) {
+        printf ( "Checking DSK format (in autofix mode) ...\n\n" );
+    } else {
+        printf ( "Checking DSK format ...\n\n" );
+    };
+
+    if ( EXIT_FAILURE == dsk_tools_check_dsk_fileinfo ( h ) ) {
+        fprintf ( stderr, "%s():%d - DSK file info check failed\n", __func__, __LINE__ );
+        return EXIT_FAILURE;
+    } else {
+        printf ( "DSK fileinfo: OK\n" );
+    };
+
+    uint8_t dsk_creator_buffer[DSK_CREATOR_FIELD_LENGTH + 1];
+    if ( EXIT_FAILURE == dsk_tools_get_dsk_creator ( h, dsk_creator_buffer ) ) {
+        fprintf ( stderr, "%s():%d - can't get DSK creator info\n", __func__, __LINE__ );
+        return EXIT_FAILURE;
+    } else {
+        dsk_creator_buffer[DSK_CREATOR_FIELD_LENGTH] = 0x00;
+        uint8_t *c = dsk_creator_buffer;
+        printf ( "DSK creator: " );
+        while ( *c >= 0x20 ) {
+            printf ( "%c", *c );
+            c++;
+        };
+        printf ( "\n\n" );
+    };
+
+    st_DSK_SHORT_IMAGE_INFO sh_img_info;
+    if ( EXIT_FAILURE == dsk_read_short_image_info ( h, &sh_img_info ) ) {
+        fprintf ( stderr, "%s():%d - can't get DSK image info\n", __func__, __LINE__ );
+        return EXIT_FAILURE;
+    };
+
+    printf ( "Header DSK sides: %d\n", sh_img_info.sides );
+    printf ( "Header DSK tracks: %d\n", sh_img_info.tracks );
+
+    printf ( "\nAnalyzing tracks ...\n\n" );
+
+
+    uint8_t tsize [ DSK_MAX_TOTAL_TRACKS ];
+    memset ( &tsize, 0x00, sizeof ( tsize ) );
+
+    uint8_t expected_track = 0;
+    uint8_t expected_side = 0;
+    uint8_t abs_tracks = 0;
+
+    uint32_t offset = sizeof ( st_DSK_HEADER );
+
+    while ( 1 ) {
+
+        en_DSK_TOOLS_CHCKTRKINFO res = dsk_tools_check_dsk_trackinfo_on_offset ( h, offset );
+
+        if ( res == DSK_TOOLS_CHCKTRKINFO_READ_ERROR ) break;
+
+        if ( res == DSK_TOOLS_CHCKTRKINFO_FAILURE ) {
+            fprintf ( stderr, "%s():%d - expected track info on 0x%08x, abstrack: %d\n", __func__, __LINE__, offset, abs_tracks );
+            return EXIT_FAILURE;
+        };
+
+        st_DSK_SHORT_TRACK_INFO sh_trk_info;
+        if ( EXIT_FAILURE == dsk_read_short_track_info_on_offset ( h, offset, &sh_trk_info ) ) {
+            fprintf ( stderr, "%s():%d - can't get track info on 0x%08x, abstrack: %d\n", __func__, __LINE__, offset, abs_tracks );
+            return EXIT_FAILURE;
+        };
+
+        if ( sh_trk_info.track != expected_track ) {
+            fprintf ( stderr, "%s():%d - bad track '%d' (expected %d) on 0x%08x, abstrack: %d\n", __func__, __LINE__, sh_trk_info.track, expected_track, offset, abs_tracks );
+            return EXIT_FAILURE;
+        };
+
+        if ( sh_trk_info.side != expected_side ) {
+            fprintf ( stderr, "%s():%d - bad side '%d' (expected %d) on 0x%08x, abstrack: %d\n", __func__, __LINE__, sh_trk_info.side, expected_side, offset, abs_tracks );
+            return EXIT_FAILURE;
+        };
+
+        if ( sh_img_info.sides == 1 ) {
+            expected_track++;
+        } else {
+            expected_side = ( ~expected_side ) & 1;
+            if ( sh_trk_info.side == 1 ) {
+                expected_track++;
+            };
+        };
+
+        if ( ( sh_trk_info.sectors < 1 ) || ( sh_trk_info.sectors >= DSK_MAX_SECTORS ) ) {
+            fprintf ( stderr, "%s():%d - bad sectors count '%d' on 0x%08x, abstrack: %d\n", __func__, __LINE__, sh_trk_info.sectors, offset, abs_tracks );
+            return EXIT_FAILURE;
+        };
+
+        if ( sh_trk_info.ssize > DSK_SECTOR_SIZE_1024 ) {
+            fprintf ( stderr, "%s():%d - bad ssize '0x%02x' on 0x%08x, abstrack: %d\n", __func__, __LINE__, sh_trk_info.ssize, offset, abs_tracks );
+            return EXIT_FAILURE;
+        };
+
+        // TODO: kontrola hlavicek sektoru
+
+        uint16_t sectors_size = dsk_decode_sector_size ( sh_trk_info.ssize ) * sh_trk_info.sectors;
+
+        if ( ( sh_trk_info.ssize == DSK_SECTOR_SIZE_128 ) && ( sh_trk_info.sectors & 1 ) ) {
+            sectors_size += 0x80;
+        };
+
+        uint8_t sector_buffer[0x80];
+
+        uint16_t read_offset;
+        for ( read_offset = 0; read_offset < sectors_size; read_offset += sizeof (sector_buffer ) ) {
+            if ( EXIT_FAILURE == dsk_read_on_offset ( h, offset + sizeof (st_DSK_TRACK_INFO ) + read_offset, sector_buffer, sizeof ( sector_buffer ) ) ) {
+                fprintf ( stderr, "%s():%d - error when reading 0x%04x from track on 0x%04x, abstrack: %d\n", __func__, __LINE__, (unsigned) ( read_offset + sizeof (st_DSK_TRACK_INFO ) ), (unsigned) offset, abs_tracks );
+                return EXIT_FAILURE;
+            };
+        };
+
+        uint16_t track_size = sectors_size + sizeof (st_DSK_TRACK_INFO );
+        tsize[abs_tracks++] = track_size / 0x0100;
+        offset += track_size;
+    };
+
+    printf ( "Analyzed total tracks: %d\n\n", abs_tracks );
+
+    int errors = 0;
+
+    if ( abs_tracks != sh_img_info.tracks * sh_img_info.sides ) {
+        printf ( "DSK BUG: Bad tracks info in DSK header.\n" );
+        errors++;
+    };
+
+    if ( ( sh_img_info.sides == 2 ) && ( abs_tracks & 1 ) ) {
+        printf ( "DSK BUG: The disc is double-sided, but the count of tracks is not odd.\n" );
+        errors++;
+    };
+
+    int tsize_diferences = 0;
+
+    int i;
+    for ( i = 0; i < abs_tracks; i++ ) {
+        if ( tsize[i] != sh_img_info.tsize[i] ) {
+            tsize_diferences++;
+        };
+    };
+
+    if ( tsize_diferences != 0 ) {
+        printf ( "DSK BUG: Some tracks have bad size info in DSK header.\n" );
+        errors++;
+    };
+
+    if ( errors ) {
+        if ( autofix ) {
+
+            if ( ( sh_img_info.sides == 2 ) && ( abs_tracks & 1 ) ) {
+                /* TODO: pri lichem poctu stop pridat dalsi stopu */
+                // abs_tracks++;
+            };
+
+            st_DSK_HEADER dhdr;
+
+            if ( dsk_read_on_offset ( h, 0, &dhdr, sizeof ( dhdr ) ) ) {
+                fprintf ( stderr, "%s():%d - can't get DSK image info\n", __func__, __LINE__ );
+                return EXIT_FAILURE;
+            };
+
+            dhdr.tracks = abs_tracks / sh_img_info.sides;
+            memcpy ( dhdr.tsize, tsize, sizeof ( dhdr.tsize ) );
+
+            if ( dsk_write_on_offset ( h, 0, &dhdr, sizeof ( dhdr ) ) ) {
+                fprintf ( stderr, "%s():%d - can't write DSK image info\n", __func__, __LINE__ );
+                return EXIT_FAILURE;
+            };
+
+            printf ( "Result: %d error(s) repaired. DSK is OK!\n", errors );
+
+        } else {
+            printf ( "Result: this DSK have %d repairable error(s).\n", errors );
+            return EXIT_FAILURE;
+        };
+    } else {
+        printf ( "Result: DSK is OK!\n" );
+    }
+
+    return EXIT_SUCCESS;
+}
+
+
+void dsk_tools_destroy_track_rules ( st_DSK_TOOLS_TRACKS_RULES_INFO * tracks_rules ) {
+    if ( ( tracks_rules->count_rules != 0 ) && ( tracks_rules->rule != NULL ) ) {
+        free ( tracks_rules->rule );
+    };
+    free ( tracks_rules );
+}
+
+
+st_DSK_TOOLS_TRACKS_RULES_INFO * dsk_tools_get_tracks_rules ( st_HANDLER * h ) {
+
+    st_DSK_SHORT_IMAGE_INFO sh_img_info;
+    if ( EXIT_FAILURE == dsk_read_short_image_info ( h, &sh_img_info ) ) {
+        fprintf ( stderr, "%s():%d - can't get DSK image info\n", __func__, __LINE__ );
+        return NULL;
+    };
+
+    st_DSK_TOOLS_TRACKS_RULES_INFO *tracks_rules = malloc ( sizeof ( st_DSK_TOOLS_TRACKS_RULES_INFO ) );
+
+    tracks_rules->total_tracks = sh_img_info.tracks * sh_img_info.sides;
+    tracks_rules->count_rules = 0;
+    tracks_rules->rule = NULL;
+    tracks_rules->mzboot_track = 0;
+
+    int last_rule = -1;
+
+    int track;
+    for ( track = 0; track < tracks_rules->total_tracks; track++ ) {
+
+        st_DSK_SHORT_TRACK_INFO sh_trk_info;
+
+        if ( EXIT_FAILURE == dsk_read_short_track_info ( h, &sh_img_info, track, &sh_trk_info ) ) {
+            fprintf ( stderr, "%s():%d - can't get DSK track info for track %d\n", __func__, __LINE__, track );
+            dsk_tools_destroy_track_rules ( tracks_rules );
+            return NULL;
+        };
+
+        if ( ( tracks_rules->count_rules == 0 ) || ( sh_trk_info.sectors != tracks_rules->rule[last_rule].sectors ) || ( sh_trk_info.ssize != tracks_rules->rule[last_rule].ssize ) ) {
+            if ( tracks_rules->rule == NULL ) {
+                tracks_rules->rule = malloc ( sizeof ( st_DSK_TOOLS_TRACK_RULE_INFO ) );
+            } else {
+                tracks_rules->rule = realloc ( tracks_rules->rule, ( tracks_rules->count_rules + 1 ) * sizeof ( st_DSK_TOOLS_TRACK_RULE_INFO ) );
+            };
+            tracks_rules->rule[tracks_rules->count_rules].from_track = track;
+            tracks_rules->rule[tracks_rules->count_rules].count_tracks = 1;
+            tracks_rules->rule[tracks_rules->count_rules].sectors = sh_trk_info.sectors;
+            tracks_rules->rule[tracks_rules->count_rules].ssize = sh_trk_info.ssize;
+            tracks_rules->count_rules++;
+            last_rule++;
+        } else {
+            tracks_rules->rule[last_rule].count_tracks++;
+        };
+
+        if ( ( track == 1 ) && ( sh_trk_info.sectors == 16 ) && ( sh_trk_info.ssize == DSK_SECTOR_SIZE_256 ) ) {
+            tracks_rules->mzboot_track = 1;
+        };
+    };
+
+    return tracks_rules;
+}
+
+
+en_DSK_TOOLS_IDENTFORMAT dsk_tools_identformat_from_tracks_rules ( st_DSK_TOOLS_TRACKS_RULES_INFO * tracks_rules ) {
+
+    if ( ( tracks_rules == NULL ) || ( ( tracks_rules->mzboot_track != 1 ) ) ) return DSK_TOOLS_IDENTFORMAT_UNKNOWN;
+
+    if ( ( tracks_rules->count_rules == 1 ) && ( tracks_rules->rule[0].sectors == 16 ) && ( tracks_rules->rule[0].ssize == DSK_SECTOR_SIZE_256 ) ) {
+        return DSK_TOOLS_IDENTFORMAT_MZBASIC;
+    } else if ( ( tracks_rules->count_rules == 3 ) && ( tracks_rules->rule[0].sectors == tracks_rules->rule[2].sectors ) && ( tracks_rules->rule[0].ssize == tracks_rules->rule[2].ssize ) ) {
+        if ( ( tracks_rules->rule[0].sectors == 9 ) && ( tracks_rules->rule[0].ssize == DSK_SECTOR_SIZE_512 ) ) {
+            return DSK_TOOLS_IDENTFORMAT_MZCPM;
+        } else if ( ( tracks_rules->rule[0].sectors == 18 ) && ( tracks_rules->rule[0].ssize == DSK_SECTOR_SIZE_512 ) ) {
+            return DSK_TOOLS_IDENTFORMAT_MZCPMHD;
+        };
+    };
+
+    return DSK_TOOLS_IDENTFORMAT_MZBOOT;
+}
+
+
+int dsk_tools_identformat ( st_HANDLER *h, en_DSK_TOOLS_IDENTFORMAT * result ) {
+    st_DSK_TOOLS_TRACKS_RULES_INFO *tracks_rules = dsk_tools_get_tracks_rules ( h );
+    *result = dsk_tools_identformat_from_tracks_rules ( tracks_rules );
+    if ( tracks_rules == NULL ) return EXIT_FAILURE;
+    dsk_tools_destroy_track_rules ( tracks_rules );
+    return EXIT_SUCCESS;
+}
+

@@ -42,8 +42,8 @@ extern "C" {
 
     //#define GENERIC_DRIVER_FILE_CB
 
-    //#define GENERIC_DRIVER_MEMORY_CB
-    //#define GENERIC_DRIVER_MEMORY_CB_USE_REALLOC
+#define GENERIC_DRIVER_MEMORY_CB
+#define GENERIC_DRIVER_MEMORY_CB_USE_REALLOC
 
 
     typedef enum en_HANDLER_ERROR {
@@ -96,6 +96,8 @@ extern "C" {
         uint8_t *ptr;
         size_t open_size;
         size_t size;
+        int swelling_enabled; // pokud ma nenulovou hodnotu, tak je povoleno "narustani" pri prepared
+        int updated; // pokud probehla nejaka WR operace, tak ma nenulovou hodnotu
     } st_HANDLER_MEMSPC;
 
 
@@ -152,6 +154,7 @@ extern "C" {
     extern st_HANDLER* generic_driver_open_memory_from_file ( st_HANDLER *handler, st_DRIVER *d, char *filename );
     extern int generic_driver_save_memory ( st_HANDLER *h, char *filename );
     extern int generic_driver_close ( st_HANDLER *h );
+
     extern void generic_driver_set_handler_readonly_status ( st_HANDLER *h, int readonly );
 
     extern int generic_driver_prepare ( st_HANDLER *h, uint32_t offset, void **buffer, void *tmpbuffer, uint32_t size );
@@ -168,21 +171,12 @@ extern "C" {
     /* Preddefinovane callbacky */
 
 #ifdef GENERIC_DRIVER_FILE_CB
-    extern int generic_driver_read_file_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen );
-    extern int generic_driver_write_file_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen );
-    extern int generic_driver_truncate_file_cb ( st_HANDLER *h, uint32_t size );
-    extern int generic_driver_close_file_cb ( st_HANDLER *h );
-    extern int generic_driver_open_file_cb ( st_HANDLER *h );
+    extern st_DRIVER* generic_driver_file_init ( st_DRIVER *d );
 #endif
 
 
 #ifdef GENERIC_DRIVER_MEMORY_CB
-    extern int generic_driver_prepare_memory_cb ( st_HANDLER *h, uint32_t offset, void **buffer, uint32_t count_bytes );
-    extern int generic_driver_read_memory_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *readlen );
-    extern int generic_driver_write_memory_cb ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t count_bytes, uint32_t *writelen );
-    extern int generic_driver_truncate_memory_cb ( st_HANDLER *h, uint32_t size );
-    extern int generic_driver_close_memory_cb ( st_HANDLER *h );
-    extern int generic_driver_open_memory_cb ( st_HANDLER *h );
+    extern st_DRIVER* generic_driver_memory_init ( st_DRIVER *d );
 #endif
 
 

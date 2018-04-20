@@ -100,10 +100,25 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
         case DEF_PIO8255_PORTA:
             //DBGPRINTF ( DBGINF, "addr = %d (PORT_A), value = 0x%02x )\n", addr, value );
             g_pio8255.signal_PA = value;
-            /* TODO: vzorkovani klavesnice co se stane, kdyz se posle vyssi hodnota, nez 9 ? */
-            if ( 9 >= ( value & 0x0f ) ) {
-                g_pio8255.signal_PA_keybord_column = value & 0x0f;
+
+            // 0. - 3. bit vzorkovani klavesnice - aktivni pri H
+            if ( value & 0x0f ) {
+                if ( 9 >= ( value & 0x0f ) ) {
+                    g_pio8255.signal_PA_keybord_column = value & 0x0f;
+                };
             };
+
+            // 4. bit Joystick-1 strobe - aktivni pri L
+            g_pio8255.signal_PA_joy1_enabled = ( !( value & 0x20 ) ) ? 1 : 0;
+
+            // 5. bit Joystick-2 strobe - aktivni pri L
+            g_pio8255.signal_PA_joy2_enabled = ( !( value & 0x40 ) ) ? 1 : 0;
+
+            // 7. bit cursor timer reset - aktivni pri L
+            if ( !( value & 0x80 ) ) {
+                mz800_cursor_timer_reset ( );
+            };
+
             break;
 
         case DEF_PIO8255_PORTC:
@@ -238,7 +253,7 @@ Z80EX_BYTE pio8255_read ( int addr ) {
 
             retval = 0x00;
             retval |= SIGNAL_GDG_VBLNK ? 1 << 7 : 0;
-            retval |= ( ( g_gdg.total_elapsed.screens / 25 ) & 1 ) << 6;
+            retval |= mz800_get_cursor_timer_state ( ) << 6;
             retval |= g_cmt.output_signal << 5;
             //retval |= g_pio8255.signal_pc04 << 4;
             retval |= SIGNAL_GDG_VBLNK << 4; /* simulujeme promenlivy stav motoru (jinak neni mozne spustut hru "24" - musel by se manualne menit stav motoru ) */

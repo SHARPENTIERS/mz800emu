@@ -78,6 +78,7 @@
 #include "generic_driver/ui_memory_driver.h"
 
 #include "dsk_tool/ui_dsk_tool.h"
+#include "ui_joy.h"
 
 st_UI g_ui;
 static int g_ui_is_initialised = 0;
@@ -944,4 +945,18 @@ G_MODULE_EXPORT void on_menuitem_dsk_tool_activate ( GtkMenuItem *menuitem, gpoi
 #endif
 
     ui_dsk_tool_show_window ( );
+}
+
+
+G_MODULE_EXPORT void on_menuitem_joystick_setup_activate ( GtkMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+
+    ui_joy_show_window ( );
 }

@@ -77,6 +77,54 @@ extern "C" {
     extern int dsk_tools_create_track_sectors ( st_HANDLER *h, uint32_t dsk_offset, uint8_t sectors, en_DSK_SECTOR_SIZE ssize, uint8_t default_value, uint16_t *sectors_total_bytes );
     extern int dsk_tools_change_track ( st_HANDLER *h, st_DSK_SHORT_IMAGE_INFO *short_image_info, uint8_t abstrack, uint8_t sectors, en_DSK_SECTOR_SIZE ssize, uint8_t *sector_map, uint8_t default_value );
 
+    extern int dsk_tools_get_dsk_fileinfo ( st_HANDLER *h, uint8_t *dsk_fileinfo_buffer );
+    extern int dsk_tools_check_dsk_fileinfo ( st_HANDLER *h );
+    extern int dsk_tools_get_dsk_creator ( st_HANDLER *h, uint8_t *dsk_creator_buffer );
+
+
+    typedef enum en_DSK_TOOLS_CHCKTRKINFO {
+        DSK_TOOLS_CHCKTRKINFO_SUCCESS = 0,
+        DSK_TOOLS_CHCKTRKINFO_READ_ERROR,
+        DSK_TOOLS_CHCKTRKINFO_FAILURE,
+    } en_DSK_TOOLS_CHCKTRKINFO;
+
+    extern en_DSK_TOOLS_CHCKTRKINFO dsk_tools_check_dsk_trackinfo_on_offset ( st_HANDLER *h, uint32_t offset );
+    
+    extern int dsk_tools_check_dsk ( st_HANDLER *h, int autofix );
+
+
+    typedef struct st_DSK_TOOLS_TRACK_RULE_INFO {
+        uint8_t from_track;
+        uint8_t count_tracks;
+        uint8_t sectors;
+        en_DSK_SECTOR_SIZE ssize;
+    } st_DSK_TOOLS_TRACK_RULE_INFO;
+
+
+    typedef struct st_DSK_TOOLS_TRACKS_RULES_INFO {
+        uint8_t total_tracks;
+        uint8_t count_rules;
+        uint8_t mzboot_track;
+        st_DSK_TOOLS_TRACK_RULE_INFO *rule;
+    } st_DSK_TOOLS_TRACKS_RULES_INFO;
+
+
+    extern void dsk_tools_destroy_track_rules ( st_DSK_TOOLS_TRACKS_RULES_INFO *tracks_rules );
+    extern st_DSK_TOOLS_TRACKS_RULES_INFO* dsk_tools_get_tracks_rules ( st_HANDLER *h );
+
+
+    typedef enum en_DSK_TOOLS_IDENTFORMAT {
+        DSK_TOOLS_IDENTFORMAT_UNKNOWN = 0,
+        DSK_TOOLS_IDENTFORMAT_MZBASIC, // cely format disku je 16 x 256 B
+        DSK_TOOLS_IDENTFORMAT_MZCPM, // 9 x 512 B + 1. stopa je MZBASIC
+        DSK_TOOLS_IDENTFORMAT_MZCPMHD, // 18 x 512 B + 1. stopa je MZBASIC
+        DSK_TOOLS_IDENTFORMAT_MZBOOT, // 1. stopa je MZBASIC, ale zbyvajici format disku je neznamy
+    } en_DSK_TOOLS_IDENTFORMAT;
+
+
+    extern en_DSK_TOOLS_IDENTFORMAT dsk_tools_identformat_from_tracks_rules ( st_DSK_TOOLS_TRACKS_RULES_INFO *tracks_rules );
+    extern int dsk_tools_identformat ( st_HANDLER *h, en_DSK_TOOLS_IDENTFORMAT *result );
+
 #ifdef __cplusplus
 }
 #endif
