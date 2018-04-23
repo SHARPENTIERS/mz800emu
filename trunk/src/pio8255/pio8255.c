@@ -35,6 +35,7 @@
 #include "audio.h"
 #include "ctc8253/ctc8253.h"
 #include "cmt/cmt.h"
+#include "cmt/cmt_wav.h"
 
 //#define DBGLEVEL (DBGNON /* | DBGERR | DBGWAR | DBGINF*/)
 //#define DBGLEVEL (DBGNON | DBGERR | DBGWAR | DBGINF )
@@ -102,10 +103,8 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
             g_pio8255.signal_PA = value;
 
             // 0. - 3. bit vzorkovani klavesnice - aktivni pri H
-            if ( value & 0x0f ) {
-                if ( 9 >= ( value & 0x0f ) ) {
-                    g_pio8255.signal_PA_keybord_column = value & 0x0f;
-                };
+            if ( 9 >= ( value & 0x0f ) ) {
+                g_pio8255.signal_PA_keybord_column = value & 0x0f;
             };
 
             // 4. bit Joystick-1 strobe - aktivni pri L
