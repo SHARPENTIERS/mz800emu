@@ -79,6 +79,7 @@ extern "C" {
         FILETYPE_DAT,
         FILETYPE_MZQ,
         FILETYPE_DIR,
+        FILETYPE_ALLCMTFILES,
         FILETYPES_COUNT
     } en_FILETYPE;
 
@@ -128,6 +129,7 @@ extern "C" {
     extern void ui_update_last_folder_value ( en_FILETYPE file_type, char *value );
 
     extern void ui_main_update_rear_dip_switch_mz800_mode ( unsigned state );
+    extern void ui_main_update_rear_dip_switch_cmt_inverted_polarity ( unsigned state );
 
 #ifdef UI_TOPMENU_IS_WINDOW
     extern void ui_hide_main_menu ( void );

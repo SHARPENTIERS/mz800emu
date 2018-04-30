@@ -35,7 +35,6 @@
 #include "audio.h"
 #include "ctc8253/ctc8253.h"
 #include "cmt/cmt.h"
-#include "cmt/cmt_wav.h"
 
 //#define DBGLEVEL (DBGNON /* | DBGERR | DBGWAR | DBGINF*/)
 //#define DBGLEVEL (DBGNON | DBGERR | DBGWAR | DBGINF )
@@ -84,6 +83,9 @@ void static inline pio8255_set_pc01 ( uint8_t new_pc01 ) {
     if ( new_pc01 != g_pio8255.signal_pc01 ) {
         g_pio8255.signal_pc01 = new_pc01;
         //printf("bdc=%lu\n", bdcounter++);
+        static uint32_t last = 0;
+        printf ( "CMT: %d, %d - %d\n", gdg_get_total_ticks ( ), new_pc01, gdg_get_total_ticks ( ) - last );
+        last = gdg_get_total_ticks ( );
     };
 }
 
@@ -253,7 +255,7 @@ Z80EX_BYTE pio8255_read ( int addr ) {
             retval = 0x00;
             retval |= SIGNAL_GDG_VBLNK ? 1 << 7 : 0;
             retval |= mz800_get_cursor_timer_state ( ) << 6;
-            retval |= g_cmt.output_signal << 5;
+            retval |= ( cmt_read_data ( ) & 1 ) << 5;
             //retval |= g_pio8255.signal_pc04 << 4;
             retval |= SIGNAL_GDG_VBLNK << 4; /* simulujeme promenlivy stav motoru (jinak neni mozne spustut hru "24" - musel by se manualne menit stav motoru ) */
             retval |= g_pio8255.signal_pc02 << 2;

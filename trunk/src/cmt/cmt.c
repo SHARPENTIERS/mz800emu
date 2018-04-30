@@ -24,184 +24,112 @@
  */
 
 
-/*
- *
- *
- *	Popis standardniho CMT zaznamu 1200 baudu:
- *
- *              ___________
- *              |         |
- *      Long:   |         |________
- *
- *               470us     494us
- *
- *  Sharp GDG T:   8320      8640
- *
- *  Real GDG T:    8335      8760
- *
- *
- *              ______
- *              |    |
- *      Short:  |    |____
- *
- *              240us  278us
- *
- *  Sharp GDG T:  4220   4590
- *
- *  Real GDG T:   4356   4930
- *
- *
- *
- *  Read point:  379us od nastupne hrany = 6721 GDG T
- *
- *
- *
- *  Format zaznamu:
- *
- *	22 000 short
- *
- *	40 long		TAPE MARK
- *	40 short
- *
- *	1 long
- *
- *	INFORMATION BLOCK1 ( 128 bajtu )
- *
- *	CHECK SUM ( 2 bajty )
- *
- *	1 long
- *
- *	SHORT ( 256 bajtu )
- *
- *	INFORMATION BLOCK2 ( 128 bajtu )
- *
- *	CHECK SUM ( 2 bajty )
- *
- *	1 long
- *
- *	11 000 short
- *
- *	20 long		TAPE MARK
- *	20 short
- *
- *	1 long
- *
- *	DATA BLOCK1
- *
- *	CHECK SUM ( 2 bajty )
- *
- *	1 long
- *
- *	SHORT ( 256 bajtu )
- *
- *	DATA BLOCK1
- *
- *	CHECK SUM ( 2 bajty )
- *
- *	1 long
- * 
- */
-
 #include "mz800emu_cfg.h"
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdint.h>
-#include <errno.h>
 #include <string.h>
-#include <libgen.h>
+#include <strings.h>
 
 #include "cmt.h"
-#include "sharpmz_ascii.h"
+
 #include "gdg/gdg.h"
 
+#include "ui/ui_utils.h"
 #include "ui/ui_main.h"
 #include "ui/ui_cmt.h"
 
 #include "cfgmain.h"
 
-#include "ui/ui_utils.h"
+#include "cmt_hack.h"
+
+#include "cmt_extension.h"
+#include "cmt_wav.h"
+#include "cmt_mzf.h"
 
 st_CMT g_cmt;
 
 
-/* krokujeme podle 1M1, coz je gdg / 16 */
-#define CMT_TIMEBASE_DIVIDER  GDGCLK_1M1_DIVIDER
-
-/* Pouzivame hodnoty namerene z ROM. V poznamce jsou hodnoty, ktere odpovidaji informacim ze SM */
-#if 0
-/* hodnoty namerene v ROM - TurboCopy s nimi ma problem pri 3600 bps */
-#define CMT_1200BPS_LOG1_HIGH ( 8320 / CMT_TIMEBASE_DIVIDER ) /* 8335 */
-#define CMT_1200BPS_LOG1_LOW ( 8640 / CMT_TIMEBASE_DIVIDER ) /* 8760 */
-#define CMT_1200BPS_LOG0_HIGH ( 4220 / CMT_TIMEBASE_DIVIDER ) /* 4356 */
-#define CMT_1200BPS_LOG0_LOW ( 4590 / CMT_TIMEBASE_DIVIDER ) /* 4930 */
-#else
-/* Hodnoty dle SM */
-#define CMT_1200BPS_LOG1_HIGH ( 8335 / CMT_TIMEBASE_DIVIDER ) /* 8335 */
-#define CMT_1200BPS_LOG1_LOW ( 8760 / CMT_TIMEBASE_DIVIDER ) /* 8760 */
-#define CMT_1200BPS_LOG0_HIGH ( 4356 / CMT_TIMEBASE_DIVIDER ) /* 4356 */
-#define CMT_1200BPS_LOG0_LOW ( 4930 / CMT_TIMEBASE_DIVIDER ) /* 4930 */
-#endif
-
-#define CMT_UI_PLAYER_REFRESH_PER_SEC   2
-#define CMT_UI_PLAYER_REFRESH_TIMER_PRESET ( GDGCLK_BASE / CMT_TIMEBASE_DIVIDER / CMT_UI_PLAYER_REFRESH_PER_SEC )
-
-
-void cmt_exit ( void ) {
-    /* pokud jsme meli otevreny MZF soubor, tak ho zavrem */
-    if ( g_cmt.fh ) {
-        fclose ( g_cmt.fh );
-        g_cmt.fh = NULL;
-    };
-}
-
-
 void cmt_stop ( void ) {
-
-    //mz800_switch_emulation_speed ( 0 );
-
-#ifdef MZ800EMU_CFG_CLK1M1_FAST
-    g_cmt.clk1m1_event.ticks = -1;
-    g_cmt.clk1m1_event.event_name = EVENT_CMT;
-#endif
-
-    g_cmt.bit_counter = 0;
-    g_cmt.tick_counter = 0;
-    g_cmt.output_signal = 0;
-    g_cmt.play_iface_refresh_timer = CMT_UI_PLAYER_REFRESH_TIMER_PRESET;
-    g_cmt.file_bits_elapsed = 0;
-    g_cmt.play_time = 0;
-    g_cmt.refresh_counter = CMT_UI_PLAYER_REFRESH_PER_SEC;
-    g_cmt.state = CMT_PLAY_NONE;
-    if ( g_cmt.fh != NULL ) {
-        fseek ( g_cmt.fh, 0, SEEK_SET );
-    };
+    if ( !TEST_CMT_FILLED ) return;
+    if ( TEST_CMT_STOP ) return;
+    g_cmt.state = CMT_STATE_STOP;
     ui_cmt_window_update ( );
 }
 
 
 void cmt_eject ( void ) {
+    if ( !TEST_CMT_FILLED ) return;
+    if ( !TEST_CMT_STOP ) cmt_stop ( );
+    g_cmt.ext->eject ( );
+    g_cmt.ext = NULL;
+    ui_cmt_window_update ( );
+}
 
-    if ( g_cmt.fh != NULL ) {
-        fclose ( g_cmt.fh );
-        g_cmt.fh = NULL;
+
+void cmt_play ( void ) {
+    if ( !TEST_CMT_FILLED ) return;
+    if ( !TEST_CMT_STOP ) return;
+    g_cmt.state = CMT_STATE_PLAY;
+    g_cmt.start_time = gdg_get_total_ticks ( );
+    g_cmt.ui_player_update = 0;
+    ui_cmt_window_update ( );
+}
+
+
+int cmt_change_speed ( en_CMT_SPEED speed ) {
+
+    if ( !TEST_CMT_STOP ) return EXIT_FAILURE;
+    if ( g_cmt.speed == speed ) return EXIT_SUCCESS;
+
+
+    int ret = EXIT_SUCCESS;
+
+    if ( TEST_CMT_FILLED ) {
+        if ( g_cmt.ext->change_speed != NULL ) {
+            if ( EXIT_SUCCESS != g_cmt.ext->change_speed ( speed ) ) {
+                ret = EXIT_FAILURE;
+            };
+        };
     };
 
-    cmt_stop ( );
+    if ( ret == EXIT_SUCCESS ) {
+        g_cmt.speed = speed;
+    }
 
-    g_cmt.file_bits = 0;
-    g_cmt.mzf_filetype = 0x00;
-    g_cmt.mzf_filename[0] = 0x00;
-    g_cmt.mzf_size = 0x0000;
-    g_cmt.mzf_exec = 0x0000;
-    g_cmt.mzf_start = 0x0000;
     ui_cmt_window_update ( );
+
+    return ret;
+}
+
+
+void cmt_exit ( void ) {
+
+    cmt_eject ( );
+    if ( g_cmt.last_filename ) ui_utils_mem_free ( g_cmt.last_filename );
+
+    cmthack_exit ( );
+    cmt_wav_exit ( );
+    cmt_mzf_exit ( );
 }
 
 
 void cmt_propagatecfg_cmt_speed ( void *e, void *data ) {
     g_cmt.speed = cfgelement_get_keyword_value ( (CFGELM *) e );
     ui_cmt_window_update ( );
+}
+
+
+void cmt_rear_dip_switch_cmt_inverted_polarity ( unsigned value ) {
+    value &= 1;
+    if ( value == g_cmt.polarity ) return;
+    g_cmt.polarity = value;
+    ui_main_update_rear_dip_switch_cmt_inverted_polarity ( g_cmt.polarity );
+}
+
+
+void cmt_propagatecfg_inverted_polarity ( void *e, void *data ) {
+    ui_main_update_rear_dip_switch_cmt_inverted_polarity ( cfgelement_get_bool_value ( (CFGELM *) e ) );
 }
 
 
@@ -218,431 +146,145 @@ void cmt_init ( void ) {
     cfgelement_set_propagate_cb ( elm, cmt_propagatecfg_cmt_speed, NULL );
     cfgelement_set_handlers ( elm, NULL, (void*) &g_cmt.speed );
 
+    elm = cfgmodule_register_new_element ( cmod, "cmt_polarity_inverted", CFGENTYPE_BOOL, CMT_POLARITY_NORMAL );
+    cfgelement_set_propagate_cb ( elm, cmt_propagatecfg_inverted_polarity, NULL );
+    cfgelement_set_handlers ( elm, (void*) &g_cmt.polarity, (void*) &g_cmt.polarity );
+
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );
 
-    g_cmt.fh = NULL;
-    g_cmt.output_signal = 0;
-    cmt_eject ( );
+    g_cmt.output = 0;
+    g_cmt.start_time = 0;
+    g_cmt.state = CMT_STATE_STOP;
+    g_cmt.ext = NULL;
+    g_cmt.last_filename = ui_utils_mem_alloc0 ( 1 );
+    g_cmt.ui_player_update = 0;
+
+    cmt_wav_init ( );
+    cmt_mzf_init ( );
+
     ui_cmt_init ( );
     ui_cmt_window_update ( );
+
+    cmthack_init ( );
 }
 
 
-int cmt_open_mzf_file ( char *filename ) {
+static int cmt_open_file_by_extension ( char *filename ) {
 
-    unsigned char c[2];
-    int i, found;
+    int name_length = strlen ( filename );
 
-    /* TODO: zatim podporujeme jen cteni */
-    if ( !( g_cmt.fh = ui_utils_file_open ( filename, "rb" ) ) ) {
-        ui_show_error ( "Can't open MZF file '%s': %s\n", filename, strerror ( errno ) );
-        return RET_CMT_ERROR;
+    if ( name_length < 5 ) {
+        ui_show_error ( "Bad filename '%s'\n", filename );
+        return EXIT_FAILURE;
     };
 
-    fseek ( g_cmt.fh, 0, SEEK_SET );
+    char *file_ext = &filename[( name_length - 3 )];
 
-    if ( 1 != ui_utils_file_read ( &g_cmt.mzf_filetype, 1, 1, g_cmt.fh ) ) {
-        ui_show_error ( "Can't read MZ filetype from MZF file '%s': %s\n", filename, strerror ( errno ) );
-        return RET_CMT_ERROR;
+    st_CMT_EXTENSION *ext;
+
+    if ( ( 0 == strncasecmp ( file_ext, "mzf", 3 ) ) || ( 0 == strncasecmp ( file_ext, "m12", 3 ) ) ) {
+        ext = &g_cmt_mzf_extension;
+    } else if ( 0 == strncasecmp ( file_ext, "wav", 3 ) ) {
+        ext = &g_cmt_wav_extension;
+    } else {
+        ui_show_error ( "Unknown CMT file extension '%s'\n", filename );
+        return EXIT_FAILURE;
     };
 
-    if ( sizeof ( g_cmt.mzf_filename ) != ui_utils_file_read ( &g_cmt.mzf_filename, 1, sizeof ( g_cmt.mzf_filename ), g_cmt.fh ) ) {
-        ui_show_error ( "Can't read MZ filename from MZF file '%s': %s\n", filename, strerror ( errno ) );
-        return RET_CMT_ERROR;
+    cmt_eject ( );
+
+    int ret = ext->open ( filename );
+    if ( ret == EXIT_SUCCESS ) {
+        g_cmt.ext = ext;
     };
-
-    found = 0;
-    for ( i = 0; i < sizeof ( g_cmt.mzf_filename ); i++ ) {
-        if ( g_cmt.mzf_filename [ i ] == 0x0d ) {
-            g_cmt.mzf_filename [ i ] = 0x00;
-            found = 1;
-            break;
-        };
-    };
-
-    if ( !found ) {
-#if 0
-        ui_show_error ( "Bad MZ filename in MZF file '%s'\nTerminator 0x0d not found!\n", filename );
-        return RET_CMT_ERROR;
-#else 
-        g_cmt.mzf_filename [ i ] = 0x00;
-#endif
-    };
-
-    i = 0;
-    while ( g_cmt.mzf_filename [ i ] != 0x00 ) {
-        g_cmt.mzf_filename [ i ] = sharpmz_cnv_from ( g_cmt.mzf_filename [ i ] );
-        i++;
-    };
-
-    if ( sizeof ( c ) != ui_utils_file_read ( &c, 1, sizeof ( c ), g_cmt.fh ) ) {
-        ui_show_error ( "Can't read MZ size from MZF file '%s': %s\n", filename, strerror ( errno ) );
-        return RET_CMT_ERROR;
-    };
-    g_cmt.mzf_size = ( c [ 1 ] << 8 ) | c [ 0 ];
-
-    if ( sizeof ( c ) != ui_utils_file_read ( &c, 1, sizeof ( c ), g_cmt.fh ) ) {
-        ui_show_error ( "Can't read MZ exec from MZF file '%s': %s\n", filename, strerror ( errno ) );
-        return RET_CMT_ERROR;
-    };
-    g_cmt.mzf_exec = ( c [ 1 ] << 8 ) | c [ 0 ];
-
-
-    if ( sizeof ( c ) != ui_utils_file_read ( &c, 1, sizeof ( c ), g_cmt.fh ) ) {
-        ui_show_error ( "Can't read MZ start addr from MZF file '%s': %s\n", filename, strerror ( errno ) );
-        return RET_CMT_ERROR;
-    };
-    g_cmt.mzf_start = ( c [ 1 ] << 8 ) | c [ 0 ];
-
-    if ( 0 != fseek ( g_cmt.fh, 0, SEEK_END ) ) {
-        ui_show_error ( "SEEK_END error on MZF file '%s': %s\n", filename, strerror ( errno ) );
-        return RET_CMT_ERROR;
-    };
-
-    if ( !( ftell ( g_cmt.fh ) >= ( g_cmt.mzf_size + DEF_CMT_HEADER_SIZE ) ) ) {
-        ui_show_error ( "MZF file '%s' has bad length.\nMZ size is %d, but real size is %d\n", filename, g_cmt.mzf_size, ( ftell ( g_cmt.fh ) - DEF_CMT_HEADER_SIZE ) );
-        return RET_CMT_ERROR;
-    };
-
-    if ( 0 != fseek ( g_cmt.fh, 0, SEEK_SET ) ) {
-        ui_show_error ( "SEEK_SET 0 error on MZF file '%s': %s\n", filename, strerror ( errno ) );
-        return RET_CMT_ERROR;
-    };
-
-    g_cmt.file_bits = DEF_CMT_HEADER_PILOT_LENGTH + DEF_CMT_BODY_PILOT_LENGTH + DEF_CMT_HEADER_LENGTH + DEF_CMT_HEADER_TMARK_LENGTH + DEF_CMT_BODY_TMARK_LENGTH + ( 2 * DEF_CMT_CHKSUM_LENGTH ) + ( 2 * DEF_CMT_BLOCK_PREFIX_LENGTH ) + ( 2 * DEF_CMT_BLOCK_SURFIX_LENGTH );
-    g_cmt.file_bits += g_cmt.mzf_size * DEF_CMT_BYTE_LENGTH;
-
-    cmt_stop ( );
-
-    strncpy ( g_cmt.filename, filename, sizeof ( g_cmt.filename ) );
-    g_cmt.filename [ sizeof ( g_cmt.filename ) - 1 ] = 0x00;
-    return RET_CMT_OK;
+    ui_cmt_window_update ( );
+    return ret;
 }
 
 
 int cmt_open ( void ) {
 
-    char window_title[] = "Select MZF file to open";
-    char filename [ CMT_FILENAME_LENGTH ];
-    filename[0] = 0x00;
-    
-    /* TODO: zatim podporujeme jen mzf */
-    
-    char *filename_p = filename; // TODO: fixni mne
-    if ( UIRET_OK == ui_open_file ( &filename_p, g_cmt.filename, sizeof ( filename ), FILETYPE_MZF, window_title, OPENMODE_READ ) ) {
+    char window_title[] = "Select any CMT file to open";
+    char *filename = NULL;
 
-        cmt_eject ( );
 
-        if ( RET_CMT_OK == cmt_open_mzf_file ( filename ) ) {
-            ui_cmt_set_filename ( basename ( g_cmt.filename ) );
-            ui_cmt_window_update ( );
-            return RET_CMT_OK;
-        };
+    if ( UIRET_OK != ui_open_file ( &filename, g_cmt.last_filename, 0, FILETYPE_ALLCMTFILES, window_title, OPENMODE_READ ) ) {
+        return EXIT_FAILURE;
     };
-    return RET_CMT_ERROR;
-}
 
-
-void cmt_play ( void ) {
-    cmt_stop ( );
-    g_cmt.state = CMT_PLAY_START;
-
-    //mz800_switch_emulation_speed ( 1 );
-
-#ifdef MZ800EMU_CFG_CLK1M1_FAST
-    /* Nechame uplynout 1 screen a za nim najdeme nejblizsi event */
-    g_cmt.clk1m1_event.ticks = gdg_proximate_clk1m1_event ( VIDEO_SCREEN_TICKS );
-    g_cmt.clk1m1_last_event_total_ticks = gdg_compute_total_ticks ( g_cmt.clk1m1_event.ticks );
-
-    if ( g_cmt.clk1m1_event.ticks <= g_mz800.event.ticks ) {
-        g_mz800.event.ticks = g_cmt.clk1m1_event.ticks;
-        g_mz800.event.event_name = EVENT_CMT;
+    if ( filename == NULL ) {
+        filename = ui_utils_mem_alloc0 ( 1 );
     };
-#endif
 
-    ui_cmt_window_update ( );
+    cmt_open_file_by_extension ( filename );
+
+    ui_utils_mem_free ( filename );
+
+    return EXIT_FAILURE;
 }
 
 
-void cmt_initialise_state ( void ) {
+void cmt_screen_done_period ( void ) {
 
+    if ( !TEST_CMT_FILLED ) return;
+    if ( TEST_CMT_STOP ) return;
 
-    switch ( g_cmt.state ) {
+    st_CMT_STREAM *cmt_stream = g_cmt.ext->get_stream ( );
 
-        case CMT_PLAY_HEADER_PILOT:
-            g_cmt.bit_counter = DEF_CMT_HEADER_PILOT_LENGTH;
-            break;
+    if ( cmt_stream == NULL ) return;
 
-        case CMT_PLAY_BODY_PILOT:
-            g_cmt.bit_counter = DEF_CMT_BODY_PILOT_LENGTH;
-            break;
+    double playtime = cmt_get_playtime ( );
+    uint32_t sample_position = cmt_stream_get_position_by_time ( cmt_stream, playtime );
 
-        case CMT_PLAY_HEADER_TMARK_L:
-        case CMT_PLAY_HEADER_TMARK_S:
-            g_cmt.bit_counter = DEF_CMT_HEADER_TMARK_LENGTH / 2;
-            break;
-
-        case CMT_PLAY_BODY_TMARK_L:
-        case CMT_PLAY_BODY_TMARK_S:
-            g_cmt.bit_counter = DEF_CMT_BODY_TMARK_LENGTH / 2;
-            break;
-
-        case CMT_PLAY_HEADER_PREFIX:
-        case CMT_PLAY_HEADER_SURFIX:
-        case CMT_PLAY_BODY_PREFIX:
-        case CMT_PLAY_BODY_SURFIX:
-            /* SM800 lze! ve skutecnosti jsou jako prefix pouzity 2 bity! */
-            g_cmt.bit_counter = DEF_CMT_BLOCK_PREFIX_LENGTH;
-            break;
-
-
-        case CMT_PLAY_HEADER_CHKSUM:
-        case CMT_PLAY_BODY_CHKSUM:
-            g_cmt.bit_counter = DEF_CMT_CHKSUM_LENGTH;
-#if DEF_CMT_DEBUG
-            printf ( "Checksum DONE: 0x%04x\n", g_cmt.checksum );
-#endif
-            g_cmt.data_bit_position = 7;
-            break;
-
-
-        case CMT_PLAY_HEADER:
-            g_cmt.bit_counter = DEF_CMT_HEADER_LENGTH;
-            g_cmt.data_bit_position = 7;
-            g_cmt.checksum = 0;
-            break;
-
-        case CMT_PLAY_BODY:
-            g_cmt.bit_counter = g_cmt.mzf_size * DEF_CMT_BYTE_LENGTH;
-            fseek ( g_cmt.fh, DEF_CMT_HEADER_SIZE, SEEK_SET );
-            g_cmt.data_bit_position = 7;
-            g_cmt.checksum = 0;
-            break;
-
-        default:
-            break;
-    };
-}
-
-
-void cmt_player_send_log0 ( void ) {
-    g_cmt.output_signal = 1;
-    g_cmt.tick_counter = CMT_1200BPS_LOG0_HIGH / ( g_cmt.speed + 1 );
-    g_cmt.tick_counter_low = CMT_1200BPS_LOG0_LOW / ( g_cmt.speed + 1 );
-}
-
-
-void cmt_player_send_log1 ( void ) {
-    g_cmt.output_signal = 1;
-    g_cmt.tick_counter = CMT_1200BPS_LOG1_HIGH / ( g_cmt.speed + 1 );
-    g_cmt.tick_counter_low = CMT_1200BPS_LOG1_LOW / ( g_cmt.speed + 1 );
-}
-
-
-void cmt_step ( void ) {
-
-    /*
-    if ( g_cmt.fh == NULL ) {
+    if ( sample_position >= cmt_stream->scans ) {
+        //printf ( "done: 100 %%\n" );
+        cmt_stop ( );
         return;
     };
 
-    if ( CMT_PLAY_NONE == g_cmt.state ) {
+    // TODO: ui_update
+
+    if ( g_cmt.ui_player_update++ < 49 ) return;
+
+    g_cmt.ui_player_update = 0;
+    //double total_time = ( cmt_stream->scan_time * cmt_stream->scans );
+    //printf ( "playing: %1.2f s, remaining: %1.2f s, done: %1.2f %%\n", playtime, ( total_time - playtime ), ( playtime / total_time ) * 100 );
+    ui_cmt_update_player ( );
+}
+
+
+void cmt_update_output ( void ) {
+
+    if ( !TEST_CMT_FILLED ) return;
+    if ( !TEST_CMT_PLAY ) return;
+
+    st_CMT_STREAM *cmt_stream = g_cmt.ext->get_stream ( );
+
+    if ( cmt_stream == NULL ) return;
+
+    double playtime = cmt_get_playtime ( );
+
+    uint32_t sample_position = cmt_stream_get_position_by_time ( cmt_stream, playtime );
+
+    if ( sample_position >= cmt_stream->scans ) {
+        //printf ( "done: 100 %%\n" );
+        cmt_stop ( );
         return;
     };
-     */
 
-    /* uz skoncil pultakt? */
-    if ( 0 == g_cmt.tick_counter ) {
+    int sample = cmt_stream_get_value_on_position ( cmt_stream, sample_position );
 
-        if ( 0 == g_cmt.output_signal ) {
-            /* pokud zrovna nic neodesilame, tak muzeme postoupit dal */
+    g_cmt.output = ( sample > 0 ) ? g_cmt.polarity : ( ~g_cmt.polarity & 1 );
 
-            /* tohle by se melo delat az po dokonceni log0 pultaktu */
-            g_cmt.file_bits_elapsed++;
-
-
-            if ( 0 == g_cmt.bit_counter ) {
-
-                /* nemame zadne bity k odeslani, takze prejdeme do dalsi faze */
-                g_cmt.state++;
-#if DEF_CMT_DEBUG
-                /*#if 1*/
-                printf ( "Virtual CMT phase: %d, (%ds)\n", g_cmt.state, g_cmt.play_time );
-#endif
-                if ( CMT_PLAY_DONE == g_cmt.state ) {
-                    cmt_stop ( );
-                    return;
-                };
-                cmt_initialise_state ( );
-            };
-
-
-
-            switch ( g_cmt.state ) {
-
-                case CMT_PLAY_HEADER_PILOT:
-                case CMT_PLAY_BODY_PILOT:
-                case CMT_PLAY_HEADER_TMARK_S:
-                case CMT_PLAY_BODY_TMARK_S:
-                    cmt_player_send_log0 ( );
-                    break;
-
-                case CMT_PLAY_HEADER_TMARK_L:
-                case CMT_PLAY_BODY_TMARK_L:
-                case CMT_PLAY_HEADER_PREFIX:
-                case CMT_PLAY_HEADER_SURFIX:
-                case CMT_PLAY_BODY_PREFIX:
-                case CMT_PLAY_BODY_SURFIX:
-                    cmt_player_send_log1 ( );
-                    break;
-
-
-                case CMT_PLAY_HEADER:
-                case CMT_PLAY_BODY:
-                    if ( -1 == g_cmt.data_bit_position ) {
-
-                        /* odesilame stop bit */
-                        cmt_player_send_log1 ( );
-                        g_cmt.data_bit_position = 7;
-#if DEF_CMT_DEBUG
-                        printf ( "HB STOP bit\n" );
-#endif
-
-                    } else {
-                        if ( g_cmt.data_bit_position == 7 ) {
-                            if ( g_cmt.bit_counter > 1 ) {
-                                /* nacist dalsi bajt */
-                                if ( 1 != ui_utils_file_read ( &g_cmt.data, 1, 1, g_cmt.fh ) ) {
-                                    ui_show_error ( "Can't read MZF file '%s': %s\n", g_cmt.filename, strerror ( errno ) );
-                                    cmt_stop ( );
-                                    return;
-                                };
-
-#if DEF_CMT_DEBUG
-                                printf ( "Virtual CMT data: 0x%02x, %d\n", g_cmt.data, g_cmt.bit_counter );
-#endif
-                            };
-                        };
-
-
-                        if ( ( g_cmt.data >> g_cmt.data_bit_position ) & 0x01 ) {
-                            cmt_player_send_log1 ( );
-                            g_cmt.checksum++;
-#if DEF_CMT_DEBUG
-                            printf ( "HB Bit (%d): 1\n", g_cmt.data_bit_position );
-#endif
-                        } else {
-                            cmt_player_send_log0 ( );
-#if DEF_CMT_DEBUG
-                            printf ( "HB Bit (%d): 0\n", g_cmt.data_bit_position );
-#endif
-                        };
-                        g_cmt.data_bit_position--;
-
-                    };
-                    break;
-
-
-                case CMT_PLAY_HEADER_CHKSUM:
-                case CMT_PLAY_BODY_CHKSUM:
-                    if ( -1 == g_cmt.data_bit_position ) {
-
-                        /* odesilame stop bit */
-                        cmt_player_send_log1 ( );
-                        g_cmt.data_bit_position = 7;
-#if DEF_CMT_DEBUG
-                        printf ( "HB STOP bit\n" );
-#endif
-
-                    } else {
-                        if ( g_cmt.bit_counter == 2 * 9 ) {
-                            g_cmt.data = ( g_cmt.checksum >> 8 ) & 0xff;
-#if DEF_CMT_DEBUG
-                            printf ( "Virtual CMT data: 0x%02x, %d\n", g_cmt.data, g_cmt.bit_counter );
-#endif
-                        } else if ( g_cmt.bit_counter == 9 ) {
-                            g_cmt.data = g_cmt.checksum & 0xff;
-#if DEF_CMT_DEBUG
-                            printf ( "Virtual CMT data: 0x%02x, %d\n", g_cmt.data, g_cmt.bit_counter );
-#endif
-                        };
-
-                        if ( ( g_cmt.data >> g_cmt.data_bit_position ) & 0x01 ) {
-                            cmt_player_send_log1 ( );
-#if DEF_CMT_DEBUG
-                            printf ( "HB Bit (%d): 1\n", g_cmt.data_bit_position );
-#endif
-                        } else {
-                            cmt_player_send_log0 ( );
-#if DEF_CMT_DEBUG
-                            printf ( "HB Bit (%d): 0\n", g_cmt.data_bit_position );
-#endif
-                        };
-                        g_cmt.data_bit_position--;
-
-                    };
-                    break;
-
-                default:
-                    break;
-            };
-
-        } else {
-            /* Mame odeslanu jen prvni polovinu pulzu, takze ted tam posleme i tu druhou */
-            g_cmt.output_signal = 0;
-            g_cmt.tick_counter = g_cmt.tick_counter_low;
-            g_cmt.bit_counter--;
-        };
-
-    } else {
-        /* pokracujeme v pultaktu */
-        g_cmt.tick_counter--;
-    };
-
-    g_cmt.play_iface_refresh_timer--;
-    if ( 0 == g_cmt.play_iface_refresh_timer ) {
-        ui_cmt_update_player ( );
-        g_cmt.play_iface_refresh_timer = CMT_UI_PLAYER_REFRESH_TIMER_PRESET;
-        g_cmt.refresh_counter--;
-        if ( 0 == g_cmt.refresh_counter ) {
-            g_cmt.refresh_counter = CMT_UI_PLAYER_REFRESH_PER_SEC;
-            g_cmt.play_time++;
-        };
-    };
-
-}
-
-
-#ifdef MZ800EMU_CFG_CLK1M1_FAST
-
-
-void cmt_ctc1m1_event ( unsigned event_ticks ) {
-
-    if ( !TEST_CMT_PLAYING ) {
-        g_cmt.clk1m1_event.ticks = -1;
-    };
-
-    unsigned event_total_ticks = gdg_compute_total_ticks ( event_ticks );
-
-    if ( g_cmt.state > CMT_PLAY_START ) {
-        unsigned elapsed_ticks = event_total_ticks - g_cmt.clk1m1_last_event_total_ticks;
-        g_cmt.tick_counter -= elapsed_ticks / GDGCLK_1M1_DIVIDER;
-        g_cmt.play_iface_refresh_timer -= elapsed_ticks / GDGCLK_1M1_DIVIDER;
-    };
-
-    cmt_step ( );
-
-    g_cmt.clk1m1_last_event_total_ticks = event_total_ticks;
-
-    if ( g_cmt.state != CMT_PLAY_NONE ) {
-        unsigned refresh_timer_event = g_cmt.play_iface_refresh_timer - 1;
-        unsigned proximate_event = ( g_cmt.tick_counter < refresh_timer_event ) ? g_cmt.tick_counter : refresh_timer_event;
-        g_cmt.clk1m1_event.ticks = event_ticks + ( proximate_event * GDGCLK_1M1_DIVIDER );
-    } else {
-        g_cmt.clk1m1_event.ticks = -1;
+    if ( sample_position == ( cmt_stream->scans - 1 ) ) {
+        //printf ( "done: 100 %%\n" );
+        cmt_stop ( );
     };
 }
 
-#endif
 
+int cmt_read_data ( void ) {
+    cmt_update_output ( );
+    return g_cmt.output;
+}

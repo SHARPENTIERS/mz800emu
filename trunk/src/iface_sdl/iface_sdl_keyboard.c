@@ -390,6 +390,7 @@ void iface_sdl_full_keyboard_scan ( void ) {
 
 
 static inline int iface_sdl_keydown_in_development_mode ( SDL_Event *event ) {
+#if 0
     if ( event->key.keysym.scancode == SDL_SCANCODE_F10 ) {
         printf ( "F10 - INTERRUPT\n" );
         unsigned interrupt_ticks = z80ex_int ( g_mz800.cpu );
@@ -401,6 +402,7 @@ static inline int iface_sdl_keydown_in_development_mode ( SDL_Event *event ) {
         }
         return 1;
     };
+#endif
 #if 0
     if ( event.key.keysym.scancode == SDL_SCANCODE_F11 ) {
         if ( g_mz800.debug_pc == 0 ) {

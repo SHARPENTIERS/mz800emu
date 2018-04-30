@@ -50,14 +50,15 @@
 #include "fdc/fdc.h"
 #include "ramdisk/ramdisk.h"
 #include "cmt/cmt.h"
+#include "cmt/cmt_wav.h"
+#include "cmt/cmt_mzf.h"
 #include "cmt/cmt_hack.h"
 #include "qdisk/qdisk.h"
 #include "joy/joy.h"
 
-#include "iface_sdl/iface_sdl.h"
+#include "src/iface_sdl/iface_sdl.h"
 #include "iface_sdl/iface_sdl_audio.h"
 
-#include <SDL_timer.h>
 // ve Win32 neni ???
 //#include <SDL2/SDL_assert.h>
 
@@ -96,14 +97,10 @@ static inline void mz800_set_proximate_hw_event ( void ) {
     st_EVENT *proximate_event;
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
-    if ( g_ctc8253[CTC_CS0].clk1m1_event.ticks <= g_cmt.clk1m1_event.ticks ) {
-        proximate_event = &g_ctc8253[CTC_CS0].clk1m1_event;
-    } else {
-        proximate_event = &g_cmt.clk1m1_event;
-    };
-
-    if ( g_pioz80.icena_event.ticks <= proximate_event->ticks ) {
+    if ( g_pioz80.icena_event.ticks <= g_ctc8253[CTC_CS0].clk1m1_event.ticks ) {
         proximate_event = &g_pioz80.icena_event;
+    } else {
+        proximate_event = &g_ctc8253[CTC_CS0].clk1m1_event;
     };
 
     if ( g_gdg.event.ticks <= proximate_event->ticks ) {
@@ -185,7 +182,6 @@ void mz800_exit ( void ) {
     fdc_exit ( );
     qdisk_exit ( );
     ramdisc_exit ( );
-    cmthack_exit ( );
     cmt_exit ( );
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     debugger_exit ( );
@@ -336,7 +332,6 @@ static inline void mz800_event_screen_done ( void ) {
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
     ctc8253_on_screen_done_event ( );
-    cmt_on_screen_done_event ( );
 #else
     g_gdg.ctc0clk++;
 #endif
@@ -346,6 +341,8 @@ static inline void mz800_event_screen_done ( void ) {
 #ifdef MZ800EMU_CFG_VARIABLE_SPEED
     g_mz800.speed_sync_event.ticks -= VIDEO_SCREEN_TICKS;
 #endif
+
+    cmt_on_screen_done_event ( );
 
     g_gdg.total_elapsed.screens++;
     g_mz800.cursor_timer++;
@@ -371,10 +368,6 @@ static inline void mz800_sync ( void ) {
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
             if ( g_ctc8253[CTC_CS0].clk1m1_event.ticks <= g_mz800.event.ticks ) {
                 ctc8253_ctc1m1_event ( g_mz800.event.ticks );
-            };
-
-            if ( g_cmt.clk1m1_event.ticks <= g_mz800.event.ticks ) {
-                cmt_ctc1m1_event ( g_mz800.event.ticks );
             };
 #endif
             if ( g_pioz80.icena_event.ticks <= g_mz800.event.ticks ) {
@@ -526,7 +519,6 @@ static inline void mz800_sync ( void ) {
             case EVENT_PIOZ80:
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
             case EVENT_CTC0:
-            case EVENT_CMT:
 #endif
 
 #ifdef MZ800EMU_CFG_VARIABLE_SPEED
@@ -698,6 +690,8 @@ static inline void mz800_do_emulation_paused ( void ) {
         mz800_set_proximate_hw_event ( );
     };
 
+    cmt_update_output ( );
+    
 #else // MZ800_DEBUGGER neni povolen
 
     iface_sdl_render_status_line ( );
@@ -828,10 +822,6 @@ static inline void mz800_interrupt_service ( void ) {
 }
 
 
-// TODO: zjistit proc je tu tohle :)
-#include <inttypes.h>
-
-
 void mz800_main ( void ) {
 
     mz800_reset ( );
@@ -898,8 +888,6 @@ void mz800_main ( void ) {
 
             /* jsme v pauze? */
             if ( TEST_EMULATION_PAUSED ) {
-
-
                 mz800_do_emulation_paused ( );
             };
         };
@@ -1030,8 +1018,6 @@ void mz800_rear_dip_switch_mz800_mode ( unsigned value ) {
  *******************************************************************************/
 
 void mz800_propagatecfg_mz800_switch ( void *e, void *data ) {
-
-
     ui_main_update_rear_dip_switch_mz800_mode ( cfgelement_get_bool_value ( (CFGELM *) e ) );
 }
 
@@ -1108,14 +1094,17 @@ void mz800_init ( void ) {
 
     fdc_init ( );
     ramdisk_init ( );
-    cmthack_init ( );
     cmt_init ( );
     qdisk_init ( );
-    joy_init ();
+    joy_init ( );
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     debugger_init ( );
 #endif
 
     mz800_set_proximate_hw_event ( );
+
+    printf ( "\nRear dip switch - " );
+    printf ( "Mode: %s, ", ( !g_mz800.mz800_switch ) ? "MZ-700" : "MZ-800" );
+    printf ( "CMT polarity: %s\n", ( !g_cmt.polarity ) ? "Normal" : "Inverted" );
 }

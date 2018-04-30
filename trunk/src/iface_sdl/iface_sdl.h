@@ -31,6 +31,8 @@ extern "C" {
 #endif
 
 #include <SDL.h>
+#include <SDL_timer.h>
+
 #include "iface_sdl/iface_sdl_log.h"
 
 
