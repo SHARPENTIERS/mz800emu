@@ -18,17 +18,45 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkLabel" id="cmt_time_label">
+              <object class="GtkEventBox" id="cmt_time_info_eventbox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">&lt;b&gt;&lt;span font='50'&gt;00:00&lt;/span&gt;&lt;/b&gt;
+                <signal name="button-press-event" handler="on_cmt_time_info_eventbox_button_press_event" swapped="no"/>
+                <child>
+                  <object class="GtkLabel" id="cmt_time_info_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="xalign">0.10000000149011612</property>
+                    <property name="label" translatable="yes">Remaining time:</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEventBox" id="cmt_time_eventbox">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <signal name="button-press-event" handler="on_cmt_time_eventbox_button_press_event" swapped="no"/>
+                <child>
+                  <object class="GtkLabel" id="cmt_time_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">&lt;b&gt;&lt;span font='50'&gt;00:00&lt;/span&gt;&lt;/b&gt;
 </property>
-                <property name="use_markup">True</property>
+                    <property name="use_markup">True</property>
+                  </object>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -40,11 +68,11 @@
                 <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="padding">10</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
-              <object class="GtkTable" id="table1">
+              <object class="GtkTable" id="cmt_mzf_info_table">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="n_rows">3</property>
@@ -176,6 +204,7 @@
                   <object class="GtkLabel" id="label12">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="halign">start</property>
                     <property name="xalign">0.10000000149011612</property>
                     <property name="label" translatable="yes">File type:</property>
                   </object>
@@ -189,6 +218,7 @@
                   <object class="GtkLabel" id="label13">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="halign">start</property>
                     <property name="xalign">0.10000000149011612</property>
                     <property name="label" translatable="yes">File name:</property>
                   </object>
@@ -204,7 +234,90 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkTable" id="cmt_stream_info_table">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="n_rows">2</property>
+                <property name="n_columns">4</property>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="cmt_stream_rate_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="xalign">0.05000000074505806</property>
+                    <property name="label" translatable="yes">--</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">1</property>
+                    <property name="bottom_attach">2</property>
+                    <property name="y_options"/>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="cmt_stream_source_label">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="xalign">0.05000000074505806</property>
+                    <property name="label" translatable="yes">--</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="y_options"/>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label4">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="xalign">0.10000000149011612</property>
+                    <property name="label" translatable="yes">Stream source:</property>
+                  </object>
+                  <packing>
+                    <property name="x_options">GTK_FILL</property>
+                    <property name="y_options"/>
+                    <property name="x_padding">10</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label5">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="xalign">0.10000000149011612</property>
+                    <property name="label" translatable="yes">Rate:</property>
+                  </object>
+                  <packing>
+                    <property name="top_attach">1</property>
+                    <property name="bottom_attach">2</property>
+                    <property name="x_options">GTK_FILL</property>
+                    <property name="y_options"/>
+                    <property name="x_padding">10</property>
+                  </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
               </packing>
             </child>
             <child>
@@ -216,7 +329,7 @@
                 <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="padding">10</property>
-                <property name="position">3</property>
+                <property name="position">5</property>
               </packing>
             </child>
           </object>
@@ -262,7 +375,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
-                  <object class="GtkLabel" id="label11">
+                  <object class="GtkLabel" id="cmt_speed_label">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="xalign">0.10000000149011612</property>

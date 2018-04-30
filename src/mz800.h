@@ -64,7 +64,6 @@ extern "C" {
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
         EVENT_CTC0,
-        EVENT_CMT,
 #endif
 
 #ifdef MZ800EMU_CFG_VARIABLE_SPEED
@@ -188,7 +187,7 @@ extern "C" {
 
 #define mz800_cursor_timer_reset() { g_mz800.cursor_timer = 0; }
 #define mz800_get_cursor_timer_state() (  ( g_mz800.cursor_timer / 25 ) & 1 )
-    
+
 #ifdef __cplusplus
 }
 #endif

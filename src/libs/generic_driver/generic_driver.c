@@ -150,7 +150,8 @@ const char* generic_driver_error_message ( st_HANDLER *h, st_DRIVER *d ) {
                                     "truncate error",
                                     "bad handler type",
                                     "handler is busy",
-                                    "fopen error"
+                                    "fopen error",
+                                    "callback not exist",
     };
 
     if ( d == NULL ) {
@@ -231,7 +232,7 @@ st_HANDLER* generic_driver_open_file ( st_HANDLER *handler, st_DRIVER *d, char *
     };
 
     if ( !d->open_cb ) {
-        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
+        d->err = GENERIC_DRIVER_ERROR_CB_NOT_EXIST;
         return NULL;
     };
 
@@ -275,7 +276,7 @@ st_HANDLER* generic_driver_open_memory ( st_HANDLER *handler, st_DRIVER *d, uint
     };
 
     if ( !d->open_cb ) {
-        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
+        d->err = GENERIC_DRIVER_ERROR_CB_NOT_EXIST;
         return NULL;
     };
 
@@ -374,7 +375,7 @@ int generic_driver_close ( st_HANDLER *h ) {
     };
 
     if ( !d->close_cb ) {
-        d->err = GENERIC_DRIVER_ERROR_NOT_READY;
+        d->err = GENERIC_DRIVER_ERROR_CB_NOT_EXIST;
         return EXIT_FAILURE;
     };
     return d->close_cb ( h );
@@ -441,13 +442,17 @@ int generic_driver_ppread ( st_HANDLER *h, uint32_t offset, void *buffer, uint32
         return EXIT_FAILURE;
     };
 
-    if ( d->read_cb != NULL ) {
-        uint32_t result_len;
-        int result = d->read_cb ( h, offset, buffer, buffer_size, &result_len );
-        if ( ( result != EXIT_SUCCESS ) || ( result_len != buffer_size ) ) {
-            return EXIT_FAILURE;
-        };
+    if ( d->read_cb == NULL ) {
+        d->err = GENERIC_DRIVER_ERROR_CB_NOT_EXIST;
+        return EXIT_FAILURE;
     };
+
+    uint32_t result_len;
+    int result = d->read_cb ( h, offset, buffer, buffer_size, &result_len );
+    if ( ( result != EXIT_SUCCESS ) || ( result_len != buffer_size ) ) {
+        return EXIT_FAILURE;
+    };
+
     return EXIT_SUCCESS;
 }
 
@@ -470,13 +475,17 @@ int generic_driver_ppwrite ( st_HANDLER *h, uint32_t offset, void *buffer, uint3
         return EXIT_FAILURE;
     };
 
-    if ( d->write_cb != NULL ) {
-        uint32_t result_len;
-        int result = d->write_cb ( h, offset, buffer, buffer_size, &result_len );
-        if ( ( result != EXIT_SUCCESS ) || ( result_len != buffer_size ) ) {
-            return EXIT_FAILURE;
-        };
+    if ( d->write_cb == NULL ) {
+        d->err = GENERIC_DRIVER_ERROR_CB_NOT_EXIST;
+        return EXIT_FAILURE;
     };
+
+    uint32_t result_len;
+    int result = d->write_cb ( h, offset, buffer, buffer_size, &result_len );
+    if ( ( result != EXIT_SUCCESS ) || ( result_len != buffer_size ) ) {
+        return EXIT_FAILURE;
+    };
+
     return EXIT_SUCCESS;
 }
 
@@ -490,7 +499,7 @@ int generic_driver_ppwrite ( st_HANDLER *h, uint32_t offset, void *buffer, uint3
  * @param buffer_size
  * @return 
  */
-int generic_driver_read ( st_HANDLER *h, uint32_t offset, void *buffer, uint16_t buffer_size ) {
+int generic_driver_read ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t buffer_size ) {
     void *work_buffer = NULL;
     if ( EXIT_SUCCESS != generic_driver_prepare ( h, offset, &work_buffer, NULL, buffer_size ) ) return EXIT_FAILURE;
     return generic_driver_ppread ( h, offset, buffer, buffer_size );
@@ -522,7 +531,7 @@ int generic_driver_direct_read ( st_HANDLER *h, uint32_t offset, void **buffer, 
  * @param buffer_size
  * @return 
  */
-int generic_driver_write ( st_HANDLER *h, uint32_t offset, void *buffer, uint16_t buffer_size ) {
+int generic_driver_write ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t buffer_size ) {
     void *work_buffer = NULL;
     if ( EXIT_SUCCESS != generic_driver_prepare ( h, offset, &work_buffer, NULL, buffer_size ) ) return EXIT_FAILURE;
     return generic_driver_ppwrite ( h, offset, buffer, buffer_size );

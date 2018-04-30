@@ -79,6 +79,7 @@
 
 #include "dsk_tool/ui_dsk_tool.h"
 #include "ui_joy.h"
+#include "cmt/cmt.h"
 
 st_UI g_ui;
 static int g_ui_is_initialised = 0;
@@ -301,12 +302,17 @@ void ui_init ( void ) {
     cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_DIR );
     cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_DIR );
 
+    elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_cmt_file", CFGENTYPE_TEXT, "" );
+    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_ALLCMTFILES );
+    cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_ALLCMTFILES );
+
     elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_filetype", CFGENTYPE_KEYWORD, FILETYPE_MZF,
                                            FILETYPE_MZF, "MZF",
                                            FILETYPE_DSK, "DSK",
                                            FILETYPE_DAT, "DAT",
                                            FILETYPE_MZQ, "MZQ",
                                            FILETYPE_DIR, "DIR",
+                                           FILETYPE_ALLCMTFILES, "CMT_FILE",
                                            -1 );
     cfgelement_set_handlers ( elm, (void*) &g_ui.last_filetype, (void*) &g_ui.last_filetype );
 
@@ -602,6 +608,14 @@ unsigned ui_open_file ( char **filename, char *predefined_filename, unsigned max
     } else if ( filetype == FILETYPE_DIR ) {
         gtk_file_filter_add_pattern ( filter, "*" );
         gtk_file_filter_set_name ( filter, "Directory" );
+    } else if ( filetype == FILETYPE_ALLCMTFILES ) {
+        gtk_file_filter_add_pattern ( filter, "*.mzf" );
+        gtk_file_filter_add_pattern ( filter, "*.MZF" );
+        gtk_file_filter_add_pattern ( filter, "*.m12" );
+        gtk_file_filter_add_pattern ( filter, "*.M12" );
+        gtk_file_filter_add_pattern ( filter, "*.wav" );
+        gtk_file_filter_add_pattern ( filter, "*.WAV" );
+        gtk_file_filter_set_name ( filter, "CMT File" );
     };
 
     gtk_file_chooser_add_filter ( (GtkFileChooser*) filechooserdialog, filter );
@@ -890,15 +904,15 @@ G_MODULE_EXPORT gboolean on_emulator_aboutdialog_delete_event ( GtkWidget *widge
 void ui_main_update_rear_dip_switch_mz800_mode ( unsigned state ) {
     LOCK_UICALLBACKS ( );
     if ( state ) {
-        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_disp_switch_mz800_mode" ), TRUE );
+        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_dip_switch_mz800_mode" ), TRUE );
     } else {
-        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_disp_switch_mz800_mode" ), FALSE );
+        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_dip_switch_mz800_mode" ), FALSE );
     };
     UNLOCK_UICALLBACKS ( );
 }
 
 
-G_MODULE_EXPORT void on_menuitem_disp_switch_mz800_mode_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
+G_MODULE_EXPORT void on_menuitem_dip_switch_mz800_mode_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
 
@@ -908,11 +922,44 @@ G_MODULE_EXPORT void on_menuitem_disp_switch_mz800_mode_toggled ( GtkCheckMenuIt
     ui_hide_main_menu ( );
 #endif
 
-    if ( FALSE == gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_disp_switch_mz800_mode" ) ) ) {
+    if ( FALSE == gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_dip_switch_mz800_mode" ) ) ) {
         mz800_rear_dip_switch_mz800_mode ( 0 );
     } else {
         mz800_rear_dip_switch_mz800_mode ( 1 );
     };
+
+    printf ( "Rear dip switch - Mode: %s\n", ( !g_mz800.mz800_switch ) ? "MZ-700" : "MZ-800" );
+}
+
+
+void ui_main_update_rear_dip_switch_cmt_inverted_polarity ( unsigned state ) {
+    LOCK_UICALLBACKS ( );
+    if ( state ) {
+        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_dip_switch_cmt_inverted_polarity" ), TRUE );
+    } else {
+        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_dip_switch_cmt_inverted_polarity" ), FALSE );
+    };
+    UNLOCK_UICALLBACKS ( );
+}
+
+
+G_MODULE_EXPORT void on_menuitem_dip_switch_cmt_inverted_polarity_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+
+    if ( FALSE == gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_dip_switch_cmt_inverted_polarity" ) ) ) {
+        cmt_rear_dip_switch_cmt_inverted_polarity ( 0 );
+    } else {
+        cmt_rear_dip_switch_cmt_inverted_polarity ( 1 );
+    };
+
+    printf ( "Rear dip switch - CMT polarity: %s\n", ( !g_cmt.polarity ) ? "Normal" : "Inverted" );
 }
 
 

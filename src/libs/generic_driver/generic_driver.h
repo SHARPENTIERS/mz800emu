@@ -42,8 +42,8 @@ extern "C" {
 
     //#define GENERIC_DRIVER_FILE_CB
 
-#define GENERIC_DRIVER_MEMORY_CB
-#define GENERIC_DRIVER_MEMORY_CB_USE_REALLOC
+    //#define GENERIC_DRIVER_MEMORY_CB
+    //#define GENERIC_DRIVER_MEMORY_CB_USE_REALLOC
 
 
     typedef enum en_HANDLER_ERROR {
@@ -67,6 +67,7 @@ extern "C" {
         GENERIC_DRIVER_ERROR_HANDLER_TYPE,
         GENERIC_DRIVER_ERROR_HANDLER_IS_BUSY,
         GENERIC_DRIVER_ERROR_FOPEN,
+        GENERIC_DRIVER_ERROR_CB_NOT_EXIST,
         GENERIC_DRIVER_ERROR_UNKNOWN
     } en_GENERIC_DRIVER_ERROR;
 
@@ -161,8 +162,8 @@ extern "C" {
     extern int generic_driver_ppread ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t size );
     extern int generic_driver_ppwrite ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t size );
 
-    extern int generic_driver_read ( st_HANDLER *h, uint32_t offset, void *buffer, uint16_t buffer_size );
-    extern int generic_driver_write ( st_HANDLER *h, uint32_t offset, void *buffer, uint16_t buffer_size );
+    extern int generic_driver_read ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t buffer_size );
+    extern int generic_driver_write ( st_HANDLER *h, uint32_t offset, void *buffer, uint32_t buffer_size );
     extern int generic_driver_truncate ( st_HANDLER *h, uint32_t size );
 
     extern int generic_driver_direct_read ( st_HANDLER *h, uint32_t offset, void **buffer, void *work_buffer, uint32_t buffer_size );

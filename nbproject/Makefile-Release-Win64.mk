@@ -44,6 +44,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/cfgmain.o \
 	${OBJECTDIR}/src/cmt/cmt.o \
 	${OBJECTDIR}/src/cmt/cmt_hack.o \
+	${OBJECTDIR}/src/cmt/cmt_mzf.o \
+	${OBJECTDIR}/src/cmt/cmt_wav.o \
 	${OBJECTDIR}/src/ctc8253/ctc8253.o \
 	${OBJECTDIR}/src/debugger/breakpoints.o \
 	${OBJECTDIR}/src/debugger/debugger.o \
@@ -62,12 +64,14 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_keyboard.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_log.o \
 	${OBJECTDIR}/src/joy/joy.o \
+	${OBJECTDIR}/src/libs/cmt_stream/cmt_stream.o \
 	${OBJECTDIR}/src/libs/dsk/dsk.o \
 	${OBJECTDIR}/src/libs/dsk/dsk_tools.o \
 	${OBJECTDIR}/src/libs/endianity/endianity.o \
 	${OBJECTDIR}/src/libs/generic_driver/generic_driver.o \
 	${OBJECTDIR}/src/libs/mzf/mzf.o \
 	${OBJECTDIR}/src/libs/mzf/mzf_tools.o \
+	${OBJECTDIR}/src/libs/mztape/mztape.o \
 	${OBJECTDIR}/src/libs/qd/qd.o \
 	${OBJECTDIR}/src/libs/wav/wav.o \
 	${OBJECTDIR}/src/main.o \
@@ -201,6 +205,16 @@ ${OBJECTDIR}/src/cmt/cmt_hack.o: src/cmt/cmt_hack.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_hack.o src/cmt/cmt_hack.c
 
+${OBJECTDIR}/src/cmt/cmt_mzf.o: src/cmt/cmt_mzf.c 
+	${MKDIR} -p ${OBJECTDIR}/src/cmt
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_mzf.o src/cmt/cmt_mzf.c
+
+${OBJECTDIR}/src/cmt/cmt_wav.o: src/cmt/cmt_wav.c 
+	${MKDIR} -p ${OBJECTDIR}/src/cmt
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_wav.o src/cmt/cmt_wav.c
+
 ${OBJECTDIR}/src/ctc8253/ctc8253.o: src/ctc8253/ctc8253.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ctc8253
 	${RM} "$@.d"
@@ -291,6 +305,11 @@ ${OBJECTDIR}/src/joy/joy.o: src/joy/joy.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/joy/joy.o src/joy/joy.c
 
+${OBJECTDIR}/src/libs/cmt_stream/cmt_stream.o: src/libs/cmt_stream/cmt_stream.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/cmt_stream
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/cmt_stream/cmt_stream.o src/libs/cmt_stream/cmt_stream.c
+
 ${OBJECTDIR}/src/libs/dsk/dsk.o: src/libs/dsk/dsk.c 
 	${MKDIR} -p ${OBJECTDIR}/src/libs/dsk
 	${RM} "$@.d"
@@ -320,6 +339,11 @@ ${OBJECTDIR}/src/libs/mzf/mzf_tools.o: src/libs/mzf/mzf_tools.c
 	${MKDIR} -p ${OBJECTDIR}/src/libs/mzf
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/mzf/mzf_tools.o src/libs/mzf/mzf_tools.c
+
+${OBJECTDIR}/src/libs/mztape/mztape.o: src/libs/mztape/mztape.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/mztape
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/mztape/mztape.o src/libs/mztape/mztape.c
 
 ${OBJECTDIR}/src/libs/qd/qd.o: src/libs/qd/qd.c 
 	${MKDIR} -p ${OBJECTDIR}/src/libs/qd

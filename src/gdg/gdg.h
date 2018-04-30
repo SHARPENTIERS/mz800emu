@@ -168,6 +168,11 @@ extern "C" {
 #define gdg_proximate_clk1m1_event( now_ticks ) ( now_ticks + ( 0x10 - ( gdg_compute_total_ticks ( now_ticks ) & 0x0f ) ) )
 #endif
 
+
+    static inline void gdg_get_timestamp ( st_GDG_TIMESTAMP *tm ) {
+        tm->screens = g_gdg.total_elapsed.screens;
+        tm->ticks = g_gdg.total_elapsed.ticks;
+    }
 #ifdef __cplusplus
 }
 #endif
