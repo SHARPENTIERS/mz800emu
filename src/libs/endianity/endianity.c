@@ -27,6 +27,13 @@
 #include <sys/param.h>
 
 
+#ifndef __BYTE_ORDER
+#include <stdint.h>
+const uint16_t g_ui16 = 0x0001;
+uint8_t *g_ui8 = ( uint8_t* ) & g_ui16;
+#endif
+
+
 /**
  * Provede konverzi 16 bitove hodnoty z/do BIG_ENDIAN
  * 
@@ -34,12 +41,17 @@
  * @return 
  */
 uint16_t endianity_bswap16_BE ( uint16_t n ) {
+#ifndef __BYTE_ORDER
+    if ( *g_ui8 != 0x01 ) return n;
+    return __builtin_bswap16 ( n );
+#else    
 #if __BYTE_ORDER == __BIG_ENDIAN
     return n;
 #elif __BYTE_ORDER == __LITTLE_ENDIAN
     return __builtin_bswap16 ( n );
 #else
 #error "Unknown byte order"
+#endif
 #endif
 }
 
@@ -51,12 +63,17 @@ uint16_t endianity_bswap16_BE ( uint16_t n ) {
  * @return 
  */
 uint16_t endianity_bswap16_LE ( uint16_t n ) {
+#ifndef __BYTE_ORDER
+    if ( *g_ui8 == 0x01 ) return n;
+    return __builtin_bswap16 ( n );
+#else    
 #if __BYTE_ORDER == __BIG_ENDIAN
     return __builtin_bswap16 ( n );
 #elif __BYTE_ORDER == __LITTLE_ENDIAN
     return n;
 #else
 #error "Unknown byte order"
+#endif
 #endif
 }
 
@@ -68,12 +85,17 @@ uint16_t endianity_bswap16_LE ( uint16_t n ) {
  * @return 
  */
 uint32_t endianity_bswap32_BE ( uint32_t n ) {
+#ifndef __BYTE_ORDER
+    if ( *g_ui8 != 0x01 ) return n;
+    return __builtin_bswap32 ( n );
+#else    
 #if __BYTE_ORDER == __BIG_ENDIAN
     return n;
 #elif __BYTE_ORDER == __LITTLE_ENDIAN
     return __builtin_bswap32 ( n );
 #else
 #error "Unknown byte order"
+#endif
 #endif
 }
 
@@ -85,12 +107,17 @@ uint32_t endianity_bswap32_BE ( uint32_t n ) {
  * @return 
  */
 uint32_t endianity_bswap32_LE ( uint32_t n ) {
+#ifndef __BYTE_ORDER
+    if ( *g_ui8 == 0x01 ) return n;
+    return __builtin_bswap32 ( n );
+#else    
 #if __BYTE_ORDER == __BIG_ENDIAN
     return __builtin_bswap32 ( n );
 #elif __BYTE_ORDER == __LITTLE_ENDIAN
     return n;
 #else
 #error "Unknown byte order"
+#endif
 #endif
 }
 
@@ -102,12 +129,17 @@ uint32_t endianity_bswap32_LE ( uint32_t n ) {
  * @return 
  */
 uint64_t endianity_bswap64_BE ( uint64_t n ) {
+#ifndef __BYTE_ORDER
+    if ( *g_ui8 != 0x01 ) return n;
+    return __builtin_bswap64 ( n );
+#else    
 #if __BYTE_ORDER == __BIG_ENDIAN
     return n;
 #elif __BYTE_ORDER == __LITTLE_ENDIAN
     return __builtin_bswap64 ( n );
 #else
 #error "Unknown byte order"
+#endif
 #endif
 }
 
@@ -119,12 +151,17 @@ uint64_t endianity_bswap64_BE ( uint64_t n ) {
  * @return 
  */
 uint64_t endianity_bswap64_LE ( uint64_t n ) {
+#ifndef __BYTE_ORDER
+    if ( *g_ui8 == 0x01 ) return n;
+    return __builtin_bswap64 ( n );
+#else    
 #if __BYTE_ORDER == __BIG_ENDIAN
     return __builtin_bswap64 ( n );
 #elif __BYTE_ORDER == __LITTLE_ENDIAN
     return n;
 #else
 #error "Unknown byte order"
+#endif
 #endif
 }
 
