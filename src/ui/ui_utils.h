@@ -46,10 +46,10 @@ extern "C" {
     void* ui_utils_mem_alloc_raw ( guint32 size, int initialize0, const char *func, int line );
 #define ui_utils_mem_alloc(size) ui_utils_mem_alloc_raw ( size, 0, __func__, __LINE__ )
 #define ui_utils_mem_alloc0(size) ui_utils_mem_alloc_raw ( size, 1, __func__, __LINE__ )
-    void* ui_utils_mem_realloc_raw ( void *ptr, guint32 size, const char *func, int line );
+    extern void* ui_utils_mem_realloc_raw ( void *ptr, guint32 size, const char *func, int line );
 #define ui_utils_mem_realloc(ptr,size) ui_utils_mem_realloc_raw ( ptr, size, __func__, __LINE__ )
 
-
+    extern char* ui_utils_basename ( const char *file_name );
 
     /*
      * 

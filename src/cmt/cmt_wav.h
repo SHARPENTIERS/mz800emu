@@ -31,20 +31,14 @@
 extern "C" {
 #endif
 
-#include "libs/cmt_stream/cmt_stream.h"
 #include "cmt_extension.h"
+#include "libs/generic_driver/generic_driver.h"
 
+    extern st_CMTEXT *g_cmtwav_extension;
 
-    typedef struct st_CMT_WAV {
-        st_CMT_STREAM *stream;
-        char *playfile_name;
-    } st_CMT_WAV;
-
-    extern st_CMT_WAV g_cmt_wav;
-    extern st_CMT_EXTENSION g_cmt_wav_extension;
-
-    extern void cmt_wav_init ( void );
-    extern void cmt_wav_exit ( void );
+    extern void cmtwav_init ( void );
+    extern void cmtwav_exit ( void );
+    extern int cmtwav_open ( st_CMTEXT *cmtext, st_HANDLER *h );
 
 #ifdef __cplusplus
 }

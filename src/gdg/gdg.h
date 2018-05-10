@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 #include "mz800emu_cfg.h"
 
 #include "video.h"
@@ -160,7 +162,7 @@ extern "C" {
     extern Z80EX_BYTE gdg_read_dmd_status ( void );
     extern void gdg_write_byte ( unsigned addr, Z80EX_BYTE value );
 
-#define gdg_compute_total_ticks( now_ticks ) ( now_ticks + ( g_gdg.total_elapsed.screens * VIDEO_SCREEN_TICKS ) )
+#define gdg_compute_total_ticks( now_ticks ) ( now_ticks + ( (uint64_t) g_gdg.total_elapsed.screens * VIDEO_SCREEN_TICKS ) )
 #define gdg_get_total_ticks() gdg_compute_total_ticks( g_gdg.total_elapsed.ticks )
 #define gdg_get_insigeop_ticks() ( g_gdg.total_elapsed.ticks + g_mz800.instruction_insideop_sync_ticks )
 

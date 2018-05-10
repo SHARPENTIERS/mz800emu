@@ -55,11 +55,11 @@ extern "C" {
     } en_MZTAPE_BLOCK;
 
 
-    typedef struct st_MZTAPE_PULSE {
-        float high; // doba 1. casti pulsu (H)
-        float low; // doba 2. casti pulsu (L)
-        float total; // celkova doba pulsu (H + L)
-    } st_MZTAPE_PULSE;
+    typedef struct st_MZTAPE_PULSE_LENGTH {
+        double high; // doba 1. casti pulsu (H)
+        double low; // doba 2. casti pulsu (L)
+        double total; // celkova doba pulsu (H + L)
+    } st_MZTAPE_PULSE_LENGTH;
 
 
     typedef enum en_MZTAPE_PULSESET {
@@ -69,10 +69,22 @@ extern "C" {
     } en_MZTAPE_PULSESET;
 
 
-    typedef struct st_MZTAPE_PULSES {
-        st_MZTAPE_PULSE long_pulse; // pulz reprezentujici "1"
-        st_MZTAPE_PULSE short_pulse; // pulz reprezentujici "0"
-    } st_MZTAPE_PULSES;
+    typedef struct st_MZTAPE_PULSES_LENGTH {
+        st_MZTAPE_PULSE_LENGTH long_pulse; // pulz reprezentujici "1"
+        st_MZTAPE_PULSE_LENGTH short_pulse; // pulz reprezentujici "0"
+    } st_MZTAPE_PULSES_LENGTH;
+
+
+    typedef struct st_MZTAPE_PULSE_GDGTICS {
+        uint16_t high;
+        uint16_t low;
+    } st_MZTAPE_PULSE_GDGTICS;
+
+
+    typedef struct st_MZTAPE_PULSES_GDGTICS {
+        st_MZTAPE_PULSE_GDGTICS long_pulse;
+        st_MZTAPE_PULSE_GDGTICS short_pulse;
+    } st_MZTAPE_PULSES_GDGTICS;
 
 
     typedef struct st_MZTAPE_FORMAT {
@@ -90,9 +102,11 @@ extern "C" {
 
 
     typedef enum en_MZTAPE_SPEED {
-        MZTAPE_SPEED_1_1, // 1:1
-        MZTAPE_SPEED_2_1, // 2:1
-        MZTAPE_SPEED_3_1, // 3:1
+        MZTAPE_SPEED_1_1, // 1:1 1200 Bd
+        MZTAPE_SPEED_2_1, // 2:1 2400 Bd
+        MZTAPE_SPEED_7_3, // 7:3 2800 Bd
+        MZTAPE_SPEED_8_3, // 8:3 3200 Bd
+        MZTAPE_SPEED_3_1, // 3:1 3600 Bd
     } en_MZTAPE_SPEED;
 
 #define MZTAPE_LGAP_LENGTH_DEFAULT 22000
@@ -108,6 +122,8 @@ extern "C" {
 #define MZTAPE_WAV_LEVEL_HIGH   -48
 #define MZTAPE_WAV_LEVEL_LOW    48
 
+#define MZTAPE_DEFAULT_BDSPEED 1200
+
 
     typedef struct st_MZTAPE_MZF {
         uint8_t header[sizeof ( st_MZF_HEADER )];
@@ -117,11 +133,12 @@ extern "C" {
         uint32_t chkb;
     } st_MZTAPE_MZF;
 
+    extern const double g_speed_divisor[];
 
     extern void mztape_mztmzf_destroy ( st_MZTAPE_MZF *mztmzf );
     extern st_MZTAPE_MZF* mztape_create_mztmzf ( st_HANDLER *mzf_handler );
-    extern st_CMT_STREAM* mztape_create_cmt_stream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_MZTAPE_SPEED mztape_speed, uint32_t sample_rate );
-
+    extern st_CMT_BITSTREAM* mztape_create_cmt_bitstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_MZTAPE_SPEED mztape_speed, uint32_t sample_rate );
+    extern st_CMT_VSTREAM* mztape_create_17MHz_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_MZTAPE_SPEED mztape_speed );
 
 #ifdef __cplusplus
 }

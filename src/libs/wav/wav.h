@@ -56,11 +56,11 @@ extern "C" {
 
 
     typedef enum en_WAVE_FORMAT_CODE {
-        WAVE_FORMAT_PCM = 0x0001, // PCM - pulzne kodovana modulace
-        WAVE_FORMAT_IEEE_FLOAT = 0x0003, // IEEE float
-        WAVE_FORMAT_ALAW = 0x0006, // 8-bit ITU-T G.711 A-law
-        WAVE_FORMAT_MULAW = 0x0007, // 8-bit ITU-T G.711 µ-law
-        WAVE_FORMAT_EXTENSIBLE = 0xfffe, // Determined by SubFormat
+        WAVE_FORMAT_CODE_PCM = 0x0001, // PCM - pulzne kodovana modulace
+        WAVE_FORMAT_CODE_IEEE_FLOAT = 0x0003, // IEEE float
+        WAVE_FORMAT_CODE_ALAW = 0x0006, // 8-bit ITU-T G.711 A-law
+        WAVE_FORMAT_CODE_MULAW = 0x0007, // 8-bit ITU-T G.711 µ-law
+        WAVE_FORMAT_CODE_EXTENSIBLE = 0xfffe, // Determined by SubFormat
     } en_WAVE_FORMAT_CODE;
 
 
@@ -118,8 +118,16 @@ extern "C" {
 
 #define WAV_MAX_BITS_PER_SAMPLE 64
 
+
+    typedef enum en_WAV_POLARITY {
+        WAV_POLARITY_NORMAL = 0,
+        WAV_POLARITY_INVERTED,
+    } en_WAV_POLARITY;
+
+
     extern void wav_simple_header_destroy ( st_WAV_SIMPLE_HEADER *simple_header );
     extern st_WAV_SIMPLE_HEADER* wav_simple_header_new_from_handler ( st_HANDLER *wav_handler );
+    extern int wav_get_bit_value_of_sample ( st_HANDLER *wav_handler, st_WAV_SIMPLE_HEADER *simple_header, uint32_t sample_position, en_WAV_POLARITY polarity, int *bit_value );
 
 #ifdef __cplusplus
 }

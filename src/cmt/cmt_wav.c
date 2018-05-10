@@ -24,106 +24,93 @@
  */
 
 #include <stdio.h>
-#include <errno.h>
-#include <string.h>
-#include <libgen.h>
 
-#include "ui/ui_main.h"
-
+#include "libs/cmt_stream/cmt_stream.h"
 #include "libs/generic_driver/generic_driver.h"
 #include "ui/generic_driver/ui_memory_driver.h"
-#include "libs/wav/wav.h"
-#include "libs/cmt_stream/cmt_stream.h"
+#include "ui/ui_main.h"
+#include "ui/ui_utils.h"
 
-#include "cmt.h"
+#include "libs/wav/wav.h"
+
 #include "cmt_extension.h"
 #include "cmt_wav.h"
-#include "ui/ui_utils.h"
+#include "cmt.h"
 
 static st_DRIVER *g_driver = &g_ui_memory_driver_static;
 
-st_CMT_WAV g_cmt_wav;
-st_CMT_EXTENSION g_cmt_wav_extension;
+st_CMTEXT *g_cmtwav_extension = NULL;
 
 
-static en_CMT_EXTENSION_NAME cmt_wav_get_name ( void ) {
-    return CMT_EXTENSION_NAME_WAV;
+static void cmtwav_extension_eject ( void ) {
+    assert ( g_cmtwav_extension != NULL );
+    cmtext_eject ( g_cmtwav_extension );
 }
 
 
-static st_CMT_STREAM* cmt_wav_get_stream ( void ) {
-    return g_cmt_wav.stream;
-}
+int cmtwav_open ( st_CMTEXT *cmtext, st_HANDLER *h ) {
 
+    assert ( cmtext != NULL );
+    st_CMT_BITSTREAM *cmt_bitstream = cmt_bitstream_new_from_wav ( h, ( g_cmt.polarity == CMT_POLARITY_NORMAL ) ? WAV_POLARITY_NORMAL : WAV_POLARITY_INVERTED );
 
-static char* cmt_wav_get_playfile_name ( void ) {
-    return g_cmt_wav.playfile_name;
-}
-
-
-static void cmt_wav_eject ( void ) {
-    if ( g_cmt_wav.stream ) cmt_stream_destroy ( g_cmt_wav.stream );
-    g_cmt_wav.stream = NULL;
-    if ( g_cmt_wav.playfile_name ) ui_utils_mem_free ( g_cmt_wav.playfile_name );
-    g_cmt_wav.playfile_name = NULL;
-}
-
-
-static int cmt_wav_open ( char *filename ) {
-
-    cmt_wav_eject ( );
-
-    printf ( "Open WAV: %s\n", filename );
-
-    st_HANDLER *h = generic_driver_open_memory_from_file ( NULL, g_driver, filename );
-
-    if ( !h ) {
-        ui_show_error ( "CMT WAV: can't open WAV file '%s' - %s, gdriver_err: %s\n", filename, strerror ( errno ), generic_driver_error_message ( h, h->driver ) );
-        return EXIT_FAILURE;
-    };
-
-    g_cmt_wav.stream = cmt_stream_new_from_wav ( h );
-    st_CMT_STREAM *cmt_stream = g_cmt_wav.stream;
-
-    if ( !cmt_stream ) {
-        ui_show_error ( "CMT WAV: Can't create cmt_stream from file '%s', gdriver_err: %s\n", filename, generic_driver_error_message ( h, h->driver ) );
-        generic_driver_close ( h );
+    if ( !cmt_bitstream ) {
+        fprintf ( stderr, "%s() - %d: Can't create bitstream\n", __func__, __LINE__ );
         return EXIT_FAILURE;
     }
 
-    generic_driver_close ( h );
-
-    g_cmt_wav.playfile_name = ui_utils_mem_alloc ( strlen ( basename ( filename ) ) + 1 );
-
-    if ( !g_cmt_wav.playfile_name ) {
-        ui_show_error ( "CMT WAV: Can't alocate memory: %s\n", strerror ( errno ) );
-        cmt_wav_eject ( );
+    st_CMT_FILE *cmtfile = cmtext_cmtfile_new ( CMT_STREAM_TYPE_BITSTREAM );
+    if ( !cmtfile ) {
+        cmt_bitstream_destroy ( cmt_bitstream );
+        fprintf ( stderr, "%s() - %d: Can't create cmtfile\n", __func__, __LINE__ );
         return EXIT_FAILURE;
-    };
+    }
+    cmtfile->type = CMT_FILETYPE_WAV;
 
-    strcpy ( g_cmt_wav.playfile_name, basename ( filename ) );
+    printf ( "CMTWAV polarity: %s\n", ( g_cmt.polarity == CMT_POLARITY_NORMAL ) ? "normal" : "inverted" );
+    printf ( "CMTWAV rate: %d\n", cmt_bitstream->rate );
+    printf ( "CMTWAV length: %1.2f s\n", ( cmt_bitstream->scan_time * cmt_bitstream->scans ) );
 
-    printf ( "WAV rate: %d\n", cmt_stream->rate );
-    printf ( "WAV length: %1.2f s\n", ( cmt_stream->scan_time * cmt_stream->scans ) );
+    cmtfile->stream.str.bitstream = cmt_bitstream;
+    g_cmtwav_extension->cmtfile = cmtfile;
 
     return EXIT_SUCCESS;
 }
 
 
-void cmt_wav_init ( void ) {
-    g_cmt_wav.stream = NULL;
-    g_cmt_wav.playfile_name = NULL;
+static int cmtwav_extension_open ( char * filename ) {
 
-    memset ( &g_cmt_wav_extension, 0x00, sizeof (g_cmt_wav_extension ) );
-    g_cmt_wav_extension.get_name = cmt_wav_get_name;
-    g_cmt_wav_extension.get_stream = cmt_wav_get_stream;
-    g_cmt_wav_extension.open = cmt_wav_open;
-    g_cmt_wav_extension.eject = cmt_wav_eject;
-    g_cmt_wav_extension.get_playfile_name = cmt_wav_get_playfile_name;
+    assert ( g_cmtwav_extension != NULL );
+
+    cmtwav_extension_eject ( );
+
+    printf ( "CMTWAV Open: %s\n", filename );
+
+    st_HANDLER *h = generic_driver_open_memory_from_file ( NULL, g_driver, filename );
+
+    if ( !h ) {
+        ui_show_error ( "CMTWAV: Can't open WAV file '%s'\n", filename );
+        return EXIT_FAILURE;
+    };
+
+    if ( EXIT_FAILURE == cmtwav_open ( g_cmtwav_extension, h ) ) {
+        ui_show_error ( "CMTWAV: Can't create cmt stream\n" );
+        generic_driver_close ( h );
+        return EXIT_FAILURE;
+    };
+
+    generic_driver_close ( h );
+
+    cmtext_container_set_name ( g_cmtwav_extension->container, ui_utils_basename ( filename ) );
+
+    return EXIT_SUCCESS;
 }
 
 
-void cmt_wav_exit ( void ) {
-    cmt_wav_eject ( );
+void cmtwav_exit ( void ) {
+    cmtext_destroy ( g_cmtwav_extension );
 }
 
+
+void cmtwav_init ( void ) {
+    g_cmtwav_extension = cmtext_new ( cmtwav_extension_open, cmtwav_extension_eject, CMT_CONTAINER_TYPE_SINGLE );
+}

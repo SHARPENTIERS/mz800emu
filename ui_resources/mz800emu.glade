@@ -788,37 +788,59 @@ From time when data were real zeros and ones and computers were
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <child>
-                                  <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_1200">
+                                  <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_1_1">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">1200 Bd</property>
+                                    <property name="label" translatable="yes">x 1 (Standard)</property>
                                     <property name="use_underline">True</property>
                                     <property name="active">True</property>
                                     <property name="draw_as_radio">True</property>
                                     <property name="group">radiogrp_cmt_speed</property>
-                                    <signal name="toggled" handler="on_menuitem_cmt_speed_1200" swapped="no"/>
+                                    <signal name="toggled" handler="on_menuitem_cmt_speed_1_1_toggled" swapped="no"/>
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_2400">
+                                  <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_2_1">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">2400 Bd</property>
+                                    <property name="label" translatable="yes">x 2</property>
                                     <property name="use_underline">True</property>
                                     <property name="draw_as_radio">True</property>
                                     <property name="group">radiogrp_cmt_speed</property>
-                                    <signal name="toggled" handler="on_menuitem_cmt_speed_2400" swapped="no"/>
+                                    <signal name="toggled" handler="on_menuitem_cmt_speed_2_1_toggled" swapped="no"/>
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_3600">
+                                  <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_7_3">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">3600 Bd</property>
+                                    <property name="label" translatable="yes">x 2.3</property>
                                     <property name="use_underline">True</property>
                                     <property name="draw_as_radio">True</property>
                                     <property name="group">radiogrp_cmt_speed</property>
-                                    <signal name="toggled" handler="on_menuitem_cmt_speed_3600" swapped="no"/>
+                                    <signal name="toggled" handler="on_menuitem_cmt_speed_7_3_toggled" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_8_3">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">x 2.6</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiogrp_cmt_speed</property>
+                                    <signal name="toggled" handler="on_menuitem_cmt_speed_8_3_toggled" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_3_1">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">x 3</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiogrp_cmt_speed</property>
+                                    <signal name="toggled" handler="on_menuitem_cmt_speed_3_1_toggled" swapped="no"/>
                                   </object>
                                 </child>
                               </object>

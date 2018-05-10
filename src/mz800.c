@@ -59,6 +59,8 @@
 #include "src/iface_sdl/iface_sdl.h"
 #include "iface_sdl/iface_sdl_audio.h"
 
+#include "libs/mztape/mztape.h"
+
 // ve Win32 neni ???
 //#include <SDL2/SDL_assert.h>
 
@@ -691,7 +693,7 @@ static inline void mz800_do_emulation_paused ( void ) {
     };
 
     cmt_update_output ( );
-    
+
 #else // MZ800_DEBUGGER neni povolen
 
     iface_sdl_render_status_line ( );
@@ -831,12 +833,16 @@ void mz800_main ( void ) {
 #if 0
     g_memory.map = MEMORY_MAP_FLAG_ROM_0000 | MEMORY_MAP_FLAG_ROM_E000;
     z80ex_set_reg ( g_mz800.cpu, regHL, 0x10f0 );
-    cmthack_load_mzf_filename ( "Galao.mzf" );
+    cmthack_load_mzf_filename ( "./interkarate/interkarate_plus.mzf" );
     z80ex_set_reg ( g_mz800.cpu, regHL, 0x1200 );
-    z80ex_set_reg ( g_mz800.cpu, regBC, 0x4e51 );
+    z80ex_set_reg ( g_mz800.cpu, regBC, 0x0382 );
     cmthack_read_mzf_body ( );
     z80ex_set_reg ( g_mz800.cpu, regSP, 0x10f0 );
-    z80ex_set_reg ( g_mz800.cpu, regPC, 0x6000 );
+    z80ex_set_reg ( g_mz800.cpu, regPC, 0x14f3 );
+
+    g_cmt.speed = MZTAPE_SPEED_1_1;
+    cmt_open_file_by_extension ( "./interkarate/inter.scr$.mzf" );
+    cmt_play ( );
 #endif
 
     while ( 1 ) {

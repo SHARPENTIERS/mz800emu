@@ -34,17 +34,11 @@ extern "C" {
 
 #include "gdg/gdg.h"
 
-#include "libs/cmt_stream/cmt_stream.h"
-
 #include "cmt_extension.h"
 #include "cmt_mzf.h"
 #include "cmt_wav.h"
 
-
-    typedef enum en_CMT_POLARITY {
-        CMT_POLARITY_NORMAL = 0,
-        CMT_POLARITY_INVERTED = 1,
-    } en_CMT_POLARITY;
+#include "libs/mztape/mztape.h"
 
 
     typedef enum en_CMT_STATE {
@@ -54,10 +48,10 @@ extern "C" {
 
 
     typedef struct st_CMT {
-        st_CMT_EXTENSION *ext;
+        st_CMTEXT *ext;
         char *last_filename;
         en_CMT_POLARITY polarity;
-        en_CMT_SPEED speed;
+        en_MZTAPE_SPEED speed;
         en_CMT_STATE state;
         int output;
         uint64_t start_time;
@@ -70,11 +64,12 @@ extern "C" {
     extern void cmt_exit ( void );
     extern void cmt_rear_dip_switch_cmt_inverted_polarity ( unsigned value );
 
+    extern int cmt_open_file_by_extension ( char *filename );
     extern int cmt_open ( void );
     extern void cmt_play ( void );
     extern void cmt_stop ( void );
     extern void cmt_eject ( void );
-    extern int cmt_change_speed ( en_CMT_SPEED speed );
+    extern int cmt_change_speed ( en_MZTAPE_SPEED speed );
 
     extern void cmt_screen_done_period ( void );
     extern int cmt_read_data ( void );
