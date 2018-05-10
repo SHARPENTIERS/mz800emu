@@ -43,6 +43,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/cfgfile/cfgtools.o \
 	${OBJECTDIR}/src/cfgmain.o \
 	${OBJECTDIR}/src/cmt/cmt.o \
+	${OBJECTDIR}/src/cmt/cmt_extension.o \
 	${OBJECTDIR}/src/cmt/cmt_hack.o \
 	${OBJECTDIR}/src/cmt/cmt_mzf.o \
 	${OBJECTDIR}/src/cmt/cmt_wav.o \
@@ -64,7 +65,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_keyboard.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_log.o \
 	${OBJECTDIR}/src/joy/joy.o \
-	${OBJECTDIR}/src/libs/cmt_stream/cmt_stream.o \
+	${OBJECTDIR}/src/libs/cmt_stream/cmt_bitstream.o \
+	${OBJECTDIR}/src/libs/cmt_stream/cmt_vstream.o \
 	${OBJECTDIR}/src/libs/dsk/dsk.o \
 	${OBJECTDIR}/src/libs/dsk/dsk_tools.o \
 	${OBJECTDIR}/src/libs/endianity/endianity.o \
@@ -200,6 +202,11 @@ ${OBJECTDIR}/src/cmt/cmt.o: src/cmt/cmt.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt.o src/cmt/cmt.c
 
+${OBJECTDIR}/src/cmt/cmt_extension.o: src/cmt/cmt_extension.c 
+	${MKDIR} -p ${OBJECTDIR}/src/cmt
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_extension.o src/cmt/cmt_extension.c
+
 ${OBJECTDIR}/src/cmt/cmt_hack.o: src/cmt/cmt_hack.c 
 	${MKDIR} -p ${OBJECTDIR}/src/cmt
 	${RM} "$@.d"
@@ -305,10 +312,15 @@ ${OBJECTDIR}/src/joy/joy.o: src/joy/joy.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/joy/joy.o src/joy/joy.c
 
-${OBJECTDIR}/src/libs/cmt_stream/cmt_stream.o: src/libs/cmt_stream/cmt_stream.c 
+${OBJECTDIR}/src/libs/cmt_stream/cmt_bitstream.o: src/libs/cmt_stream/cmt_bitstream.c 
 	${MKDIR} -p ${OBJECTDIR}/src/libs/cmt_stream
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/cmt_stream/cmt_stream.o src/libs/cmt_stream/cmt_stream.c
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/cmt_stream/cmt_bitstream.o src/libs/cmt_stream/cmt_bitstream.c
+
+${OBJECTDIR}/src/libs/cmt_stream/cmt_vstream.o: src/libs/cmt_stream/cmt_vstream.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/cmt_stream
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/cmt_stream/cmt_vstream.o src/libs/cmt_stream/cmt_vstream.c
 
 ${OBJECTDIR}/src/libs/dsk/dsk.o: src/libs/dsk/dsk.c 
 	${MKDIR} -p ${OBJECTDIR}/src/libs/dsk

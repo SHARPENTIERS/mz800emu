@@ -91,7 +91,7 @@
 
 #include "generic_driver.h"
 
-//#define HAVE_UI_UTILS
+#define HAVE_UI_UTILS
 
 #ifdef HAVE_UI_UTILS
 #include "src/ui/ui_utils.h"

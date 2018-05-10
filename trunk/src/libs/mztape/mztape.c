@@ -84,17 +84,26 @@
  * 
  * - CHK je odesilan jako big endian !!! tedy nejprve horni bajt a pak dolni
  * 
+ * Fyzicky zaznam:
+ * 
+ * Log1 (i8255 PC01) ma na audio CMT napetovou uroven < 0
+ * Log0 (i8255 PC01) ma na audio CMT napetovou uroven >= 0
+ * 
+ * MZ-800 - zmena polarity pomoci zadniho switche na vliv pouze na vstupni data, nikoliv na vystupni!
+ * 
  */
 
 #include <stdio.h>
 #include <stdint.h>
-#include <errno.h>
 #include <string.h>
+#include <math.h>
 
 #include "ui/ui_utils.h"
 #include "libs/generic_driver/generic_driver.h"
 #include "libs/endianity/endianity.h"
 #include "libs/cmt_stream/cmt_stream.h"
+
+#include "gdg/gdg.h"
 
 #include "mztape.h"
 
@@ -138,27 +147,41 @@ en_MZTAPE_BLOCK g_mztape_format_sharp[] = {
                                            MZTAPE_BLOCK_STOP
 };
 
-const st_MZTAPE_PULSES g_mztape_pulses_700 = {
+const st_MZTAPE_PULSES_LENGTH g_mztape_pulses_700 = {
     { 0.000464, 0.000494, 0.000958 }, // LONG PULSE
     { 0.000240, 0.000264, 0.000504 }, // SHORT PULSE
 };
 
-const st_MZTAPE_PULSES g_mztape_pulses_800 = {
+const st_MZTAPE_PULSES_LENGTH g_mztape_pulses_800 = {
     { 0.000470, 0.000494, 0.000964 }, // LONG PULSE
     { 0.000240, 0.000278, 0.000518 }, // SHORT PULSE
 };
 
-const st_MZTAPE_PULSES g_mztape_pulses_80B = {
+// pulzy podle Intercopy 10.2
+/*
+const st_MZTAPE_PULSES_LENGTH g_mztape_pulses_800 = {
+    { 0.000470, 0.000495, 0.000965 }, // LONG PULSE
+    { 0.000235, 0.000264, 0.000499 }, // SHORT PULSE
+};
+ */
+
+st_MZTAPE_PULSES_GDGTICS g_mztape_pulses_gdgticks_800 = {
+    { 8335, 8760 },
+    { 4356, 4930 },
+};
+
+const st_MZTAPE_PULSES_LENGTH g_mztape_pulses_80B = {
     { 0.000333, 0.000334, 0.000667 }, // LONG PULSE
     { 0.000166750, 0.000166, 0.000332750 }, // SHORT PULSE
 };
 
 
-const st_MZTAPE_PULSES *g_pulses[] = {
-                                      &g_mztape_pulses_700,
-                                      &g_mztape_pulses_800,
-                                      &g_mztape_pulses_80B,
+const st_MZTAPE_PULSES_LENGTH *g_pulses_length[] = {
+                                                    &g_mztape_pulses_700,
+                                                    &g_mztape_pulses_800,
+                                                    &g_mztape_pulses_80B,
 };
+
 
 const st_MZTAPE_FORMAT g_format_mz800_sane = {
                                               MZTAPE_LGAP_LENGTH_SANE,
@@ -182,15 +205,17 @@ const st_MZTAPE_FORMAT *g_formats[] = {
 
 
 // nasobitel rychlosti podle en_MZTAPE_SPEED
-const double g_speed_multiplier[] = {
-                                     1,
-                                     ( (double) 1 / 2 ),
-                                     ( (double) 1 / 3 ),
+const double g_speed_divisor[] = {
+                                  1,
+                                  2,
+                                  ( (double) 7 / 3 ),
+                                  ( (double) 8 / 3 ),
+                                  3,
 };
 
 
 static uint32_t mztape_compute_block_checksum_32t ( uint8_t *block, uint16_t size ) {
-    uint16_t checksum = 0;
+    uint32_t checksum = 0;
     while ( size-- ) {
         uint8_t byte = *block;
         int bit;
@@ -280,22 +305,22 @@ static void mztape_compute_pulses ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET m
 }
 
 
-static void mztape_prepare_pulses_length ( st_MZTAPE_PULSES *pulses, en_MZTAPE_PULSESET pulseset, en_MZTAPE_SPEED mztape_speed ) {
-    const st_MZTAPE_PULSES *src = g_pulses[pulseset];
+static void mztape_prepare_pulses_length ( st_MZTAPE_PULSES_LENGTH *pulses, en_MZTAPE_PULSESET pulseset, en_MZTAPE_SPEED mztape_speed ) {
+    const st_MZTAPE_PULSES_LENGTH *src = g_pulses_length[pulseset];
 
-    pulses->long_pulse.high = src->long_pulse.high * g_speed_multiplier[mztape_speed];
-    pulses->long_pulse.low = src->long_pulse.low * g_speed_multiplier[mztape_speed];
+    pulses->long_pulse.high = src->long_pulse.high / g_speed_divisor[mztape_speed];
+    pulses->long_pulse.low = src->long_pulse.low / g_speed_divisor[mztape_speed];
     pulses->long_pulse.total = pulses->long_pulse.high + pulses->long_pulse.low;
 
-    pulses->short_pulse.high = src->short_pulse.high * g_speed_multiplier[mztape_speed];
-    pulses->short_pulse.low = src->short_pulse.low * g_speed_multiplier[mztape_speed];
+    pulses->short_pulse.high = src->short_pulse.high / g_speed_divisor[mztape_speed];
+    pulses->short_pulse.low = src->short_pulse.low / g_speed_divisor[mztape_speed];
     pulses->short_pulse.total = pulses->short_pulse.high + pulses->short_pulse.low;
 }
 
 
-static inline st_MZTAPE_PULSE* mztape_scan_onestate_block ( uint32_t *bit_counter, uint32_t block_size, st_MZTAPE_PULSE *block_pulse, int *flag_next_format_phase ) {
+static inline st_MZTAPE_PULSE_LENGTH* mztape_scan_onestate_block ( uint32_t *bit_counter, uint32_t block_size, st_MZTAPE_PULSE_LENGTH *block_pulse, int *flag_next_format_phase ) {
 
-    st_MZTAPE_PULSE *pulse = NULL;
+    st_MZTAPE_PULSE_LENGTH *pulse = NULL;
 
     if ( *bit_counter < block_size ) {
         pulse = block_pulse;
@@ -308,9 +333,9 @@ static inline st_MZTAPE_PULSE* mztape_scan_onestate_block ( uint32_t *bit_counte
 }
 
 
-static inline st_MZTAPE_PULSE* mztape_scan_twostate_block ( uint32_t *bit_counter, uint32_t block_lsize, uint32_t block_ssize, st_MZTAPE_PULSES *block_pulses, int *flag_next_format_phase ) {
+static inline st_MZTAPE_PULSE_LENGTH* mztape_scan_twostate_block ( uint32_t *bit_counter, uint32_t block_lsize, uint32_t block_ssize, st_MZTAPE_PULSES_LENGTH *block_pulses, int *flag_next_format_phase ) {
 
-    st_MZTAPE_PULSE *pulse = NULL;
+    st_MZTAPE_PULSE_LENGTH *pulse = NULL;
 
     if ( *bit_counter < block_lsize ) {
         pulse = &block_pulses->long_pulse;
@@ -325,9 +350,9 @@ static inline st_MZTAPE_PULSE* mztape_scan_twostate_block ( uint32_t *bit_counte
 }
 
 
-static inline st_MZTAPE_PULSE* mztape_scan_data_block ( uint32_t *bit_counter, uint32_t block_size, st_MZTAPE_PULSES *block_pulses, uint8_t *data, int *flag_next_format_phase ) {
+static inline st_MZTAPE_PULSE_LENGTH* mztape_scan_data_block ( uint32_t *bit_counter, uint32_t block_size, st_MZTAPE_PULSES_LENGTH *block_pulses, uint8_t *data, int *flag_next_format_phase ) {
 
-    st_MZTAPE_PULSE *pulse = NULL;
+    st_MZTAPE_PULSE_LENGTH *pulse = NULL;
 
     if ( *bit_counter < block_size ) {
 
@@ -369,14 +394,14 @@ st_MZTAPE_MZF* mztape_create_mztmzf ( st_HANDLER *mzf_handler ) {
     st_MZTAPE_MZF *mztmzf = ui_utils_mem_alloc0 ( sizeof ( st_MZTAPE_MZF ) );
 
     if ( !mztmzf ) {
-        fprintf ( stderr, "%s():%d - Could create mztape mzf: %s\n", __func__, __LINE__, strerror ( errno ) );
+        fprintf ( stderr, "%s():%d - Could create mztape mzf\n", __func__, __LINE__ );
         return NULL;
     };
 
     st_MZF_HEADER mzfhdr;
 
     if ( EXIT_SUCCESS != mzf_read_header ( h, &mzfhdr ) ) {
-        fprintf ( stderr, "%s():%d - Could not read: %s, %s\n", __func__, __LINE__, strerror ( errno ), generic_driver_error_message ( h, h->driver ) );
+        fprintf ( stderr, "%s():%d - Could not read: %s\n", __func__, __LINE__, generic_driver_error_message ( h, h->driver ) );
         mztape_mztmzf_destroy ( mztmzf );
         return NULL;
     };
@@ -384,7 +409,7 @@ st_MZTAPE_MZF* mztape_create_mztmzf ( st_HANDLER *mzf_handler ) {
     mztmzf->size = mzfhdr.fsize;
 
     if ( EXIT_SUCCESS != generic_driver_read ( h, 0, mztmzf->header, sizeof ( st_MZF_HEADER ) ) ) {
-        fprintf ( stderr, "%s():%d - Could not read: %s, %s\n", __func__, __LINE__, strerror ( errno ), generic_driver_error_message ( h, h->driver ) );
+        fprintf ( stderr, "%s():%d - Could not read: %s\n", __func__, __LINE__, generic_driver_error_message ( h, h->driver ) );
         mztape_mztmzf_destroy ( mztmzf );
         return NULL;
     };
@@ -392,7 +417,7 @@ st_MZTAPE_MZF* mztape_create_mztmzf ( st_HANDLER *mzf_handler ) {
     mztmzf->body = ui_utils_mem_alloc ( mztmzf->size );
 
     if ( EXIT_SUCCESS != generic_driver_read ( h, 0 + sizeof ( st_MZF_HEADER ), mztmzf->body, mzfhdr.fsize ) ) {
-        fprintf ( stderr, "%s():%d - Could not read: %s, %s\n", __func__, __LINE__, strerror ( errno ), generic_driver_error_message ( h, h->driver ) );
+        fprintf ( stderr, "%s():%d - Could not read: %s\n", __func__, __LINE__, generic_driver_error_message ( h, h->driver ) );
         mztape_mztmzf_destroy ( mztmzf );
         ui_utils_mem_free ( mztmzf->body );
         return NULL;
@@ -405,12 +430,18 @@ st_MZTAPE_MZF* mztape_create_mztmzf ( st_HANDLER *mzf_handler ) {
 }
 
 
-st_CMT_STREAM* mztape_create_cmt_stream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_MZTAPE_SPEED mztape_speed, uint32_t sample_rate ) {
+/**
+ * 
+ * Sample rate 44.1 kHz je dostacujici pro rychlosti do 2400 Bd.
+ * Pro vyssi rychlosti je podle mych testu lepsi pouzit 192 kHz.
+ * 
+ */
+st_CMT_BITSTREAM* mztape_create_cmt_bitstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_MZTAPE_SPEED mztape_speed, uint32_t sample_rate ) {
 
     double sample_length = (double) 1 / sample_rate;
 
     /*
-     * Secteni poctu pulzu a priprava jejich delky
+     * Zjisteni poctu pulzu a priprava jejich delky
      */
 
     uint64_t long_pulses;
@@ -418,22 +449,22 @@ st_CMT_STREAM* mztape_create_cmt_stream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_
 
     mztape_compute_pulses ( mztmzf, mztape_format, &long_pulses, &short_pulses );
 
-    st_MZTAPE_PULSES pulses;
+    st_MZTAPE_PULSES_LENGTH pulses;
 
     mztape_prepare_pulses_length ( &pulses, g_formats[mztape_format]->pulseset, mztape_speed );
 
     double stream_length = ( long_pulses * pulses.long_pulse.total ) + ( short_pulses * pulses.short_pulse.total );
 
-    uint32_t data_size = stream_length / sample_length;
+    uint32_t data_bitsize = stream_length / sample_length;
 
     /*
      * Vytvoreni CMT_STREAM
      */
+    uint32_t blocks = cmt_bitstream_compute_required_blocks_from_scans ( data_bitsize );
 
-    st_CMT_STREAM *cmt_stream = cmt_stream_new ( sample_rate, data_size );
-    if ( !cmt_stream ) {
-        fprintf ( stderr, "%s():%d - Could create cmt stream: %s\n", __func__, __LINE__, strerror ( errno ) );
-        ui_utils_mem_free ( mztmzf->body );
+    st_CMT_BITSTREAM *cmt_bitstream = cmt_bitstream_new ( sample_rate, blocks );
+    if ( !cmt_bitstream ) {
+        fprintf ( stderr, "%s():%d - Could create cmt bitstream\n", __func__, __LINE__ );
         return NULL;
     };
 
@@ -444,7 +475,7 @@ st_CMT_STREAM* mztape_create_cmt_stream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_
     int format_phase = 0;
     double pulse_time = 0;
 
-    st_MZTAPE_PULSE *pulse = NULL;
+    st_MZTAPE_PULSE_LENGTH *pulse = NULL;
 
     while ( scan_time <= stream_length ) {
 
@@ -543,13 +574,140 @@ st_CMT_STREAM* mztape_create_cmt_stream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_
         };
 
         if ( pulse != NULL ) {
-            int sample_value = ( pulse_time < pulse->high ) ? 0 : 1;
-            cmt_stream_set_value_on_position ( cmt_stream, sample_position++, sample_value );
+            int sample_value = ( pulse_time < pulse->high ) ? 1 : 0;
+            cmt_bitstream_set_value_on_position ( cmt_bitstream, sample_position++, sample_value );
             pulse_time += sample_length;
         };
 
         scan_time += sample_length;
     }
 
-    return cmt_stream;
+    return cmt_bitstream;
+}
+
+
+static inline int mztape_add_cmt_vstream_onestate_block ( st_CMT_VSTREAM* cmt_vstream, st_MZTAPE_PULSE_GDGTICS *gpulse, int count ) {
+    int i;
+    for ( i = 0; i < count; i++ ) {
+        if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 1, gpulse->high ) ) return EXIT_FAILURE;
+        if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 0, gpulse->low ) ) return EXIT_FAILURE;
+    };
+    return EXIT_SUCCESS;
+}
+
+
+static inline int mztape_add_cmt_vstream_data_block ( st_CMT_VSTREAM* cmt_vstream, st_MZTAPE_PULSES_GDGTICS *gpulses, uint8_t *data, uint16_t size ) {
+    int i;
+    for ( i = 0; i < size; i++ ) {
+        uint8_t byte = data[i];
+        int bit;
+        for ( bit = 0; bit < 8; bit++ ) {
+            if ( byte & 0x80 ) {
+                if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 1, gpulses->long_pulse.high ) ) return EXIT_FAILURE;
+                if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 0, gpulses->long_pulse.low ) ) return EXIT_FAILURE;
+            } else {
+                if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 1, gpulses->short_pulse.high ) ) return EXIT_FAILURE;
+                if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 0, gpulses->short_pulse.low ) ) return EXIT_FAILURE;
+            };
+            byte = byte << 1;
+        };
+        if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 1, gpulses->long_pulse.high ) ) return EXIT_FAILURE;
+        if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 0, gpulses->long_pulse.low ) ) return EXIT_FAILURE;
+    };
+    return EXIT_SUCCESS;
+}
+
+
+/**
+ * Jako sample rate pouzijeme konstantni hodnotu 17MHz z GDG
+ *  
+ */
+st_CMT_VSTREAM* mztape_create_17MHz_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_MZTAPE_SPEED mztape_speed ) {
+
+    st_CMT_VSTREAM* cmt_vstream = cmt_vstream_new ( GDGCLK_BASE, CMT_VSTREAM_BYTELENGTH16, 1 );
+    if ( !cmt_vstream ) {
+        fprintf ( stderr, "%s():%d - Could create cmt vstream\n", __func__, __LINE__ );
+        return NULL;
+    };
+
+    st_MZTAPE_PULSES_GDGTICS gpulses;
+    gpulses.long_pulse.high = round ( (double) g_mztape_pulses_gdgticks_800.long_pulse.high / g_speed_divisor[mztape_speed] );
+    gpulses.long_pulse.low = round ( (double) g_mztape_pulses_gdgticks_800.long_pulse.low / g_speed_divisor[mztape_speed] );
+    gpulses.short_pulse.high = round ( (double) g_mztape_pulses_gdgticks_800.short_pulse.high / g_speed_divisor[mztape_speed] );
+    gpulses.short_pulse.low = round ( (double) g_mztape_pulses_gdgticks_800.short_pulse.low / g_speed_divisor[mztape_speed] );
+
+    const en_MZTAPE_BLOCK *format = g_formats[mztape_format]->blocks;
+
+    int i = 0;
+    int ret;
+    while ( format[i] != MZTAPE_BLOCK_STOP ) {
+
+        switch ( format[i] ) {
+            case MZTAPE_BLOCK_LGAP:
+                ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.short_pulse, g_formats[mztape_format]->lgap );
+                break;
+
+            case MZTAPE_BLOCK_SGAP:
+                ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.short_pulse, g_formats[mztape_format]->sgap );
+                break;
+
+            case MZTAPE_BLOCK_LTM:
+                ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.long_pulse, MZTAPE_LTM_LLENGTH );
+                if ( ret != EXIT_FAILURE ) {
+                    ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.short_pulse, MZTAPE_LTM_SLENGTH );
+                };
+                break;
+
+            case MZTAPE_BLOCK_STM:
+                ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.long_pulse, MZTAPE_STM_LLENGTH );
+                if ( ret != EXIT_FAILURE ) {
+                    ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.short_pulse, MZTAPE_STM_SLENGTH );
+                };
+                break;
+
+            case MZTAPE_BLOCK_2L:
+                ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.long_pulse, 2 );
+                break;
+
+            case MZTAPE_BLOCK_256S:
+                ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.short_pulse, 256 );
+                break;
+
+            case MZTAPE_BLOCK_HDR:
+                ret = mztape_add_cmt_vstream_data_block ( cmt_vstream, &gpulses, mztmzf->header, sizeof ( st_MZF_HEADER ) );
+                break;
+
+            case MZTAPE_BLOCK_FILE:
+                ret = mztape_add_cmt_vstream_data_block ( cmt_vstream, &gpulses, mztmzf->body, mztmzf->size );
+                break;
+
+            case MZTAPE_BLOCK_CHKH:
+            {
+                uint16_t chk = endianity_bswap16_BE ( mztmzf->chkh );
+                ret = mztape_add_cmt_vstream_data_block ( cmt_vstream, &gpulses, ( uint8_t* ) & chk, 2 );
+                break;
+            }
+
+            case MZTAPE_BLOCK_CHKF:
+            {
+                uint16_t chk = endianity_bswap16_BE ( mztmzf->chkb );
+                ret = mztape_add_cmt_vstream_data_block ( cmt_vstream, &gpulses, ( uint8_t* ) & chk, 2 );
+                break;
+            }
+
+            default:
+                fprintf ( stderr, "%s():%d - Error: unknown block id=%d\n", __func__, __LINE__, format[i] );
+                ret = EXIT_FAILURE;
+        };
+
+        if ( ret == EXIT_FAILURE ) {
+            fprintf ( stderr, "%s():%d - Error: can't create cmt vstream\n", __func__, __LINE__ );
+            cmt_vstream_destroy ( cmt_vstream );
+            return NULL;
+        };
+
+        i++;
+    };
+
+    return cmt_vstream;
 }

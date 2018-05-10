@@ -31,25 +31,32 @@
 extern "C" {
 #endif
 
-#include "libs/cmt_stream/cmt_stream.h"
-#include "libs/mztape/mztape.h"
 #include "cmt_extension.h"
+#include "libs/generic_driver/generic_driver.h"
+#include "libs/mztape/mztape.h"
+#include "libs/mzf/mzf.h"
+#include "libs/cmt_stream/cmt_bitstream.h"
 
 
-    typedef struct st_CMT_MZF {
-        st_CMT_STREAM *stream;
+    extern st_CMTEXT *g_cmtmzf_extension;
+
+
+    typedef struct st_CMT_MZF_FILESPEC {
+        st_MZF_HEADER *hdr;
         st_MZTAPE_MZF *mztmzf;
-        st_MZF_HEADER hdr;
-        char *playfile_name;
-    } st_CMT_MZF;
+    } st_CMT_MZF_FILESPEC;
 
-    extern st_CMT_MZF g_cmt_mzf;
-    extern st_CMT_EXTENSION g_cmt_mzf_extension;
+    extern void cmtmzf_filespec_destroy ( st_CMT_MZF_FILESPEC *filespec );
+    extern void cmtmzf_init ( void );
+    extern void cmtmzf_exit ( void );
+    extern int cmtmzf_open ( st_CMTEXT *cmtext, st_HANDLER *h, en_MZTAPE_SPEED mztape_speed );
+    extern st_CMT_BITSTREAM* cmtmzf_generate_bitstream ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_SPEED mztape_speed );
+    extern st_CMT_VSTREAM* cmtmzf_generate_vstream ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_SPEED mztape_speed );
 
-    extern void cmt_mzf_init ( void );
-    extern void cmt_mzf_exit ( void );
 
-#define CMT_MZF_DEFAULT_MZTAPE_RATE 44100
+#define CMTMZF_DEFAULT_STREAM_RATE 44100
+//#define CMTMZF_DEFAULT_STREAM_RATE 192000
+
 
 #ifdef __cplusplus
 }

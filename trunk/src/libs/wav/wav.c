@@ -79,11 +79,17 @@ static int wav_read_simple_header ( st_HANDLER *wav_handler, st_WAV_SIMPLE_HEADE
 
     memset ( sh, 0x00, sizeof ( st_WAV_SIMPLE_HEADER ) );
 
-    if ( EXIT_SUCCESS != wav_check_riff_header ( h ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != wav_check_riff_header ( h ) ) {
+        fprintf ( stderr, "%s() - %d Error: bad WAV format\n", __func__, __LINE__ );
+        return EXIT_FAILURE;
+    };
 
     uint32_t fmt_size = 0;
     uint32_t offset = sizeof ( st_WAV_RIFF_HEADER );
-    if ( EXIT_SUCCESS != wav_check_chunk_header ( h, offset, WAV_TAG_FMT, &fmt_size ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != wav_check_chunk_header ( h, offset, WAV_TAG_FMT, &fmt_size ) ) {
+        fprintf ( stderr, "%s() - %d Error: bad WAV format\n", __func__, __LINE__ );
+        return EXIT_FAILURE;
+    };
 
     offset += sizeof ( st_WAV_CHUNK_HEADER );
 
@@ -92,9 +98,22 @@ static int wav_read_simple_header ( st_HANDLER *wav_handler, st_WAV_SIMPLE_HEADE
 
     if ( EXIT_SUCCESS != generic_driver_direct_read ( h, offset, (void**) &fmt, &work_buffer, sizeof ( work_buffer ) ) ) return EXIT_FAILURE;
 
+    if ( fmt->format_code != WAVE_FORMAT_CODE_PCM ) {
+        fprintf ( stderr, "%s() - %d Error: only PCM format is supported, format_code = 0x%02x\n", __func__, __LINE__, fmt->format_code );
+        return EXIT_FAILURE;
+    };
+
+    if ( !( ( fmt->bits_per_sample == 8 ) || ( fmt->bits_per_sample == 16 ) || ( fmt->bits_per_sample == 32 ) || ( fmt->bits_per_sample == 64 ) ) ) {
+        fprintf ( stderr, "%s() - %d Error: unsupported bits per sample %d\n", __func__, __LINE__, fmt->bits_per_sample );
+        return EXIT_FAILURE;
+    };
+
     uint32_t data_size = 0;
     offset += fmt_size;
-    if ( EXIT_SUCCESS != wav_check_chunk_header ( h, offset, WAV_TAG_DATA, &data_size ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != wav_check_chunk_header ( h, offset, WAV_TAG_DATA, &data_size ) ) {
+        fprintf ( stderr, "%s() - %d Error: daata chunk not found\n", __func__, __LINE__ );
+        return EXIT_FAILURE;
+    };
 
     sh->format_code = endianity_bswap16_LE ( fmt->format_code );
     sh->channels = endianity_bswap16_LE ( fmt->channels );
@@ -107,15 +126,6 @@ static int wav_read_simple_header ( st_HANDLER *wav_handler, st_WAV_SIMPLE_HEADE
     sh->blocks = data_size / sh->block_size;
     sh->count_sec = ( (float) sh->data_size / sh->block_size ) / sh->sample_rate;
 
-    if ( sh->format_code != WAVE_FORMAT_PCM ) {
-        fprintf ( stderr, "%s() - %d Error: only PCM format is supported, format_code = 0x%02x\n", __func__, __LINE__, sh->format_code );
-        return EXIT_FAILURE;
-    };
-
-    if ( !( ( sh->bits_per_sample == 8 ) || ( sh->bits_per_sample == 16 ) || ( sh->bits_per_sample == 32 ) || ( sh->bits_per_sample == 64 ) ) ) {
-        fprintf ( stderr, "%s() - %d Error: unsupported bits per sample %d\n", __func__, __LINE__, sh->bits_per_sample );
-        return EXIT_FAILURE;
-    };
 
     return EXIT_SUCCESS;
 }
@@ -133,4 +143,75 @@ st_WAV_SIMPLE_HEADER* wav_simple_header_new_from_handler ( st_HANDLER *wav_handl
         return NULL;
     };
     return sh;
+}
+
+
+int wav_get_bit_value_of_sample ( st_HANDLER *wav_handler, st_WAV_SIMPLE_HEADER *simple_header, uint32_t sample_position, en_WAV_POLARITY polarity, int *bit_value ) {
+
+    st_HANDLER *h = wav_handler;
+    st_WAV_SIMPLE_HEADER *sh = simple_header;
+
+    int8_t buffer[( WAV_MAX_BITS_PER_SAMPLE / 8 )];
+    void *buf = &buffer;
+    int sample_bytes = ( sh->bits_per_sample / 8 );
+
+    uint32_t offset = ( sample_position * sh->block_size ) + sh->real_data_offset;
+
+    if ( EXIT_SUCCESS != generic_driver_read ( h, offset, buffer, sample_bytes ) ) {
+        fprintf ( stderr, "%s():%d - Could not read sample: %s, %s\n", __func__, __LINE__, strerror ( errno ), generic_driver_error_message ( h, h->driver ) );
+        return EXIT_FAILURE;
+    };
+
+    switch ( sh->bits_per_sample ) {
+
+        case 8:
+        {
+            int8_t sample = buffer[0];
+            if ( polarity == WAV_POLARITY_NORMAL ) {
+                *bit_value = ( sample >= 0 ) ? 0 : 1;
+            } else {
+                *bit_value = ( sample > 0 ) ? 1 : 0;
+            };
+            break;
+        }
+
+        case 16:
+        {
+            int16_t sample = endianity_bswap16_LE ( * (int16_t*) buf );
+            if ( polarity == WAV_POLARITY_NORMAL ) {
+                *bit_value = ( sample >= 0 ) ? 0 : 1;
+            } else {
+                *bit_value = ( sample > 0 ) ? 1 : 0;
+            };
+            break;
+        }
+
+        case 32:
+        {
+            int32_t sample = endianity_bswap32_LE ( * (int32_t*) buf );
+            if ( polarity == WAV_POLARITY_NORMAL ) {
+                *bit_value = ( sample >= 0 ) ? 0 : 1;
+            } else {
+                *bit_value = ( sample > 0 ) ? 1 : 0;
+            };
+            break;
+        }
+
+        case 64:
+        {
+            int64_t sample = endianity_bswap64_LE ( * (int64_t*) buf );
+            if ( polarity == WAV_POLARITY_NORMAL ) {
+                *bit_value = ( sample >= 0 ) ? 0 : 1;
+            } else {
+                *bit_value = ( sample > 0 ) ? 1 : 0;
+            };
+            break;
+        }
+
+        default:
+            fprintf ( stderr, "%s():%d - Unsupported bits_per_sample '%d'\n", __func__, __LINE__, sh->bits_per_sample );
+            return EXIT_FAILURE;
+    };
+
+    return EXIT_SUCCESS;
 }

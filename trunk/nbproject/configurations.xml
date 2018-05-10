@@ -20,7 +20,9 @@
       </logicalFolder>
       <logicalFolder name="f5" displayName="Libs" projectFiles="true">
         <logicalFolder name="f8" displayName="CMT stream" projectFiles="true">
+          <itemPath>src/libs/cmt_stream/cmt_bitstream.h</itemPath>
           <itemPath>src/libs/cmt_stream/cmt_stream.h</itemPath>
+          <itemPath>src/libs/cmt_stream/cmt_vstream.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f3" displayName="DSK" projectFiles="true">
           <itemPath>src/libs/dsk/dsk.h</itemPath>
@@ -171,7 +173,8 @@
       </logicalFolder>
       <logicalFolder name="f5" displayName="Libs" projectFiles="true">
         <logicalFolder name="f8" displayName="CMT stream" projectFiles="true">
-          <itemPath>src/libs/cmt_stream/cmt_stream.c</itemPath>
+          <itemPath>src/libs/cmt_stream/cmt_bitstream.c</itemPath>
+          <itemPath>src/libs/cmt_stream/cmt_vstream.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f3" displayName="DSK" projectFiles="true">
           <itemPath>src/libs/dsk/dsk.c</itemPath>
@@ -187,7 +190,7 @@
           <itemPath>src/libs/mzf/mzf.c</itemPath>
           <itemPath>src/libs/mzf/mzf_tools.c</itemPath>
         </logicalFolder>
-        <logicalFolder name="f7" displayName="MZTAPE" projectFiles="true">
+        <logicalFolder name="f7" displayName="MZtape" projectFiles="true">
           <itemPath>src/libs/mztape/mztape.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f5" displayName="QD" projectFiles="true">
@@ -200,6 +203,7 @@
       <logicalFolder name="f3" displayName="MZ-800" projectFiles="true">
         <logicalFolder name="f1" displayName="CMT" projectFiles="true">
           <itemPath>src/cmt/cmt.c</itemPath>
+          <itemPath>src/cmt/cmt_extension.c</itemPath>
           <itemPath>src/cmt/cmt_hack.c</itemPath>
           <itemPath>src/cmt/cmt_mzf.c</itemPath>
           <itemPath>src/cmt/cmt_wav.c</itemPath>
@@ -427,6 +431,8 @@
       </item>
       <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_extension.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_extension.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="10">
@@ -522,9 +528,21 @@
       </item>
       <item path="src/joy/joy.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/libs/cmt_stream/cmt_stream.c" ex="false" tool="0" flavor2="0">
+      <item path="src/libs/cmt_stream/cmt_bitstream.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_bitstream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_stream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_vstream.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -931,6 +949,8 @@
       </item>
       <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_extension.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_extension.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="0">
@@ -1023,9 +1043,21 @@
       </item>
       <item path="src/joy/joy.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/libs/cmt_stream/cmt_stream.c" ex="false" tool="0" flavor2="0">
+      <item path="src/libs/cmt_stream/cmt_bitstream.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_bitstream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_stream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_vstream.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1423,6 +1455,8 @@
       </item>
       <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_extension.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_extension.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="0">
@@ -1515,9 +1549,21 @@
       </item>
       <item path="src/joy/joy.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/libs/cmt_stream/cmt_stream.c" ex="false" tool="0" flavor2="0">
+      <item path="src/libs/cmt_stream/cmt_bitstream.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_bitstream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_stream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_vstream.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1924,6 +1970,8 @@
       </item>
       <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_extension.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_extension.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="10">
@@ -2019,9 +2067,21 @@
       </item>
       <item path="src/joy/joy.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/libs/cmt_stream/cmt_stream.c" ex="false" tool="0" flavor2="0">
+      <item path="src/libs/cmt_stream/cmt_bitstream.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_bitstream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_stream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_vstream.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2433,6 +2493,8 @@
       </item>
       <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_extension.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_extension.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="10">
@@ -2528,9 +2590,21 @@
       </item>
       <item path="src/joy/joy.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/libs/cmt_stream/cmt_stream.c" ex="false" tool="0" flavor2="0">
+      <item path="src/libs/cmt_stream/cmt_bitstream.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_bitstream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_stream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_vstream.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2942,6 +3016,8 @@
       </item>
       <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_extension.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_extension.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="10">
@@ -3037,9 +3113,21 @@
       </item>
       <item path="src/joy/joy.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/libs/cmt_stream/cmt_stream.c" ex="false" tool="0" flavor2="0">
+      <item path="src/libs/cmt_stream/cmt_bitstream.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_bitstream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_stream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_vstream.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -3449,6 +3537,8 @@
       </item>
       <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_extension.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_extension.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="10">
@@ -3544,9 +3634,21 @@
       </item>
       <item path="src/joy/joy.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/libs/cmt_stream/cmt_stream.c" ex="false" tool="0" flavor2="0">
+      <item path="src/libs/cmt_stream/cmt_bitstream.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_bitstream.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_stream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_vstream.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>

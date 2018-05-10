@@ -36,7 +36,8 @@
 
 #include "libs/mzf/mzf.h"
 #include "libs/mzf/mzf_tools.h"
-#include "libs/cmt_stream/cmt_stream.h"
+
+#include "libs/mztape/mztape.h"
 
 
 typedef enum en_UICMT_SHOW {
@@ -85,7 +86,7 @@ G_MODULE_EXPORT void on_menuitem_cmt_hack ( GtkCheckMenuItem *menuitem, gpointer
 }
 
 
-G_MODULE_EXPORT void on_menuitem_cmt_speed_1200 ( GtkCheckMenuItem *menuitem, gpointer data ) {
+G_MODULE_EXPORT void on_menuitem_cmt_speed_1_1_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
 
@@ -97,13 +98,13 @@ G_MODULE_EXPORT void on_menuitem_cmt_speed_1200 ( GtkCheckMenuItem *menuitem, gp
 
     if ( gtk_check_menu_item_get_active ( menuitem ) ) {
         LOCK_UICALLBACKS ( );
-        cmt_change_speed ( CMT_SPEED_1200 );
+        cmt_change_speed ( MZTAPE_SPEED_1_1 );
         UNLOCK_UICALLBACKS ( );
     };
 }
 
 
-G_MODULE_EXPORT void on_menuitem_cmt_speed_2400 ( GtkCheckMenuItem *menuitem, gpointer data ) {
+G_MODULE_EXPORT void on_menuitem_cmt_speed_2_1_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
 
@@ -115,13 +116,13 @@ G_MODULE_EXPORT void on_menuitem_cmt_speed_2400 ( GtkCheckMenuItem *menuitem, gp
 
     if ( gtk_check_menu_item_get_active ( menuitem ) ) {
         LOCK_UICALLBACKS ( );
-        cmt_change_speed ( CMT_SPEED_2400 );
+        cmt_change_speed ( MZTAPE_SPEED_2_1 );
         UNLOCK_UICALLBACKS ( );
     };
 }
 
 
-G_MODULE_EXPORT void on_menuitem_cmt_speed_3600 ( GtkCheckMenuItem *menuitem, gpointer data ) {
+G_MODULE_EXPORT void on_menuitem_cmt_speed_7_3_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
 
@@ -133,7 +134,43 @@ G_MODULE_EXPORT void on_menuitem_cmt_speed_3600 ( GtkCheckMenuItem *menuitem, gp
 
     if ( gtk_check_menu_item_get_active ( menuitem ) ) {
         LOCK_UICALLBACKS ( );
-        cmt_change_speed ( CMT_SPEED_3600 );
+        cmt_change_speed ( MZTAPE_SPEED_7_3 );
+        UNLOCK_UICALLBACKS ( );
+    };
+}
+
+
+G_MODULE_EXPORT void on_menuitem_cmt_speed_8_3_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+
+    if ( gtk_check_menu_item_get_active ( menuitem ) ) {
+        LOCK_UICALLBACKS ( );
+        cmt_change_speed ( MZTAPE_SPEED_8_3 );
+        UNLOCK_UICALLBACKS ( );
+    };
+}
+
+
+G_MODULE_EXPORT void on_menuitem_cmt_speed_3_1_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+
+    if ( gtk_check_menu_item_get_active ( menuitem ) ) {
+        LOCK_UICALLBACKS ( );
+        cmt_change_speed ( MZTAPE_SPEED_3_1 );
         UNLOCK_UICALLBACKS ( );
     };
 }
@@ -200,18 +237,33 @@ void ui_cmt_speed_menu_update ( void ) {
     };
 
     switch ( g_cmt.speed ) {
-        case CMT_SPEED_1200:
-            gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_1200" ), TRUE );
+        case MZTAPE_SPEED_1_1:
+            gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_1_1" ), TRUE );
             break;
-        case CMT_SPEED_2400:
-            gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_2400" ), TRUE );
+        case MZTAPE_SPEED_2_1:
+            gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_2_1" ), TRUE );
             break;
-        case CMT_SPEED_3600:
-            gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_3600" ), TRUE );
+        case MZTAPE_SPEED_7_3:
+            gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_7_3" ), TRUE );
+            break;
+        case MZTAPE_SPEED_8_3:
+            gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_8_3" ), TRUE );
+            break;
+        case MZTAPE_SPEED_3_1:
+            gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_3_1" ), TRUE );
             break;
     };
 
     UNLOCK_UICALLBACKS ( );
+}
+
+
+void ui_cmt_polarity_menu_update ( void ) {
+    if ( !TEST_CMT_STOP ) {
+        gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_dip_switch_cmt_inverted_polarity" ), FALSE );
+    } else {
+        gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_dip_switch_cmt_inverted_polarity" ), TRUE );
+    };
 }
 
 
@@ -241,19 +293,21 @@ G_MODULE_EXPORT void on_cmt_stop_button_clicked ( GtkButton *button, gpointer da
 }
 
 
-G_MODULE_EXPORT void on_cmt_record_button_clicked ( GtkButton *button, gpointer data ) {
-    (void) button;
+G_MODULE_EXPORT void on_cmt_record_togglebutton_toggled ( GtkToggleButton *togglebutton, gpointer data ) {
+    (void) togglebutton;
     (void) data;
 
     printf ( "%s()\n", __func__ );
 }
 
 
-G_MODULE_EXPORT void on_cmt_play_button_clicked ( GtkButton *button, gpointer data ) {
-    (void) button;
+G_MODULE_EXPORT void on_cmt_play_togglebutton_toggled ( GtkToggleButton *togglebutton, gpointer data ) {
+    (void) togglebutton;
     (void) data;
 
-    cmt_play ( );
+    if ( ( gtk_toggle_button_get_active ( togglebutton ) ) && ( TEST_CMT_STOP ) ) {
+        cmt_play ( );
+    };
 }
 
 
@@ -281,6 +335,46 @@ G_MODULE_EXPORT void on_cmt_eject_button_clicked ( GtkButton *button, gpointer d
 }
 
 
+G_MODULE_EXPORT void on_cmt_previous_button_clicked ( GtkButton *button, gpointer data ) {
+    (void) button;
+    (void) data;
+
+    printf ( "%s()\n", __func__ );
+}
+
+
+G_MODULE_EXPORT void on_cmt_next_button_clicked ( GtkButton *button, gpointer data ) {
+    (void) button;
+    (void) data;
+
+    printf ( "%s()\n", __func__ );
+}
+
+
+G_MODULE_EXPORT void on_cmt_rewind_button_clicked ( GtkButton *button, gpointer data ) {
+    (void) button;
+    (void) data;
+
+    printf ( "%s()\n", __func__ );
+}
+
+
+G_MODULE_EXPORT void on_cmt_forward_button_clicked ( GtkButton *button, gpointer data ) {
+    (void) button;
+    (void) data;
+
+    printf ( "%s()\n", __func__ );
+}
+
+
+G_MODULE_EXPORT void on_cmt_filelist_button_clicked ( GtkButton *button, gpointer data ) {
+    (void) button;
+    (void) data;
+
+    printf ( "%s()\n", __func__ );
+}
+
+
 G_MODULE_EXPORT void on_cmt_speed_comboboxtext_changed ( GtkComboBox *combobox, gpointer data ) {
     //(void) combobox;
     (void) data;
@@ -293,121 +387,179 @@ G_MODULE_EXPORT void on_cmt_speed_comboboxtext_changed ( GtkComboBox *combobox, 
 }
 
 
-static void ui_cmt_show_items_by_extension ( en_CMT_EXTENSION_NAME extname ) {
-    switch ( extname ) {
-        case CMT_EXTENSION_NAME_MZF:
-            gtk_widget_show ( ui_get_widget ( "cmt_mzf_info_table" ) );
-            gtk_widget_hide ( ui_get_widget ( "cmt_stream_info_table" ) );
-            gtk_widget_show ( ui_get_widget ( "cmt_speed_label" ) );
-            gtk_widget_show ( ui_get_widget ( "cmt_speed_comboboxtext" ) );
-            break;
-        case CMT_EXTENSION_NAME_WAV:
-            gtk_widget_hide ( ui_get_widget ( "cmt_mzf_info_table" ) );
-            gtk_widget_show ( ui_get_widget ( "cmt_stream_info_table" ) );
-            gtk_widget_hide ( ui_get_widget ( "cmt_speed_label" ) );
-            gtk_widget_hide ( ui_get_widget ( "cmt_speed_comboboxtext" ) );
-            break;
-    };
-}
-
-
 void ui_cmt_window_update ( void ) {
 
-    static en_CMT_EXTENSION_NAME extname = CMT_EXTENSION_NAME_MZF;
+    GtkWidget *window = ui_get_widget ( "cmt_window" );
+    if ( !gtk_widget_get_visible ( window ) ) {
+        ui_cmt_speed_menu_update ( );
+        ui_cmt_polarity_menu_update ( );
+        return;
+    };
 
-    if ( !TEST_CMT_FILLED ) {
+    char buff [ 100 ];
 
-        ui_cmt_show_items_by_extension ( extname );
+    static en_CMT_FILETYPE cmt_filetype = CMT_FILETYPE_MZF;
+    static int is_tape = 0;
+    static int file_speed = 0;
 
-        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_stop_button" ), FALSE );
-        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_record_button" ), FALSE );
-        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_play_button" ), FALSE );
-        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_pause_button" ), FALSE );
-        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_open_button" ), TRUE );
-        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_eject_button" ), FALSE );
-        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_speed_comboboxtext" ), FALSE );
+    int play_file = 0;
+    int total_files = 0;
 
-        gtk_progress_bar_set_text ( ui_get_progress_bar ( "cmt_progressbar" ), "*** Empty ***" );
+    if ( TEST_CMT_FILLED ) {
+        cmt_filetype = cmtext_cmtfile_get_filetype ( g_cmt.ext );
+        is_tape = 0;
+        file_speed = 0;
+    };
 
-        gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), "--" );
-        gtk_label_set_text ( ui_get_label ( "cmt_filename_label" ), "--" );
-        gtk_label_set_text ( ui_get_label ( "cmt_mzfsize_label" ), "--" );
-        gtk_label_set_text ( ui_get_label ( "cmt_mzfexec_label" ), "--" );
-        gtk_label_set_text ( ui_get_label ( "cmt_mzfstart_label" ), "--" );
-
-        gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "--" );
-        gtk_label_set_text ( ui_get_label ( "cmt_stream_rate_label" ), "--" );
-
-        gtk_label_set_markup ( ui_get_label ( "cmt_play_button_label" ), "Play" );
-
+    // Tape info
+    if ( !is_tape ) {
+        gtk_widget_hide ( ui_get_widget ( "cmt_tape_info_box" ) );
     } else {
-
-        en_CMT_EXTENSION_NAME extname = g_cmt.ext->get_name ( );
-        ui_cmt_show_items_by_extension ( extname );
-
-        switch ( extname ) {
-            case CMT_EXTENSION_NAME_MZF:
-            {
-                g_assert ( g_cmt.ext->get_mzfheader != NULL );
-
-                if ( g_cmt.ext->get_mzfheader != NULL ) {
-                    st_MZF_HEADER *hdr = g_cmt.ext->get_mzfheader ( );
-
-                    char buff [ 100 ];
-
-                    sprintf ( buff, "%02x", hdr->ftype );
-                    gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), buff );
-
-                    mzf_tools_get_fname ( hdr, (char*) &buff );
-                    gtk_label_set_text ( ui_get_label ( "cmt_filename_label" ), buff );
-
-                    sprintf ( buff, "0x%04x", hdr->fsize );
-                    gtk_label_set_text ( ui_get_label ( "cmt_mzfsize_label" ), buff );
-
-                    sprintf ( buff, "0x%04x", hdr->fexec );
-                    gtk_label_set_text ( ui_get_label ( "cmt_mzfexec_label" ), buff );
-
-                    sprintf ( buff, "0x%04x", hdr->fstrt );
-                    gtk_label_set_text ( ui_get_label ( "cmt_mzfstart_label" ), buff );
-                };
-                break;
-            }
-
-            case CMT_EXTENSION_NAME_WAV:
-            {
-                char buff [ 100 ];
-
-                st_CMT_STREAM *cmt_stream = g_cmt.ext->get_stream ( );
-
-                sprintf ( buff, "%d Hz", cmt_stream->rate );
-                gtk_label_set_text ( ui_get_label ( "cmt_stream_rate_label" ), buff );
-                gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "WAV" );
-                break;
-            }
-        };
-
-        gtk_progress_bar_set_text ( ui_get_progress_bar ( "cmt_progressbar" ), g_cmt.ext->get_playfile_name ( ) );
-
-        if ( TEST_CMT_STOP ) {
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_stop_button" ), FALSE );
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_record_button" ), FALSE );
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_play_button" ), TRUE );
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_pause_button" ), FALSE );
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_open_button" ), TRUE );
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_eject_button" ), TRUE );
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_speed_comboboxtext" ), TRUE );
-            gtk_label_set_markup ( ui_get_label ( "cmt_play_button_label" ), "Play" );
+        gtk_widget_show ( ui_get_widget ( "cmt_tape_info_box" ) );
+        if ( total_files == 0 ) {
+            gtk_label_set_text ( ui_get_label ( "cmt_play_file_label" ), "--" );
+            gtk_label_set_text ( ui_get_label ( "cmt_total_files_label" ), "--" );
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_filelist_button" ), FALSE );
         } else {
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_stop_button" ), TRUE );
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_record_button" ), FALSE );
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_play_button" ), FALSE );
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_pause_button" ), FALSE );
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_open_button" ), FALSE );
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_eject_button" ), TRUE );
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_speed_comboboxtext" ), FALSE );
-            gtk_label_set_markup ( ui_get_label ( "cmt_play_button_label" ), "<b>Play</b>" );
+            snprintf ( buff, sizeof (buff ), "%d", play_file );
+            gtk_label_set_text ( ui_get_label ( "cmt_play_file_label" ), buff );
+
+            snprintf ( buff, sizeof (buff ), "%d", total_files );
+            gtk_label_set_text ( ui_get_label ( "cmt_total_files_label" ), buff );
+
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_filelist_button" ), TRUE );
         };
     };
+
+
+    // MZF info
+    if ( cmt_filetype != CMT_FILETYPE_MZF ) {
+        gtk_widget_hide ( ui_get_widget ( "cmt_mzf_info_table" ) );
+        gtk_widget_hide ( ui_get_widget ( "cmt_speed_label" ) );
+        gtk_widget_hide ( ui_get_widget ( "cmt_speed_comboboxtext" ) );
+    } else {
+        gtk_widget_show ( ui_get_widget ( "cmt_mzf_info_table" ) );
+        gtk_widget_show ( ui_get_widget ( "cmt_speed_label" ) );
+        gtk_widget_show ( ui_get_widget ( "cmt_speed_comboboxtext" ) );
+
+        if ( !TEST_CMT_FILLED ) {
+            gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), "--" );
+            gtk_label_set_text ( ui_get_label ( "cmt_filename_label" ), "--" );
+            gtk_label_set_text ( ui_get_label ( "cmt_mzfsize_label" ), "--" );
+            gtk_label_set_text ( ui_get_label ( "cmt_mzfexec_label" ), "--" );
+            gtk_label_set_text ( ui_get_label ( "cmt_mzfstart_label" ), "--" );
+            gtk_label_set_text ( ui_get_label ( "cmt_file_speed_value_label" ), "--" );
+        } else {
+
+            st_MZF_HEADER *hdr = cmtext_cmtfile_get_mzfheader ( g_cmt.ext );
+            g_assert ( hdr != NULL );
+            snprintf ( buff, sizeof (buff ), "%02x", hdr->ftype );
+            gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), buff );
+
+            mzf_tools_get_fname ( hdr, (char*) &buff );
+            gtk_label_set_text ( ui_get_label ( "cmt_filename_label" ), buff );
+
+            snprintf ( buff, sizeof (buff ), "0x%04x", hdr->fsize );
+            gtk_label_set_text ( ui_get_label ( "cmt_mzfsize_label" ), buff );
+
+            snprintf ( buff, sizeof (buff ), "0x%04x", hdr->fexec );
+            gtk_label_set_text ( ui_get_label ( "cmt_mzfexec_label" ), buff );
+
+            snprintf ( buff, sizeof (buff ), "0x%04x", hdr->fstrt );
+            gtk_label_set_text ( ui_get_label ( "cmt_mzfstart_label" ), buff );
+        };
+
+        if ( !file_speed ) {
+            gtk_widget_hide ( ui_get_widget ( "cmt_file_speed_label" ) );
+            gtk_widget_hide ( ui_get_widget ( "cmt_file_speed_value_label" ) );
+        } else {
+            gtk_widget_show ( ui_get_widget ( "cmt_file_speed_label" ) );
+            gtk_widget_show ( ui_get_widget ( "cmt_file_speed_value_label" ) );
+
+            snprintf ( buff, sizeof (buff ), "%d Bd", file_speed );
+            gtk_label_set_text ( ui_get_label ( "cmt_file_speed_value_label" ), buff );
+        };
+    };
+
+    // WAV info
+    if ( cmt_filetype != CMT_FILETYPE_WAV ) {
+        gtk_widget_hide ( ui_get_widget ( "cmt_stream_info_table" ) );
+    } else {
+        gtk_widget_show ( ui_get_widget ( "cmt_stream_info_table" ) );
+
+        if ( !TEST_CMT_FILLED ) {
+            gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "--" );
+            gtk_label_set_text ( ui_get_label ( "cmt_stream_rate_label" ), "--" );
+        } else {
+            snprintf ( buff, sizeof (buff ), "%d Hz", cmtext_cmtfile_get_rate ( g_cmt.ext ) );
+            gtk_label_set_text ( ui_get_label ( "cmt_stream_rate_label" ), buff );
+            gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "WAV" );
+        };
+    };
+
+
+    // progress bar
+    if ( !TEST_CMT_FILLED ) {
+        gtk_progress_bar_set_text ( ui_get_progress_bar ( "cmt_progressbar" ), "*** Empty ***" );
+    } else {
+        gtk_progress_bar_set_text ( ui_get_progress_bar ( "cmt_progressbar" ), cmtext_cmtfile_get_playname ( g_cmt.ext ) );
+    };
+
+
+    // Ovladaci prvky
+    if ( !TEST_CMT_FILLED ) {
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_open_button" ), TRUE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_eject_button" ), FALSE );
+
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_play_togglebutton" ), FALSE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_record_togglebutton" ), FALSE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_stop_button" ), FALSE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_pause_button" ), FALSE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_speed_comboboxtext" ), FALSE );
+
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_previous_button" ), FALSE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_next_button" ), FALSE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_rewind_button" ), FALSE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_forward_button" ), FALSE );
+
+    } else {
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_previous_button" ), FALSE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_next_button" ), FALSE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_rewind_button" ), FALSE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_forward_button" ), FALSE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_pause_button" ), FALSE );
+
+        if ( TEST_CMT_STOP ) {
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_open_button" ), TRUE );
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_eject_button" ), TRUE );
+
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_play_togglebutton" ), TRUE );
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_record_togglebutton" ), FALSE );
+
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_stop_button" ), FALSE );
+
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_speed_comboboxtext" ), TRUE );
+
+            gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( ui_get_widget ( "cmt_play_togglebutton" ) ), FALSE );
+        } else {
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_open_button" ), FALSE );
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_eject_button" ), TRUE );
+
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_play_togglebutton" ), FALSE );
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_record_togglebutton" ), FALSE );
+
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_stop_button" ), TRUE );
+
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_speed_comboboxtext" ), FALSE );
+
+            if ( TEST_CMT_PLAY ) {
+                LOCK_UICALLBACKS ( );
+                gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( ui_get_widget ( "cmt_play_togglebutton" ) ), TRUE );
+                UNLOCK_UICALLBACKS ( );
+            };
+        };
+    };
+
 
     ui_cmt_update_player ( );
 
@@ -416,10 +568,14 @@ void ui_cmt_window_update ( void ) {
     UNLOCK_UICALLBACKS ( );
 
     ui_cmt_speed_menu_update ( );
+    ui_cmt_polarity_menu_update ( );
 }
 
 
 void ui_cmt_update_player ( void ) {
+
+    GtkWidget *window = ui_get_widget ( "cmt_window" );
+    if ( !gtk_widget_get_visible ( window ) ) return;
 
     gdouble total_time = 0;
     gdouble play_time = 0;
@@ -427,8 +583,9 @@ void ui_cmt_update_player ( void ) {
     guint32 print_time;
 
     if ( TEST_CMT_FILLED ) {
-        st_CMT_STREAM *cmt_stream = g_cmt.ext->get_stream ( );
-        total_time = ( cmt_stream->scan_time * cmt_stream->scans );
+        double scan_time = cmtext_cmtfile_get_scantime ( g_cmt.ext );
+        uint64_t scans = cmtext_cmtfile_get_scans ( g_cmt.ext );
+        total_time = ( scan_time * scans );
         if ( !TEST_CMT_STOP ) {
             play_time = cmt_get_playtime ( );
             fraction = ( play_time / total_time );

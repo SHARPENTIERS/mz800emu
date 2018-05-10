@@ -39,6 +39,7 @@
 //#define DBGLEVEL (DBGNON /* | DBGERR | DBGWAR | DBGINF*/)
 //#define DBGLEVEL (DBGNON | DBGERR | DBGWAR | DBGINF )
 #include "debug.h"
+#include "ui/vkbd/windows_virtual_key_codes.h"
 
 
 /*
@@ -83,9 +84,15 @@ void static inline pio8255_set_pc01 ( uint8_t new_pc01 ) {
     if ( new_pc01 != g_pio8255.signal_pc01 ) {
         g_pio8255.signal_pc01 = new_pc01;
         //printf("bdc=%lu\n", bdcounter++);
+#if 0
         static uint32_t last = 0;
-        printf ( "CMT: %d, %d - %d\n", gdg_get_total_ticks ( ), new_pc01, gdg_get_total_ticks ( ) - last );
+#ifdef LINUX
+        printf ( "CMT: %d - %lu\n", new_pc01, gdg_get_total_ticks ( ) - last );
+#else
+        printf ( "CMT: %d - %llu\n", new_pc01, gdg_get_total_ticks ( ) - last );
+#endif
         last = gdg_get_total_ticks ( );
+#endif
     };
 }
 
@@ -255,9 +262,18 @@ Z80EX_BYTE pio8255_read ( int addr ) {
             retval = 0x00;
             retval |= SIGNAL_GDG_VBLNK ? 1 << 7 : 0;
             retval |= mz800_get_cursor_timer_state ( ) << 6;
+#if 1
             retval |= ( cmt_read_data ( ) & 1 ) << 5;
-            //retval |= g_pio8255.signal_pc04 << 4;
-            retval |= SIGNAL_GDG_VBLNK << 4; /* simulujeme promenlivy stav motoru (jinak neni mozne spustut hru "24" - musel by se manualne menit stav motoru ) */
+#else
+            int cmtdata = ( cmt_read_data ( ) & 1 );
+            retval |= ( cmtdata ) << 5;
+            static uint32_t gdg_last_time = 0;
+            printf ( "IORQ - %d, %d\n", cmtdata, gdg_get_total_ticks ( ) - gdg_last_time );
+            gdg_last_time = gdg_get_total_ticks ( );
+#endif
+            retval |= g_pio8255.signal_pc04 << 4;
+            //retval |= SIGNAL_GDG_VBLNK << 4; /* simulujeme promenlivy stav motoru (jinak neni mozne spustit hru "24" - musel by se manualne menit stav motoru ) */
+
             retval |= g_pio8255.signal_pc02 << 2;
             retval |= g_pio8255.signal_pc00;
 

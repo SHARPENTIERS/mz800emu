@@ -98,6 +98,14 @@ void* ui_utils_mem_realloc_raw ( void *ptr, guint32 size, const char *func, int 
 }
 
 
+/**
+ * basename() z <libgen.h> nefunguje v mingw32
+ */
+char* ui_utils_basename ( const char *file_name ) {
+    return g_path_get_basename ( file_name );
+}
+
+
 /*
  * 
  * Souborove funkce
