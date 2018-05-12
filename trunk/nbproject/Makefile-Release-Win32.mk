@@ -46,6 +46,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/cmt/cmt_extension.o \
 	${OBJECTDIR}/src/cmt/cmt_hack.o \
 	${OBJECTDIR}/src/cmt/cmt_mzf.o \
+	${OBJECTDIR}/src/cmt/cmt_mzt.o \
 	${OBJECTDIR}/src/cmt/cmt_wav.o \
 	${OBJECTDIR}/src/ctc8253/ctc8253.o \
 	${OBJECTDIR}/src/debugger/breakpoints.o \
@@ -216,6 +217,11 @@ ${OBJECTDIR}/src/cmt/cmt_mzf.o: src/cmt/cmt_mzf.c
 	${MKDIR} -p ${OBJECTDIR}/src/cmt
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_mzf.o src/cmt/cmt_mzf.c
+
+${OBJECTDIR}/src/cmt/cmt_mzt.o: src/cmt/cmt_mzt.c 
+	${MKDIR} -p ${OBJECTDIR}/src/cmt
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_mzt.o src/cmt/cmt_mzt.c
 
 ${OBJECTDIR}/src/cmt/cmt_wav.o: src/cmt/cmt_wav.c 
 	${MKDIR} -p ${OBJECTDIR}/src/cmt

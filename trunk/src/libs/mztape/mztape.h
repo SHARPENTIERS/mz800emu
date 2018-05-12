@@ -136,7 +136,7 @@ extern "C" {
     extern const double g_speed_divisor[];
 
     extern void mztape_mztmzf_destroy ( st_MZTAPE_MZF *mztmzf );
-    extern st_MZTAPE_MZF* mztape_create_mztmzf ( st_HANDLER *mzf_handler );
+    extern st_MZTAPE_MZF* mztape_create_mztmzf ( st_HANDLER *mzf_handler, uint32_t offset );
     extern st_CMT_BITSTREAM* mztape_create_cmt_bitstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_MZTAPE_SPEED mztape_speed, uint32_t sample_rate );
     extern st_CMT_VSTREAM* mztape_create_17MHz_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_MZTAPE_SPEED mztape_speed );
 

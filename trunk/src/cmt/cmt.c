@@ -47,6 +47,7 @@
 #include "cmt_extension.h"
 #include "cmt_wav.h"
 #include "cmt_mzf.h"
+#include "cmt_mzt.h"
 
 #include "libs/mztape/mztape.h"
 
@@ -115,7 +116,8 @@ void cmt_exit ( void ) {
 
     cmthack_exit ( );
     cmtwav_exit ( );
-    //    cmt_mzf_exit ( );
+    cmtmzf_exit ( );
+    cmtmzt_exit ( );
 }
 
 
@@ -176,6 +178,7 @@ void cmt_init ( void ) {
 
     cmtwav_init ( );
     cmtmzf_init ( );
+    cmtmzt_init ( );
 
     ui_cmt_init ( );
     ui_cmt_window_update ( );
@@ -201,6 +204,8 @@ int cmt_open_file_by_extension ( char *filename ) {
         ext = g_cmtmzf_extension;
     } else if ( 0 == strncasecmp ( file_ext, "wav", 3 ) ) {
         ext = g_cmtwav_extension;
+    } else if ( 0 == strncasecmp ( file_ext, "mzt", 3 ) ) {
+        ext = g_cmtmzt_extension;
     } else {
         ui_show_error ( "Unknown CMT file extension '%s'\n", filename );
         return EXIT_FAILURE;

@@ -135,7 +135,7 @@ int cmtmzf_open ( st_CMTEXT *cmtext, st_HANDLER *h, en_MZTAPE_SPEED mztape_speed
         return EXIT_FAILURE;
     };
 
-    st_MZTAPE_MZF *mztmzf = mztape_create_mztmzf ( h );
+    st_MZTAPE_MZF *mztmzf = mztape_create_mztmzf ( h, 0 );
     if ( !mztmzf ) {
         fprintf ( stderr, "%s() - %d: Can't create mztmzf\n", __func__, __LINE__ );
         ui_utils_mem_free ( hdr );

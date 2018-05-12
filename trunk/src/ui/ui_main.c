@@ -592,7 +592,7 @@ unsigned ui_open_file ( char **filename, char *predefined_filename, unsigned max
     if ( filetype == FILETYPE_MZF ) {
         gtk_file_filter_add_pattern ( filter, "*.mzf" );
         gtk_file_filter_add_pattern ( filter, "*.MZF" );
-        gtk_file_filter_set_name ( filter, "MZ-800 Tape File" );
+        gtk_file_filter_set_name ( filter, "MZ-800 Tape File (MZF)" );
     } else if ( filetype == FILETYPE_DSK ) {
         gtk_file_filter_add_pattern ( filter, "*.dsk" );
         gtk_file_filter_add_pattern ( filter, "*.DSK" );
@@ -615,7 +615,9 @@ unsigned ui_open_file ( char **filename, char *predefined_filename, unsigned max
         gtk_file_filter_add_pattern ( filter, "*.M12" );
         gtk_file_filter_add_pattern ( filter, "*.wav" );
         gtk_file_filter_add_pattern ( filter, "*.WAV" );
-        gtk_file_filter_set_name ( filter, "CMT File" );
+        gtk_file_filter_add_pattern ( filter, "*.mzt" );
+        gtk_file_filter_add_pattern ( filter, "*.MZT" );
+        gtk_file_filter_set_name ( filter, "CMT File: .mzf, .mzt, .wav" );
     };
 
     gtk_file_chooser_add_filter ( (GtkFileChooser*) filechooserdialog, filter );

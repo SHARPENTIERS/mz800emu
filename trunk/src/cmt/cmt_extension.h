@@ -48,6 +48,7 @@ extern "C" {
     typedef enum en_CMT_CONTAINER_TYPE {
         CMT_CONTAINER_TYPE_SINGLE = 0,
         CMT_CONTAINER_TYPE_MZT,
+        CMT_CONTAINER_TYPE_TAP,
         CMT_CONTAINER_TYPE_TZX,
     } en_CMT_CONTAINER_TYPE;
 
@@ -69,6 +70,7 @@ extern "C" {
         en_CMT_CONTAINER_TYPE type;
         char *name;
         int count_files;
+        void *spec;
     } st_CMT_CONTAINER;
 
 
