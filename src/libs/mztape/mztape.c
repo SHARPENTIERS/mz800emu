@@ -387,7 +387,7 @@ void mztape_mztmzf_destroy ( st_MZTAPE_MZF *mztmzf ) {
 }
 
 
-st_MZTAPE_MZF* mztape_create_mztmzf ( st_HANDLER *mzf_handler ) {
+st_MZTAPE_MZF* mztape_create_mztmzf ( st_HANDLER *mzf_handler, uint32_t offset ) {
 
     st_HANDLER *h = mzf_handler;
 
@@ -400,7 +400,7 @@ st_MZTAPE_MZF* mztape_create_mztmzf ( st_HANDLER *mzf_handler ) {
 
     st_MZF_HEADER mzfhdr;
 
-    if ( EXIT_SUCCESS != mzf_read_header ( h, &mzfhdr ) ) {
+    if ( EXIT_SUCCESS != mzf_read_header_on_offset ( h, offset, &mzfhdr ) ) {
         fprintf ( stderr, "%s():%d - Could not read: %s\n", __func__, __LINE__, generic_driver_error_message ( h, h->driver ) );
         mztape_mztmzf_destroy ( mztmzf );
         return NULL;
@@ -408,7 +408,7 @@ st_MZTAPE_MZF* mztape_create_mztmzf ( st_HANDLER *mzf_handler ) {
 
     mztmzf->size = mzfhdr.fsize;
 
-    if ( EXIT_SUCCESS != generic_driver_read ( h, 0, mztmzf->header, sizeof ( st_MZF_HEADER ) ) ) {
+    if ( EXIT_SUCCESS != generic_driver_read ( h, offset, mztmzf->header, sizeof ( st_MZF_HEADER ) ) ) {
         fprintf ( stderr, "%s():%d - Could not read: %s\n", __func__, __LINE__, generic_driver_error_message ( h, h->driver ) );
         mztape_mztmzf_destroy ( mztmzf );
         return NULL;
@@ -416,7 +416,7 @@ st_MZTAPE_MZF* mztape_create_mztmzf ( st_HANDLER *mzf_handler ) {
 
     mztmzf->body = ui_utils_mem_alloc ( mztmzf->size );
 
-    if ( EXIT_SUCCESS != generic_driver_read ( h, 0 + sizeof ( st_MZF_HEADER ), mztmzf->body, mzfhdr.fsize ) ) {
+    if ( EXIT_SUCCESS != generic_driver_read ( h, offset + sizeof ( st_MZF_HEADER ), mztmzf->body, mzfhdr.fsize ) ) {
         fprintf ( stderr, "%s():%d - Could not read: %s\n", __func__, __LINE__, generic_driver_error_message ( h, h->driver ) );
         mztape_mztmzf_destroy ( mztmzf );
         ui_utils_mem_free ( mztmzf->body );

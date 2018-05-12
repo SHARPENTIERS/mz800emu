@@ -54,6 +54,7 @@
           <itemPath>src/cmt/cmt_extension.h</itemPath>
           <itemPath>src/cmt/cmt_hack.h</itemPath>
           <itemPath>src/cmt/cmt_mzf.h</itemPath>
+          <itemPath>src/cmt/cmt_mzt.h</itemPath>
           <itemPath>src/cmt/cmt_wav.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f1" displayName="CPU" projectFiles="true">
@@ -206,6 +207,7 @@
           <itemPath>src/cmt/cmt_extension.c</itemPath>
           <itemPath>src/cmt/cmt_hack.c</itemPath>
           <itemPath>src/cmt/cmt_mzf.c</itemPath>
+          <itemPath>src/cmt/cmt_mzt.c</itemPath>
           <itemPath>src/cmt/cmt_wav.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f2" displayName="CPU" projectFiles="true">
@@ -442,6 +444,10 @@
       <item path="src/cmt/cmt_mzf.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_mzf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_mzt.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_mzt.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -961,6 +967,10 @@
       </item>
       <item path="src/cmt/cmt_mzf.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_mzt.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_mzt.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
@@ -1466,6 +1476,10 @@
       <item path="src/cmt/cmt_mzf.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_mzf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_mzt.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_mzt.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1981,6 +1995,10 @@
       <item path="src/cmt/cmt_mzf.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_mzf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_mzt.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_mzt.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2505,6 +2523,10 @@
       </item>
       <item path="src/cmt/cmt_mzf.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_mzt.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_mzt.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
@@ -3028,6 +3050,10 @@
       </item>
       <item path="src/cmt/cmt_mzf.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_mzt.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_mzt.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
@@ -3548,6 +3574,10 @@
       <item path="src/cmt/cmt_mzf.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_mzf.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_mzt.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_mzt.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
