@@ -1,8 +1,8 @@
 /* 
- * File:   cmt_mzt.h
+ * File:   cmthack.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 11. května 2018, 7:27
+ * Created on 2. července 2015, 20:50
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -23,33 +23,40 @@
  * ---------------------------------------------------------------------------
  */
 
-
-#ifndef CMT_MZT_H
-#define CMT_MZT_H
+#ifndef CMTHACK_H
+#define CMTHACK_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <stdint.h>
-
-#include "cmt_mzf.h"
-
-    extern st_CMTEXT *g_cmtmzt_extension;
+#include <stdio.h>
+#include "libs/generic_driver/generic_driver.h"
 
 
-    typedef struct st_CMT_MZT_CONSPEC {
-        int count_files;
-        st_CMT_MZF_FILESPEC **fspecs;
-    } st_CMT_MZT_CONSPEC;
+    typedef struct st_CMTHACK {
+        st_HANDLER mzf_handler;
+        char *last_filename;
+        unsigned load_patch_installed;
+    } st_CMTHACK;
 
+    extern st_CMTHACK g_cmthack;
 
-    extern void cmtmzt_init ( void );
-    extern void cmtmzt_exit ( void );
+    extern void cmthack_reinstall_rom_patch ( void );
+    extern void cmthack_load_rom_patch ( unsigned enabled );
+
+    extern void cmthack_reset ( void );
+    extern void cmthack_init ( void );
+    extern void cmthack_exit ( void );
+
+    extern void cmthack_load_file ( void );
+    extern void cmthack_load_mzf_filename ( char *filename );
+    extern void cmthack_read_mzf_body ( void );
+
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CMT_MZT_H */
+#endif /* CMTHACK_H */
 

@@ -43,11 +43,13 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/cfgfile/cfgtools.o \
 	${OBJECTDIR}/src/cfgmain.o \
 	${OBJECTDIR}/src/cmt/cmt.o \
-	${OBJECTDIR}/src/cmt/cmt_extension.o \
-	${OBJECTDIR}/src/cmt/cmt_hack.o \
 	${OBJECTDIR}/src/cmt/cmt_mzf.o \
-	${OBJECTDIR}/src/cmt/cmt_mzt.o \
+	${OBJECTDIR}/src/cmt/cmt_mzftape.o \
 	${OBJECTDIR}/src/cmt/cmt_wav.o \
+	${OBJECTDIR}/src/cmt/cmtext.o \
+	${OBJECTDIR}/src/cmt/cmtext_block.o \
+	${OBJECTDIR}/src/cmt/cmtext_container.o \
+	${OBJECTDIR}/src/cmt/cmthack.o \
 	${OBJECTDIR}/src/ctc8253/ctc8253.o \
 	${OBJECTDIR}/src/debugger/breakpoints.o \
 	${OBJECTDIR}/src/debugger/debugger.o \
@@ -67,6 +69,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_log.o \
 	${OBJECTDIR}/src/joy/joy.o \
 	${OBJECTDIR}/src/libs/cmt_stream/cmt_bitstream.o \
+	${OBJECTDIR}/src/libs/cmt_stream/cmt_stream.o \
 	${OBJECTDIR}/src/libs/cmt_stream/cmt_vstream.o \
 	${OBJECTDIR}/src/libs/dsk/dsk.o \
 	${OBJECTDIR}/src/libs/dsk/dsk_tools.o \
@@ -203,30 +206,40 @@ ${OBJECTDIR}/src/cmt/cmt.o: src/cmt/cmt.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt.o src/cmt/cmt.c
 
-${OBJECTDIR}/src/cmt/cmt_extension.o: src/cmt/cmt_extension.c 
-	${MKDIR} -p ${OBJECTDIR}/src/cmt
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_extension.o src/cmt/cmt_extension.c
-
-${OBJECTDIR}/src/cmt/cmt_hack.o: src/cmt/cmt_hack.c 
-	${MKDIR} -p ${OBJECTDIR}/src/cmt
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_hack.o src/cmt/cmt_hack.c
-
 ${OBJECTDIR}/src/cmt/cmt_mzf.o: src/cmt/cmt_mzf.c 
 	${MKDIR} -p ${OBJECTDIR}/src/cmt
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_mzf.o src/cmt/cmt_mzf.c
 
-${OBJECTDIR}/src/cmt/cmt_mzt.o: src/cmt/cmt_mzt.c 
+${OBJECTDIR}/src/cmt/cmt_mzftape.o: src/cmt/cmt_mzftape.c 
 	${MKDIR} -p ${OBJECTDIR}/src/cmt
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_mzt.o src/cmt/cmt_mzt.c
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_mzftape.o src/cmt/cmt_mzftape.c
 
 ${OBJECTDIR}/src/cmt/cmt_wav.o: src/cmt/cmt_wav.c 
 	${MKDIR} -p ${OBJECTDIR}/src/cmt
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_wav.o src/cmt/cmt_wav.c
+
+${OBJECTDIR}/src/cmt/cmtext.o: src/cmt/cmtext.c 
+	${MKDIR} -p ${OBJECTDIR}/src/cmt
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmtext.o src/cmt/cmtext.c
+
+${OBJECTDIR}/src/cmt/cmtext_block.o: src/cmt/cmtext_block.c 
+	${MKDIR} -p ${OBJECTDIR}/src/cmt
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmtext_block.o src/cmt/cmtext_block.c
+
+${OBJECTDIR}/src/cmt/cmtext_container.o: src/cmt/cmtext_container.c 
+	${MKDIR} -p ${OBJECTDIR}/src/cmt
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmtext_container.o src/cmt/cmtext_container.c
+
+${OBJECTDIR}/src/cmt/cmthack.o: src/cmt/cmthack.c 
+	${MKDIR} -p ${OBJECTDIR}/src/cmt
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmthack.o src/cmt/cmthack.c
 
 ${OBJECTDIR}/src/ctc8253/ctc8253.o: src/ctc8253/ctc8253.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ctc8253
@@ -322,6 +335,11 @@ ${OBJECTDIR}/src/libs/cmt_stream/cmt_bitstream.o: src/libs/cmt_stream/cmt_bitstr
 	${MKDIR} -p ${OBJECTDIR}/src/libs/cmt_stream
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/cmt_stream/cmt_bitstream.o src/libs/cmt_stream/cmt_bitstream.c
+
+${OBJECTDIR}/src/libs/cmt_stream/cmt_stream.o: src/libs/cmt_stream/cmt_stream.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/cmt_stream
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/cmt_stream/cmt_stream.o src/libs/cmt_stream/cmt_stream.c
 
 ${OBJECTDIR}/src/libs/cmt_stream/cmt_vstream.o: src/libs/cmt_stream/cmt_vstream.c 
 	${MKDIR} -p ${OBJECTDIR}/src/libs/cmt_stream

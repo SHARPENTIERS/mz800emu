@@ -62,7 +62,10 @@ void mzf_tools_get_fname ( st_MZF_HEADER *mzfhdr, char *ascii_filename ) {
         if ( *fname == MZF_FNAME_TERMINATOR ) {
             break;
         };
-        *ascii_filename++ = sharpmz_cnv_from ( *fname++ );
+        if ( sharpmz_cnv_from ( *fname ) >= 0x20 ) {
+            *ascii_filename++ = sharpmz_cnv_from ( *fname );
+        };
+        fname++;
     };
     *ascii_filename = 0x00;
 }

@@ -34,11 +34,10 @@ extern "C" {
 
 #include "gdg/gdg.h"
 
-#include "cmt_extension.h"
-#include "cmt_mzf.h"
-#include "cmt_wav.h"
+#include "cmtext.h"
 
 #include "libs/mztape/mztape.h"
+#include "libs/cmt_stream/cmt_stream.h"
 
 
     typedef enum en_CMT_STATE {
@@ -48,11 +47,12 @@ extern "C" {
 
 
     typedef struct st_CMT {
-        st_CMTEXT *ext;
+        st_CMTEXT_NEW *ext;
         char *last_filename;
-        en_CMT_POLARITY polarity;
+        en_CMT_STREAM_POLARITY polarity;
         en_MZTAPE_SPEED speed;
         en_CMT_STATE state;
+        en_CMTEXT_BLOCK_PLAYSTS playsts;
         int output;
         uint64_t start_time;
         int ui_player_update;

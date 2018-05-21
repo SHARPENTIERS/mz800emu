@@ -2,7 +2,7 @@
  * File:   cmt_mzf.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 24. dubna 2018, 18:03
+ * Created on 19. května 2018, 16:54
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -31,31 +31,30 @@
 extern "C" {
 #endif
 
-#include "cmt_extension.h"
-#include "libs/generic_driver/generic_driver.h"
-#include "libs/mztape/mztape.h"
-#include "libs/mzf/mzf.h"
-#include "libs/cmt_stream/cmt_bitstream.h"
+#include "cmtext.h"
+
+    extern st_CMTEXT_NEW g_cmt_mzf_extension;
 
 
-    extern st_CMTEXT *g_cmtmzf_extension;
-
-
-    typedef struct st_CMT_MZF_FILESPEC {
+    typedef struct st_CMTMZF_BLOCKSPEC {
         st_MZF_HEADER *hdr;
         st_MZTAPE_MZF *mztmzf;
-    } st_CMT_MZF_FILESPEC;
+        en_MZTAPE_SPEED mztape_speed; // bere se v potaz pouze pokud st_CMTEXT_BLOCK->block_speed = CMTEXT_BLOCK_SPEED_SET
+    } st_CMTMZF_BLOCKSPEC;
 
-    extern void cmtmzf_filespec_destroy ( st_CMT_MZF_FILESPEC *filespec );
-    extern void cmtmzf_init ( void );
-    extern void cmtmzf_exit ( void );
-    extern int cmtmzf_open ( st_CMTEXT *cmtext, st_HANDLER *h, en_MZTAPE_SPEED mztape_speed );
+    extern void cmtmzf_blockspec_destroy ( st_CMTMZF_BLOCKSPEC *blspec );
+    extern st_CMTMZF_BLOCKSPEC* cmtmzf_blockspec_new ( st_HANDLER *h, uint32_t offset, en_MZTAPE_SPEED mztape_speed );
+
     extern st_CMT_BITSTREAM* cmtmzf_generate_bitstream ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_SPEED mztape_speed );
     extern st_CMT_VSTREAM* cmtmzf_generate_vstream ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_SPEED mztape_speed );
 
+    extern st_CMTEXT_BLOCK* cmtmzf_block_open ( st_HANDLER *h, uint32_t offset, int block_id, int pause_after, en_CMTEXT_BLOCK_SPEED block_speed, en_MZTAPE_SPEED mztape_speed );
+    extern void cmtmzf_block_close ( st_CMTEXT_BLOCK *block );
 
-#define CMTMZF_DEFAULT_STREAM_RATE 44100
-//#define CMTMZF_DEFAULT_STREAM_RATE 192000
+    extern st_MZF_HEADER* cmtmzf_block_get_mzfheader ( st_CMTEXT_BLOCK *block );
+
+#define CMTMZF_DEFAULT_BITSTREAM_RATE 44100
+    //#define CMTMZF_DEFAULT_BITSTREAM_RATE 192000
 
 
 #ifdef __cplusplus

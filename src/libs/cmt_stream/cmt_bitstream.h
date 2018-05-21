@@ -37,6 +37,7 @@ extern "C" {
 
 #include "libs/generic_driver/generic_driver.h"
 #include "libs/wav/wav.h"
+#include "cmt_stream_all.h"
 
 
     /*
@@ -45,25 +46,28 @@ extern "C" {
     typedef struct st_CMT_BITSTREAM {
         uint32_t rate; // vzorkovani 1/nnn
         double scan_time; // ( 1 / rate )
+        double stream_length; // ( 1 / rate ) * scans NASTAVUJE SE POUZE V cmt_bitstream_new_from_wav() !!!
         uint32_t blocks; // pocet alokovanych datovych bloku
         uint32_t scans; // pocet obsazenych bitu
+        en_CMT_STREAM_POLARITY polarity;
         uint32_t *data; // datove bloky
     } st_CMT_BITSTREAM;
 
 #define CMT_BITSTREAM_BLOCK_SIZE ( sizeof ( uint32_t ) * 8 ) // pocet bitu na datovy blok (32)
 
-    extern st_CMT_BITSTREAM* cmt_bitstream_new ( uint32_t rate, uint32_t blocks );
-    extern st_CMT_BITSTREAM* cmt_bitstream_new_from_wav ( st_HANDLER *wav_handler, en_WAV_POLARITY polarity );
-    extern void cmt_bitstream_destroy ( st_CMT_BITSTREAM *cmt_bitstream );
+    extern st_CMT_BITSTREAM* cmt_bitstream_new ( uint32_t rate, uint32_t blocks, en_CMT_STREAM_POLARITY polarity );
+    extern st_CMT_BITSTREAM* cmt_bitstream_new_from_wav ( st_HANDLER *wav_handler, en_CMT_STREAM_POLARITY polarity );
+    extern void cmt_bitstream_destroy ( st_CMT_BITSTREAM *stream );
     extern uint32_t cmt_bitstream_compute_required_blocks_from_scans ( uint32_t scans );
-    extern int cmt_bitstream_create_wav ( st_HANDLER *wav_handler, st_CMT_BITSTREAM *cmt_bitstream );
-    extern void cmt_bitstream_invert_data ( st_CMT_BITSTREAM *cmt_bitstream );
+    extern int cmt_bitstream_create_wav ( st_HANDLER *wav_handler, st_CMT_BITSTREAM *stream );
+    extern void cmt_bitstream_change_polarity ( st_CMT_BITSTREAM *stream, en_CMT_STREAM_POLARITY polarity );
+
 
     /**
      * 
      */
-    static inline uint32_t cmt_bitstream_get_position_by_time ( st_CMT_BITSTREAM *cmt_bitstream, double scan_time ) {
-        uint32_t position = scan_time / cmt_bitstream->scan_time;
+    static inline uint32_t cmt_bitstream_get_position_by_time ( st_CMT_BITSTREAM *stream, double scan_time ) {
+        uint32_t position = scan_time / stream->scan_time;
         return position;
     }
 
@@ -71,48 +75,49 @@ extern "C" {
     /**
      * 
      */
-    static inline int cmt_bitstream_get_value_on_position ( st_CMT_BITSTREAM *cmt_bitstream, uint32_t position ) {
-        assert ( position < cmt_bitstream->scans );
-        assert ( cmt_bitstream->data != NULL );
+    static inline int cmt_bitstream_get_value_on_position ( st_CMT_BITSTREAM *stream, uint32_t position ) {
+        assert ( position < stream->scans );
+        assert ( stream->data != NULL );
         uint32_t block = position / CMT_BITSTREAM_BLOCK_SIZE;
-        assert ( block < cmt_bitstream->blocks );
-        return ( cmt_bitstream->data[block] >> ( position % CMT_BITSTREAM_BLOCK_SIZE ) ) & 1;
+        assert ( block < stream->blocks );
+        return ( stream->data[block] >> ( position % CMT_BITSTREAM_BLOCK_SIZE ) ) & 1;
     }
 
 
     /**
      * 
      */
-    static inline int cmt_bitstream_get_value_on_time ( st_CMT_BITSTREAM *cmt_bitstream, double scan_time ) {
-        uint32_t position = cmt_bitstream_get_position_by_time ( cmt_bitstream, scan_time );
-        return cmt_bitstream_get_value_on_position ( cmt_bitstream, position );
+    static inline int cmt_bitstream_get_value_on_time ( st_CMT_BITSTREAM *stream, double scan_time ) {
+        uint32_t position = cmt_bitstream_get_position_by_time ( stream, scan_time );
+        return cmt_bitstream_get_value_on_position ( stream, position );
     }
 
 
     /**
      * 
      */
-    static inline void cmt_bitstream_set_value_on_position ( st_CMT_BITSTREAM *cmt_bitstream, uint32_t position, int value ) {
+    static inline void cmt_bitstream_set_value_on_position ( st_CMT_BITSTREAM *stream, uint32_t position, int value ) {
         uint32_t block = position / CMT_BITSTREAM_BLOCK_SIZE;
-        assert ( block < cmt_bitstream->blocks );
-        assert ( cmt_bitstream->data != NULL );
+        assert ( block < stream->blocks );
+        assert ( stream->data != NULL );
 
         if ( value ) {
-            cmt_bitstream->data[block] |= (uint32_t) 1 << ( position % CMT_BITSTREAM_BLOCK_SIZE );
+            stream->data[block] |= (uint32_t) 1 << ( position % CMT_BITSTREAM_BLOCK_SIZE );
         } else {
-            cmt_bitstream->data[block] &= ~( (uint32_t) 1 << ( position % CMT_BITSTREAM_BLOCK_SIZE ) );
+            stream->data[block] &= ~( (uint32_t) 1 << ( position % CMT_BITSTREAM_BLOCK_SIZE ) );
         };
 
 
-        if ( !( position < cmt_bitstream->scans ) ) {
-            cmt_bitstream->scans = position;
+        if ( !( position < stream->scans ) ) {
+            stream->scans = position;
+            stream->stream_length = stream->scan_time * position;
         };
     }
 
 
-    static inline void cmt_bitstream_set_value_on_time ( st_CMT_BITSTREAM *cmt_bitstream, double scan_time, int value ) {
-        uint32_t position = cmt_bitstream_get_position_by_time ( cmt_bitstream, scan_time );
-        cmt_bitstream_set_value_on_position ( cmt_bitstream, position, value );
+    static inline void cmt_bitstream_set_value_on_time ( st_CMT_BITSTREAM *stream, double scan_time, int value ) {
+        uint32_t position = cmt_bitstream_get_position_by_time ( stream, scan_time );
+        cmt_bitstream_set_value_on_position ( stream, position, value );
     }
 
 

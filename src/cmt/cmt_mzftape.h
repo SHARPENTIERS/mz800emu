@@ -1,8 +1,8 @@
 /* 
- * File:   cmt_wav.h
+ * File:   cmt_mzftape.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 19. května 2018, 8:22
+ * Created on 11. května 2018, 7:27
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -23,9 +23,8 @@
  * ---------------------------------------------------------------------------
  */
 
-
-#ifndef CMT_WAV_H
-#define CMT_WAV_H
+#ifndef CMT_MZFTAPE_H
+#define CMT_MZFTAPE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,15 +32,14 @@ extern "C" {
 
 #include "cmtext.h"
 
-    extern st_CMTEXT_NEW g_cmt_wav_extension;
+    extern st_CMTEXT_NEW g_cmt_mzftape_extension;
 
-    st_CMTEXT_BLOCK* cmtwav_block_open ( st_HANDLER *h, uint32_t offset, int block_id, int pause_after );
-    void cmtwav_block_close ( st_CMTEXT_BLOCK *block );
+    extern st_CMTEXT_BLOCK* cmtmzftape_block_open ( int block_id );
+
+#define CMTMZFTAPE_DEFAULT_PAUSE_AFTER (uint16_t) 1000 // pocet milisekund
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CMT_WAV_H */
-
-
+#endif /* CMT_MZFTAPE_H */

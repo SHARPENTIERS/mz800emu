@@ -50,9 +50,7 @@
 #include "fdc/fdc.h"
 #include "ramdisk/ramdisk.h"
 #include "cmt/cmt.h"
-#include "cmt/cmt_wav.h"
-#include "cmt/cmt_mzf.h"
-#include "cmt/cmt_hack.h"
+#include "cmt/cmthack.h"
 #include "qdisk/qdisk.h"
 #include "joy/joy.h"
 
