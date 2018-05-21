@@ -226,7 +226,7 @@ void cmthack_load_file ( void ) {
 
     char window_title[] = "Select MZF file to open";
 
-    if ( UIRET_OK != ui_open_file ( &filename, g_cmthack.last_filename, 0, FILETYPE_MZF, window_title, OPENMODE_READ ) ) {
+    if ( UIRET_OK != ui_open_file ( &filename, g_cmthack.last_filename, 0, FILETYPE_ALLCMTFILES, window_title, OPENMODE_READ ) ) {
         /* Zruseno: nastavit Err + Break */
         cmthack_result ( LOADRET_BREAK );
         return;
@@ -236,7 +236,21 @@ void cmthack_load_file ( void ) {
         filename = ui_utils_mem_alloc0 ( 1 );
     };
 
-    cmthack_load_mzf_filename ( filename );
+    int filename_length = strlen ( filename );
+
+    if ( filename_length < 5 ) {
+        fprintf ( stderr, "%s():%d - Can't resolve file extension - '%s'\n", __func__, __LINE__, filename );
+        cmthack_result ( LOADRET_BREAK );
+    } else {
+        const char *file_ext = &filename[( filename_length - 3 )];
+        if ( ( 0 == strncasecmp ( file_ext, "mzf", 3 ) ) || ( 0 == strncasecmp ( file_ext, "m12", 3 ) ) ) {
+            cmthack_load_mzf_filename ( filename );
+        } else {
+            ui_show_error ( "This file can't be open in CMTHACK.\nPlease, play this file by virtual CMT." );
+            cmthack_result ( LOADRET_BREAK );
+        };
+    };
+
     ui_utils_mem_free ( filename );
 }
 
@@ -282,6 +296,8 @@ void cmthack_load_mzf_filename ( char *filename ) {
         printf ( "fsize: 0x%04x\n", mzfhdr.fsize );
         printf ( "fexec: 0x%04x\n", mzfhdr.fexec );
     } else {
+
+
         ui_show_error ( "CMT HACK can't read MZF header '%s': %s, gdriver_err: %s\n", filename, strerror ( errno ), mzf_error_message ( &g_cmthack.mzf_handler, g_cmthack.mzf_handler.driver ) );
         generic_driver_close ( &g_cmthack.mzf_handler );
         cmthack_result ( LOADRET_ERROR );
