@@ -22,6 +22,7 @@
         <logicalFolder name="f8" displayName="CMT stream" projectFiles="true">
           <itemPath>src/libs/cmt_stream/cmt_bitstream.h</itemPath>
           <itemPath>src/libs/cmt_stream/cmt_stream.h</itemPath>
+          <itemPath>src/libs/cmt_stream/cmt_stream_all.h</itemPath>
           <itemPath>src/libs/cmt_stream/cmt_vstream.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f3" displayName="DSK" projectFiles="true">
@@ -38,7 +39,7 @@
           <itemPath>src/libs/mzf/mzf.h</itemPath>
           <itemPath>src/libs/mzf/mzf_tools.h</itemPath>
         </logicalFolder>
-        <logicalFolder name="f7" displayName="MZTAPE" projectFiles="true">
+        <logicalFolder name="f7" displayName="MZtape" projectFiles="true">
           <itemPath>src/libs/mztape/mztape.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f5" displayName="QD" projectFiles="true">
@@ -51,11 +52,14 @@
       <logicalFolder name="f2" displayName="MZ-800" projectFiles="true">
         <logicalFolder name="f2" displayName="CMT" projectFiles="true">
           <itemPath>src/cmt/cmt.h</itemPath>
-          <itemPath>src/cmt/cmt_extension.h</itemPath>
-          <itemPath>src/cmt/cmt_hack.h</itemPath>
           <itemPath>src/cmt/cmt_mzf.h</itemPath>
-          <itemPath>src/cmt/cmt_mzt.h</itemPath>
+          <itemPath>src/cmt/cmt_mzftape.h</itemPath>
           <itemPath>src/cmt/cmt_wav.h</itemPath>
+          <itemPath>src/cmt/cmtext.h</itemPath>
+          <itemPath>src/cmt/cmtext_block.h</itemPath>
+          <itemPath>src/cmt/cmtext_block_defs.h</itemPath>
+          <itemPath>src/cmt/cmtext_container.h</itemPath>
+          <itemPath>src/cmt/cmthack.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f1" displayName="CPU" projectFiles="true">
           <itemPath>src/z80ex/include/z80ex.h</itemPath>
@@ -175,6 +179,7 @@
       <logicalFolder name="f5" displayName="Libs" projectFiles="true">
         <logicalFolder name="f8" displayName="CMT stream" projectFiles="true">
           <itemPath>src/libs/cmt_stream/cmt_bitstream.c</itemPath>
+          <itemPath>src/libs/cmt_stream/cmt_stream.c</itemPath>
           <itemPath>src/libs/cmt_stream/cmt_vstream.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f3" displayName="DSK" projectFiles="true">
@@ -204,11 +209,13 @@
       <logicalFolder name="f3" displayName="MZ-800" projectFiles="true">
         <logicalFolder name="f1" displayName="CMT" projectFiles="true">
           <itemPath>src/cmt/cmt.c</itemPath>
-          <itemPath>src/cmt/cmt_extension.c</itemPath>
-          <itemPath>src/cmt/cmt_hack.c</itemPath>
           <itemPath>src/cmt/cmt_mzf.c</itemPath>
-          <itemPath>src/cmt/cmt_mzt.c</itemPath>
+          <itemPath>src/cmt/cmt_mzftape.c</itemPath>
           <itemPath>src/cmt/cmt_wav.c</itemPath>
+          <itemPath>src/cmt/cmtext.c</itemPath>
+          <itemPath>src/cmt/cmtext_block.c</itemPath>
+          <itemPath>src/cmt/cmtext_container.c</itemPath>
+          <itemPath>src/cmt/cmthack.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f2" displayName="CPU" projectFiles="true">
           <itemPath>src/z80ex/z80ex.c</itemPath>
@@ -433,25 +440,35 @@
       </item>
       <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_extension.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_extension.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="10">
-      </item>
-      <item path="src/cmt/cmt_hack.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/cmt/cmt_mzf.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_mzf.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_mzt.c" ex="false" tool="0" flavor2="0">
+      <item path="src/cmt/cmt_mzftape.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_mzt.h" ex="false" tool="3" flavor2="0">
+      <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block_defs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_container.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_container.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmthack.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmthack.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ctc8253/ctc8253.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -544,7 +561,14 @@
             tool="3"
             flavor2="0">
       </item>
+      <item path="src/libs/cmt_stream/cmt_stream.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="src/libs/cmt_stream/cmt_stream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_stream_all.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -955,25 +979,35 @@
       </item>
       <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_extension.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_extension.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_hack.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/cmt/cmt_mzf.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_mzf.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_mzt.c" ex="false" tool="0" flavor2="0">
+      <item path="src/cmt/cmt_mzftape.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_mzt.h" ex="false" tool="3" flavor2="0">
+      <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block_defs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_container.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_container.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmthack.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmthack.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ctc8253/ctc8253.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1063,7 +1097,14 @@
             tool="3"
             flavor2="0">
       </item>
+      <item path="src/libs/cmt_stream/cmt_stream.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="src/libs/cmt_stream/cmt_stream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_stream_all.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1465,25 +1506,35 @@
       </item>
       <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_extension.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_extension.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_hack.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/cmt/cmt_mzf.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_mzf.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_mzt.c" ex="false" tool="0" flavor2="0">
+      <item path="src/cmt/cmt_mzftape.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_mzt.h" ex="false" tool="3" flavor2="0">
+      <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block_defs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_container.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_container.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmthack.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmthack.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ctc8253/ctc8253.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1573,7 +1624,14 @@
             tool="3"
             flavor2="0">
       </item>
+      <item path="src/libs/cmt_stream/cmt_stream.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="src/libs/cmt_stream/cmt_stream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_stream_all.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1984,25 +2042,35 @@
       </item>
       <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_extension.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_extension.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="10">
-      </item>
-      <item path="src/cmt/cmt_hack.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/cmt/cmt_mzf.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_mzf.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_mzt.c" ex="false" tool="0" flavor2="0">
+      <item path="src/cmt/cmt_mzftape.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_mzt.h" ex="false" tool="3" flavor2="0">
+      <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block_defs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_container.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_container.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmthack.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmthack.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ctc8253/ctc8253.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -2095,7 +2163,14 @@
             tool="3"
             flavor2="0">
       </item>
+      <item path="src/libs/cmt_stream/cmt_stream.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="src/libs/cmt_stream/cmt_stream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_stream_all.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2511,25 +2586,35 @@
       </item>
       <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_extension.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_extension.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="10">
-      </item>
-      <item path="src/cmt/cmt_hack.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/cmt/cmt_mzf.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_mzf.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_mzt.c" ex="false" tool="0" flavor2="0">
+      <item path="src/cmt/cmt_mzftape.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_mzt.h" ex="false" tool="3" flavor2="0">
+      <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block_defs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_container.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_container.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmthack.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmthack.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ctc8253/ctc8253.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -2622,7 +2707,14 @@
             tool="3"
             flavor2="0">
       </item>
+      <item path="src/libs/cmt_stream/cmt_stream.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="src/libs/cmt_stream/cmt_stream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_stream_all.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -3038,25 +3130,35 @@
       </item>
       <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_extension.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_extension.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="10">
-      </item>
-      <item path="src/cmt/cmt_hack.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/cmt/cmt_mzf.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_mzf.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_mzt.c" ex="false" tool="0" flavor2="0">
+      <item path="src/cmt/cmt_mzftape.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_mzt.h" ex="false" tool="3" flavor2="0">
+      <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block_defs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_container.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_container.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmthack.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmthack.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ctc8253/ctc8253.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -3149,7 +3251,14 @@
             tool="3"
             flavor2="0">
       </item>
+      <item path="src/libs/cmt_stream/cmt_stream.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="src/libs/cmt_stream/cmt_stream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_stream_all.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -3563,25 +3672,35 @@
       </item>
       <item path="src/cmt/cmt.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_extension.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_extension.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/cmt/cmt_hack.c" ex="false" tool="0" flavor2="10">
-      </item>
-      <item path="src/cmt/cmt_hack.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="src/cmt/cmt_mzf.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_mzf.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_mzt.c" ex="false" tool="0" flavor2="0">
+      <item path="src/cmt/cmt_mzftape.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/cmt/cmt_mzt.h" ex="false" tool="3" flavor2="0">
+      <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_block_defs.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_container.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmtext_container.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmthack.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmthack.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ctc8253/ctc8253.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -3674,7 +3793,14 @@
             tool="3"
             flavor2="0">
       </item>
+      <item path="src/libs/cmt_stream/cmt_stream.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="src/libs/cmt_stream/cmt_stream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmt_stream/cmt_stream_all.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
       </item>

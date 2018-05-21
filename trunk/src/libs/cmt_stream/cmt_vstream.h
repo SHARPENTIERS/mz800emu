@@ -35,6 +35,7 @@ extern "C" {
 
 #include "libs/generic_driver/generic_driver.h"
 #include "libs/wav/wav.h"
+#include "cmt_stream_all.h"
 
 
     typedef enum en_CMT_VSTREAM_BYTELENGTH {
@@ -57,6 +58,7 @@ extern "C" {
         uint32_t last_read_position; // posledni bajt ze ktereho jsme cetli
         uint64_t last_read_position_sample; // pocet samplu, ktere predchazely poslednimu bajtu ze ktereho jsme cetli
         int last_read_value; // posledni hodnota [0|1]
+        en_CMT_STREAM_POLARITY polarity;
         uint8_t *data;
     } st_CMT_VSTREAM;
 
@@ -69,11 +71,13 @@ extern "C" {
      * 
      */
 
-    extern st_CMT_VSTREAM* cmt_vstream_new ( uint32_t rate, en_CMT_VSTREAM_BYTELENGTH min_byte_length, int value );
+    extern st_CMT_VSTREAM* cmt_vstream_new ( uint32_t rate, en_CMT_VSTREAM_BYTELENGTH min_byte_length, int value, en_CMT_STREAM_POLARITY polarity );
     extern void cmt_vstream_destroy ( st_CMT_VSTREAM *cmt_vstream );
     extern void cmt_vstream_read_reset ( st_CMT_VSTREAM *cmt_vstream );
 
     extern int cmt_vstream_add_value ( st_CMT_VSTREAM *cmt_vstream, int value, uint32_t count_samples );
+
+    extern void cmt_vstream_change_polarity ( st_CMT_VSTREAM *stream, en_CMT_STREAM_POLARITY polarity );
 
 
     static inline uint32_t cmt_vstream_get_last_read_event ( st_CMT_VSTREAM *cmt_vstream, int *event_byte_length ) {

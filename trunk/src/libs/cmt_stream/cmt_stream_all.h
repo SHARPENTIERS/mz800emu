@@ -1,8 +1,8 @@
 /* 
- * File:   cmt_wav.h
+ * File:   cmt_stream_all.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 19. května 2018, 8:22
+ * Created on 19. května 2018, 15:18
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -24,24 +24,24 @@
  */
 
 
-#ifndef CMT_WAV_H
-#define CMT_WAV_H
+#ifndef CMT_STREAM_ALL_H
+#define CMT_STREAM_ALL_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "cmtext.h"
 
-    extern st_CMTEXT_NEW g_cmt_wav_extension;
+    typedef enum en_CMT_STREAM_POLARITY {
+        CMT_STREAM_POLARITY_NORMAL = 0,
+        CMT_STREAM_POLARITY_INVERTED
+    } en_CMT_STREAM_POLARITY;
 
-    st_CMTEXT_BLOCK* cmtwav_block_open ( st_HANDLER *h, uint32_t offset, int block_id, int pause_after );
-    void cmtwav_block_close ( st_CMTEXT_BLOCK *block );
+
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CMT_WAV_H */
-
+#endif /* CMT_STREAM_ALL_H */
 

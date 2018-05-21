@@ -1,5 +1,5 @@
 /* 
- * File:   cmt_hack.c
+ * File:   cmthack.c
  * Author: Michal Hucik <hucik@ordoz.com>
  *
  * Created on 2. července 2015, 20:49
@@ -30,7 +30,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include "cmt_hack.h"
+#include "cmthack.h"
 
 #include "z80ex/include/z80ex.h"
 #include "memory/memory.h"

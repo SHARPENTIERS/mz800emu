@@ -387,7 +387,7 @@ void mztape_mztmzf_destroy ( st_MZTAPE_MZF *mztmzf ) {
 }
 
 
-st_MZTAPE_MZF* mztape_create_mztmzf ( st_HANDLER *mzf_handler, uint32_t offset ) {
+st_MZTAPE_MZF* mztape_create_mztapemzf ( st_HANDLER *mzf_handler, uint32_t offset ) {
 
     st_HANDLER *h = mzf_handler;
 
@@ -462,7 +462,7 @@ st_CMT_BITSTREAM* mztape_create_cmt_bitstream_from_mztmzf ( st_MZTAPE_MZF *mztmz
      */
     uint32_t blocks = cmt_bitstream_compute_required_blocks_from_scans ( data_bitsize );
 
-    st_CMT_BITSTREAM *cmt_bitstream = cmt_bitstream_new ( sample_rate, blocks );
+    st_CMT_BITSTREAM *cmt_bitstream = cmt_bitstream_new ( sample_rate, blocks, CMT_STREAM_POLARITY_NORMAL );
     if ( !cmt_bitstream ) {
         fprintf ( stderr, "%s():%d - Could create cmt bitstream\n", __func__, __LINE__ );
         return NULL;
@@ -624,7 +624,7 @@ static inline int mztape_add_cmt_vstream_data_block ( st_CMT_VSTREAM* cmt_vstrea
  */
 st_CMT_VSTREAM* mztape_create_17MHz_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_MZTAPE_SPEED mztape_speed ) {
 
-    st_CMT_VSTREAM* cmt_vstream = cmt_vstream_new ( GDGCLK_BASE, CMT_VSTREAM_BYTELENGTH16, 1 );
+    st_CMT_VSTREAM* cmt_vstream = cmt_vstream_new ( GDGCLK_BASE, CMT_VSTREAM_BYTELENGTH16, 1, CMT_STREAM_POLARITY_NORMAL );
     if ( !cmt_vstream ) {
         fprintf ( stderr, "%s():%d - Could create cmt vstream\n", __func__, __LINE__ );
         return NULL;

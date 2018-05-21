@@ -32,52 +32,56 @@
 #include "libs/wav/wav.h"
 
 #include "cmt_vstream.h"
+#include "cmt_stream.h"
 
 
-void cmt_vstream_destroy ( st_CMT_VSTREAM *cmt_vstream ) {
-    if ( !cmt_vstream ) return;
-    if ( cmt_vstream->data ) ui_utils_mem_free ( cmt_vstream->data );
-    ui_utils_mem_free ( cmt_vstream );
+void cmt_vstream_destroy ( st_CMT_VSTREAM *stream ) {
+    if ( !stream ) return;
+    if ( stream->data ) ui_utils_mem_free ( stream->data );
+    ui_utils_mem_free ( stream );
 }
 
 
-void cmt_vstream_read_reset ( st_CMT_VSTREAM *cmt_vstream ) {
-    cmt_vstream->last_read_position = 0;
-    cmt_vstream->last_read_position_sample = 0;
-    cmt_vstream->last_read_value = cmt_vstream->start_value;
+void cmt_vstream_read_reset ( st_CMT_VSTREAM *stream ) {
+    stream->last_read_position = 0;
+    stream->last_read_position_sample = 0;
+    stream->last_read_value = stream->start_value;
 }
 
 
-st_CMT_VSTREAM* cmt_vstream_new ( uint32_t rate, en_CMT_VSTREAM_BYTELENGTH min_byte_length, int value ) {
+st_CMT_VSTREAM* cmt_vstream_new ( uint32_t rate, en_CMT_VSTREAM_BYTELENGTH min_byte_length, int value, en_CMT_STREAM_POLARITY polarity ) {
     if ( !( ( min_byte_length == 1 ) || ( min_byte_length == 2 ) || ( min_byte_length == 4 ) ) ) {
         fprintf ( stderr, "%s() - %d: Error - invalid min_byte_length (%d).\n", __func__, __LINE__, min_byte_length );
         return NULL;
     };
-    st_CMT_VSTREAM *cmt_vstream = ui_utils_mem_alloc0 ( sizeof ( st_CMT_VSTREAM ) );
-    if ( !cmt_vstream ) {
+    st_CMT_VSTREAM *stream = ui_utils_mem_alloc0 ( sizeof ( st_CMT_VSTREAM ) );
+    if ( !stream ) {
         fprintf ( stderr, "%s() - %d: Error - can't alocate memory (%u).\n", __func__, __LINE__, (int) sizeof ( st_CMT_VSTREAM ) );
         return NULL;
     };
     // TODO: nejaka kontrola rate?
-    cmt_vstream->rate = rate;
-    cmt_vstream->scan_time = (double) 1 / rate;
-    cmt_vstream->start_value = value & 1;
+    stream->rate = rate;
+    stream->scan_time = (double) 1 / rate;
+    stream->start_value = value & 1;
+    stream->polarity = polarity;
 
-    cmt_vstream->data = ui_utils_mem_alloc0 ( min_byte_length );
-    if ( !cmt_vstream->data ) {
+    stream->data = ui_utils_mem_alloc0 ( min_byte_length );
+    if ( !stream->data ) {
         fprintf ( stderr, "%s() - %d: Error - can't alocate memory (%u).\n", __func__, __LINE__, min_byte_length );
-        cmt_vstream_destroy ( cmt_vstream );
+        cmt_vstream_destroy ( stream );
         return NULL;
     };
 
-    cmt_vstream->stream_length = 0;
-    cmt_vstream->min_byte_length = min_byte_length;
-    cmt_vstream->last_set_value = value & 1;
+    stream->stream_length = 0;
+    stream->min_byte_length = min_byte_length;
+    stream->last_set_value = value & 1;
     //cmt_vstream->data[0] = 0;
-    cmt_vstream->size = min_byte_length;
-    cmt_vstream->last_event_byte_length = min_byte_length;
+    stream->size = min_byte_length;
+    stream->last_event_byte_length = min_byte_length;
 
-    return cmt_vstream;
+    cmt_vstream_read_reset ( stream );
+
+    return stream;
 }
 
 
@@ -176,3 +180,8 @@ int cmt_vstream_add_value ( st_CMT_VSTREAM *cmt_vstream, int value, uint32_t cou
     return cmt_vstream_set_last_event ( cmt_vstream, ( count_samples ) );
 }
 
+
+void cmt_vstream_change_polarity ( st_CMT_VSTREAM *stream, en_CMT_STREAM_POLARITY polarity ) {
+    if ( stream->polarity == polarity ) return;
+    stream->start_value = ~stream->start_value & 0x01;
+}

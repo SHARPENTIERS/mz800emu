@@ -32,7 +32,7 @@
 #include "gdg/gdg.h"
 #include "ctc8253/ctc8253.h"
 #include "pio8255/pio8255.h"
-#include "cmt/cmt_hack.h"
+#include "cmt/cmthack.h"
 #include "pioz80/pioz80.h"
 #include "typedefs.h"
 #include "psg/psg.h"

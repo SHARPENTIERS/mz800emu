@@ -2,7 +2,7 @@
  * File:   cmt_wav.c
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 22. dubna 2018, 8:55
+ * Created on 19. května 2018, 8:21
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -25,92 +25,145 @@
 
 #include <stdio.h>
 
+#include "libs/wav/wav.h"
 #include "libs/cmt_stream/cmt_stream.h"
 #include "libs/generic_driver/generic_driver.h"
 #include "ui/generic_driver/ui_memory_driver.h"
 #include "ui/ui_main.h"
 #include "ui/ui_utils.h"
 
-#include "libs/wav/wav.h"
-
-#include "cmt_extension.h"
-#include "cmt_wav.h"
 #include "cmt.h"
+#include "cmtext.h"
+#include "cmt_wav.h"
 
 static st_DRIVER *g_driver = &g_ui_memory_driver_static;
 
-st_CMTEXT *g_cmtwav_extension = NULL;
+char *g_cmt_wav_fileext[] = {
+                             "wav",
+                             NULL
+};
+
+st_CMTEXT_INFO g_cmt_wav_info = {
+                                 "WAV",
+                                 g_cmt_wav_fileext,
+                                 "WAV cmt extension"
+};
+
+extern st_CMTEXT_NEW *g_cmt_wav;
 
 
-static void cmtwav_extension_eject ( void ) {
-    assert ( g_cmtwav_extension != NULL );
-    cmtext_eject ( g_cmtwav_extension );
+void cmtwav_block_close ( st_CMTEXT_BLOCK *block ) {
+    cmtext_block_destroy ( block );
 }
 
 
-int cmtwav_open ( st_CMTEXT *cmtext, st_HANDLER *h ) {
-
-    assert ( cmtext != NULL );
-    st_CMT_BITSTREAM *cmt_bitstream = cmt_bitstream_new_from_wav ( h, ( g_cmt.polarity == CMT_POLARITY_NORMAL ) ? WAV_POLARITY_NORMAL : WAV_POLARITY_INVERTED );
-
-    if ( !cmt_bitstream ) {
-        fprintf ( stderr, "%s() - %d: Can't create bitstream\n", __func__, __LINE__ );
-        return EXIT_FAILURE;
-    }
-
-    st_CMT_FILE *cmtfile = cmtext_cmtfile_new ( CMT_STREAM_TYPE_BITSTREAM );
-    if ( !cmtfile ) {
-        cmt_bitstream_destroy ( cmt_bitstream );
-        fprintf ( stderr, "%s() - %d: Can't create cmtfile\n", __func__, __LINE__ );
-        return EXIT_FAILURE;
-    }
-    cmtfile->type = CMT_FILETYPE_WAV;
-
-    printf ( "CMTWAV polarity: %s\n", ( g_cmt.polarity == CMT_POLARITY_NORMAL ) ? "normal" : "inverted" );
-    printf ( "CMTWAV rate: %d\n", cmt_bitstream->rate );
-    printf ( "CMTWAV length: %1.2f s\n", ( cmt_bitstream->scan_time * cmt_bitstream->scans ) );
-
-    cmtfile->stream.str.bitstream = cmt_bitstream;
-    g_cmtwav_extension->cmtfile = cmtfile;
-
-    return EXIT_SUCCESS;
+static void cmtwav_container_close ( st_CMTEXT_CONTAINER *container ) {
+    cmtext_container_destroy ( container );
 }
 
 
-static int cmtwav_extension_open ( char * filename ) {
+static void cmtwav_eject ( void ) {
+    cmtwav_block_close ( g_cmt_wav->block );
+    g_cmt_wav->block = (st_CMTEXT_BLOCK*) NULL;
+    cmtwav_container_close ( g_cmt_wav->container );
+    g_cmt_wav->container = (st_CMTEXT_CONTAINER*) NULL;
+}
 
-    assert ( g_cmtwav_extension != NULL );
 
-    cmtwav_extension_eject ( );
+st_CMTEXT_BLOCK* cmtwav_block_open ( st_HANDLER *h, uint32_t offset, int block_id, int pause_after ) {
 
-    printf ( "CMTWAV Open: %s\n", filename );
+    st_CMT_STREAM *stream = (st_CMT_STREAM*) ui_utils_mem_alloc0 ( sizeof ( st_CMT_STREAM ) );
+    if ( !stream ) {
+        fprintf ( stderr, "%s():%d - Can't alocate memory (%d)\n", __func__, __LINE__, (int) sizeof ( st_CMT_STREAM ) );
+        return NULL;
+    };
+
+    stream->stream_type = CMT_STREAM_TYPE_BITSTREAM;
+
+    st_CMT_BITSTREAM *bitstream = cmt_bitstream_new_from_wav ( h, g_cmt.polarity );
+    if ( !bitstream ) {
+        fprintf ( stderr, "%s():%d - Can't create stream\n", __func__, __LINE__ );
+        cmt_stream_destroy ( stream );
+        return NULL;
+    };
+
+    stream->str.bitstream = bitstream;
+
+    st_CMTEXT_BLOCK *block = cmtext_block_new ( block_id, CMTEXT_BLOCK_TYPE_WAV, stream, CMTEXT_BLOCK_SPEED_NONE, pause_after, NULL );
+    if ( !block ) {
+        cmt_stream_destroy ( stream );
+    };
+
+    printf ( "%s block id: %d\n", cmtext_get_name ( g_cmt_wav ), block_id );
+    printf ( "%s bitstream size: %0.2f kB\n", cmtext_get_name ( g_cmt_wav ), (float) ( bitstream->scans / CMT_BITSTREAM_BLOCK_SIZE ) / (float) 1024 );
+    printf ( "%s polarity: %s\n", cmtext_get_name ( g_cmt_wav ), ( g_cmt.polarity == CMT_STREAM_POLARITY_NORMAL ) ? "normal" : "inverted" );
+    printf ( "%s rate: %d Hz\n", cmtext_get_name ( g_cmt_wav ), bitstream->rate );
+    printf ( "%s length: %1.2f s\n", cmtext_get_name ( g_cmt_wav ), ( bitstream->scan_time * bitstream->scans ) );
+
+    block->cb_play = cmtext_block_play;
+    block->cb_get_playname = cmtext_block_get_playname;
+    block->cb_set_polarity = cmtext_block_set_polarity;
+    block->cb_set_speed = (cmtext_block_cb_set_speed) NULL;
+    block->cb_get_bdspeed = (cmtext_block_cb_get_bdspeed) NULL;
+
+    return block;
+}
+
+
+static int cmtwav_container_open ( char *filename ) {
+
+    cmtwav_eject ( );
+
+    st_CMTEXT_CONTAINER *container = cmtext_container_new ( CMTEXT_CONTAINER_TYPE_SINGLE, ui_utils_basename ( filename ), 1, NULL, NULL, NULL, NULL );
+    if ( !container ) {
+        return EXIT_FAILURE;
+    };
+
+    printf ( "%s\nOpen: %s\n", cmtext_get_description ( g_cmt_wav ), filename );
 
     st_HANDLER *h = generic_driver_open_memory_from_file ( NULL, g_driver, filename );
 
     if ( !h ) {
-        ui_show_error ( "CMTWAV: Can't open WAV file '%s'\n", filename );
+        ui_show_error ( "%s: Can't open file '%s'\n", cmtext_get_description ( g_cmt_wav ), filename );
+        cmtwav_container_close ( container );
         return EXIT_FAILURE;
     };
 
-    if ( EXIT_FAILURE == cmtwav_open ( g_cmtwav_extension, h ) ) {
-        ui_show_error ( "CMTWAV: Can't create cmt stream\n" );
+    st_CMTEXT_BLOCK *block = cmtwav_block_open ( h, 0, 0, 0 );
+    if ( !block ) {
+        ui_show_error ( "%s: Can't create cmt block\n", cmtext_get_description ( g_cmt_wav ) );
+        cmtwav_container_close ( container );
         generic_driver_close ( h );
         return EXIT_FAILURE;
     };
 
     generic_driver_close ( h );
 
-    cmtext_container_set_name ( g_cmtwav_extension->container, ui_utils_basename ( filename ) );
+    g_cmt_wav->container = container;
+    g_cmt_wav->block = block;
 
     return EXIT_SUCCESS;
 }
 
 
-void cmtwav_exit ( void ) {
-    cmtext_destroy ( g_cmtwav_extension );
+static void cmtwav_init ( void ) {
+    return;
 }
 
 
-void cmtwav_init ( void ) {
-    g_cmtwav_extension = cmtext_new ( cmtwav_extension_open, cmtwav_extension_eject, CMT_CONTAINER_TYPE_SINGLE );
+static void cmtwav_exit ( void ) {
+    cmtwav_eject ( );
 }
+
+
+st_CMTEXT_NEW g_cmt_wav_extension = {
+                                     &g_cmt_wav_info,
+                                     (st_CMTEXT_CONTAINER*) NULL,
+                                     (st_CMTEXT_BLOCK*) NULL,
+                                     cmtwav_init,
+                                     cmtwav_exit,
+                                     cmtwav_container_open,
+                                     cmtwav_eject,
+};
+
+st_CMTEXT_NEW *g_cmt_wav = &g_cmt_wav_extension;

@@ -42,15 +42,10 @@
 
 #include "cfgmain.h"
 
-#include "cmt_hack.h"
-
-#include "cmt_extension.h"
-#include "cmt_wav.h"
-#include "cmt_mzf.h"
-#include "cmt_mzt.h"
-
+#include "cmthack.h"
 #include "libs/mztape/mztape.h"
-
+#include "cmtext.h"
+#include "cmtext_block.h"
 
 st_CMT g_cmt;
 
@@ -59,6 +54,7 @@ void cmt_stop ( void ) {
     if ( !TEST_CMT_FILLED ) return;
     if ( TEST_CMT_STOP ) return;
     g_cmt.state = CMT_STATE_STOP;
+    g_cmt.playsts = CMTEXT_BLOCK_PLAYSTS_STOP;
     ui_cmt_window_update ( );
 }
 
@@ -66,7 +62,7 @@ void cmt_stop ( void ) {
 void cmt_eject ( void ) {
     if ( !TEST_CMT_FILLED ) return;
     if ( !TEST_CMT_STOP ) cmt_stop ( );
-    g_cmt.ext->eject ( );
+    g_cmt.ext->cb_eject ( );
     g_cmt.ext = NULL;
     ui_cmt_window_update ( );
 }
@@ -76,10 +72,11 @@ void cmt_play ( void ) {
     if ( !TEST_CMT_FILLED ) return;
     if ( !TEST_CMT_STOP ) return;
     g_cmt.state = CMT_STATE_PLAY;
+    g_cmt.playsts = CMTEXT_BLOCK_PLAYSTS_BODY;
     g_cmt.start_time = gdg_get_total_ticks ( );
     g_cmt.ui_player_update = 0;
     ui_cmt_window_update ( );
-    cmtext_play ( g_cmt.ext );
+    g_cmt.ext->block->cb_play ( g_cmt.ext );
 }
 
 
@@ -92,9 +89,12 @@ int cmt_change_speed ( en_MZTAPE_SPEED speed ) {
     int ret = EXIT_SUCCESS;
 
     if ( TEST_CMT_FILLED ) {
-        if ( cmtext_cmtfile_get_filetype ( g_cmt.ext ) == CMT_FILETYPE_MZF ) {
-            if ( EXIT_SUCCESS != cmtext_cmtfile_change_speed ( g_cmt.ext, speed ) ) {
-                ret = EXIT_FAILURE;
+        if ( cmtext_block_get_block_speed ( g_cmt.ext->block ) == CMTEXT_BLOCK_SPEED_DEFAULT ) {
+            assert ( g_cmt.ext->block->cb_set_speed != NULL );
+            if ( g_cmt.ext->block->cb_set_speed != NULL ) {
+                if ( EXIT_SUCCESS != g_cmt.ext->block->cb_set_speed ( g_cmt.ext, speed ) ) {
+                    ret = EXIT_FAILURE;
+                };
             };
         };
     };
@@ -115,9 +115,7 @@ void cmt_exit ( void ) {
     if ( g_cmt.last_filename ) ui_utils_mem_free ( g_cmt.last_filename );
 
     cmthack_exit ( );
-    cmtwav_exit ( );
-    cmtmzf_exit ( );
-    cmtmzt_exit ( );
+    cmtext_exit ( );
 }
 
 
@@ -133,12 +131,7 @@ void cmt_rear_dip_switch_cmt_inverted_polarity ( unsigned value ) {
     g_cmt.polarity = value;
     ui_main_update_rear_dip_switch_cmt_inverted_polarity ( g_cmt.polarity );
     if ( !TEST_CMT_FILLED ) return;
-    if ( CMT_FILETYPE_WAV != cmtext_cmtfile_get_filetype ( g_cmt.ext ) ) return;
-    if ( CMT_STREAM_TYPE_BITSTREAM != cmtext_cmtfile_get_stream_type ( g_cmt.ext ) ) {
-        fprintf ( stderr, "%s():%d - Can't intvert stream polarity\n", __func__, __LINE__ );
-        return;
-    };
-    cmt_bitstream_invert_data ( cmtext_cmtfile_get_bitstream ( g_cmt.ext ) );
+    if ( g_cmt.ext->block->cb_set_polarity != NULL ) g_cmt.ext->block->cb_set_polarity ( g_cmt.ext, value );
 }
 
 
@@ -162,7 +155,7 @@ void cmt_init ( void ) {
     cfgelement_set_propagate_cb ( elm, cmt_propagatecfg_cmt_speed, NULL );
     cfgelement_set_handlers ( elm, NULL, (void*) &g_cmt.speed );
 
-    elm = cfgmodule_register_new_element ( cmod, "cmt_polarity_inverted", CFGENTYPE_BOOL, CMT_POLARITY_NORMAL );
+    elm = cfgmodule_register_new_element ( cmod, "cmt_polarity_inverted", CFGENTYPE_BOOL, CMT_STREAM_POLARITY_NORMAL );
     cfgelement_set_propagate_cb ( elm, cmt_propagatecfg_inverted_polarity, NULL );
     cfgelement_set_handlers ( elm, (void*) &g_cmt.polarity, (void*) &g_cmt.polarity );
 
@@ -172,13 +165,12 @@ void cmt_init ( void ) {
     g_cmt.output = 0;
     g_cmt.start_time = 0;
     g_cmt.state = CMT_STATE_STOP;
+    g_cmt.playsts = CMTEXT_BLOCK_PLAYSTS_STOP;
     g_cmt.ext = NULL;
     g_cmt.last_filename = ui_utils_mem_alloc0 ( 1 );
     g_cmt.ui_player_update = 0;
 
-    cmtwav_init ( );
-    cmtmzf_init ( );
-    cmtmzt_init ( );
+    cmtext_init ( );
 
     ui_cmt_init ( );
     ui_cmt_window_update ( );
@@ -189,34 +181,20 @@ void cmt_init ( void ) {
 
 int cmt_open_file_by_extension ( char *filename ) {
 
-    int name_length = strlen ( filename );
+    st_CMTEXT_NEW *ext = cmtext_get_extension ( filename );
 
-    if ( name_length < 5 ) {
-        ui_show_error ( "Bad filename '%s'\n", filename );
-        return EXIT_FAILURE;
-    };
-
-    char *file_ext = &filename[( name_length - 3 )];
-
-    st_CMTEXT *ext;
-
-    if ( ( 0 == strncasecmp ( file_ext, "mzf", 3 ) ) || ( 0 == strncasecmp ( file_ext, "m12", 3 ) ) ) {
-        ext = g_cmtmzf_extension;
-    } else if ( 0 == strncasecmp ( file_ext, "wav", 3 ) ) {
-        ext = g_cmtwav_extension;
-    } else if ( 0 == strncasecmp ( file_ext, "mzt", 3 ) ) {
-        ext = g_cmtmzt_extension;
-    } else {
+    if ( !ext ) {
         ui_show_error ( "Unknown CMT file extension '%s'\n", filename );
         return EXIT_FAILURE;
-    };
+    }
 
-    assert ( ext != NULL );
     cmt_eject ( );
 
-    int ret = ext->open ( filename );
+    int ret = ext->cb_open ( filename );
     if ( ret == EXIT_SUCCESS ) {
         g_cmt.ext = ext;
+    } else {
+        ui_show_error ( "%s can't open file '%s'\n", cmtext_get_description ( ext ), filename );
     };
     ui_cmt_window_update ( );
     return ret;
@@ -250,33 +228,35 @@ void cmt_update_output ( void ) {
     if ( !TEST_CMT_FILLED ) return;
     if ( !TEST_CMT_PLAY ) return;
 
-    if ( CMT_STREAM_TYPE_BITSTREAM == cmtext_cmtfile_get_stream_type ( g_cmt.ext ) ) {
-        st_CMT_BITSTREAM *cmt_bitstream = cmtext_cmtfile_get_bitstream ( g_cmt.ext );
+    uint64_t play_ticks = gdg_get_total_ticks ( ) - g_cmt.start_time;
+    uint64_t transferred_ticks = 0;
 
-        if ( cmt_bitstream == NULL ) return;
+    en_CMTEXT_BLOCK_PLAYSTS playsts = cmtext_block_get_output ( g_cmt.ext->block, play_ticks, &g_cmt.output, &transferred_ticks );
 
-        double playtime = cmt_get_playtime ( );
+    if ( playsts != g_cmt.playsts ) {
+        if ( CMTEXT_BLOCK_PLAYSTS_STOP == playsts ) {
+            int total_files = cmtext_container_get_count_blocks ( g_cmt.ext->container );
+            int play_file = cmtext_block_get_block_id ( g_cmt.ext->block ) + 1;
 
-        uint32_t sample_position = cmt_bitstream_get_position_by_time ( cmt_bitstream, playtime );
+            if ( play_file < total_files ) {
+                assert ( g_cmt.ext->container->cb_next_block );
 
-        if ( sample_position >= cmt_bitstream->scans ) {
-            //printf ( "done2: 100 %%\n" );
-            cmt_stop ( );
-            return;
-        };
+                if ( ( !g_cmt.ext->container->cb_next_block ) || ( EXIT_FAILURE == g_cmt.ext->container->cb_next_block ( ) ) ) {
+                    cmt_stop ( );
+                } else {
+                    g_cmt.playsts = CMTEXT_BLOCK_PLAYSTS_BODY;
+                    g_cmt.start_time = gdg_get_total_ticks ( ) - transferred_ticks;
+                    ui_cmt_window_update ( );
+                };
 
-        g_cmt.output = cmt_bitstream_get_value_on_position ( cmt_bitstream, sample_position );
+            } else {
+                cmt_stop ( );
+            };
 
-        if ( sample_position == ( cmt_bitstream->scans - 1 ) ) {
-            //printf ( "done3: 100 %%\n" );
-            cmt_stop ( );
-        };
-    } else {
-        uint64_t samples = gdg_get_total_ticks ( ) - g_cmt.start_time;
-        st_CMT_VSTREAM *cmt_vstream = cmtext_cmtfile_get_vstream ( g_cmt.ext );
-        assert ( cmt_vstream->rate == GDGCLK_BASE );
-        if ( EXIT_FAILURE == cmt_vstream_get_value ( cmt_vstream, samples, &g_cmt.output ) ) {
-            cmt_stop ( );
+        } else if ( CMTEXT_BLOCK_PLAYSTS_PAUSE == playsts ) {
+            printf ( "CMT: Playing a gap space of %d ms\n", cmtext_block_get_pause_after ( g_cmt.ext->block ) );
+            g_cmt.playsts = playsts;
+            ui_cmt_window_update ( );
         };
     };
 }

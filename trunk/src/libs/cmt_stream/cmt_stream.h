@@ -31,14 +31,16 @@
 extern "C" {
 #endif
 
+#include "cmt_stream_all.h"
 
     typedef enum en_CMT_STREAM_TYPE {
         CMT_STREAM_TYPE_BITSTREAM = 0,
         CMT_STREAM_TYPE_VSTREAM,
     } en_CMT_STREAM_TYPE;
 
-#include "libs/cmt_stream/cmt_bitstream.h"
-#include "libs/cmt_stream/cmt_vstream.h"
+
+#include "cmt_bitstream.h"
+#include "cmt_vstream.h"
 
 
     typedef union un_CMT_STREAM {
@@ -51,6 +53,8 @@ extern "C" {
         en_CMT_STREAM_TYPE stream_type;
         un_CMT_STREAM str;
     } st_CMT_STREAM;
+
+    extern void cmt_stream_destroy ( st_CMT_STREAM *stream );
 
 #ifdef __cplusplus
 }

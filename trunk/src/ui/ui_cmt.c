@@ -31,8 +31,11 @@
 #include "ui_cmt.h"
 
 #include "cmt/cmt.h"
-#include "cmt/cmt_extension.h"
-#include "cmt/cmt_hack.h"
+#include "cmt/cmthack.h"
+#include "cmt/cmtext.h"
+#include "cmt/cmtext_block.h"
+#include "cmt/cmtext_container.h"
+#include "cmt/cmt_mzf.h"
 
 #include "libs/mzf/mzf.h"
 #include "libs/mzf/mzf_tools.h"
@@ -339,7 +342,19 @@ G_MODULE_EXPORT void on_cmt_previous_button_clicked ( GtkButton *button, gpointe
     (void) button;
     (void) data;
 
-    printf ( "%s()\n", __func__ );
+    assert ( g_cmt.ext->container->cb_previous_block );
+    if ( !g_cmt.ext->container->cb_previous_block ) return;
+
+    gboolean fl_play = TEST_CMT_PLAY;
+    if ( fl_play ) cmt_stop ( );
+
+    if ( EXIT_FAILURE == g_cmt.ext->container->cb_previous_block ( ) ) return;
+
+    if ( fl_play ) {
+        cmt_play ( );
+    } else {
+        ui_cmt_window_update ( );
+    };
 }
 
 
@@ -347,7 +362,19 @@ G_MODULE_EXPORT void on_cmt_next_button_clicked ( GtkButton *button, gpointer da
     (void) button;
     (void) data;
 
-    printf ( "%s()\n", __func__ );
+    assert ( g_cmt.ext->container->cb_next_block );
+    if ( !g_cmt.ext->container->cb_next_block ) return;
+
+    gboolean fl_play = TEST_CMT_PLAY;
+    if ( fl_play ) cmt_stop ( );
+
+    if ( EXIT_FAILURE == g_cmt.ext->container->cb_next_block ( ) ) return;
+
+    if ( fl_play ) {
+        cmt_play ( );
+    } else {
+        ui_cmt_window_update ( );
+    };
 }
 
 
@@ -398,103 +425,94 @@ void ui_cmt_window_update ( void ) {
 
     char buff [ 100 ];
 
-    static en_CMT_FILETYPE cmt_filetype = CMT_FILETYPE_MZF;
-    static int is_tape = 0;
-    static int file_speed = 0;
-
-    int play_file = 0;
     int total_files = 0;
+    int play_file = 0;
 
     if ( TEST_CMT_FILLED ) {
-        cmt_filetype = cmtext_cmtfile_get_filetype ( g_cmt.ext );
-        is_tape = 0;
-        file_speed = 0;
+        total_files = cmtext_container_get_count_blocks ( g_cmt.ext->container );
+        play_file = cmtext_block_get_block_id ( g_cmt.ext->block ) + 1;
     };
 
     // Tape info
-    if ( !is_tape ) {
-        gtk_widget_hide ( ui_get_widget ( "cmt_tape_info_box" ) );
+    if ( total_files == 0 ) {
+        gtk_label_set_text ( ui_get_label ( "cmt_play_file_label" ), "--" );
+        gtk_label_set_text ( ui_get_label ( "cmt_total_files_label" ), "--" );
     } else {
-        gtk_widget_show ( ui_get_widget ( "cmt_tape_info_box" ) );
-        if ( total_files == 0 ) {
-            gtk_label_set_text ( ui_get_label ( "cmt_play_file_label" ), "--" );
-            gtk_label_set_text ( ui_get_label ( "cmt_total_files_label" ), "--" );
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_filelist_button" ), FALSE );
-        } else {
-            snprintf ( buff, sizeof (buff ), "%d", play_file );
-            gtk_label_set_text ( ui_get_label ( "cmt_play_file_label" ), buff );
-
-            snprintf ( buff, sizeof (buff ), "%d", total_files );
-            gtk_label_set_text ( ui_get_label ( "cmt_total_files_label" ), buff );
-
-            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_filelist_button" ), TRUE );
-        };
+        snprintf ( buff, sizeof (buff ), "%02d", play_file );
+        gtk_label_set_text ( ui_get_label ( "cmt_play_file_label" ), buff );
+        snprintf ( buff, sizeof (buff ), "%02d", total_files );
+        gtk_label_set_text ( ui_get_label ( "cmt_total_files_label" ), buff );
     };
 
 
-    // MZF info
-    if ( cmt_filetype != CMT_FILETYPE_MZF ) {
-        gtk_widget_hide ( ui_get_widget ( "cmt_mzf_info_table" ) );
-        gtk_widget_hide ( ui_get_widget ( "cmt_speed_label" ) );
-        gtk_widget_hide ( ui_get_widget ( "cmt_speed_comboboxtext" ) );
-    } else {
-        gtk_widget_show ( ui_get_widget ( "cmt_mzf_info_table" ) );
-        gtk_widget_show ( ui_get_widget ( "cmt_speed_label" ) );
-        gtk_widget_show ( ui_get_widget ( "cmt_speed_comboboxtext" ) );
+    gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), "--" );
+    gtk_label_set_text ( ui_get_label ( "cmt_filename_label" ), "--" );
+    gtk_label_set_text ( ui_get_label ( "cmt_fsize_label" ), "--" );
+    gtk_label_set_text ( ui_get_label ( "cmt_fexec_label" ), "--" );
+    gtk_label_set_text ( ui_get_label ( "cmt_fstart_label" ), "--" );
+    gtk_label_set_text ( ui_get_label ( "cmt_file_speed_label" ), "--" );
+    gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "--" );
+    gtk_label_set_text ( ui_get_label ( "cmt_stream_rate_label" ), "--" );
 
-        if ( !TEST_CMT_FILLED ) {
-            gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), "--" );
-            gtk_label_set_text ( ui_get_label ( "cmt_filename_label" ), "--" );
-            gtk_label_set_text ( ui_get_label ( "cmt_mzfsize_label" ), "--" );
-            gtk_label_set_text ( ui_get_label ( "cmt_mzfexec_label" ), "--" );
-            gtk_label_set_text ( ui_get_label ( "cmt_mzfstart_label" ), "--" );
-            gtk_label_set_text ( ui_get_label ( "cmt_file_speed_value_label" ), "--" );
-        } else {
 
-            st_MZF_HEADER *hdr = cmtext_cmtfile_get_mzfheader ( g_cmt.ext );
-            g_assert ( hdr != NULL );
-            snprintf ( buff, sizeof (buff ), "%02x", hdr->ftype );
-            gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), buff );
+    if ( ( TEST_CMT_FILLED ) && ( g_cmt.playsts != CMTEXT_BLOCK_PLAYSTS_PAUSE ) ) {
 
-            mzf_tools_get_fname ( hdr, (char*) &buff );
-            gtk_label_set_text ( ui_get_label ( "cmt_filename_label" ), buff );
 
-            snprintf ( buff, sizeof (buff ), "0x%04x", hdr->fsize );
-            gtk_label_set_text ( ui_get_label ( "cmt_mzfsize_label" ), buff );
+        uint16_t file_bdspeed = 0;
+        st_MZF_HEADER *hdr = NULL;
 
-            snprintf ( buff, sizeof (buff ), "0x%04x", hdr->fexec );
-            gtk_label_set_text ( ui_get_label ( "cmt_mzfexec_label" ), buff );
+        switch ( cmtext_block_get_type ( g_cmt.ext->block ) ) {
+            case CMTEXT_BLOCK_TYPE_MZF:
+                file_bdspeed = ( !g_cmt.ext->block->cb_get_bdspeed ) ? 0 : g_cmt.ext->block->cb_get_bdspeed ( g_cmt.ext );
+                hdr = cmtmzf_block_get_mzfheader ( g_cmt.ext->block );
+                g_assert ( hdr != NULL );
 
-            snprintf ( buff, sizeof (buff ), "0x%04x", hdr->fstrt );
-            gtk_label_set_text ( ui_get_label ( "cmt_mzfstart_label" ), buff );
+                snprintf ( buff, sizeof (buff ), "0x%02x", hdr->ftype );
+                gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), buff );
+
+                mzf_tools_get_fname ( hdr, (char*) &buff );
+                gtk_label_set_text ( ui_get_label ( "cmt_filename_label" ), buff );
+
+                snprintf ( buff, sizeof (buff ), "0x%04x", hdr->fsize );
+                gtk_label_set_text ( ui_get_label ( "cmt_fsize_label" ), buff );
+
+                snprintf ( buff, sizeof (buff ), "0x%04x", hdr->fexec );
+                gtk_label_set_text ( ui_get_label ( "cmt_fexec_label" ), buff );
+
+                snprintf ( buff, sizeof (buff ), "0x%04x", hdr->fstrt );
+                gtk_label_set_text ( ui_get_label ( "cmt_fstart_label" ), buff );
+
+                snprintf ( buff, sizeof (buff ), "%d Bd", file_bdspeed );
+                gtk_label_set_text ( ui_get_label ( "cmt_file_speed_label" ), buff );
+                break;
+
+            case CMTEXT_BLOCK_TYPE_WAV:
+                gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), "WAV" );
+                break;
+
+            default:
+                fprintf ( stderr, "%s():%d - Unknown cmtext block type '%d'\n", __func__, __LINE__, cmtext_block_get_type ( g_cmt.ext->block ) );
         };
 
-        if ( !file_speed ) {
-            gtk_widget_hide ( ui_get_widget ( "cmt_file_speed_label" ) );
-            gtk_widget_hide ( ui_get_widget ( "cmt_file_speed_value_label" ) );
+
+        // stream info
+        en_CMT_STREAM_TYPE stream_type = cmtext_block_get_stream_type ( g_cmt.ext->block );
+        if ( stream_type == CMT_STREAM_TYPE_BITSTREAM ) {
+            gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "bitstream" );
+        } else if ( stream_type == CMT_STREAM_TYPE_VSTREAM ) {
+            gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "vstream" );
         } else {
-            gtk_widget_show ( ui_get_widget ( "cmt_file_speed_label" ) );
-            gtk_widget_show ( ui_get_widget ( "cmt_file_speed_value_label" ) );
-
-            snprintf ( buff, sizeof (buff ), "%d Bd", file_speed );
-            gtk_label_set_text ( ui_get_label ( "cmt_file_speed_value_label" ), buff );
+            fprintf ( stderr, "%s():%d - Unknown cmt stream type '%d'\n", __func__, __LINE__, stream_type );
         };
-    };
 
-    // WAV info
-    if ( cmt_filetype != CMT_FILETYPE_WAV ) {
-        gtk_widget_hide ( ui_get_widget ( "cmt_stream_info_table" ) );
-    } else {
-        gtk_widget_show ( ui_get_widget ( "cmt_stream_info_table" ) );
-
-        if ( !TEST_CMT_FILLED ) {
-            gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "--" );
-            gtk_label_set_text ( ui_get_label ( "cmt_stream_rate_label" ), "--" );
+        uint32_t rate = cmtext_block_get_rate ( g_cmt.ext->block );
+        if ( rate < 1000000 ) {
+            snprintf ( buff, sizeof (buff ), "%0.2f kHz", ( (float) rate / 1000 ) );
         } else {
-            snprintf ( buff, sizeof (buff ), "%d Hz", cmtext_cmtfile_get_rate ( g_cmt.ext ) );
-            gtk_label_set_text ( ui_get_label ( "cmt_stream_rate_label" ), buff );
-            gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "WAV" );
+            snprintf ( buff, sizeof (buff ), "%0.2f MHz", ( (float) rate / 1000000 ) );
         };
+        gtk_label_set_text ( ui_get_label ( "cmt_stream_rate_label" ), buff );
+
     };
 
 
@@ -502,12 +520,22 @@ void ui_cmt_window_update ( void ) {
     if ( !TEST_CMT_FILLED ) {
         gtk_progress_bar_set_text ( ui_get_progress_bar ( "cmt_progressbar" ), "*** Empty ***" );
     } else {
-        gtk_progress_bar_set_text ( ui_get_progress_bar ( "cmt_progressbar" ), cmtext_cmtfile_get_playname ( g_cmt.ext ) );
+        if ( g_cmt.playsts == CMTEXT_BLOCK_PLAYSTS_PAUSE ) {
+            snprintf ( buff, sizeof (buff ), "*** Playing a gap space of %d ms ***", cmtext_block_get_pause_after ( g_cmt.ext->block ) );
+            gtk_progress_bar_set_text ( ui_get_progress_bar ( "cmt_progressbar" ), buff );
+        } else {
+            gtk_progress_bar_set_text ( ui_get_progress_bar ( "cmt_progressbar" ), g_cmt.ext->block->cb_get_playname ( g_cmt.ext ) );
+        };
     };
 
 
-    // Ovladaci prvky
+    // Ovladaci prvky    
     if ( !TEST_CMT_FILLED ) {
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_filelist_button" ), FALSE );
+
+        gtk_widget_show ( ui_get_widget ( "cmt_speed_label" ) );
+        gtk_widget_show ( ui_get_widget ( "cmt_speed_comboboxtext" ) );
+
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_open_button" ), TRUE );
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_eject_button" ), FALSE );
 
@@ -515,7 +543,7 @@ void ui_cmt_window_update ( void ) {
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_record_togglebutton" ), FALSE );
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_stop_button" ), FALSE );
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_pause_button" ), FALSE );
-        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_speed_comboboxtext" ), FALSE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_speed_comboboxtext" ), TRUE );
 
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_previous_button" ), FALSE );
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_next_button" ), FALSE );
@@ -523,10 +551,35 @@ void ui_cmt_window_update ( void ) {
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_forward_button" ), FALSE );
 
     } else {
-        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_previous_button" ), FALSE );
-        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_next_button" ), FALSE );
+
+        //gtk_widget_set_sensitive ( ui_get_widget ( "cmt_filelist_button" ), TRUE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_filelist_button" ), FALSE );
+
+        if ( cmtext_block_get_block_speed ( g_cmt.ext->block ) == CMTEXT_BLOCK_SPEED_DEFAULT ) {
+            gtk_widget_show ( ui_get_widget ( "cmt_speed_label" ) );
+            gtk_widget_show ( ui_get_widget ( "cmt_speed_comboboxtext" ) );
+        } else {
+            gtk_widget_hide ( ui_get_widget ( "cmt_speed_label" ) );
+            gtk_widget_hide ( ui_get_widget ( "cmt_speed_comboboxtext" ) );
+        };
+
+
+        if ( play_file == 1 ) {
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_previous_button" ), FALSE );
+        } else {
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_previous_button" ), TRUE );
+        };
+
+        if ( play_file < total_files ) {
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_next_button" ), TRUE );
+        } else {
+            gtk_widget_set_sensitive ( ui_get_widget ( "cmt_next_button" ), FALSE );
+        };
+
+
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_rewind_button" ), FALSE );
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_forward_button" ), FALSE );
+
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_pause_button" ), FALSE );
 
         if ( TEST_CMT_STOP ) {
@@ -573,7 +626,6 @@ void ui_cmt_window_update ( void ) {
 
 
 void ui_cmt_update_player ( void ) {
-
     GtkWidget *window = ui_get_widget ( "cmt_window" );
     if ( !gtk_widget_get_visible ( window ) ) return;
 
@@ -583,12 +635,20 @@ void ui_cmt_update_player ( void ) {
     guint32 print_time;
 
     if ( TEST_CMT_FILLED ) {
-        double scan_time = cmtext_cmtfile_get_scantime ( g_cmt.ext );
-        uint64_t scans = cmtext_cmtfile_get_scans ( g_cmt.ext );
-        total_time = ( scan_time * scans );
+        double scan_time = cmtext_block_get_scantime ( g_cmt.ext->block );
+        uint64_t scans = cmtext_block_get_scans ( g_cmt.ext->block );
+        gdouble body_total_time = ( scan_time * scans );
         if ( !TEST_CMT_STOP ) {
-            play_time = cmt_get_playtime ( );
+            if ( g_cmt.playsts == CMTEXT_BLOCK_PLAYSTS_PAUSE ) {
+                total_time = 0.001 * cmtext_block_get_pause_after ( g_cmt.ext->block );
+                play_time = cmt_get_playtime ( ) - body_total_time;
+            } else {
+                total_time = body_total_time;
+                play_time = cmt_get_playtime ( );
+            };
             fraction = ( play_time / total_time );
+        } else {
+            total_time = body_total_time;
         };
     };
 
@@ -610,7 +670,6 @@ void ui_cmt_update_player ( void ) {
     gtk_label_set_markup ( ui_get_label ( "cmt_time_label" ), buff );
 
     gtk_progress_bar_set_fraction ( ui_get_progress_bar ( "cmt_progressbar" ), fraction );
-
 }
 
 

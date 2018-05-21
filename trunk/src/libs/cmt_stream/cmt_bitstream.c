@@ -39,37 +39,38 @@
 #include "cmt_bitstream.h"
 
 
-void cmt_bitstream_destroy ( st_CMT_BITSTREAM *cmt_bitstream ) {
-    if ( !cmt_bitstream ) return;
-    if ( cmt_bitstream->data ) {
-        ui_utils_mem_free ( cmt_bitstream->data );
+void cmt_bitstream_destroy ( st_CMT_BITSTREAM *stream ) {
+    if ( !stream ) return;
+    if ( stream->data ) {
+        ui_utils_mem_free ( stream->data );
     }
-    ui_utils_mem_free ( cmt_bitstream );
+    ui_utils_mem_free ( stream );
 }
 
 
-st_CMT_BITSTREAM* cmt_bitstream_new ( uint32_t rate, uint32_t blocks ) {
+st_CMT_BITSTREAM* cmt_bitstream_new ( uint32_t rate, uint32_t blocks, en_CMT_STREAM_POLARITY polarity ) {
 
-    st_CMT_BITSTREAM *cmt_bitstream = ui_utils_mem_alloc0 ( sizeof ( st_CMT_BITSTREAM ) );
+    st_CMT_BITSTREAM *stream = ui_utils_mem_alloc0 ( sizeof ( st_CMT_BITSTREAM ) );
 
-    if ( !cmt_bitstream ) {
+    if ( !stream ) {
         fprintf ( stderr, "%s() - %d, Error: can't alocate memory - strerr: %s\n", __func__, __LINE__, strerror ( errno ) );
         return NULL;
     };
 
-    cmt_bitstream->rate = rate;
-    cmt_bitstream->scan_time = ( 1 / (double) rate );
+    stream->rate = rate;
+    stream->scan_time = ( 1 / (double) rate );
+    stream->polarity = polarity;
 
     if ( blocks ) {
-        cmt_bitstream->data = ui_utils_mem_alloc0 ( ( CMT_BITSTREAM_BLOCK_SIZE / 8 ) * blocks );
-        if ( !cmt_bitstream->data ) {
+        stream->data = ui_utils_mem_alloc0 ( ( CMT_BITSTREAM_BLOCK_SIZE / 8 ) * blocks );
+        if ( !stream->data ) {
             fprintf ( stderr, "%s() - %d, Error: can't alocate memory - strerr: %s\n", __func__, __LINE__, strerror ( errno ) );
             return NULL;
         };
-        cmt_bitstream->blocks = blocks;
+        stream->blocks = blocks;
     };
 
-    return cmt_bitstream;
+    return stream;
 }
 
 
@@ -80,7 +81,7 @@ uint32_t cmt_bitstream_compute_required_blocks_from_scans ( uint32_t scans ) {
 }
 
 
-st_CMT_BITSTREAM* cmt_bitstream_new_from_wav ( st_HANDLER *wav_handler, en_WAV_POLARITY polarity ) {
+st_CMT_BITSTREAM* cmt_bitstream_new_from_wav ( st_HANDLER *wav_handler, en_CMT_STREAM_POLARITY polarity ) {
 
     st_HANDLER *h = wav_handler;
 
@@ -94,39 +95,40 @@ st_CMT_BITSTREAM* cmt_bitstream_new_from_wav ( st_HANDLER *wav_handler, en_WAV_P
     uint32_t scans = sh->blocks;
     uint32_t blocks = cmt_bitstream_compute_required_blocks_from_scans ( scans );
 
-    st_CMT_BITSTREAM *cmt_bitstream = cmt_bitstream_new ( sh->sample_rate, blocks );
-    if ( !cmt_bitstream ) {
+    st_CMT_BITSTREAM *stream = cmt_bitstream_new ( sh->sample_rate, blocks, polarity );
+    if ( !stream ) {
         fprintf ( stderr, "%s() - %d: Error - can't create cmt_bitstream.\n", __func__, __LINE__ );
         wav_simple_header_destroy ( sh );
         return NULL;
     }
 
-    cmt_bitstream->scans = scans;
+    stream->scans = scans;
+    stream->stream_length = scans * ( 1 / (double) stream->rate );
 
     uint32_t i;
     for ( i = 0; i < scans; i++ ) {
         int bit_value = 0;
-        if ( EXIT_FAILURE == wav_get_bit_value_of_sample ( h, sh, i, polarity, &bit_value ) ) {
+        if ( EXIT_FAILURE == wav_get_bit_value_of_sample ( h, sh, i, ( polarity == CMT_STREAM_POLARITY_NORMAL ) ? WAV_POLARITY_NORMAL : WAV_POLARITY_INVERTED, &bit_value ) ) {
             fprintf ( stderr, "%s() - %d: Error - can't read sample.\n", __func__, __LINE__ );
             wav_simple_header_destroy ( sh );
-            cmt_bitstream_destroy ( cmt_bitstream );
+            cmt_bitstream_destroy ( stream );
             return NULL;
         };
 
-        cmt_bitstream_set_value_on_position ( cmt_bitstream, i, bit_value );
+        cmt_bitstream_set_value_on_position ( stream, i, bit_value );
     };
 
     wav_simple_header_destroy ( sh );
 
-    return cmt_bitstream;
+    return stream;
 }
 
 
-int cmt_bitstream_create_wav ( st_HANDLER *wav_handler, st_CMT_BITSTREAM *cmt_bitstream ) {
+int cmt_bitstream_create_wav ( st_HANDLER *wav_handler, st_CMT_BITSTREAM *stream ) {
 
     st_HANDLER *h = wav_handler;
 
-    uint32_t wav_size = sizeof ( st_WAV_RIFF_HEADER ) + sizeof ( st_WAV_CHUNK_HEADER ) + sizeof ( st_WAV_FMT16 ) + sizeof ( st_WAV_CHUNK_HEADER ) + cmt_bitstream->scans;
+    uint32_t wav_size = sizeof ( st_WAV_RIFF_HEADER ) + sizeof ( st_WAV_CHUNK_HEADER ) + sizeof ( st_WAV_FMT16 ) + sizeof ( st_WAV_CHUNK_HEADER ) + stream->scans;
 
     st_WAV_RIFF_HEADER wavhdr;
     memcpy ( wavhdr.riff_tag, WAV_TAG_RIFF, sizeof ( wavhdr.riff_tag ) );
@@ -156,8 +158,8 @@ int cmt_bitstream_create_wav ( st_HANDLER *wav_handler, st_CMT_BITSTREAM *cmt_bi
     st_WAV_FMT16 fmt;
     fmt.format_code = endianity_bswap16_LE ( WAVE_FORMAT_CODE_PCM );
     fmt.channels = endianity_bswap16_LE ( 1 );
-    fmt.sample_rate = endianity_bswap32_LE ( cmt_bitstream->rate );
-    fmt.bytes_per_sec = endianity_bswap32_LE ( ( cmt_bitstream->rate * 8 * 1 ) / 8 );
+    fmt.sample_rate = endianity_bswap32_LE ( stream->rate );
+    fmt.bytes_per_sec = endianity_bswap32_LE ( ( stream->rate * 8 * 1 ) / 8 );
     fmt.block_size = endianity_bswap16_LE ( ( 8 * 1 ) / 8 );
     fmt.bits_per_sample = endianity_bswap16_LE ( 8 );
 
@@ -170,7 +172,7 @@ int cmt_bitstream_create_wav ( st_HANDLER *wav_handler, st_CMT_BITSTREAM *cmt_bi
 
     st_WAV_CHUNK_HEADER datachunk;
     memcpy ( datachunk.chunk_tag, WAV_TAG_DATA, sizeof ( datachunk.chunk_tag ) );
-    datachunk.chunk_size = endianity_bswap32_LE ( cmt_bitstream->scans );
+    datachunk.chunk_size = endianity_bswap32_LE ( stream->scans );
 
     if ( EXIT_SUCCESS != generic_driver_write ( h, pos, &datachunk, sizeof ( st_WAV_CHUNK_HEADER ) ) ) {
         fprintf ( stderr, "%s():%d - Could not write: %s, %s\n", __func__, __LINE__, strerror ( errno ), generic_driver_error_message ( h, h->driver ) );
@@ -180,9 +182,9 @@ int cmt_bitstream_create_wav ( st_HANDLER *wav_handler, st_CMT_BITSTREAM *cmt_bi
     pos += sizeof ( st_WAV_CHUNK_HEADER );
 
     uint32_t i;
-    for ( i = 0; i < cmt_bitstream->scans; i++ ) {
+    for ( i = 0; i < stream->scans; i++ ) {
 
-        int sample = cmt_bitstream_get_value_on_position ( cmt_bitstream, i );
+        int sample = cmt_bitstream_get_value_on_position ( stream, i );
 
         int8_t buffer = ( sample ) ? MZTAPE_WAV_LEVEL_HIGH : MZTAPE_WAV_LEVEL_LOW;
 
@@ -197,9 +199,10 @@ int cmt_bitstream_create_wav ( st_HANDLER *wav_handler, st_CMT_BITSTREAM *cmt_bi
 }
 
 
-void cmt_bitstream_invert_data ( st_CMT_BITSTREAM *cmt_bitstream ) {
+void cmt_bitstream_change_polarity ( st_CMT_BITSTREAM *stream, en_CMT_STREAM_POLARITY polarity ) {
+    if ( stream->polarity == polarity ) return;
     uint32_t i;
-    for ( i = 0; i < cmt_bitstream->blocks; i++ ) {
-        cmt_bitstream->data[i] = ~cmt_bitstream->data[i];
+    for ( i = 0; i < stream->blocks; i++ ) {
+        stream->data[i] = ~stream->data[i];
     };
 }
