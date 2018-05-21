@@ -206,7 +206,6 @@ int cmt_open ( void ) {
     char window_title[] = "Select any CMT file to open";
     char *filename = NULL;
 
-
     if ( UIRET_OK != ui_open_file ( &filename, g_cmt.last_filename, 0, FILETYPE_ALLCMTFILES, window_title, OPENMODE_READ ) ) {
         return EXIT_FAILURE;
     };
