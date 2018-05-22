@@ -33,7 +33,7 @@ extern "C" {
 
 #include "cmtext.h"
 
-    extern st_CMTEXT_NEW g_cmt_wav_extension;
+    extern st_CMTEXT g_cmt_wav_extension;
 
     st_CMTEXT_BLOCK* cmtwav_block_open ( st_HANDLER *h, uint32_t offset, int block_id, int pause_after );
     void cmtwav_block_close ( st_CMTEXT_BLOCK *block );

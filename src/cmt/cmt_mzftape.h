@@ -32,7 +32,7 @@ extern "C" {
 
 #include "cmtext.h"
 
-    extern st_CMTEXT_NEW g_cmt_mzftape_extension;
+    extern st_CMTEXT g_cmt_mzftape_extension;
 
     extern st_CMTEXT_BLOCK* cmtmzftape_block_open ( int block_id );
 

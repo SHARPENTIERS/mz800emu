@@ -41,6 +41,7 @@
 #include "libs/mzf/mzf_tools.h"
 
 #include "libs/mztape/mztape.h"
+#include "cmt/cmt_tap.h"
 
 
 typedef enum en_UICMT_SHOW {
@@ -425,23 +426,23 @@ void ui_cmt_window_update ( void ) {
 
     char buff [ 100 ];
 
-    int total_files = 0;
-    int play_file = 0;
+    int total_blocks = 0;
+    int play_block = 0;
 
     if ( TEST_CMT_FILLED ) {
-        total_files = cmtext_container_get_count_blocks ( g_cmt.ext->container );
-        play_file = cmtext_block_get_block_id ( g_cmt.ext->block ) + 1;
+        total_blocks = cmtext_container_get_count_blocks ( g_cmt.ext->container );
+        play_block = cmtext_block_get_block_id ( g_cmt.ext->block ) + 1;
     };
 
     // Tape info
-    if ( total_files == 0 ) {
-        gtk_label_set_text ( ui_get_label ( "cmt_play_file_label" ), "--" );
-        gtk_label_set_text ( ui_get_label ( "cmt_total_files_label" ), "--" );
+    if ( total_blocks == 0 ) {
+        gtk_label_set_text ( ui_get_label ( "cmt_play_block_label" ), "--" );
+        gtk_label_set_text ( ui_get_label ( "cmt_total_blocks_label" ), "--" );
     } else {
-        snprintf ( buff, sizeof (buff ), "%02d", play_file );
-        gtk_label_set_text ( ui_get_label ( "cmt_play_file_label" ), buff );
-        snprintf ( buff, sizeof (buff ), "%02d", total_files );
-        gtk_label_set_text ( ui_get_label ( "cmt_total_files_label" ), buff );
+        snprintf ( buff, sizeof (buff ), "%02d", play_block );
+        gtk_label_set_text ( ui_get_label ( "cmt_play_block_label" ), buff );
+        snprintf ( buff, sizeof (buff ), "%02d", total_blocks );
+        gtk_label_set_text ( ui_get_label ( "cmt_total_blocks_label" ), buff );
     };
 
 
@@ -459,27 +460,29 @@ void ui_cmt_window_update ( void ) {
 
 
         uint16_t file_bdspeed = 0;
-        st_MZF_HEADER *hdr = NULL;
+        st_MZF_HEADER *mzfhdr = NULL;
+        st_CMTEXT_TAPE_ITEM_TAPHDR *taphdr = NULL;
+        st_CMTEXT_TAPE_ITEM_TAPDATA *tapdata = NULL;
 
         switch ( cmtext_block_get_type ( g_cmt.ext->block ) ) {
             case CMTEXT_BLOCK_TYPE_MZF:
                 file_bdspeed = ( !g_cmt.ext->block->cb_get_bdspeed ) ? 0 : g_cmt.ext->block->cb_get_bdspeed ( g_cmt.ext );
-                hdr = cmtmzf_block_get_mzfheader ( g_cmt.ext->block );
-                g_assert ( hdr != NULL );
+                mzfhdr = cmtmzf_block_get_spec_mzfheader ( g_cmt.ext->block );
+                g_assert ( mzfhdr != NULL );
 
-                snprintf ( buff, sizeof (buff ), "0x%02x", hdr->ftype );
+                snprintf ( buff, sizeof (buff ), "0x%02x", mzfhdr->ftype );
                 gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), buff );
 
-                mzf_tools_get_fname ( hdr, (char*) &buff );
+                mzf_tools_get_fname ( mzfhdr, (char*) &buff );
                 gtk_label_set_text ( ui_get_label ( "cmt_filename_label" ), buff );
 
-                snprintf ( buff, sizeof (buff ), "0x%04x", hdr->fsize );
+                snprintf ( buff, sizeof (buff ), "0x%04x", mzfhdr->fsize );
                 gtk_label_set_text ( ui_get_label ( "cmt_fsize_label" ), buff );
 
-                snprintf ( buff, sizeof (buff ), "0x%04x", hdr->fexec );
+                snprintf ( buff, sizeof (buff ), "0x%04x", mzfhdr->fexec );
                 gtk_label_set_text ( ui_get_label ( "cmt_fexec_label" ), buff );
 
-                snprintf ( buff, sizeof (buff ), "0x%04x", hdr->fstrt );
+                snprintf ( buff, sizeof (buff ), "0x%04x", mzfhdr->fstrt );
                 gtk_label_set_text ( ui_get_label ( "cmt_fstart_label" ), buff );
 
                 snprintf ( buff, sizeof (buff ), "%d Bd", file_bdspeed );
@@ -488,6 +491,32 @@ void ui_cmt_window_update ( void ) {
 
             case CMTEXT_BLOCK_TYPE_WAV:
                 gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), "WAV" );
+                break;
+
+            case CMTEXT_BLOCK_TYPE_TAPHEADER:
+                file_bdspeed = ( !g_cmt.ext->block->cb_get_bdspeed ) ? 0 : g_cmt.ext->block->cb_get_bdspeed ( g_cmt.ext );
+                taphdr = cmttap_block_get_spec_tapheader ( g_cmt.ext->block );
+                g_assert ( taphdr != NULL );
+
+                snprintf ( buff, sizeof (buff ), "0x%02x", taphdr->code );
+                gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), buff );
+
+                gtk_label_set_text ( ui_get_label ( "cmt_filename_label" ), taphdr->fname );
+
+                snprintf ( buff, sizeof (buff ), "%d Bd", file_bdspeed );
+                gtk_label_set_text ( ui_get_label ( "cmt_file_speed_label" ), buff );
+                break;
+
+            case CMTEXT_BLOCK_TYPE_TAPDATA:
+                file_bdspeed = ( !g_cmt.ext->block->cb_get_bdspeed ) ? 0 : g_cmt.ext->block->cb_get_bdspeed ( g_cmt.ext );
+                tapdata = cmttap_block_get_spec_tapdata ( g_cmt.ext->block );
+                g_assert ( tapdata != NULL );
+
+                snprintf ( buff, sizeof (buff ), "0x%04x", tapdata->size - 2 );
+                gtk_label_set_text ( ui_get_label ( "cmt_fsize_label" ), buff );
+
+                snprintf ( buff, sizeof (buff ), "%d Bd", file_bdspeed );
+                gtk_label_set_text ( ui_get_label ( "cmt_file_speed_label" ), buff );
                 break;
 
             default:
@@ -564,13 +593,13 @@ void ui_cmt_window_update ( void ) {
         };
 
 
-        if ( play_file == 1 ) {
+        if ( play_block == 1 ) {
             gtk_widget_set_sensitive ( ui_get_widget ( "cmt_previous_button" ), FALSE );
         } else {
             gtk_widget_set_sensitive ( ui_get_widget ( "cmt_previous_button" ), TRUE );
         };
 
-        if ( play_file < total_files ) {
+        if ( play_block < total_blocks ) {
             gtk_widget_set_sensitive ( ui_get_widget ( "cmt_next_button" ), TRUE );
         } else {
             gtk_widget_set_sensitive ( ui_get_widget ( "cmt_next_button" ), FALSE );

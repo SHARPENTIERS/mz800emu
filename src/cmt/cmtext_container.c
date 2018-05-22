@@ -40,6 +40,8 @@ void cmtext_container_tapeindex_destroy ( st_CMTEXT_TAPE_INDEX *index, int count
     for ( i = 0; i < count_blocks; i++ ) {
         if ( index[i].bltype == CMTEXT_BLOCK_TYPE_MZF ) {
             if ( index[i].item.mzf.fname ) ui_utils_mem_free ( index[i].item.mzf.fname );
+        } else if ( index[i].bltype == CMTEXT_BLOCK_TYPE_TAPHEADER ) {
+            if ( index[i].item.taphdr.fname ) ui_utils_mem_free ( index[i].item.taphdr.fname );
         };
     };
     ui_utils_mem_free ( index );
@@ -61,6 +63,24 @@ void cmtext_container_destroy ( st_CMTEXT_CONTAINER *container ) {
     if ( container->name ) ui_utils_mem_free ( container->name );
     cmtext_container_tape_destroy ( container->tape, container->count_blocks );
     ui_utils_mem_free ( container );
+}
+
+
+st_CMTEXT_TAPE_INDEX* cmtext_container_tape_index_aloc ( st_CMTEXT_TAPE_INDEX *index, int count_items ) {
+    uint32_t size = ( count_items + 1 ) * sizeof ( st_CMTEXT_TAPE_INDEX );
+
+    if ( !index ) {
+        index = (st_CMTEXT_TAPE_INDEX*) ui_utils_mem_alloc ( size );
+    } else {
+        index = (st_CMTEXT_TAPE_INDEX*) ui_utils_mem_realloc ( index, size );
+    };
+
+    if ( !index ) {
+        fprintf ( stderr, "%s():%d - Can't alocate memory (%d)\n", __func__, __LINE__, size );
+        return NULL;
+    };
+
+    return index;
 }
 
 

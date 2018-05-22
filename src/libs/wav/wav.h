@@ -42,17 +42,19 @@ extern "C" {
 #define WAV_TAG_DATA    "data"
 
 
-    typedef struct st_WAV_RIFF_HEADER {
+    typedef struct __attribute__ ( ( packed ) ) st_WAV_RIFF_HEADER {
         uint8_t riff_tag[4]; // RIFF
         uint32_t overall_size; // n - 8
         uint8_t wave_tag[4]; // WAVE
-    } st_WAV_RIFF_HEADER;
+    }
+    st_WAV_RIFF_HEADER;
 
 
-    typedef struct st_WAV_CHUNK_HEADER {
+    typedef struct __attribute__ ( ( packed ) ) st_WAV_CHUNK_HEADER {
         uint8_t chunk_tag[4]; // "fmt |data|fact"
         uint32_t chunk_size; // n - 8
-    } st_WAV_CHUNK_HEADER;
+    }
+    st_WAV_CHUNK_HEADER;
 
 
     typedef enum en_WAVE_FORMAT_CODE {
@@ -64,19 +66,20 @@ extern "C" {
     } en_WAVE_FORMAT_CODE;
 
 
-    typedef struct st_WAV_FMT16 {
+    typedef struct __attribute__ ( ( packed ) ) st_WAV_FMT16 {
         uint16_t format_code; // podporujeme jen PCM
         uint16_t channels;
         uint32_t sample_rate; // pocet vzorku za sekundu - 44 100, 48 100
         uint32_t bytes_per_sec; // (sample_rate * bits_per_sample * channes) / 8
         uint16_t block_size; // (bits_per_sample * channels) / 8
         uint16_t bits_per_sample;
-    } st_WAV_FMT16;
+    }
+    st_WAV_FMT16;
 
 #if 0
 
 
-    typedef struct st_WAV_FMT18 {
+    typedef struct __attribute__ ( ( packed ) ) st_WAV_FMT18 {
         uint16_t format_code; // podporujeme jen PCM
         uint16_t channels;
         uint32_t sample_rate; // pocet vzorku za sekundu - 44 100, 48 100
@@ -84,10 +87,11 @@ extern "C" {
         uint16_t block_size; // (bits_per_sample * channels) / 8
         uint16_t bits_per_sample;
         uint16_t size_of_extension; // 0 - 22
-    } st_WAV_FMT18;
+    }
+    st_WAV_FMT18;
 
 
-    typedef struct st_WAV_FMT40 {
+    typedef struct __attribute__ ( ( packed ) ) st_WAV_FMT40 {
         uint16_t format_code; // podporujeme jen PCM
         uint16_t channels;
         uint32_t sample_rate; // pocet vzorku za sekundu - 44 100, 48 100
@@ -98,7 +102,8 @@ extern "C" {
         uint16_t number_of_valid_bits;
         uint32_t speaker_position_mask;
         uint8_t sub_format[16];
-    } st_WAV_FMT18;
+    }
+    st_WAV_FMT18;
 #endif
 
 

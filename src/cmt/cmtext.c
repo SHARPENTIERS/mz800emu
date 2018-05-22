@@ -36,12 +36,14 @@
 #include "cmt_wav.h"
 #include "cmt_mzf.h"
 #include "cmt_mzftape.h"
+#include "cmt_tap.h"
 
-st_CMTEXT_NEW *g_cmtext[] = {
-                             &g_cmt_wav_extension,
-                             &g_cmt_mzf_extension,
-                             &g_cmt_mzftape_extension,
-                             NULL
+st_CMTEXT *g_cmtext[] = {
+                         &g_cmt_wav_extension,
+                         &g_cmt_mzf_extension,
+                         &g_cmt_mzftape_extension,
+                         &g_cmt_tap_extension,
+                         NULL
 };
 
 /* Obecne cmtext rutiny */
@@ -67,7 +69,7 @@ void cmtext_exit ( void ) {
 }
 
 
-st_CMTEXT_NEW* cmtext_get_extension ( const char *filename ) {
+st_CMTEXT* cmtext_get_extension ( const char *filename ) {
 
     int filename_length = strlen ( filename );
 
@@ -92,7 +94,7 @@ st_CMTEXT_NEW* cmtext_get_extension ( const char *filename ) {
 }
 
 
-const char* cmtext_get_description ( st_CMTEXT_NEW *ext ) {
+const char* cmtext_get_description ( st_CMTEXT *ext ) {
     if ( ( ext ) && ( ext->info ) && ( ext->info->description ) ) {
         return ext->info->description;
     };
@@ -100,7 +102,7 @@ const char* cmtext_get_description ( st_CMTEXT_NEW *ext ) {
 }
 
 
-const char* cmtext_get_name ( st_CMTEXT_NEW *ext ) {
+const char* cmtext_get_name ( st_CMTEXT *ext ) {
     if ( ( ext ) && ( ext->info ) && ( ext->info->name ) ) {
         return ext->info->name;
     };

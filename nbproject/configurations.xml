@@ -48,12 +48,16 @@
         <logicalFolder name="f6" displayName="WAV" projectFiles="true">
           <itemPath>src/libs/wav/wav.h</itemPath>
         </logicalFolder>
+        <logicalFolder name="f9" displayName="ZXtape" projectFiles="true">
+          <itemPath>src/libs/zxtape/zxtape.h</itemPath>
+        </logicalFolder>
       </logicalFolder>
       <logicalFolder name="f2" displayName="MZ-800" projectFiles="true">
         <logicalFolder name="f2" displayName="CMT" projectFiles="true">
           <itemPath>src/cmt/cmt.h</itemPath>
           <itemPath>src/cmt/cmt_mzf.h</itemPath>
           <itemPath>src/cmt/cmt_mzftape.h</itemPath>
+          <itemPath>src/cmt/cmt_tap.h</itemPath>
           <itemPath>src/cmt/cmt_wav.h</itemPath>
           <itemPath>src/cmt/cmtext.h</itemPath>
           <itemPath>src/cmt/cmtext_block.h</itemPath>
@@ -205,12 +209,16 @@
         <logicalFolder name="f6" displayName="WAV" projectFiles="true">
           <itemPath>src/libs/wav/wav.c</itemPath>
         </logicalFolder>
+        <logicalFolder name="f9" displayName="ZXtape" projectFiles="true">
+          <itemPath>src/libs/zxtape/zxtape.c</itemPath>
+        </logicalFolder>
       </logicalFolder>
       <logicalFolder name="f3" displayName="MZ-800" projectFiles="true">
         <logicalFolder name="f1" displayName="CMT" projectFiles="true">
           <itemPath>src/cmt/cmt.c</itemPath>
           <itemPath>src/cmt/cmt_mzf.c</itemPath>
           <itemPath>src/cmt/cmt_mzftape.c</itemPath>
+          <itemPath>src/cmt/cmt_tap.c</itemPath>
           <itemPath>src/cmt/cmt_wav.c</itemPath>
           <itemPath>src/cmt/cmtext.c</itemPath>
           <itemPath>src/cmt/cmtext_block.c</itemPath>
@@ -448,6 +456,10 @@
       </item>
       <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_tap.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_tap.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
@@ -615,6 +627,10 @@
       <item path="src/libs/wav/wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/wav/wav.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/zxtape/zxtape.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/zxtape/zxtape.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -987,6 +1003,10 @@
       </item>
       <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_tap.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_tap.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
@@ -1151,6 +1171,10 @@
       <item path="src/libs/wav/wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/wav/wav.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/zxtape/zxtape.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/zxtape/zxtape.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1514,6 +1538,10 @@
       </item>
       <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_tap.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_tap.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
@@ -1678,6 +1706,10 @@
       <item path="src/libs/wav/wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/wav/wav.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/zxtape/zxtape.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/zxtape/zxtape.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2050,6 +2082,10 @@
       </item>
       <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_tap.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_tap.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
@@ -2217,6 +2253,10 @@
       <item path="src/libs/wav/wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/wav/wav.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/zxtape/zxtape.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/zxtape/zxtape.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -2594,6 +2634,10 @@
       </item>
       <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_tap.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_tap.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
@@ -2761,6 +2805,10 @@
       <item path="src/libs/wav/wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/wav/wav.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/zxtape/zxtape.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/zxtape/zxtape.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -3138,6 +3186,10 @@
       </item>
       <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_tap.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_tap.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
@@ -3305,6 +3357,10 @@
       <item path="src/libs/wav/wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/wav/wav.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/zxtape/zxtape.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/zxtape/zxtape.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -3680,6 +3736,10 @@
       </item>
       <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_tap.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_tap.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_wav.h" ex="false" tool="3" flavor2="0">
@@ -3847,6 +3907,10 @@
       <item path="src/libs/wav/wav.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/wav/wav.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/zxtape/zxtape.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/zxtape/zxtape.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="10">
       </item>

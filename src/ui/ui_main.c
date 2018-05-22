@@ -617,6 +617,8 @@ unsigned ui_open_file ( char **filename, char *predefined_filename, unsigned max
         gtk_file_filter_add_pattern ( filter, "*.WAV" );
         gtk_file_filter_add_pattern ( filter, "*.mzt" );
         gtk_file_filter_add_pattern ( filter, "*.MZT" );
+        gtk_file_filter_add_pattern ( filter, "*.tap" );
+        gtk_file_filter_add_pattern ( filter, "*.TAP" );
         gtk_file_filter_set_name ( filter, "CMT File: .mzf, .mzt, .wav" );
     };
 

@@ -49,7 +49,7 @@ st_CMTEXT_INFO g_cmt_wav_info = {
                                  "WAV cmt extension"
 };
 
-extern st_CMTEXT_NEW *g_cmt_wav;
+extern st_CMTEXT *g_cmt_wav;
 
 
 void cmtwav_block_close ( st_CMTEXT_BLOCK *block ) {
@@ -156,7 +156,7 @@ static void cmtwav_exit ( void ) {
 }
 
 
-st_CMTEXT_NEW g_cmt_wav_extension = {
+st_CMTEXT g_cmt_wav_extension = {
                                      &g_cmt_wav_info,
                                      (st_CMTEXT_CONTAINER*) NULL,
                                      (st_CMTEXT_BLOCK*) NULL,
@@ -166,4 +166,4 @@ st_CMTEXT_NEW g_cmt_wav_extension = {
                                      cmtwav_eject,
 };
 
-st_CMTEXT_NEW *g_cmt_wav = &g_cmt_wav_extension;
+st_CMTEXT *g_cmt_wav = &g_cmt_wav_extension;

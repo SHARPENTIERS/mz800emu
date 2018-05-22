@@ -55,8 +55,27 @@ extern "C" {
     } st_CMTEXT_TAPE_ITEM_MZF;
 
 
+    typedef struct st_CMTEXT_TAPE_ITEM_TAPHDR {
+        uint16_t size; // skuitecna delka bloku (flag + data + checksum)
+        char *fname;
+        uint8_t code;
+        uint16_t data_size;
+        uint16_t param1;
+        uint16_t param2;
+        en_MZTAPE_SPEED mztape_speed;
+    } st_CMTEXT_TAPE_ITEM_TAPHDR;
+
+
+    typedef struct st_CMTEXT_TAPE_ITEM_TAPDATA {
+        uint16_t size; // skuitecna delka bloku (flag + data + checksum)
+        en_MZTAPE_SPEED mztape_speed;
+    } st_CMTEXT_TAPE_ITEM_TAPDATA;
+
+
     typedef union un_CMTEXT_TAPE_ITEM {
         st_CMTEXT_TAPE_ITEM_MZF mzf;
+        st_CMTEXT_TAPE_ITEM_TAPHDR taphdr;
+        st_CMTEXT_TAPE_ITEM_TAPDATA tapdata;
     } un_CMTEXT_TAPE_ITEM;
 
 
@@ -96,6 +115,8 @@ extern "C" {
 
     extern st_CMTEXT_CONTAINER_TAPE* cmtext_container_tape_new ( st_HANDLER *h, st_CMTEXT_TAPE_INDEX *index );
     extern void cmtext_container_tape_destroy ( st_CMTEXT_CONTAINER_TAPE *tape, int count_blocks );
+
+    extern st_CMTEXT_TAPE_INDEX* cmtext_container_tape_index_aloc ( st_CMTEXT_TAPE_INDEX *index, int count_items );
 
     extern st_CMTEXT_CONTAINER* cmtext_container_new (
                                                        en_CMTEXT_CONTAINER_TYPE type,

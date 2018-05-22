@@ -51,7 +51,7 @@ extern "C" {
     typedef void ( *cmtext_cb_eject ) (void);
 
 
-    typedef struct st_CMTEXT_NEW {
+    typedef struct st_CMTEXT {
         st_CMTEXT_INFO *info;
         st_CMTEXT_CONTAINER *container;
         st_CMTEXT_BLOCK *block; // prave prehravany datovy blok
@@ -59,15 +59,15 @@ extern "C" {
         cmtext_cb_exit cb_exit;
         cmtext_cb_open cb_open;
         cmtext_cb_eject cb_eject;
-    } st_CMTEXT_NEW;
+    } st_CMTEXT;
 
 
     extern void cmtext_init ( void );
     extern void cmtext_exit ( void );
 
-    extern st_CMTEXT_NEW* cmtext_get_extension ( const char *filename );
-    extern const char* cmtext_get_description ( st_CMTEXT_NEW *ext );
-    extern const char* cmtext_get_name ( st_CMTEXT_NEW *ext );
+    extern st_CMTEXT* cmtext_get_extension ( const char *filename );
+    extern const char* cmtext_get_description ( st_CMTEXT *ext );
+    extern const char* cmtext_get_name ( st_CMTEXT *ext );
 
     extern int cmtext_container_open ( const char *filename );
 

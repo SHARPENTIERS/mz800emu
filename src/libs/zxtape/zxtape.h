@@ -1,8 +1,8 @@
 /* 
- * File:   cmtext_block_defs.h
+ * File:   zxtape.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 20. května 2018, 7:52
+ * Created on 22. května 2018, 0:22
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -24,32 +24,30 @@
  */
 
 
-#ifndef CMTEXT_BLOCK_DEFS_H
-#define CMTEXT_BLOCK_DEFS_H
+#ifndef ZXTAPE_H
+#define ZXTAPE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#include <stdint.h>
+#include "libs/mztape/mztape.h"
 
-    typedef enum en_CMTEXT_BLOCK_TYPE {
-        CMTEXT_BLOCK_TYPE_WAV = 0,
-        CMTEXT_BLOCK_TYPE_MZF,
-        CMTEXT_BLOCK_TYPE_TAPHEADER,
-        CMTEXT_BLOCK_TYPE_TAPDATA,
-    } en_CMTEXT_BLOCK_TYPE;
+#define ZXTAPE_DEFAULT_BDSPEED 1400
 
 
-    typedef enum en_CMTEXT_BLOCK_SPEED {
-        CMTEXT_BLOCK_SPEED_NONE = 0, // rychlost bloku neni mozne menit
-        CMTEXT_BLOCK_SPEED_DEFAULT, // rychlost bloku se nastavuje podle cmt default speed
-        CMTEXT_BLOCK_SPEED_SET, // rychlost bloku je pevne dana a nelze ji menit
-    } en_CMTEXT_BLOCK_SPEED;
+    typedef enum en_ZXTAPE_BLOCK_FLAG {
+        ZXTAPE_BLOCK_FLAG_HEADER = 0x00,
+        ZXTAPE_BLOCK_FLAG_DATA = 0xff,
+    } en_ZXTAPE_BLOCK_FLAG;
 
+    extern st_CMT_BITSTREAM* zxtape_create_cmt_bitstream_from_tapblock ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t *data, uint16_t data_size );
+    extern st_CMT_VSTREAM* zxtape_create_17MHz_cmt_vstream_from_tapblock ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t *data, uint16_t data_size );
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CMTEXT_BLOCK_DEFS_H */
+#endif /* ZXTAPE_H */
 
