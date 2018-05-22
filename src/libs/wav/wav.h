@@ -42,7 +42,7 @@ extern "C" {
 #define WAV_TAG_DATA    "data"
 
 
-    typedef struct __attribute__ ( ( packed ) ) st_WAV_RIFF_HEADER {
+    typedef struct st_WAV_RIFF_HEADER {
         uint8_t riff_tag[4]; // RIFF
         uint32_t overall_size; // n - 8
         uint8_t wave_tag[4]; // WAVE
@@ -50,7 +50,7 @@ extern "C" {
     st_WAV_RIFF_HEADER;
 
 
-    typedef struct __attribute__ ( ( packed ) ) st_WAV_CHUNK_HEADER {
+    typedef struct st_WAV_CHUNK_HEADER {
         uint8_t chunk_tag[4]; // "fmt |data|fact"
         uint32_t chunk_size; // n - 8
     }
@@ -66,7 +66,7 @@ extern "C" {
     } en_WAVE_FORMAT_CODE;
 
 
-    typedef struct __attribute__ ( ( packed ) ) st_WAV_FMT16 {
+    typedef struct st_WAV_FMT16 {
         uint16_t format_code; // podporujeme jen PCM
         uint16_t channels;
         uint32_t sample_rate; // pocet vzorku za sekundu - 44 100, 48 100
@@ -79,7 +79,7 @@ extern "C" {
 #if 0
 
 
-    typedef struct __attribute__ ( ( packed ) ) st_WAV_FMT18 {
+    typedef struct st_WAV_FMT18 {
         uint16_t format_code; // podporujeme jen PCM
         uint16_t channels;
         uint32_t sample_rate; // pocet vzorku za sekundu - 44 100, 48 100
@@ -91,7 +91,7 @@ extern "C" {
     st_WAV_FMT18;
 
 
-    typedef struct __attribute__ ( ( packed ) ) st_WAV_FMT40 {
+    typedef struct st_WAV_FMT40 {
         uint16_t format_code; // podporujeme jen PCM
         uint16_t channels;
         uint32_t sample_rate; // pocet vzorku za sekundu - 44 100, 48 100
