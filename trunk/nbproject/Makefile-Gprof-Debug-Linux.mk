@@ -45,6 +45,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/cmt/cmt.o \
 	${OBJECTDIR}/src/cmt/cmt_mzf.o \
 	${OBJECTDIR}/src/cmt/cmt_mzftape.o \
+	${OBJECTDIR}/src/cmt/cmt_tap.o \
 	${OBJECTDIR}/src/cmt/cmt_wav.o \
 	${OBJECTDIR}/src/cmt/cmtext.o \
 	${OBJECTDIR}/src/cmt/cmtext_block.o \
@@ -80,6 +81,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/libs/mztape/mztape.o \
 	${OBJECTDIR}/src/libs/qd/qd.o \
 	${OBJECTDIR}/src/libs/wav/wav.o \
+	${OBJECTDIR}/src/libs/zxtape/zxtape.o \
 	${OBJECTDIR}/src/main.o \
 	${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.o \
 	${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.o \
@@ -213,6 +215,11 @@ ${OBJECTDIR}/src/cmt/cmt_mzftape.o: src/cmt/cmt_mzftape.c
 	${MKDIR} -p ${OBJECTDIR}/src/cmt
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_mzftape.o src/cmt/cmt_mzftape.c
+
+${OBJECTDIR}/src/cmt/cmt_tap.o: src/cmt/cmt_tap.c 
+	${MKDIR} -p ${OBJECTDIR}/src/cmt
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_tap.o src/cmt/cmt_tap.c
 
 ${OBJECTDIR}/src/cmt/cmt_wav.o: src/cmt/cmt_wav.c 
 	${MKDIR} -p ${OBJECTDIR}/src/cmt
@@ -388,6 +395,11 @@ ${OBJECTDIR}/src/libs/wav/wav.o: src/libs/wav/wav.c
 	${MKDIR} -p ${OBJECTDIR}/src/libs/wav
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/wav/wav.o src/libs/wav/wav.c
+
+${OBJECTDIR}/src/libs/zxtape/zxtape.o: src/libs/zxtape/zxtape.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/zxtape
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/zxtape/zxtape.o src/libs/zxtape/zxtape.c
 
 ${OBJECTDIR}/src/main.o: src/main.c 
 	${MKDIR} -p ${OBJECTDIR}/src

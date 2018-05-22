@@ -72,7 +72,7 @@ st_CMTEXT_BLOCK* cmtext_block_new ( int block_id,
 
 void cmtext_block_play ( void *cmtext ) {
     assert ( cmtext != NULL );
-    st_CMTEXT_NEW *cext = (st_CMTEXT_NEW*) cmtext;
+    st_CMTEXT *cext = (st_CMTEXT*) cmtext;
     st_CMTEXT_BLOCK *block = cext->block;
     assert ( block != NULL );
     assert ( block->stream != NULL );
@@ -85,8 +85,8 @@ void cmtext_block_play ( void *cmtext ) {
 
 const char* cmtext_block_get_playname ( void *cmtext ) {
     assert ( cmtext != NULL );
-    st_CMTEXT_NEW *cext = (st_CMTEXT_NEW*) cmtext;
-    assert ( (st_CMTEXT_NEW*) cext->container != NULL );
+    st_CMTEXT *cext = (st_CMTEXT*) cmtext;
+    assert ( cext->container != NULL );
     if ( cext->container->type == CMTEXT_CONTAINER_TYPE_SINGLE ) return cmtext_container_get_name ( cext->container );
     return "";
 }
@@ -94,7 +94,7 @@ const char* cmtext_block_get_playname ( void *cmtext ) {
 
 void cmtext_block_set_polarity ( void *cmtext, en_CMT_STREAM_POLARITY polarity ) {
     assert ( cmtext != NULL );
-    st_CMTEXT_NEW *cext = (st_CMTEXT_NEW*) cmtext;
+    st_CMTEXT *cext = (st_CMTEXT*) cmtext;
     st_CMTEXT_BLOCK *block = cext->block;
     assert ( block != NULL );
     assert ( block->stream != NULL );

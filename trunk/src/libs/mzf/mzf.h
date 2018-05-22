@@ -40,22 +40,24 @@ extern "C" {
 #define MZF_FNAME_TERMINATOR 0x0d
 
 
-    typedef struct st_MZF_FILENAME {
+    typedef struct __attribute__ ( ( packed ) ) st_MZF_FILENAME {
         uint8_t name [ MZF_FILE_NAME_LENGTH ];
         uint8_t terminator; // 0x0d
-    } st_MZF_FILENAME;
+    }
+    st_MZF_FILENAME;
 
 #define MZF_FNAME_FULL_LENGTH sizeof ( st_MZF_FILENAME )
 
 
-    typedef struct st_MZF_HEADER {
+    typedef struct __attribute__ ( ( packed ) ) st_MZF_HEADER {
         uint8_t ftype;
         st_MZF_FILENAME fname;
         uint16_t fsize;
         uint16_t fstrt;
         uint16_t fexec;
         uint8_t cmnt [ MZF_CMNT_LENGTH ];
-    } st_MZF_HEADER;
+    }
+    st_MZF_HEADER;
 
 
     typedef struct st_MZF {

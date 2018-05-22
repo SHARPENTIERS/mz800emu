@@ -462,8 +462,8 @@ st_CMT_BITSTREAM* mztape_create_cmt_bitstream_from_mztmzf ( st_MZTAPE_MZF *mztmz
      */
     uint32_t blocks = cmt_bitstream_compute_required_blocks_from_scans ( data_bitsize );
 
-    st_CMT_BITSTREAM *cmt_bitstream = cmt_bitstream_new ( sample_rate, blocks, CMT_STREAM_POLARITY_NORMAL );
-    if ( !cmt_bitstream ) {
+    st_CMT_BITSTREAM *bitstream = cmt_bitstream_new ( sample_rate, blocks, CMT_STREAM_POLARITY_NORMAL );
+    if ( !bitstream ) {
         fprintf ( stderr, "%s():%d - Could create cmt bitstream\n", __func__, __LINE__ );
         return NULL;
     };
@@ -575,44 +575,44 @@ st_CMT_BITSTREAM* mztape_create_cmt_bitstream_from_mztmzf ( st_MZTAPE_MZF *mztmz
 
         if ( pulse != NULL ) {
             int sample_value = ( pulse_time < pulse->high ) ? 1 : 0;
-            cmt_bitstream_set_value_on_position ( cmt_bitstream, sample_position++, sample_value );
+            cmt_bitstream_set_value_on_position ( bitstream, sample_position++, sample_value );
             pulse_time += sample_length;
         };
 
         scan_time += sample_length;
     }
 
-    return cmt_bitstream;
+    return bitstream;
 }
 
 
-static inline int mztape_add_cmt_vstream_onestate_block ( st_CMT_VSTREAM* cmt_vstream, st_MZTAPE_PULSE_GDGTICS *gpulse, int count ) {
+static inline int mztape_add_cmt_vstream_onestate_block ( st_CMT_VSTREAM* vstream, st_MZTAPE_PULSE_GDGTICS *gpulse, int count ) {
     int i;
     for ( i = 0; i < count; i++ ) {
-        if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 1, gpulse->high ) ) return EXIT_FAILURE;
-        if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 0, gpulse->low ) ) return EXIT_FAILURE;
+        if ( EXIT_FAILURE == cmt_vstream_add_value ( vstream, 1, gpulse->high ) ) return EXIT_FAILURE;
+        if ( EXIT_FAILURE == cmt_vstream_add_value ( vstream, 0, gpulse->low ) ) return EXIT_FAILURE;
     };
     return EXIT_SUCCESS;
 }
 
 
-static inline int mztape_add_cmt_vstream_data_block ( st_CMT_VSTREAM* cmt_vstream, st_MZTAPE_PULSES_GDGTICS *gpulses, uint8_t *data, uint16_t size ) {
+static inline int mztape_add_cmt_vstream_data_block ( st_CMT_VSTREAM* vstream, st_MZTAPE_PULSES_GDGTICS *gpulses, uint8_t *data, uint16_t size ) {
     int i;
     for ( i = 0; i < size; i++ ) {
         uint8_t byte = data[i];
         int bit;
         for ( bit = 0; bit < 8; bit++ ) {
             if ( byte & 0x80 ) {
-                if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 1, gpulses->long_pulse.high ) ) return EXIT_FAILURE;
-                if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 0, gpulses->long_pulse.low ) ) return EXIT_FAILURE;
+                if ( EXIT_FAILURE == cmt_vstream_add_value ( vstream, 1, gpulses->long_pulse.high ) ) return EXIT_FAILURE;
+                if ( EXIT_FAILURE == cmt_vstream_add_value ( vstream, 0, gpulses->long_pulse.low ) ) return EXIT_FAILURE;
             } else {
-                if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 1, gpulses->short_pulse.high ) ) return EXIT_FAILURE;
-                if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 0, gpulses->short_pulse.low ) ) return EXIT_FAILURE;
+                if ( EXIT_FAILURE == cmt_vstream_add_value ( vstream, 1, gpulses->short_pulse.high ) ) return EXIT_FAILURE;
+                if ( EXIT_FAILURE == cmt_vstream_add_value ( vstream, 0, gpulses->short_pulse.low ) ) return EXIT_FAILURE;
             };
             byte = byte << 1;
         };
-        if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 1, gpulses->long_pulse.high ) ) return EXIT_FAILURE;
-        if ( EXIT_FAILURE == cmt_vstream_add_value ( cmt_vstream, 0, gpulses->long_pulse.low ) ) return EXIT_FAILURE;
+        if ( EXIT_FAILURE == cmt_vstream_add_value ( vstream, 1, gpulses->long_pulse.high ) ) return EXIT_FAILURE;
+        if ( EXIT_FAILURE == cmt_vstream_add_value ( vstream, 0, gpulses->long_pulse.low ) ) return EXIT_FAILURE;
     };
     return EXIT_SUCCESS;
 }
@@ -624,8 +624,8 @@ static inline int mztape_add_cmt_vstream_data_block ( st_CMT_VSTREAM* cmt_vstrea
  */
 st_CMT_VSTREAM* mztape_create_17MHz_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_MZTAPE_SPEED mztape_speed ) {
 
-    st_CMT_VSTREAM* cmt_vstream = cmt_vstream_new ( GDGCLK_BASE, CMT_VSTREAM_BYTELENGTH16, 1, CMT_STREAM_POLARITY_NORMAL );
-    if ( !cmt_vstream ) {
+    st_CMT_VSTREAM* vstream = cmt_vstream_new ( GDGCLK_BASE, CMT_VSTREAM_BYTELENGTH16, 1, CMT_STREAM_POLARITY_NORMAL );
+    if ( !vstream ) {
         fprintf ( stderr, "%s():%d - Could create cmt vstream\n", __func__, __LINE__ );
         return NULL;
     };
@@ -644,54 +644,54 @@ st_CMT_VSTREAM* mztape_create_17MHz_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mzt
 
         switch ( format[i] ) {
             case MZTAPE_BLOCK_LGAP:
-                ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.short_pulse, g_formats[mztape_format]->lgap );
+                ret = mztape_add_cmt_vstream_onestate_block ( vstream, &gpulses.short_pulse, g_formats[mztape_format]->lgap );
                 break;
 
             case MZTAPE_BLOCK_SGAP:
-                ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.short_pulse, g_formats[mztape_format]->sgap );
+                ret = mztape_add_cmt_vstream_onestate_block ( vstream, &gpulses.short_pulse, g_formats[mztape_format]->sgap );
                 break;
 
             case MZTAPE_BLOCK_LTM:
-                ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.long_pulse, MZTAPE_LTM_LLENGTH );
+                ret = mztape_add_cmt_vstream_onestate_block ( vstream, &gpulses.long_pulse, MZTAPE_LTM_LLENGTH );
                 if ( ret != EXIT_FAILURE ) {
-                    ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.short_pulse, MZTAPE_LTM_SLENGTH );
+                    ret = mztape_add_cmt_vstream_onestate_block ( vstream, &gpulses.short_pulse, MZTAPE_LTM_SLENGTH );
                 };
                 break;
 
             case MZTAPE_BLOCK_STM:
-                ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.long_pulse, MZTAPE_STM_LLENGTH );
+                ret = mztape_add_cmt_vstream_onestate_block ( vstream, &gpulses.long_pulse, MZTAPE_STM_LLENGTH );
                 if ( ret != EXIT_FAILURE ) {
-                    ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.short_pulse, MZTAPE_STM_SLENGTH );
+                    ret = mztape_add_cmt_vstream_onestate_block ( vstream, &gpulses.short_pulse, MZTAPE_STM_SLENGTH );
                 };
                 break;
 
             case MZTAPE_BLOCK_2L:
-                ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.long_pulse, 2 );
+                ret = mztape_add_cmt_vstream_onestate_block ( vstream, &gpulses.long_pulse, 2 );
                 break;
 
             case MZTAPE_BLOCK_256S:
-                ret = mztape_add_cmt_vstream_onestate_block ( cmt_vstream, &gpulses.short_pulse, 256 );
+                ret = mztape_add_cmt_vstream_onestate_block ( vstream, &gpulses.short_pulse, 256 );
                 break;
 
             case MZTAPE_BLOCK_HDR:
-                ret = mztape_add_cmt_vstream_data_block ( cmt_vstream, &gpulses, mztmzf->header, sizeof ( st_MZF_HEADER ) );
+                ret = mztape_add_cmt_vstream_data_block ( vstream, &gpulses, mztmzf->header, sizeof ( st_MZF_HEADER ) );
                 break;
 
             case MZTAPE_BLOCK_FILE:
-                ret = mztape_add_cmt_vstream_data_block ( cmt_vstream, &gpulses, mztmzf->body, mztmzf->size );
+                ret = mztape_add_cmt_vstream_data_block ( vstream, &gpulses, mztmzf->body, mztmzf->size );
                 break;
 
             case MZTAPE_BLOCK_CHKH:
             {
                 uint16_t chk = endianity_bswap16_BE ( mztmzf->chkh );
-                ret = mztape_add_cmt_vstream_data_block ( cmt_vstream, &gpulses, ( uint8_t* ) & chk, 2 );
+                ret = mztape_add_cmt_vstream_data_block ( vstream, &gpulses, ( uint8_t* ) & chk, 2 );
                 break;
             }
 
             case MZTAPE_BLOCK_CHKF:
             {
                 uint16_t chk = endianity_bswap16_BE ( mztmzf->chkb );
-                ret = mztape_add_cmt_vstream_data_block ( cmt_vstream, &gpulses, ( uint8_t* ) & chk, 2 );
+                ret = mztape_add_cmt_vstream_data_block ( vstream, &gpulses, ( uint8_t* ) & chk, 2 );
                 break;
             }
 
@@ -702,12 +702,12 @@ st_CMT_VSTREAM* mztape_create_17MHz_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mzt
 
         if ( ret == EXIT_FAILURE ) {
             fprintf ( stderr, "%s():%d - Error: can't create cmt vstream\n", __func__, __LINE__ );
-            cmt_vstream_destroy ( cmt_vstream );
+            cmt_vstream_destroy ( vstream );
             return NULL;
         };
 
         i++;
     };
 
-    return cmt_vstream;
+    return vstream;
 }

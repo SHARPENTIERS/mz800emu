@@ -33,7 +33,7 @@ extern "C" {
 
 #include "cmtext.h"
 
-    extern st_CMTEXT_NEW g_cmt_mzf_extension;
+    extern st_CMTEXT g_cmt_mzf_extension;
 
 
     typedef struct st_CMTMZF_BLOCKSPEC {
@@ -51,7 +51,7 @@ extern "C" {
     extern st_CMTEXT_BLOCK* cmtmzf_block_open ( st_HANDLER *h, uint32_t offset, int block_id, int pause_after, en_CMTEXT_BLOCK_SPEED block_speed, en_MZTAPE_SPEED mztape_speed );
     extern void cmtmzf_block_close ( st_CMTEXT_BLOCK *block );
 
-    extern st_MZF_HEADER* cmtmzf_block_get_mzfheader ( st_CMTEXT_BLOCK *block );
+    extern st_MZF_HEADER* cmtmzf_block_get_spec_mzfheader ( st_CMTEXT_BLOCK *block );
 
 #define CMTMZF_DEFAULT_BITSTREAM_RATE 44100
     //#define CMTMZF_DEFAULT_BITSTREAM_RATE 192000

@@ -54,10 +54,10 @@ st_CMTEXT_INFO g_cmt_mzf_info = {
                                  "MZF cmt extension"
 };
 
-extern st_CMTEXT_NEW *g_cmt_mzf;
+extern st_CMTEXT *g_cmt_mzf;
 
 
-st_MZF_HEADER* cmtmzf_block_get_mzfheader ( st_CMTEXT_BLOCK *block ) {
+st_MZF_HEADER* cmtmzf_block_get_spec_mzfheader ( st_CMTEXT_BLOCK *block ) {
     assert ( block != NULL );
     assert ( block->spec != NULL );
     st_CMTMZF_BLOCKSPEC *blspec = (st_CMTMZF_BLOCKSPEC*) block->spec;
@@ -175,7 +175,7 @@ st_CMT_VSTREAM* cmtmzf_generate_vstream ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_SPEED
 
 static int cmtmzf_set_speed ( void *cmtext, en_MZTAPE_SPEED mztape_speed ) {
     assert ( cmtext != NULL );
-    st_CMTEXT_NEW *cext = (st_CMTEXT_NEW*) cmtext;
+    st_CMTEXT *cext = (st_CMTEXT*) cmtext;
     st_CMTEXT_BLOCK *block = cext->block;
     assert ( block != NULL );
     if ( block->block_speed != CMTEXT_BLOCK_SPEED_DEFAULT ) return EXIT_FAILURE;
@@ -214,7 +214,7 @@ static int cmtmzf_set_speed ( void *cmtext, en_MZTAPE_SPEED mztape_speed ) {
 
 static uint16_t cmtmzf_get_bdspeed ( void *cmtext ) {
     assert ( cmtext != NULL );
-    st_CMTEXT_NEW *cext = (st_CMTEXT_NEW*) cmtext;
+    st_CMTEXT *cext = (st_CMTEXT*) cmtext;
     st_CMTMZF_BLOCKSPEC *blspec = (st_CMTMZF_BLOCKSPEC*) cext->block->spec;
     assert ( blspec != NULL );
     return (uint16_t) round ( MZTAPE_DEFAULT_BDSPEED * g_speed_divisor[blspec->mztape_speed] );
@@ -246,6 +246,7 @@ st_CMTEXT_BLOCK* cmtmzf_block_open ( st_HANDLER *h, uint32_t offset, int block_i
     if ( !bitstream ) {
         fprintf ( stderr, "%s():%d - Can't generate bitstream\n", __func__, __LINE__ );
         cmtmzf_blockspec_destroy ( blspec );
+        cmt_stream_destroy ( stream );
         return NULL;
     };
 
@@ -328,14 +329,14 @@ static void cmtmzf_exit ( void ) {
 }
 
 
-st_CMTEXT_NEW g_cmt_mzf_extension = {
-                                     &g_cmt_mzf_info,
-                                     (st_CMTEXT_CONTAINER*) NULL,
-                                     (st_CMTEXT_BLOCK*) NULL,
-                                     cmtmzf_init,
-                                     cmtmzf_exit,
-                                     cmtmzf_container_open,
-                                     cmtmzf_eject,
+st_CMTEXT g_cmt_mzf_extension = {
+                                 &g_cmt_mzf_info,
+                                 (st_CMTEXT_CONTAINER*) NULL,
+                                 (st_CMTEXT_BLOCK*) NULL,
+                                 cmtmzf_init,
+                                 cmtmzf_exit,
+                                 cmtmzf_container_open,
+                                 cmtmzf_eject,
 };
 
-st_CMTEXT_NEW *g_cmt_mzf = &g_cmt_mzf_extension;
+st_CMTEXT *g_cmt_mzf = &g_cmt_mzf_extension;

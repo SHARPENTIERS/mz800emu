@@ -51,7 +51,7 @@ st_CMTEXT_INFO g_cmt_mzftape_info = {
                                      "MZT cmt extension"
 };
 
-extern st_CMTEXT_NEW *g_cmt_mzftape;
+extern st_CMTEXT *g_cmt_mzftape;
 
 
 static void cmtmzftape_container_close ( st_CMTEXT_CONTAINER *container ) {
@@ -92,16 +92,8 @@ static st_CMTEXT_TAPE_INDEX* cmtmzftape_container_index_new ( st_HANDLER *h, uin
         char ascii_filename[MZF_FNAME_FULL_LENGTH];
         mzf_tools_get_fname ( hdr, ascii_filename );
 
-        uint32_t size = ( i + 1 ) * sizeof ( st_CMTEXT_TAPE_INDEX );
-
+        index = cmtext_container_tape_index_aloc ( index, i );
         if ( !index ) {
-            index = (st_CMTEXT_TAPE_INDEX*) ui_utils_mem_alloc ( size );
-        } else {
-            index = (st_CMTEXT_TAPE_INDEX*) ui_utils_mem_realloc ( index, size );
-        };
-
-        if ( !index ) {
-            fprintf ( stderr, "%s():%d - Can't alocate memory (%d)\n", __func__, __LINE__, size );
             ui_utils_mem_free ( hdr );
             return NULL;
         };
@@ -276,7 +268,7 @@ static void cmtmzftape_exit ( void ) {
 }
 
 
-st_CMTEXT_NEW g_cmt_mzftape_extension = {
+st_CMTEXT g_cmt_mzftape_extension = {
                                          &g_cmt_mzftape_info,
                                          (st_CMTEXT_CONTAINER*) NULL,
                                          (st_CMTEXT_BLOCK*) NULL,
@@ -286,4 +278,4 @@ st_CMTEXT_NEW g_cmt_mzftape_extension = {
                                          cmtmzftape_eject,
 };
 
-st_CMTEXT_NEW *g_cmt_mzftape = &g_cmt_mzftape_extension;
+st_CMTEXT *g_cmt_mzftape = &g_cmt_mzftape_extension;

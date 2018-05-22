@@ -181,7 +181,7 @@ void cmt_init ( void ) {
 
 int cmt_open_file_by_extension ( char *filename ) {
 
-    st_CMTEXT_NEW *ext = cmtext_get_extension ( filename );
+    st_CMTEXT *ext = cmtext_get_extension ( filename );
 
     if ( !ext ) {
         ui_show_error ( "Unknown CMT file extension '%s'\n", filename );
@@ -234,10 +234,10 @@ void cmt_update_output ( void ) {
 
     if ( playsts != g_cmt.playsts ) {
         if ( CMTEXT_BLOCK_PLAYSTS_STOP == playsts ) {
-            int total_files = cmtext_container_get_count_blocks ( g_cmt.ext->container );
-            int play_file = cmtext_block_get_block_id ( g_cmt.ext->block ) + 1;
+            int total_blocks = cmtext_container_get_count_blocks ( g_cmt.ext->container );
+            int play_block = cmtext_block_get_block_id ( g_cmt.ext->block ) + 1;
 
-            if ( play_file < total_files ) {
+            if ( play_block < total_blocks ) {
                 assert ( g_cmt.ext->container->cb_next_block );
 
                 if ( ( !g_cmt.ext->container->cb_next_block ) || ( EXIT_FAILURE == g_cmt.ext->container->cb_next_block ( ) ) ) {

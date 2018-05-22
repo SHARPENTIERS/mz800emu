@@ -109,8 +109,8 @@ extern "C" {
 
 
         if ( !( position < stream->scans ) ) {
-            stream->scans = position;
-            stream->stream_length = stream->scan_time * position;
+            stream->scans = position + 1;
+            stream->stream_length = stream->scan_time * stream->scans;
         };
     }
 

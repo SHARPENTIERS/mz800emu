@@ -47,7 +47,7 @@ extern "C" {
 
 
     typedef struct st_CMT {
-        st_CMTEXT_NEW *ext;
+        st_CMTEXT *ext;
         char *last_filename;
         en_CMT_STREAM_POLARITY polarity;
         en_MZTAPE_SPEED speed;
