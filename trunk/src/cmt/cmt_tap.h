@@ -47,22 +47,20 @@ extern "C" {
     } en_CMTTAP_HEADER_CODE;
 
 
-    typedef struct __attribute__ ( ( packed ) ) st_CMTTAP_BLOCKINFO {
+    typedef struct st_CMTTAP_BLOCKINFO {
         uint16_t size;
         uint8_t flag; // en_CMTTAP_BLOCK_FLAG
-    }
-    st_CMTTAP_BLOCKINFO;
+    } st_CMTTAP_BLOCKINFO;
 
 
-    typedef struct __attribute__ ( ( packed ) ) st_CMTTAP_HEADER {
+    typedef struct st_CMTTAP_HEADER {
         uint8_t code;
         uint8_t name[10];
         uint16_t data_size;
         uint16_t param1;
         uint16_t param2;
         uint8_t chksum; // XOR
-    }
-    st_CMTTAP_HEADER;
+    } st_CMTTAP_HEADER;
 
 
     typedef union un_CMTTAP_FLAGSPEC {

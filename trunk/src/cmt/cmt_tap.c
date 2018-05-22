@@ -174,24 +174,22 @@ static st_CMTEXT_TAPE_INDEX* cmttap_container_index_new ( st_HANDLER *h, uint32_
 
     while ( offset < h->spec.memspec.size ) {
 
-        if ( EXIT_SUCCESS != generic_driver_read ( h, offset, &tapblinfo, sizeof ( st_CMTTAP_BLOCKINFO ) ) ) {
+        if ( EXIT_SUCCESS != generic_driver_read ( h, offset, &tapblinfo.size, 2 ) ) {
             fprintf ( stderr, "%s():%d - Can't read block info\n", __func__, __LINE__ );
             cmtext_container_tapeindex_destroy ( index, i );
             return NULL;
         };
 
         tapblinfo.size = endianity_bswap16_LE ( tapblinfo.size );
+        offset += 2;
 
+        if ( EXIT_SUCCESS != generic_driver_read ( h, offset, &tapblinfo.flag, 1 ) ) {
+            fprintf ( stderr, "%s():%d - Can't read block info\n", __func__, __LINE__ );
+            cmtext_container_tapeindex_destroy ( index, i );
+            return NULL;
+        };
 
         if ( tapblinfo.flag == ZXTAPE_BLOCK_FLAG_HEADER ) {
-
-            offset += sizeof ( st_CMTTAP_BLOCKINFO );
-
-            if ( EXIT_SUCCESS != generic_driver_read ( h, offset, &taphdr, sizeof ( st_CMTTAP_HEADER ) ) ) {
-                fprintf ( stderr, "%s():%d - Can't read TAP header block\n", __func__, __LINE__ );
-                cmtext_container_tapeindex_destroy ( index, i );
-                return NULL;
-            };
 
             index = cmtext_container_tape_index_aloc ( index, i );
             if ( !index ) {
@@ -201,18 +199,64 @@ static st_CMTEXT_TAPE_INDEX* cmttap_container_index_new ( st_HANDLER *h, uint32_
             st_CMTEXT_TAPE_INDEX *idx = &index[i];
 
             idx->block_id = i++;
-            idx->offset = offset - 1;
+            idx->offset = offset;
+            offset += 1;
             idx->blspeed = CMTEXT_BLOCK_SPEED_SET;
             idx->bltype = CMTEXT_BLOCK_TYPE_TAPHEADER;
             idx->pause_after = CMTTAP_DEFAULT_PAUSE_AFTER_HEADER;
+
+            if ( EXIT_SUCCESS != generic_driver_read ( h, offset, &taphdr.code, 1 ) ) {
+                fprintf ( stderr, "%s():%d - Can't read TAP header block\n", __func__, __LINE__ );
+                cmtext_container_tapeindex_destroy ( index, i );
+                return NULL;
+            };
+            offset += 1;
+
+            if ( EXIT_SUCCESS != generic_driver_read ( h, offset, &taphdr.name, sizeof ( taphdr.name ) ) ) {
+                fprintf ( stderr, "%s():%d - Can't read TAP header block\n", __func__, __LINE__ );
+                cmtext_container_tapeindex_destroy ( index, i );
+                return NULL;
+            };
+            offset += sizeof ( taphdr.name );
+
+            if ( EXIT_SUCCESS != generic_driver_read ( h, offset, &taphdr.data_size, 2 ) ) {
+                fprintf ( stderr, "%s():%d - Can't read TAP header block\n", __func__, __LINE__ );
+                cmtext_container_tapeindex_destroy ( index, i );
+                return NULL;
+            };
+            offset += 2;
+            taphdr.data_size = endianity_bswap16_LE ( taphdr.data_size );
+
+            if ( EXIT_SUCCESS != generic_driver_read ( h, offset, &taphdr.param1, 2 ) ) {
+                fprintf ( stderr, "%s():%d - Can't read TAP header block\n", __func__, __LINE__ );
+                cmtext_container_tapeindex_destroy ( index, i );
+                return NULL;
+            };
+            offset += 2;
+            taphdr.param1 = endianity_bswap16_LE ( taphdr.param1 );
+
+            if ( EXIT_SUCCESS != generic_driver_read ( h, offset, &taphdr.param2, 2 ) ) {
+                fprintf ( stderr, "%s():%d - Can't read TAP header block\n", __func__, __LINE__ );
+                cmtext_container_tapeindex_destroy ( index, i );
+                return NULL;
+            };
+            offset += 2;
+            taphdr.param2 = endianity_bswap16_LE ( taphdr.param2 );
+
+            if ( EXIT_SUCCESS != generic_driver_read ( h, offset, &taphdr.chksum, 1 ) ) {
+                fprintf ( stderr, "%s():%d - Can't read TAP header block\n", __func__, __LINE__ );
+                cmtext_container_tapeindex_destroy ( index, i );
+                return NULL;
+            };
+            offset += 1;
 
             st_CMTEXT_TAPE_ITEM_TAPHDR *taphdritem = &idx->item.taphdr;
 
             taphdritem->size = tapblinfo.size;
             taphdritem->code = taphdr.code;
-            taphdritem->data_size = endianity_bswap16_LE ( taphdr.data_size );
-            taphdritem->param1 = endianity_bswap16_LE ( taphdr.param1 );
-            taphdritem->param2 = endianity_bswap16_LE ( taphdr.param2 );
+            taphdritem->data_size = taphdr.data_size;
+            taphdritem->param1 = taphdr.param1;
+            taphdritem->param2 = taphdr.param2;
             taphdritem->mztape_speed = mztape_speed;
 
             taphdritem->fname = (char*) ui_utils_mem_alloc0 ( sizeof ( taphdr.name ) + 1 );
@@ -224,11 +268,9 @@ static st_CMTEXT_TAPE_INDEX* cmttap_container_index_new ( st_HANDLER *h, uint32_
 
             strncpy ( taphdritem->fname, (char*) taphdr.name, sizeof ( taphdr.name ) );
 
-            offset += sizeof ( st_CMTTAP_HEADER );
-
         } else if ( tapblinfo.flag == ZXTAPE_BLOCK_FLAG_DATA ) {
 
-            if ( !( ( offset + 2 + tapblinfo.size ) <= h->spec.memspec.size ) ) { // 2 = pripocteme uint16_t (size)
+            if ( !( ( offset + tapblinfo.size ) <= h->spec.memspec.size ) ) {
                 fprintf ( stderr, "%s():%d - Bad TAP block size '%d' for block '%d'\n", __func__, __LINE__, tapblinfo.size, i );
                 cmtext_container_tapeindex_destroy ( index, i );
                 return NULL;
@@ -242,7 +284,7 @@ static st_CMTEXT_TAPE_INDEX* cmttap_container_index_new ( st_HANDLER *h, uint32_
             st_CMTEXT_TAPE_INDEX *idx = &index[i];
 
             idx->block_id = i++;
-            idx->offset = offset + sizeof ( st_CMTTAP_BLOCKINFO ) - 1;
+            idx->offset = offset;
             idx->blspeed = CMTEXT_BLOCK_SPEED_SET;
             idx->bltype = CMTEXT_BLOCK_TYPE_TAPDATA;
             idx->pause_after = CMTTAP_DEFAULT_PAUSE_AFTER_DATA;
@@ -252,7 +294,7 @@ static st_CMTEXT_TAPE_INDEX* cmttap_container_index_new ( st_HANDLER *h, uint32_
             tapdataitem->size = tapblinfo.size;
             tapdataitem->mztape_speed = mztape_speed;
 
-            offset += 2 + tapblinfo.size; // 2 = pripocteme uint16_t (size)
+            offset += tapblinfo.size;
 
         } else {
             fprintf ( stderr, "%s():%d - Unknown TAP block (%d) flag '0x%02x' - offset= 0x%04x\n", __func__, __LINE__, i, tapblinfo.flag, offset );
