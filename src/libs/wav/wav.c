@@ -39,9 +39,7 @@
 #include "wav.h"
 
 
-static int wav_check_riff_header ( st_HANDLER *wav_handler ) {
-
-    st_HANDLER *h = wav_handler;
+static int wav_check_riff_header ( st_HANDLER *h ) {
 
     uint8_t work_buffer [ sizeof ( st_WAV_RIFF_HEADER ) ];
     st_WAV_RIFF_HEADER *riff_hdr = NULL;
@@ -55,9 +53,7 @@ static int wav_check_riff_header ( st_HANDLER *wav_handler ) {
 }
 
 
-static int wav_check_chunk_header ( st_HANDLER *wav_handler, uint32_t offset, const char *chunk_tag, uint32_t *chunk_size ) {
-
-    st_HANDLER *h = wav_handler;
+static int wav_check_chunk_header ( st_HANDLER *h, uint32_t offset, const char *chunk_tag, uint32_t *chunk_size ) {
 
     uint8_t work_buffer [ sizeof ( st_WAV_CHUNK_HEADER ) ];
     st_WAV_CHUNK_HEADER *chunk_header = NULL;
@@ -72,10 +68,7 @@ static int wav_check_chunk_header ( st_HANDLER *wav_handler, uint32_t offset, co
 }
 
 
-static int wav_read_simple_header ( st_HANDLER *wav_handler, st_WAV_SIMPLE_HEADER *simple_header ) {
-
-    st_HANDLER *h = wav_handler;
-    st_WAV_SIMPLE_HEADER *sh = simple_header;
+static int wav_read_simple_header ( st_HANDLER *h, st_WAV_SIMPLE_HEADER *sh ) {
 
     memset ( sh, 0x00, sizeof ( st_WAV_SIMPLE_HEADER ) );
 

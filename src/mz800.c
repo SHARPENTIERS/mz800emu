@@ -838,7 +838,7 @@ void mz800_main ( void ) {
     z80ex_set_reg ( g_mz800.cpu, regSP, 0x10f0 );
     z80ex_set_reg ( g_mz800.cpu, regPC, 0x14f3 );
 
-    g_cmt.speed = MZTAPE_SPEED_1_1;
+    g_cmt.mz_cmtspeed = CMTSPEED_1_1;
     cmt_open_file_by_extension ( "./interkarate/inter.scr$.mzf" );
     cmt_play ( );
 #endif

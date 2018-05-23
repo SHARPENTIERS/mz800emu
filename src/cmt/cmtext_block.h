@@ -43,7 +43,7 @@ extern "C" {
     typedef void ( *cmtext_block_cb_play ) (void *cmtext );
     typedef void ( *cmtext_block_cb_set_polarity ) (void *cmtext, en_CMT_STREAM_POLARITY polarity );
     typedef const char* ( *cmtext_block_cb_get_playname ) (void *cmtext );
-    typedef int ( *cmtext_block_cb_set_speed ) (void *cmtext, en_MZTAPE_SPEED mztape_speed );
+    typedef int ( *cmtext_block_cb_set_speed ) (void *cmtext, en_CMTSPEED mztape_speed );
     typedef uint16_t ( *cmtext_block_cb_get_bdspeed ) (void *cmtext );
 
 

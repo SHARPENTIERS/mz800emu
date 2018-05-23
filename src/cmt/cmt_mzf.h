@@ -39,16 +39,16 @@ extern "C" {
     typedef struct st_CMTMZF_BLOCKSPEC {
         st_MZF_HEADER *hdr;
         st_MZTAPE_MZF *mztmzf;
-        en_MZTAPE_SPEED mztape_speed; // bere se v potaz pouze pokud st_CMTEXT_BLOCK->block_speed = CMTEXT_BLOCK_SPEED_SET
+        en_CMTSPEED cmtspeed; // bere se v potaz pouze pokud st_CMTEXT_BLOCK->block_speed = CMTEXT_BLOCK_SPEED_SET
     } st_CMTMZF_BLOCKSPEC;
 
     extern void cmtmzf_blockspec_destroy ( st_CMTMZF_BLOCKSPEC *blspec );
-    extern st_CMTMZF_BLOCKSPEC* cmtmzf_blockspec_new ( st_HANDLER *h, uint32_t offset, en_MZTAPE_SPEED mztape_speed );
+    extern st_CMTMZF_BLOCKSPEC* cmtmzf_blockspec_new ( st_HANDLER *h, uint32_t offset, en_CMTSPEED cmtspeed );
 
-    extern st_CMT_BITSTREAM* cmtmzf_generate_bitstream ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_SPEED mztape_speed );
-    extern st_CMT_VSTREAM* cmtmzf_generate_vstream ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_SPEED mztape_speed );
+    extern st_CMT_BITSTREAM* cmtmzf_generate_bitstream ( st_MZTAPE_MZF *mztmzf, en_CMTSPEED cmtspeed );
+    extern st_CMT_VSTREAM* cmtmzf_generate_vstream ( st_MZTAPE_MZF *mztmzf, en_CMTSPEED cmtspeed );
 
-    extern st_CMTEXT_BLOCK* cmtmzf_block_open ( st_HANDLER *h, uint32_t offset, int block_id, int pause_after, en_CMTEXT_BLOCK_SPEED block_speed, en_MZTAPE_SPEED mztape_speed );
+    extern st_CMTEXT_BLOCK* cmtmzf_block_open ( st_HANDLER *h, uint32_t offset, int block_id, int pause_after, en_CMTEXT_BLOCK_SPEED block_speed, en_CMTSPEED cmtspeed );
     extern void cmtmzf_block_close ( st_CMTEXT_BLOCK *block );
 
     extern st_MZF_HEADER* cmtmzf_block_get_spec_mzfheader ( st_CMTEXT_BLOCK *block );

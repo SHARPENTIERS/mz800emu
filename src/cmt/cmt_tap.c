@@ -25,12 +25,10 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
 
 #include "libs/endianity/endianity.h"
 #include "libs/generic_driver/generic_driver.h"
 #include "ui/generic_driver/ui_memory_driver.h"
-#include "libs/mztape/mztape.h"
 #include "libs/zxtape/zxtape.h"
 #include "ui/ui_main.h"
 #include "ui/ui_utils.h"
@@ -82,7 +80,7 @@ void cmttap_blockspec_destroy ( st_CMTTAP_BLOCKSPEC *blspec ) {
 }
 
 
-st_CMTTAP_BLOCKSPEC* cmttap_blockspec_new ( st_HANDLER *h, uint32_t offset, en_ZXTAPE_BLOCK_FLAG flag, un_CMTTAP_FLAGSPEC *flspec, en_MZTAPE_SPEED mztape_speed ) {
+st_CMTTAP_BLOCKSPEC* cmttap_blockspec_new ( st_HANDLER *h, uint32_t offset, en_ZXTAPE_BLOCK_FLAG flag, un_CMTTAP_FLAGSPEC *flspec, en_CMTSPEED cmtspeed ) {
 
     uint16_t data_size;
     char *fname = NULL;
@@ -134,7 +132,7 @@ st_CMTTAP_BLOCKSPEC* cmttap_blockspec_new ( st_HANDLER *h, uint32_t offset, en_Z
     blspec->data_size = data_size;
     blspec->flag = flag;
     memcpy ( &blspec->flspec, flspec, sizeof (blspec->flspec ) );
-    blspec->mztape_speed = mztape_speed;
+    blspec->cmtspeed = cmtspeed;
     if ( flag == ZXTAPE_BLOCK_FLAG_HEADER ) blspec->flspec.hdr.fname = fname;
 
     return blspec;
@@ -162,7 +160,7 @@ static void cmttap_eject ( void ) {
 }
 
 
-static st_CMTEXT_TAPE_INDEX* cmttap_container_index_new ( st_HANDLER *h, uint32_t offset, en_MZTAPE_SPEED mztape_speed, int *count_blocks ) {
+static st_CMTEXT_TAPE_INDEX* cmttap_container_index_new ( st_HANDLER *h, uint32_t offset, en_CMTSPEED cmtspeed, int *count_blocks ) {
 
     *count_blocks = 0;
 
@@ -257,7 +255,7 @@ static st_CMTEXT_TAPE_INDEX* cmttap_container_index_new ( st_HANDLER *h, uint32_
             taphdritem->data_size = taphdr.data_size;
             taphdritem->param1 = taphdr.param1;
             taphdritem->param2 = taphdr.param2;
-            taphdritem->mztape_speed = mztape_speed;
+            taphdritem->cmtspeed = cmtspeed;
 
             taphdritem->fname = (char*) ui_utils_mem_alloc0 ( sizeof ( taphdr.name ) + 1 );
             if ( !taphdritem->fname ) {
@@ -292,7 +290,7 @@ static st_CMTEXT_TAPE_INDEX* cmttap_container_index_new ( st_HANDLER *h, uint32_
             st_CMTEXT_TAPE_ITEM_TAPDATA *tapdataitem = &idx->item.tapdata;
 
             tapdataitem->size = tapblinfo.size;
-            tapdataitem->mztape_speed = mztape_speed;
+            tapdataitem->cmtspeed = cmtspeed;
 
             offset += tapblinfo.size;
 
@@ -315,7 +313,7 @@ static st_CMTEXT_TAPE_INDEX* cmttap_container_index_new ( st_HANDLER *h, uint32_
 
 st_CMT_BITSTREAM* cmttap_generate_bitstream ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t *data, uint16_t data_size ) {
 
-    en_MZTAPE_SPEED mztape_speed = MZTAPE_SPEED_1_1;
+    en_CMTSPEED cmtspeed = CMTSPEED_1_1;
 
     st_CMT_BITSTREAM *bitstream = zxtape_create_cmt_bitstream_from_tapblock ( flag, data, data_size );
     if ( !bitstream ) {
@@ -324,7 +322,9 @@ st_CMT_BITSTREAM* cmttap_generate_bitstream ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t
     };
 
     printf ( "%s rate: %d\n", cmtext_get_name ( g_cmt_tap ), bitstream->rate );
-    printf ( "%s speed: %d Bd\n", cmtext_get_name ( g_cmt_tap ), (int) round ( ZXTAPE_DEFAULT_BDSPEED * g_speed_divisor[mztape_speed] ) );
+    char buff[100];
+    cmtspeed_get_speedtxt ( buff, sizeof ( buff ), cmtspeed, ZXTAPE_DEFAULT_BDSPEED );
+    printf ( "%s speed: %s\n", cmtext_get_name ( g_cmt_tap ), buff );
     printf ( "%s length: %1.2f s\n", cmtext_get_name ( g_cmt_tap ), bitstream->stream_length );
     printf ( "%s bitstream size: %0.2f kB\n", cmtext_get_name ( g_cmt_tap ), (float) ( bitstream->scans / CMT_BITSTREAM_BLOCK_SIZE ) / (float) 1024 );
     //printf ( "DEBUG bitstream scans: %u\n", cmt_bitstream->scans );
@@ -335,7 +335,7 @@ st_CMT_BITSTREAM* cmttap_generate_bitstream ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t
 
 st_CMT_VSTREAM* cmttap_generate_vstream ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t *data, uint16_t data_size ) {
 
-    en_MZTAPE_SPEED mztape_speed = MZTAPE_SPEED_1_1;
+    en_CMTSPEED cmtspeed = CMTSPEED_1_1;
 
     st_CMT_VSTREAM *vstream = zxtape_create_17MHz_cmt_vstream_from_tapblock ( flag, data, data_size );
     if ( !vstream ) {
@@ -344,7 +344,9 @@ st_CMT_VSTREAM* cmttap_generate_vstream ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t *da
     };
 
     printf ( "%s rate: %d Hz\n", cmtext_get_name ( g_cmt_tap ), vstream->rate );
-    printf ( "%s speed: %d Bd\n", cmtext_get_name ( g_cmt_tap ), (int) round ( ZXTAPE_DEFAULT_BDSPEED * g_speed_divisor[mztape_speed] ) );
+    char buff[100];
+    cmtspeed_get_speedtxt ( buff, sizeof ( buff ), cmtspeed, ZXTAPE_DEFAULT_BDSPEED );
+    printf ( "%s speed: %s\n", cmtext_get_name ( g_cmt_tap ), buff );
     printf ( "%s length: %1.2f s\n", cmtext_get_name ( g_cmt_tap ), vstream->stream_length );
     printf ( "%s vstream size: %0.2f kB\n", cmtext_get_name ( g_cmt_tap ), (float) ( vstream->size / (float) 1024 ) );
 
@@ -352,14 +354,14 @@ st_CMT_VSTREAM* cmttap_generate_vstream ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t *da
 }
 
 
-static int cmttap_set_speed ( void *cmtext, en_MZTAPE_SPEED mztape_speed ) {
+static int cmttap_set_speed ( void *cmtext, en_CMTSPEED cmtspeed ) {
     assert ( cmtext != NULL );
     st_CMTEXT *cext = (st_CMTEXT*) cmtext;
     st_CMTEXT_BLOCK *block = cext->block;
     assert ( block != NULL );
     if ( block->block_speed != CMTEXT_BLOCK_SPEED_DEFAULT ) return EXIT_FAILURE;
     st_CMTTAP_BLOCKSPEC *blspec = (st_CMTTAP_BLOCKSPEC*) block->spec;
-    if ( blspec->mztape_speed == mztape_speed ) return EXIT_SUCCESS;
+    if ( blspec->cmtspeed == cmtspeed ) return EXIT_SUCCESS;
 
     assert ( block->stream != NULL );
 
@@ -386,7 +388,7 @@ static int cmttap_set_speed ( void *cmtext, en_MZTAPE_SPEED mztape_speed ) {
             return EXIT_FAILURE;
     };
 
-    blspec->mztape_speed = mztape_speed;
+    blspec->cmtspeed = cmtspeed;
     return EXIT_SUCCESS;
 }
 
@@ -396,7 +398,7 @@ static uint16_t cmttap_get_bdspeed ( void *cmtext ) {
     st_CMTEXT *cext = (st_CMTEXT*) cmtext;
     st_CMTTAP_BLOCKSPEC *blspec = (st_CMTTAP_BLOCKSPEC*) cext->block->spec;
     assert ( blspec != NULL );
-    return (uint16_t) round ( ZXTAPE_DEFAULT_BDSPEED * g_speed_divisor[blspec->mztape_speed] );
+    return cmtspeed_get_bdspeed ( blspec->cmtspeed, ZXTAPE_DEFAULT_BDSPEED );
 }
 
 
@@ -433,16 +435,16 @@ st_CMTEXT_BLOCK* cmttap_block_open ( st_CMTEXT *cmtext, int block_id ) {
     en_CMTEXT_BLOCK_SPEED blspeed = idx->blspeed;
     uint16_t pause_after = idx->pause_after;
 
-    en_MZTAPE_SPEED mztape_speed;
+    en_CMTSPEED cmtspeed;
     en_ZXTAPE_BLOCK_FLAG flag;
 
     if ( idx->bltype == CMTEXT_BLOCK_TYPE_TAPHEADER ) {
         st_CMTEXT_TAPE_ITEM_TAPHDR *item = &idx->item.taphdr;
-        mztape_speed = ( blspeed == CMTEXT_BLOCK_SPEED_SET ) ? item->mztape_speed : g_cmt.speed; // pokud neni SET, tak je DEFAULT
+        cmtspeed = item->cmtspeed;
         flag = ZXTAPE_BLOCK_FLAG_HEADER;
     } else if ( idx->bltype == CMTEXT_BLOCK_TYPE_TAPDATA ) {
         st_CMTEXT_TAPE_ITEM_TAPDATA *item = &idx->item.tapdata;
-        mztape_speed = ( blspeed == CMTEXT_BLOCK_SPEED_SET ) ? item->mztape_speed : g_cmt.speed; // pokud neni SET, tak je DEFAULT
+        cmtspeed = item->cmtspeed;
         flag = ZXTAPE_BLOCK_FLAG_DATA;
     } else {
         fprintf ( stderr, "%s():%d - Unknown block type '%d'\n", __func__, __LINE__, idx->bltype );
@@ -453,7 +455,7 @@ st_CMTEXT_BLOCK* cmttap_block_open ( st_CMTEXT *cmtext, int block_id ) {
 
     printf ( "%s block id: %d\n", cmtext_get_name ( g_cmt_tap ), block_id );
 
-    st_CMTTAP_BLOCKSPEC *blspec = cmttap_blockspec_new ( h, offset, flag, ( un_CMTTAP_FLAGSPEC* ) & idx->item, mztape_speed );
+    st_CMTTAP_BLOCKSPEC *blspec = cmttap_blockspec_new ( h, offset, flag, ( un_CMTTAP_FLAGSPEC* ) & idx->item, cmtspeed );
     if ( !blspec ) {
         return NULL;
     }
@@ -584,7 +586,7 @@ static int cmttap_container_open ( char *filename ) {
 
     int count_blocks = 0;
 
-    st_CMTEXT_TAPE_INDEX *index = cmttap_container_index_new ( h, 0, g_cmt.speed, &count_blocks );
+    st_CMTEXT_TAPE_INDEX *index = cmttap_container_index_new ( h, 0, CMTSPEED_1_1, &count_blocks );
 
     if ( !index ) {
         generic_driver_close ( h );

@@ -34,7 +34,7 @@ extern "C" {
 #include <stdint.h>
 
 #include "libs/generic_driver/generic_driver.h"
-#include "libs/mztape/mztape.h"
+#include "libs/mztape/cmtspeed.h"
 
 #include "cmtext_block_defs.h"
 
@@ -51,7 +51,7 @@ extern "C" {
         uint16_t fsize;
         uint16_t fexec;
         uint16_t fstrt;
-        en_MZTAPE_SPEED mztape_speed;
+        en_CMTSPEED cmtspeed;
     } st_CMTEXT_TAPE_ITEM_MZF;
 
 
@@ -62,13 +62,13 @@ extern "C" {
         uint16_t data_size;
         uint16_t param1;
         uint16_t param2;
-        en_MZTAPE_SPEED mztape_speed;
+        en_CMTSPEED cmtspeed;
     } st_CMTEXT_TAPE_ITEM_TAPHDR;
 
 
     typedef struct st_CMTEXT_TAPE_ITEM_TAPDATA {
         uint16_t size; // skuitecna delka bloku (flag + data + checksum)
-        en_MZTAPE_SPEED mztape_speed;
+        en_CMTSPEED cmtspeed;
     } st_CMTEXT_TAPE_ITEM_TAPDATA;
 
 

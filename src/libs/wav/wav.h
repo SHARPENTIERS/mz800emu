@@ -131,8 +131,8 @@ extern "C" {
 
 
     extern void wav_simple_header_destroy ( st_WAV_SIMPLE_HEADER *simple_header );
-    extern st_WAV_SIMPLE_HEADER* wav_simple_header_new_from_handler ( st_HANDLER *wav_handler );
-    extern int wav_get_bit_value_of_sample ( st_HANDLER *wav_handler, st_WAV_SIMPLE_HEADER *simple_header, uint32_t sample_position, en_WAV_POLARITY polarity, int *bit_value );
+    extern st_WAV_SIMPLE_HEADER* wav_simple_header_new_from_handler ( st_HANDLER *h );
+    extern int wav_get_bit_value_of_sample ( st_HANDLER *h, st_WAV_SIMPLE_HEADER *simple_header, uint32_t sample_position, en_WAV_POLARITY polarity, int *bit_value );
 
 #ifdef __cplusplus
 }
