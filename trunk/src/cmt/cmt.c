@@ -43,7 +43,7 @@
 #include "cfgmain.h"
 
 #include "cmthack.h"
-#include "libs/mztape/mztape.h"
+#include "libs/mztape/cmtspeed.h"
 #include "cmtext.h"
 #include "cmtext_block.h"
 
@@ -80,10 +80,10 @@ void cmt_play ( void ) {
 }
 
 
-int cmt_change_speed ( en_MZTAPE_SPEED speed ) {
+int cmt_change_speed ( en_CMTSPEED cmtspeed ) {
 
     if ( !TEST_CMT_STOP ) return EXIT_FAILURE;
-    if ( g_cmt.speed == speed ) return EXIT_SUCCESS;
+    if ( g_cmt.mz_cmtspeed == cmtspeed ) return EXIT_SUCCESS;
 
 
     int ret = EXIT_SUCCESS;
@@ -92,7 +92,7 @@ int cmt_change_speed ( en_MZTAPE_SPEED speed ) {
         if ( cmtext_block_get_block_speed ( g_cmt.ext->block ) == CMTEXT_BLOCK_SPEED_DEFAULT ) {
             assert ( g_cmt.ext->block->cb_set_speed != NULL );
             if ( g_cmt.ext->block->cb_set_speed != NULL ) {
-                if ( EXIT_SUCCESS != g_cmt.ext->block->cb_set_speed ( g_cmt.ext, speed ) ) {
+                if ( EXIT_SUCCESS != g_cmt.ext->block->cb_set_speed ( g_cmt.ext, cmtspeed ) ) {
                     ret = EXIT_FAILURE;
                 };
             };
@@ -100,7 +100,7 @@ int cmt_change_speed ( en_MZTAPE_SPEED speed ) {
     };
 
     if ( ret == EXIT_SUCCESS ) {
-        g_cmt.speed = speed;
+        g_cmt.mz_cmtspeed = cmtspeed;
     }
 
     ui_cmt_window_update ( );
@@ -120,7 +120,7 @@ void cmt_exit ( void ) {
 
 
 void cmt_propagatecfg_cmt_speed ( void *e, void *data ) {
-    g_cmt.speed = cfgelement_get_keyword_value ( (CFGELM *) e );
+    g_cmt.mz_cmtspeed = cfgelement_get_keyword_value ( (CFGELM *) e );
     ui_cmt_window_update ( );
 }
 
@@ -145,15 +145,15 @@ void cmt_init ( void ) {
     CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "CMT" );
 
     CFGELM *elm;
-    elm = cfgmodule_register_new_element ( cmod, "cmt_speed", CFGENTYPE_KEYWORD, MZTAPE_SPEED_1_1,
-                                           MZTAPE_SPEED_1_1, "SPEED_1/1",
-                                           MZTAPE_SPEED_2_1, "SPEED_2/1",
-                                           MZTAPE_SPEED_7_3, "SPEED_7/3",
-                                           MZTAPE_SPEED_8_3, "SPEED_8/3",
-                                           MZTAPE_SPEED_3_1, "SPEED_3/1",
+    elm = cfgmodule_register_new_element ( cmod, "mz_cmtspeed", CFGENTYPE_KEYWORD, CMTSPEED_1_1,
+                                           CMTSPEED_1_1, "SPEED_1/1",
+                                           CMTSPEED_2_1, "SPEED_2/1",
+                                           CMTSPEED_7_3, "SPEED_7/3",
+                                           CMTSPEED_8_3, "SPEED_8/3",
+                                           CMTSPEED_3_1, "SPEED_3/1",
                                            -1 );
     cfgelement_set_propagate_cb ( elm, cmt_propagatecfg_cmt_speed, NULL );
-    cfgelement_set_handlers ( elm, NULL, (void*) &g_cmt.speed );
+    cfgelement_set_handlers ( elm, NULL, (void*) &g_cmt.mz_cmtspeed );
 
     elm = cfgmodule_register_new_element ( cmod, "cmt_polarity_inverted", CFGENTYPE_BOOL, CMT_STREAM_POLARITY_NORMAL );
     cfgelement_set_propagate_cb ( elm, cmt_propagatecfg_inverted_polarity, NULL );

@@ -781,7 +781,7 @@ From time when data were real zeros and ones and computers were
                           <object class="GtkMenuItem" id="menuitem_cmt_speed">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">Set Default CMT _Speed</property>
+                            <property name="label" translatable="yes">Set Default CMT MZ _Speed</property>
                             <property name="use_underline">True</property>
                             <child type="submenu">
                               <object class="GtkMenu" id="menu10">
@@ -791,7 +791,7 @@ From time when data were real zeros and ones and computers were
                                   <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_1_1">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">x 1 (Standard)</property>
+                                    <property name="label" translatable="yes">1:1 - 1200 Bd</property>
                                     <property name="use_underline">True</property>
                                     <property name="active">True</property>
                                     <property name="draw_as_radio">True</property>
@@ -803,7 +803,7 @@ From time when data were real zeros and ones and computers were
                                   <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_2_1">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">x 2</property>
+                                    <property name="label" translatable="yes">2:1 - 2400 Bd</property>
                                     <property name="use_underline">True</property>
                                     <property name="draw_as_radio">True</property>
                                     <property name="group">radiogrp_cmt_speed</property>
@@ -814,7 +814,7 @@ From time when data were real zeros and ones and computers were
                                   <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_7_3">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">x 2.3</property>
+                                    <property name="label" translatable="yes">7:3 - 2800 Bd</property>
                                     <property name="use_underline">True</property>
                                     <property name="draw_as_radio">True</property>
                                     <property name="group">radiogrp_cmt_speed</property>
@@ -825,7 +825,7 @@ From time when data were real zeros and ones and computers were
                                   <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_8_3">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">x 2.6</property>
+                                    <property name="label" translatable="yes">8:3 - 3200 Bd</property>
                                     <property name="use_underline">True</property>
                                     <property name="draw_as_radio">True</property>
                                     <property name="group">radiogrp_cmt_speed</property>
@@ -836,7 +836,7 @@ From time when data were real zeros and ones and computers were
                                   <object class="GtkRadioMenuItem" id="menuitem_cmt_speed_3_1">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label" translatable="yes">x 3</property>
+                                    <property name="label" translatable="yes">3:1 - 3600 Bd</property>
                                     <property name="use_underline">True</property>
                                     <property name="draw_as_radio">True</property>
                                     <property name="group">radiogrp_cmt_speed</property>

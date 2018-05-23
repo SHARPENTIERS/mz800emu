@@ -40,6 +40,7 @@
           <itemPath>src/libs/mzf/mzf_tools.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f7" displayName="MZtape" projectFiles="true">
+          <itemPath>src/libs/mztape/cmtspeed.h</itemPath>
           <itemPath>src/libs/mztape/mztape.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f5" displayName="QD" projectFiles="true">
@@ -616,6 +617,10 @@
       </item>
       <item path="src/libs/mzf/mzf_tools.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/libs/mztape/cmtspeed.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mztape/cmtspeed.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/libs/mztape/mztape.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/mztape/mztape.h" ex="false" tool="3" flavor2="0">
@@ -1160,6 +1165,10 @@
       </item>
       <item path="src/libs/mzf/mzf_tools.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/libs/mztape/cmtspeed.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mztape/cmtspeed.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/libs/mztape/mztape.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/mztape/mztape.h" ex="false" tool="3" flavor2="0">
@@ -1694,6 +1703,10 @@
       <item path="src/libs/mzf/mzf_tools.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/mzf/mzf_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/mztape/cmtspeed.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mztape/cmtspeed.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/mztape/mztape.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2241,6 +2254,10 @@
       <item path="src/libs/mzf/mzf_tools.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/mzf/mzf_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/mztape/cmtspeed.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mztape/cmtspeed.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/mztape/mztape.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2794,6 +2811,10 @@
       </item>
       <item path="src/libs/mzf/mzf_tools.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/libs/mztape/cmtspeed.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mztape/cmtspeed.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/libs/mztape/mztape.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/mztape/mztape.h" ex="false" tool="3" flavor2="0">
@@ -3346,6 +3367,10 @@
       </item>
       <item path="src/libs/mzf/mzf_tools.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/libs/mztape/cmtspeed.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mztape/cmtspeed.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/libs/mztape/mztape.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/mztape/mztape.h" ex="false" tool="3" flavor2="0">
@@ -3895,6 +3920,10 @@
       <item path="src/libs/mzf/mzf_tools.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/mzf/mzf_tools.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/mztape/cmtspeed.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/mztape/cmtspeed.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/mztape/mztape.c" ex="false" tool="0" flavor2="0">
       </item>

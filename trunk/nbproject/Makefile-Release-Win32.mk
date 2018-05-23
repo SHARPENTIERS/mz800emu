@@ -78,6 +78,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/libs/generic_driver/generic_driver.o \
 	${OBJECTDIR}/src/libs/mzf/mzf.o \
 	${OBJECTDIR}/src/libs/mzf/mzf_tools.o \
+	${OBJECTDIR}/src/libs/mztape/cmtspeed.o \
 	${OBJECTDIR}/src/libs/mztape/mztape.o \
 	${OBJECTDIR}/src/libs/qd/qd.o \
 	${OBJECTDIR}/src/libs/wav/wav.o \
@@ -382,6 +383,11 @@ ${OBJECTDIR}/src/libs/mzf/mzf_tools.o: src/libs/mzf/mzf_tools.c
 	${MKDIR} -p ${OBJECTDIR}/src/libs/mzf
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/mzf/mzf_tools.o src/libs/mzf/mzf_tools.c
+
+${OBJECTDIR}/src/libs/mztape/cmtspeed.o: src/libs/mztape/cmtspeed.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/mztape
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/mztape/cmtspeed.o src/libs/mztape/cmtspeed.c
 
 ${OBJECTDIR}/src/libs/mztape/mztape.o: src/libs/mztape/mztape.c 
 	${MKDIR} -p ${OBJECTDIR}/src/libs/mztape

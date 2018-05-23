@@ -40,7 +40,7 @@
 #include "libs/mzf/mzf.h"
 #include "libs/mzf/mzf_tools.h"
 
-#include "libs/mztape/mztape.h"
+#include "libs/mztape/cmtspeed.h"
 #include "cmt/cmt_tap.h"
 
 
@@ -102,7 +102,7 @@ G_MODULE_EXPORT void on_menuitem_cmt_speed_1_1_toggled ( GtkCheckMenuItem *menui
 
     if ( gtk_check_menu_item_get_active ( menuitem ) ) {
         LOCK_UICALLBACKS ( );
-        cmt_change_speed ( MZTAPE_SPEED_1_1 );
+        cmt_change_speed ( CMTSPEED_1_1 );
         UNLOCK_UICALLBACKS ( );
     };
 }
@@ -120,7 +120,7 @@ G_MODULE_EXPORT void on_menuitem_cmt_speed_2_1_toggled ( GtkCheckMenuItem *menui
 
     if ( gtk_check_menu_item_get_active ( menuitem ) ) {
         LOCK_UICALLBACKS ( );
-        cmt_change_speed ( MZTAPE_SPEED_2_1 );
+        cmt_change_speed ( CMTSPEED_2_1 );
         UNLOCK_UICALLBACKS ( );
     };
 }
@@ -138,7 +138,7 @@ G_MODULE_EXPORT void on_menuitem_cmt_speed_7_3_toggled ( GtkCheckMenuItem *menui
 
     if ( gtk_check_menu_item_get_active ( menuitem ) ) {
         LOCK_UICALLBACKS ( );
-        cmt_change_speed ( MZTAPE_SPEED_7_3 );
+        cmt_change_speed ( CMTSPEED_7_3 );
         UNLOCK_UICALLBACKS ( );
     };
 }
@@ -156,7 +156,7 @@ G_MODULE_EXPORT void on_menuitem_cmt_speed_8_3_toggled ( GtkCheckMenuItem *menui
 
     if ( gtk_check_menu_item_get_active ( menuitem ) ) {
         LOCK_UICALLBACKS ( );
-        cmt_change_speed ( MZTAPE_SPEED_8_3 );
+        cmt_change_speed ( CMTSPEED_8_3 );
         UNLOCK_UICALLBACKS ( );
     };
 }
@@ -174,7 +174,7 @@ G_MODULE_EXPORT void on_menuitem_cmt_speed_3_1_toggled ( GtkCheckMenuItem *menui
 
     if ( gtk_check_menu_item_get_active ( menuitem ) ) {
         LOCK_UICALLBACKS ( );
-        cmt_change_speed ( MZTAPE_SPEED_3_1 );
+        cmt_change_speed ( CMTSPEED_3_1 );
         UNLOCK_UICALLBACKS ( );
     };
 }
@@ -240,22 +240,27 @@ void ui_cmt_speed_menu_update ( void ) {
         gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_cmt_speed" ), TRUE );
     };
 
-    switch ( g_cmt.speed ) {
-        case MZTAPE_SPEED_1_1:
+    switch ( g_cmt.mz_cmtspeed ) {
+        case CMTSPEED_1_1:
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_1_1" ), TRUE );
             break;
-        case MZTAPE_SPEED_2_1:
+        case CMTSPEED_2_1:
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_2_1" ), TRUE );
             break;
-        case MZTAPE_SPEED_7_3:
+        case CMTSPEED_7_3:
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_7_3" ), TRUE );
             break;
-        case MZTAPE_SPEED_8_3:
+        case CMTSPEED_8_3:
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_8_3" ), TRUE );
             break;
-        case MZTAPE_SPEED_3_1:
+        case CMTSPEED_3_1:
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_3_1" ), TRUE );
             break;
+        case CMTSPEED_NONE:
+        case CMTSPEED_3_2:
+        case CMTSPEED_9_7:
+        case CMTSPEED_25_14:
+            fprintf ( stderr, "%s():%d - Unsoported mz_cmtspeed (%d)\n", __func__, __LINE__, g_cmt.mz_cmtspeed );
     };
 
     UNLOCK_UICALLBACKS ( );
@@ -409,8 +414,9 @@ G_MODULE_EXPORT void on_cmt_speed_comboboxtext_changed ( GtkComboBox *combobox, 
 
     if ( TEST_UICALLBACKS_LOCKED ) return;
 
+    int mztape_speed_id = gtk_combo_box_get_active ( combobox );
     LOCK_UICALLBACKS ( );
-    cmt_change_speed ( gtk_combo_box_get_active ( combobox ) );
+    cmt_change_speed ( g_mztape_speed[mztape_speed_id] );
     UNLOCK_UICALLBACKS ( );
 }
 
@@ -645,8 +651,14 @@ void ui_cmt_window_update ( void ) {
 
     ui_cmt_update_player ( );
 
+    int mztape_speed_id = 0;
+    while ( g_mztape_speed[mztape_speed_id] != CMTSPEED_NONE ) {
+        if ( g_mztape_speed[mztape_speed_id] == g_cmt.mz_cmtspeed ) break;
+        mztape_speed_id++;
+    }
+
     LOCK_UICALLBACKS ( );
-    gtk_combo_box_set_active ( ui_get_combo_box ( "cmt_speed_comboboxtext" ), g_cmt.speed );
+    gtk_combo_box_set_active ( ui_get_combo_box ( "cmt_speed_comboboxtext" ), mztape_speed_id );
     UNLOCK_UICALLBACKS ( );
 
     ui_cmt_speed_menu_update ( );

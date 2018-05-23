@@ -36,7 +36,7 @@ extern "C" {
 
 #include "cmtext.h"
 
-#include "libs/mztape/mztape.h"
+#include "libs/mztape/cmtspeed.h"
 #include "libs/cmt_stream/cmt_stream.h"
 
 
@@ -50,7 +50,7 @@ extern "C" {
         st_CMTEXT *ext;
         char *last_filename;
         en_CMT_STREAM_POLARITY polarity;
-        en_MZTAPE_SPEED speed;
+        en_CMTSPEED mz_cmtspeed;
         en_CMT_STATE state;
         en_CMTEXT_BLOCK_PLAYSTS playsts;
         int output;
@@ -69,7 +69,7 @@ extern "C" {
     extern void cmt_play ( void );
     extern void cmt_stop ( void );
     extern void cmt_eject ( void );
-    extern int cmt_change_speed ( en_MZTAPE_SPEED speed );
+    extern int cmt_change_speed ( en_CMTSPEED cmtspeed );
 
     extern void cmt_screen_done_period ( void );
     extern int cmt_read_data ( void );

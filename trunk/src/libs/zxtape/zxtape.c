@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <math.h>
 
+#include "libs/mztape/cmtspeed.h"
 #include "libs/mztape/mztape.h"
 #include "libs/cmt_stream/cmt_stream.h"
 
@@ -90,6 +91,14 @@ uint32_t g_zxtape_pause_ticks = 6118394;
 #define ZXTAPE_SYNCLOW441 9
 #define ZXTAPE_SHORT441 11
 #define ZXTAPE_LONG441 22
+
+const en_CMTSPEED g_zxtape_speed[] = {
+                                      CMTSPEED_1_1, // 1400 Bd
+                                      CMTSPEED_9_7, // 1800 Bd
+                                      CMTSPEED_3_2, // 2100 Bd
+                                      CMTSPEED_25_14, // 2500 Bd
+                                      CMTSPEED_NONE
+};
 
 
 static inline void zxtape_bitstream_add_wave ( st_CMT_BITSTREAM *bitstream, uint32_t *sample_position, int samples, int *polarity ) {
@@ -231,7 +240,7 @@ static inline int zxtape_add_cmt_vstream_data_block ( st_CMT_VSTREAM* cmt_vstrea
 
 st_CMT_VSTREAM* zxtape_create_17MHz_cmt_vstream_from_tapblock ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t *data, uint16_t data_size ) {
 
-    en_MZTAPE_SPEED mztape_speed = MZTAPE_SPEED_1_1;
+    en_CMTSPEED mztape_speed = CMTSPEED_1_1;
 
     st_CMT_VSTREAM *vstream = cmt_vstream_new ( GDGCLK_BASE, CMT_VSTREAM_BYTELENGTH16, 1, CMT_STREAM_POLARITY_NORMAL );
     if ( !vstream ) {
@@ -240,18 +249,18 @@ st_CMT_VSTREAM* zxtape_create_17MHz_cmt_vstream_from_tapblock ( en_ZXTAPE_BLOCK_
     };
 
     st_MZTAPE_PULSE_GDGTICS gpilot;
-    gpilot.high = round ( (double) g_zxtape_pilot_gdgticks.high / g_speed_divisor[mztape_speed] );
-    gpilot.low = round ( (double) g_zxtape_pilot_gdgticks.low / g_speed_divisor[mztape_speed] );
+    gpilot.high = round ( (double) g_zxtape_pilot_gdgticks.high / g_cmtspeed_divisor[mztape_speed] );
+    gpilot.low = round ( (double) g_zxtape_pilot_gdgticks.low / g_cmtspeed_divisor[mztape_speed] );
 
     st_MZTAPE_PULSE_GDGTICS gsync;
-    gsync.high = round ( (double) g_zxtape_sync_gdgticks.high / g_speed_divisor[mztape_speed] );
-    gsync.low = round ( (double) g_zxtape_sync_gdgticks.low / g_speed_divisor[mztape_speed] );
+    gsync.high = round ( (double) g_zxtape_sync_gdgticks.high / g_cmtspeed_divisor[mztape_speed] );
+    gsync.low = round ( (double) g_zxtape_sync_gdgticks.low / g_cmtspeed_divisor[mztape_speed] );
 
     st_MZTAPE_PULSES_GDGTICS gpulses;
-    gpulses.long_pulse.high = round ( (double) g_zxtape_pulses_gdgticks.long_pulse.high / g_speed_divisor[mztape_speed] );
-    gpulses.long_pulse.low = round ( (double) g_zxtape_pulses_gdgticks.long_pulse.low / g_speed_divisor[mztape_speed] );
-    gpulses.short_pulse.high = round ( (double) g_zxtape_pulses_gdgticks.short_pulse.high / g_speed_divisor[mztape_speed] );
-    gpulses.short_pulse.low = round ( (double) g_zxtape_pulses_gdgticks.short_pulse.low / g_speed_divisor[mztape_speed] );
+    gpulses.long_pulse.high = round ( (double) g_zxtape_pulses_gdgticks.long_pulse.high / g_cmtspeed_divisor[mztape_speed] );
+    gpulses.long_pulse.low = round ( (double) g_zxtape_pulses_gdgticks.long_pulse.low / g_cmtspeed_divisor[mztape_speed] );
+    gpulses.short_pulse.high = round ( (double) g_zxtape_pulses_gdgticks.short_pulse.high / g_cmtspeed_divisor[mztape_speed] );
+    gpulses.short_pulse.low = round ( (double) g_zxtape_pulses_gdgticks.short_pulse.low / g_cmtspeed_divisor[mztape_speed] );
 
     int pilot_length = 0;
 

@@ -684,7 +684,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="xalign">0.10000000149011612</property>
-                    <property name="label" translatable="yes">Speed: </property>
+                    <property name="label" translatable="yes">MZ Speed: </property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -699,11 +699,11 @@
                     <property name="entry_text_column">0</property>
                     <property name="id_column">1</property>
                     <items>
-                      <item translatable="yes">x 1 (Standard)</item>
-                      <item translatable="yes">x 2</item>
-                      <item translatable="yes">x 2.3</item>
-                      <item translatable="yes">x 2.6</item>
-                      <item translatable="yes">x 3</item>
+                      <item translatable="yes">1:1 - 1200 Bd</item>
+                      <item translatable="yes">2:1 - 2400 Bd</item>
+                      <item translatable="yes">7:3 - 2800 Bd</item>
+                      <item translatable="yes">8:3 - 3200 Bd</item>
+                      <item translatable="yes">3:1 - 3600 Bd</item>
                     </items>
                     <signal name="changed" handler="on_cmt_speed_comboboxtext_changed" swapped="no"/>
                   </object>
@@ -1066,12 +1066,6 @@
           </packing>
         </child>
       </object>
-    </child>
-  </object>
-  <object class="GtkWindow" id="window1">
-    <property name="can_focus">False</property>
-    <child>
-      <placeholder/>
     </child>
   </object>
 </interface>

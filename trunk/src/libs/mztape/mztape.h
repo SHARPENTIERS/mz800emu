@@ -37,6 +37,8 @@ extern "C" {
 #include "libs/cmt_stream/cmt_stream.h"
 #include "libs/generic_driver/generic_driver.h"
 
+#include "cmtspeed.h"
+
 
     typedef enum en_MZTAPE_BLOCK {
         MZTAPE_BLOCK_LGAP = 0, // long GAP = 22 000 short (10 000 in MZ-80B!)
@@ -101,14 +103,6 @@ extern "C" {
     } en_MZTAPE_FORMATSET;
 
 
-    typedef enum en_MZTAPE_SPEED {
-        MZTAPE_SPEED_1_1, // 1:1 1200 Bd
-        MZTAPE_SPEED_2_1, // 2:1 2400 Bd
-        MZTAPE_SPEED_7_3, // 7:3 2800 Bd
-        MZTAPE_SPEED_8_3, // 8:3 3200 Bd
-        MZTAPE_SPEED_3_1, // 3:1 3600 Bd
-    } en_MZTAPE_SPEED;
-
 #define MZTAPE_LGAP_LENGTH_DEFAULT 22000
 #define MZTAPE_LGAP_LENGTH_SANE 4400
 #define MZTAPE_LGAP_LENGTH_MZ80B 10000
@@ -133,12 +127,12 @@ extern "C" {
         uint32_t chkb;
     } st_MZTAPE_MZF;
 
-    extern const double g_speed_divisor[];
-
     extern void mztape_mztmzf_destroy ( st_MZTAPE_MZF *mztmzf );
     extern st_MZTAPE_MZF* mztape_create_mztapemzf ( st_HANDLER *mzf_handler, uint32_t offset );
-    extern st_CMT_BITSTREAM* mztape_create_cmt_bitstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_MZTAPE_SPEED mztape_speed, uint32_t sample_rate );
-    extern st_CMT_VSTREAM* mztape_create_17MHz_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_MZTAPE_SPEED mztape_speed );
+    extern st_CMT_BITSTREAM* mztape_create_cmt_bitstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_CMTSPEED mztape_speed, uint32_t sample_rate );
+    extern st_CMT_VSTREAM* mztape_create_17MHz_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_CMTSPEED mztape_speed );
+
+    extern const en_CMTSPEED g_mztape_speed[];
 
 #ifdef __cplusplus
 }

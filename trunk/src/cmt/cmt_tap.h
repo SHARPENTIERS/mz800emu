@@ -33,7 +33,6 @@ extern "C" {
 
 #include <stdint.h>
 
-#include "libs/mztape/mztape.h"
 #include "libs/zxtape/zxtape.h"
 
 #include "cmtext.h"
@@ -74,7 +73,7 @@ extern "C" {
         uint16_t data_size;
         en_ZXTAPE_BLOCK_FLAG flag;
         un_CMTTAP_FLAGSPEC flspec;
-        en_MZTAPE_SPEED mztape_speed; // bere se v potaz pouze pokud st_CMTEXT_BLOCK->block_speed = CMTEXT_BLOCK_SPEED_SET
+        en_CMTSPEED cmtspeed; // bere se v potaz pouze pokud st_CMTEXT_BLOCK->block_speed = CMTEXT_BLOCK_SPEED_SET
     } st_CMTTAP_BLOCKSPEC;
 
     extern st_CMTEXT g_cmt_tap_extension;

@@ -105,7 +105,17 @@
 
 #include "gdg/gdg.h"
 
+#include "cmtspeed.h"
 #include "mztape.h"
+
+const en_CMTSPEED g_mztape_speed[] = {
+                                      CMTSPEED_1_1, // 1200 Bd
+                                      CMTSPEED_2_1, // 2400 Bd
+                                      CMTSPEED_7_3, // 2800 Bd
+                                      CMTSPEED_8_3, // 3200 Bd
+                                      CMTSPEED_3_1, // 3600 Bd
+                                      CMTSPEED_NONE
+};
 
 en_MZTAPE_BLOCK g_mztape_format_sharp_sane[] = {
                                                 MZTAPE_BLOCK_LGAP,
@@ -204,16 +214,6 @@ const st_MZTAPE_FORMAT *g_formats[] = {
 };
 
 
-// nasobitel rychlosti podle en_MZTAPE_SPEED
-const double g_speed_divisor[] = {
-                                  1,
-                                  2,
-                                  ( (double) 7 / 3 ),
-                                  ( (double) 8 / 3 ),
-                                  3,
-};
-
-
 static uint32_t mztape_compute_block_checksum_32t ( uint8_t *block, uint16_t size ) {
     uint32_t checksum = 0;
     while ( size-- ) {
@@ -305,15 +305,15 @@ static void mztape_compute_pulses ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET m
 }
 
 
-static void mztape_prepare_pulses_length ( st_MZTAPE_PULSES_LENGTH *pulses, en_MZTAPE_PULSESET pulseset, en_MZTAPE_SPEED mztape_speed ) {
+static void mztape_prepare_pulses_length ( st_MZTAPE_PULSES_LENGTH *pulses, en_MZTAPE_PULSESET pulseset, en_CMTSPEED mztape_speed ) {
     const st_MZTAPE_PULSES_LENGTH *src = g_pulses_length[pulseset];
 
-    pulses->long_pulse.high = src->long_pulse.high / g_speed_divisor[mztape_speed];
-    pulses->long_pulse.low = src->long_pulse.low / g_speed_divisor[mztape_speed];
+    pulses->long_pulse.high = src->long_pulse.high / g_cmtspeed_divisor[mztape_speed];
+    pulses->long_pulse.low = src->long_pulse.low / g_cmtspeed_divisor[mztape_speed];
     pulses->long_pulse.total = pulses->long_pulse.high + pulses->long_pulse.low;
 
-    pulses->short_pulse.high = src->short_pulse.high / g_speed_divisor[mztape_speed];
-    pulses->short_pulse.low = src->short_pulse.low / g_speed_divisor[mztape_speed];
+    pulses->short_pulse.high = src->short_pulse.high / g_cmtspeed_divisor[mztape_speed];
+    pulses->short_pulse.low = src->short_pulse.low / g_cmtspeed_divisor[mztape_speed];
     pulses->short_pulse.total = pulses->short_pulse.high + pulses->short_pulse.low;
 }
 
@@ -401,7 +401,7 @@ st_MZTAPE_MZF* mztape_create_mztapemzf ( st_HANDLER *mzf_handler, uint32_t offse
     st_MZF_HEADER mzfhdr;
 
     if ( EXIT_SUCCESS != mzf_read_header_on_offset ( h, offset, &mzfhdr ) ) {
-        fprintf ( stderr, "%s():%d - Could not read: %s\n", __func__, __LINE__, generic_driver_error_message ( h, h->driver ) );
+        fprintf ( stderr, "%s():%d - Could not read MZF header\n", __func__, __LINE__ );
         mztape_mztmzf_destroy ( mztmzf );
         return NULL;
     };
@@ -409,7 +409,7 @@ st_MZTAPE_MZF* mztape_create_mztapemzf ( st_HANDLER *mzf_handler, uint32_t offse
     mztmzf->size = mzfhdr.fsize;
 
     if ( EXIT_SUCCESS != generic_driver_read ( h, offset, mztmzf->header, sizeof ( st_MZF_HEADER ) ) ) {
-        fprintf ( stderr, "%s():%d - Could not read: %s\n", __func__, __LINE__, generic_driver_error_message ( h, h->driver ) );
+        fprintf ( stderr, "%s():%d - Could not read MZF header\n", __func__, __LINE__ );
         mztape_mztmzf_destroy ( mztmzf );
         return NULL;
     };
@@ -417,7 +417,7 @@ st_MZTAPE_MZF* mztape_create_mztapemzf ( st_HANDLER *mzf_handler, uint32_t offse
     mztmzf->body = ui_utils_mem_alloc ( mztmzf->size );
 
     if ( EXIT_SUCCESS != generic_driver_read ( h, offset + sizeof ( st_MZF_HEADER ), mztmzf->body, mzfhdr.fsize ) ) {
-        fprintf ( stderr, "%s():%d - Could not read: %s\n", __func__, __LINE__, generic_driver_error_message ( h, h->driver ) );
+        fprintf ( stderr, "%s():%d - Could not read MZF body\n", __func__, __LINE__ );
         mztape_mztmzf_destroy ( mztmzf );
         ui_utils_mem_free ( mztmzf->body );
         return NULL;
@@ -436,7 +436,7 @@ st_MZTAPE_MZF* mztape_create_mztapemzf ( st_HANDLER *mzf_handler, uint32_t offse
  * Pro vyssi rychlosti je podle mych testu lepsi pouzit 192 kHz.
  * 
  */
-st_CMT_BITSTREAM* mztape_create_cmt_bitstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_MZTAPE_SPEED mztape_speed, uint32_t sample_rate ) {
+st_CMT_BITSTREAM* mztape_create_cmt_bitstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_CMTSPEED mztape_speed, uint32_t sample_rate ) {
 
     double sample_length = (double) 1 / sample_rate;
 
@@ -622,7 +622,7 @@ static inline int mztape_add_cmt_vstream_data_block ( st_CMT_VSTREAM* vstream, s
  * Jako sample rate pouzijeme konstantni hodnotu 17MHz z GDG
  *  
  */
-st_CMT_VSTREAM* mztape_create_17MHz_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_MZTAPE_SPEED mztape_speed ) {
+st_CMT_VSTREAM* mztape_create_17MHz_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_CMTSPEED mztape_speed ) {
 
     st_CMT_VSTREAM* vstream = cmt_vstream_new ( GDGCLK_BASE, CMT_VSTREAM_BYTELENGTH16, 1, CMT_STREAM_POLARITY_NORMAL );
     if ( !vstream ) {
@@ -631,10 +631,10 @@ st_CMT_VSTREAM* mztape_create_17MHz_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mzt
     };
 
     st_MZTAPE_PULSES_GDGTICS gpulses;
-    gpulses.long_pulse.high = round ( (double) g_mztape_pulses_gdgticks_800.long_pulse.high / g_speed_divisor[mztape_speed] );
-    gpulses.long_pulse.low = round ( (double) g_mztape_pulses_gdgticks_800.long_pulse.low / g_speed_divisor[mztape_speed] );
-    gpulses.short_pulse.high = round ( (double) g_mztape_pulses_gdgticks_800.short_pulse.high / g_speed_divisor[mztape_speed] );
-    gpulses.short_pulse.low = round ( (double) g_mztape_pulses_gdgticks_800.short_pulse.low / g_speed_divisor[mztape_speed] );
+    gpulses.long_pulse.high = round ( (double) g_mztape_pulses_gdgticks_800.long_pulse.high / g_cmtspeed_divisor[mztape_speed] );
+    gpulses.long_pulse.low = round ( (double) g_mztape_pulses_gdgticks_800.long_pulse.low / g_cmtspeed_divisor[mztape_speed] );
+    gpulses.short_pulse.high = round ( (double) g_mztape_pulses_gdgticks_800.short_pulse.high / g_cmtspeed_divisor[mztape_speed] );
+    gpulses.short_pulse.low = round ( (double) g_mztape_pulses_gdgticks_800.short_pulse.low / g_cmtspeed_divisor[mztape_speed] );
 
     const en_MZTAPE_BLOCK *format = g_formats[mztape_format]->blocks;
 

@@ -67,7 +67,7 @@ static void cmtmzftape_eject ( void ) {
 }
 
 
-static st_CMTEXT_TAPE_INDEX* cmtmzftape_container_index_new ( st_HANDLER *h, uint32_t offset, en_MZTAPE_SPEED mztape_speed, int *count_blocks ) {
+static st_CMTEXT_TAPE_INDEX* cmtmzftape_container_index_new ( st_HANDLER *h, uint32_t offset, en_CMTSPEED cmtspeed, int *count_blocks ) {
 
     *count_blocks = 0;
 
@@ -108,7 +108,7 @@ static st_CMTEXT_TAPE_INDEX* cmtmzftape_container_index_new ( st_HANDLER *h, uin
 
         st_CMTEXT_TAPE_ITEM_MZF *mzfitem = &idx->item.mzf;
 
-        mzfitem->mztape_speed = mztape_speed;
+        mzfitem->cmtspeed = cmtspeed;
         mzfitem->ftype = hdr->ftype;
         mzfitem->fsize = hdr->fsize;
         mzfitem->fstrt = hdr->fstrt;
@@ -156,10 +156,10 @@ st_CMTEXT_BLOCK* cmtmzftape_block_open ( int block_id ) {
     uint32_t offset = idx->offset;
     en_CMTEXT_BLOCK_SPEED blspeed = idx->blspeed;
     st_CMTEXT_TAPE_ITEM_MZF *mzfitem = &idx->item.mzf;
-    en_MZTAPE_SPEED mztape_speed = ( blspeed == CMTEXT_BLOCK_SPEED_SET ) ? mzfitem->mztape_speed : g_cmt.speed; // pokud neni SET, tak je DEFAULT
+    en_CMTSPEED cmtspeed = ( blspeed == CMTEXT_BLOCK_SPEED_SET ) ? mzfitem->cmtspeed : g_cmt.mz_cmtspeed; // pokud neni SET, tak je DEFAULT
     uint16_t pause_after = idx->pause_after;
 
-    st_CMTEXT_BLOCK *block = cmtmzf_block_open ( g_cmt_mzftape->container->tape->h, offset, block_id, pause_after, blspeed, mztape_speed );
+    st_CMTEXT_BLOCK *block = cmtmzf_block_open ( g_cmt_mzftape->container->tape->h, offset, block_id, pause_after, blspeed, cmtspeed );
     if ( !block ) {
         return NULL;
     };
@@ -216,7 +216,7 @@ static int cmtmzftape_container_open ( char *filename ) {
 
     int count_blocks = 0;
 
-    st_CMTEXT_TAPE_INDEX *index = cmtmzftape_container_index_new ( h, 0, g_cmt.speed, &count_blocks );
+    st_CMTEXT_TAPE_INDEX *index = cmtmzftape_container_index_new ( h, 0, g_cmt.mz_cmtspeed, &count_blocks );
 
     if ( !index ) {
         generic_driver_close ( h );
