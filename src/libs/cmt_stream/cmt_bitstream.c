@@ -104,11 +104,12 @@ st_CMT_BITSTREAM* cmt_bitstream_new_from_wav ( st_HANDLER *wav_handler, en_CMT_S
 
     stream->scans = scans;
     stream->stream_length = scans * ( 1 / (double) stream->rate );
+    en_WAV_POLARITY wav_polarity = ( polarity == CMT_STREAM_POLARITY_NORMAL ) ? WAV_POLARITY_NORMAL : WAV_POLARITY_INVERTED;
 
     uint32_t i;
     for ( i = 0; i < scans; i++ ) {
         int bit_value = 0;
-        if ( EXIT_FAILURE == wav_get_bit_value_of_sample ( h, sh, i, ( polarity == CMT_STREAM_POLARITY_NORMAL ) ? WAV_POLARITY_NORMAL : WAV_POLARITY_INVERTED, &bit_value ) ) {
+        if ( EXIT_FAILURE == wav_get_bit_value_of_sample ( h, sh, i, wav_polarity, &bit_value ) ) {
             fprintf ( stderr, "%s() - %d: Error - can't read sample.\n", __func__, __LINE__ );
             wav_simple_header_destroy ( sh );
             cmt_bitstream_destroy ( stream );

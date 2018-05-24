@@ -26,10 +26,13 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "ui/ui_utils.h"
 #include "libs/generic_driver/generic_driver.h"
 #include "libs/wav/wav.h"
+
+#include "gdg/gdg.h"
 
 #include "cmt_vstream.h"
 #include "cmt_stream.h"
@@ -51,17 +54,21 @@ void cmt_vstream_read_reset ( st_CMT_VSTREAM *stream ) {
 
 st_CMT_VSTREAM* cmt_vstream_new ( uint32_t rate, en_CMT_VSTREAM_BYTELENGTH min_byte_length, int value, en_CMT_STREAM_POLARITY polarity ) {
     if ( !( ( min_byte_length == 1 ) || ( min_byte_length == 2 ) || ( min_byte_length == 4 ) ) ) {
-        fprintf ( stderr, "%s() - %d: Error - invalid min_byte_length (%d).\n", __func__, __LINE__, min_byte_length );
+        fprintf ( stderr, "%s():%d - Error - invalid min_byte_length (%d).\n", __func__, __LINE__, min_byte_length );
         return NULL;
+    };
+    if ( ( !rate ) || ( rate > GDGCLK_BASE ) ) {
+        fprintf ( stderr, "%s(): %d: Error - bad sample rate (%u).\n", __func__, __LINE__, rate );
     };
     st_CMT_VSTREAM *stream = ui_utils_mem_alloc0 ( sizeof ( st_CMT_VSTREAM ) );
     if ( !stream ) {
-        fprintf ( stderr, "%s() - %d: Error - can't alocate memory (%u).\n", __func__, __LINE__, (int) sizeof ( st_CMT_VSTREAM ) );
+        fprintf ( stderr, "%s():%d - Error - can't alocate memory (%u).\n", __func__, __LINE__, (int) sizeof ( st_CMT_VSTREAM ) );
         return NULL;
     };
-    // TODO: nejaka kontrola rate?
     stream->rate = rate;
     stream->scan_time = (double) 1 / rate;
+    stream->msticks = round ( 0.001 / ( (double) 1 / rate ) );
+    stream->scan_gdgticks = round ( (double) GDGCLK_BASE / rate );
     stream->start_value = value & 1;
     stream->polarity = polarity;
 
@@ -184,4 +191,69 @@ int cmt_vstream_add_value ( st_CMT_VSTREAM *cmt_vstream, int value, uint32_t cou
 void cmt_vstream_change_polarity ( st_CMT_VSTREAM *stream, en_CMT_STREAM_POLARITY polarity ) {
     if ( stream->polarity == polarity ) return;
     stream->start_value = ~stream->start_value & 0x01;
+}
+
+
+st_CMT_VSTREAM* cmt_vstream_new_from_wav ( st_HANDLER *h, en_CMT_STREAM_POLARITY polarity ) {
+
+    st_WAV_SIMPLE_HEADER *sh = wav_simple_header_new_from_handler ( h );
+
+    if ( !sh ) {
+        fprintf ( stderr, "%s() - %d: Error - can't create wav_simple_header.\n", __func__, __LINE__ );
+        return NULL;
+    };
+
+    if ( !sh->blocks ) {
+        fprintf ( stderr, "%s() - %d: Error - wav is empty\n", __func__, __LINE__ );
+        wav_simple_header_destroy ( sh );
+        return NULL;
+    };
+
+    en_WAV_POLARITY wav_polarity = ( polarity == CMT_STREAM_POLARITY_NORMAL ) ? WAV_POLARITY_NORMAL : WAV_POLARITY_INVERTED;
+
+    int bit_value = 0;
+    int last_bit_value = 0;
+
+    if ( EXIT_FAILURE == wav_get_bit_value_of_sample ( h, sh, 0, wav_polarity, &bit_value ) ) {
+        fprintf ( stderr, "%s() - %d: Error - can't read sample.\n", __func__, __LINE__ );
+        wav_simple_header_destroy ( sh );
+        return NULL;
+    };
+    last_bit_value = bit_value;
+
+    st_CMT_VSTREAM* vstream = cmt_vstream_new ( sh->sample_rate, CMT_VSTREAM_BYTELENGTH8, bit_value, polarity );
+    if ( !vstream ) {
+        fprintf ( stderr, "%s():%d - Could create cmt vstream\n", __func__, __LINE__ );
+        return NULL;
+    };
+
+    uint32_t count_scans = 0;
+    uint32_t i = 0;
+    uint32_t last_saved_scan = 0;
+    for ( i = 0; i < sh->blocks; i++ ) {
+        if ( EXIT_FAILURE == wav_get_bit_value_of_sample ( h, sh, i, wav_polarity, &bit_value ) ) {
+            fprintf ( stderr, "%s() - %d: Error - can't read sample.\n", __func__, __LINE__ );
+            wav_simple_header_destroy ( sh );
+            cmt_vstream_destroy ( vstream );
+            return NULL;
+        };
+        count_scans++;
+
+        if ( last_bit_value == bit_value ) continue;
+
+        cmt_vstream_add_value ( vstream, bit_value, count_scans );
+        last_bit_value = bit_value;
+        count_scans = 0;
+        last_saved_scan = i;
+    };
+
+
+    if ( last_saved_scan != ( i - 1 ) ) {
+        if ( !count_scans ) count_scans++;
+        cmt_vstream_add_value ( vstream, bit_value, count_scans );
+    };
+
+    wav_simple_header_destroy ( sh );
+
+    return vstream;
 }
