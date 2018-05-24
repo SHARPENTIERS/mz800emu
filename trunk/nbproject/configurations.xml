@@ -202,6 +202,7 @@
           <itemPath>src/libs/mzf/mzf_tools.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f7" displayName="MZtape" projectFiles="true">
+          <itemPath>src/libs/mztape/cmtspeed.c</itemPath>
           <itemPath>src/libs/mztape/mztape.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f5" displayName="QD" projectFiles="true">

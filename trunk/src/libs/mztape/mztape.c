@@ -711,3 +711,45 @@ st_CMT_VSTREAM* mztape_create_17MHz_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mzt
 
     return vstream;
 }
+
+st_CMT_STREAM* mztape_create_stream_from_mztapemzf ( st_MZTAPE_MZF *mztmzf, en_CMTSPEED cmtspeed, en_CMT_STREAM_TYPE type, en_MZTAPE_FORMATSET mztape_fset, uint32_t rate ) {
+
+    st_CMT_STREAM *stream = cmt_stream_new ( type );
+    if ( !stream ) {
+        return NULL;
+    };
+
+    switch ( stream->stream_type ) {
+        case CMT_STREAM_TYPE_BITSTREAM:
+        {
+            st_CMT_BITSTREAM *bitstream = mztape_create_cmt_bitstream_from_mztmzf ( mztmzf, mztape_fset, cmtspeed, rate );
+            if ( !bitstream ) {
+                fprintf ( stderr, "%s():%d - Can't create bitstream\n", __func__, __LINE__ );
+                cmt_stream_destroy ( stream );
+                return NULL;
+            };
+            stream->str.bitstream = bitstream;
+            break;
+        }
+
+        case CMT_STREAM_TYPE_VSTREAM:
+        {
+            st_CMT_VSTREAM *vstream = mztape_create_17MHz_cmt_vstream_from_mztmzf ( mztmzf, mztape_fset, cmtspeed );
+            if ( !vstream ) {
+                fprintf ( stderr, "%s() - %d: Can't create vstream\n", __func__, __LINE__ );
+                cmt_stream_destroy ( stream );
+                return NULL;
+            };
+            stream->str.vstream = vstream;
+            break;
+        }
+
+        default:
+            fprintf ( stderr, "%s():%d - Unknown stream type '%d'\n", __func__, __LINE__, stream->stream_type );
+            cmt_stream_destroy ( stream );
+            return NULL;
+    };
+
+    return stream;
+}
+

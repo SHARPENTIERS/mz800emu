@@ -81,6 +81,12 @@ extern "C" {
 
     extern void cmt_vstream_change_polarity ( st_CMT_VSTREAM *stream, en_CMT_STREAM_POLARITY polarity );
 
+    extern uint32_t cmt_vstream_get_size ( st_CMT_VSTREAM *vstream );
+    extern uint32_t cmt_vstream_get_rate ( st_CMT_VSTREAM *vstream );
+    extern double cmt_vstream_get_length ( st_CMT_VSTREAM *vstream );
+    extern uint64_t cmt_vstream_get_count_scans ( st_CMT_VSTREAM *vstream );
+    double cmt_vstream_get_scantime ( st_CMT_VSTREAM *vstream );
+
     extern st_CMT_VSTREAM* cmt_vstream_new_from_wav ( st_HANDLER *h, en_CMT_STREAM_POLARITY polarity );
 
 

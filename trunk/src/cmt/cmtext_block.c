@@ -97,16 +97,7 @@ void cmtext_block_set_polarity ( void *cmtext, en_CMT_STREAM_POLARITY polarity )
     st_CMTEXT_BLOCK *block = cext->block;
     assert ( block != NULL );
     assert ( block->stream != NULL );
-    switch ( block->stream->stream_type ) {
-        case CMT_STREAM_TYPE_BITSTREAM:
-            cmt_bitstream_change_polarity ( block->stream->str.bitstream, polarity );
-            break;
-        case CMT_STREAM_TYPE_VSTREAM:
-            cmt_vstream_change_polarity ( block->stream->str.vstream, polarity );
-            break;
-        default:
-            fprintf ( stderr, "%s():%d - Unknown stream type '%d'.\n", __func__, __LINE__, block->stream->stream_type );
-    };
+    cmt_stream_set_polarity ( block->stream, polarity );
 }
 
 
@@ -155,17 +146,7 @@ en_CMTEXT_BLOCK_TYPE cmtext_block_get_type ( st_CMTEXT_BLOCK *block ) {
 uint32_t cmtext_block_get_rate ( st_CMTEXT_BLOCK *block ) {
     assert ( block != NULL );
     assert ( block->stream != NULL );
-    switch ( block->stream->stream_type ) {
-        case CMT_STREAM_TYPE_BITSTREAM:
-            return block->stream->str.bitstream->rate;
-            break;
-        case CMT_STREAM_TYPE_VSTREAM:
-            return block->stream->str.vstream->rate;
-            break;
-        default:
-            fprintf ( stderr, "%s():%d - Unknown stream type '%d'\n", __func__, __LINE__, block->stream->stream_type );
-    };
-    return 1;
+    return cmt_stream_get_rate ( block->stream );
 }
 
 
@@ -178,7 +159,7 @@ uint16_t cmtext_block_get_pause_after ( st_CMTEXT_BLOCK *block ) {
 en_CMT_STREAM_TYPE cmtext_block_get_stream_type ( st_CMTEXT_BLOCK *block ) {
     assert ( block != NULL );
     assert ( block->stream != NULL );
-    return block->stream->stream_type;
+    return cmt_stream_get_stream_type ( block->stream );
 }
 
 
@@ -188,37 +169,17 @@ int cmtext_block_get_block_id ( st_CMTEXT_BLOCK *block ) {
 }
 
 
-uint64_t cmtext_block_get_scans ( st_CMTEXT_BLOCK *block ) {
+uint64_t cmtext_block_get_count_scans ( st_CMTEXT_BLOCK *block ) {
     assert ( block != NULL );
     assert ( block->stream != NULL );
-    switch ( block->stream->stream_type ) {
-        case CMT_STREAM_TYPE_BITSTREAM:
-            return block->stream->str.bitstream->scans;
-            break;
-        case CMT_STREAM_TYPE_VSTREAM:
-            return block->stream->str.vstream->scans;
-            break;
-        default:
-            fprintf ( stderr, "%s():%d - Unknown stream type '%d'\n", __func__, __LINE__, block->stream->stream_type );
-    };
-    return 0;
+    return cmt_stream_get_count_scans ( block->stream );
 }
 
 
 double cmtext_block_get_scantime ( st_CMTEXT_BLOCK *block ) {
     assert ( block != NULL );
     assert ( block->stream != NULL );
-    switch ( block->stream->stream_type ) {
-        case CMT_STREAM_TYPE_BITSTREAM:
-            return block->stream->str.bitstream->scan_time;
-            break;
-        case CMT_STREAM_TYPE_VSTREAM:
-            return block->stream->str.vstream->scan_time;
-            break;
-        default:
-            fprintf ( stderr, "%s():%d - Unknown stream type '%d'\n", __func__, __LINE__, block->stream->stream_type );
-    };
-    return 0;
+    return cmt_stream_get_scantime ( block->stream );
 }
 
 

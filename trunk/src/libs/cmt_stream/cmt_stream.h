@@ -31,7 +31,10 @@
 extern "C" {
 #endif
 
+#include "libs/generic_driver/generic_driver.h"
+
 #include "cmt_stream_all.h"
+
 
     typedef enum en_CMT_STREAM_TYPE {
         CMT_STREAM_TYPE_BITSTREAM = 0,
@@ -55,6 +58,17 @@ extern "C" {
     } st_CMT_STREAM;
 
     extern void cmt_stream_destroy ( st_CMT_STREAM *stream );
+    extern st_CMT_STREAM* cmt_stream_new ( en_CMT_STREAM_TYPE type );
+    extern st_CMT_STREAM* cmt_stream_new_from_wav ( st_HANDLER *h, en_CMT_STREAM_POLARITY polarity, en_CMT_STREAM_TYPE type );
+
+    extern en_CMT_STREAM_TYPE cmt_stream_get_stream_type ( st_CMT_STREAM *stream );
+    extern const char* cmt_stream_get_stream_type_txt ( st_CMT_STREAM *stream );
+    extern uint32_t cmt_stream_get_size ( st_CMT_STREAM *stream );
+    extern uint32_t cmt_stream_get_rate ( st_CMT_STREAM *stream );
+    extern double cmt_stream_get_length ( st_CMT_STREAM *stream );
+    extern uint64_t cmt_stream_get_count_scans ( st_CMT_STREAM *stream );
+    extern double cmt_stream_get_scantime ( st_CMT_STREAM *stream );
+    extern void cmt_stream_set_polarity ( st_CMT_STREAM *stream, en_CMT_STREAM_POLARITY polarity );
 
 #ifdef __cplusplus
 }
