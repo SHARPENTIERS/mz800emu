@@ -69,6 +69,9 @@ static void cmtwav_eject ( void ) {
     g_cmt_wav->container = (st_CMTEXT_CONTAINER*) NULL;
 }
 
+#define CMTWAV_DEFAULT_STREAM_BITSTREAM
+//#define CMTWAV_DEFAULT_STREAM_VSTREAM
+
 
 st_CMTEXT_BLOCK* cmtwav_block_open ( st_HANDLER *h, uint32_t offset, int block_id, int pause_after ) {
 
@@ -78,27 +81,46 @@ st_CMTEXT_BLOCK* cmtwav_block_open ( st_HANDLER *h, uint32_t offset, int block_i
         return NULL;
     };
 
-    stream->stream_type = CMT_STREAM_TYPE_BITSTREAM;
+    printf ( "%s block id: %d\n", cmtext_get_name ( g_cmt_wav ), block_id );
+    printf ( "%s polarity: %s\n", cmtext_get_name ( g_cmt_wav ), ( g_cmt.polarity == CMT_STREAM_POLARITY_NORMAL ) ? "normal" : "inverted" );
 
+#ifdef CMTWAV_DEFAULT_STREAM_BITSTREAM
+    stream->stream_type = CMT_STREAM_TYPE_BITSTREAM;
     st_CMT_BITSTREAM *bitstream = cmt_bitstream_new_from_wav ( h, g_cmt.polarity );
     if ( !bitstream ) {
         fprintf ( stderr, "%s():%d - Can't create stream\n", __func__, __LINE__ );
         cmt_stream_destroy ( stream );
         return NULL;
     };
-
     stream->str.bitstream = bitstream;
+
+    printf ( "%s bitstream size: %0.2f kB\n", cmtext_get_name ( g_cmt_wav ), (float) ( bitstream->scans / CMT_BITSTREAM_BLOCK_SIZE ) / (float) 1024 );
+    printf ( "%s rate: %d Hz\n", cmtext_get_name ( g_cmt_wav ), bitstream->rate );
+    printf ( "%s length: %1.2f s\n", cmtext_get_name ( g_cmt_wav ), ( bitstream->scan_time * bitstream->scans ) );
+#endif
+
+#ifdef CMTWAV_DEFAULT_STREAM_VSTREAM
+    stream->stream_type = CMT_STREAM_TYPE_VSTREAM;
+    st_CMT_VSTREAM *vstream = cmt_vstream_new_from_wav ( h, g_cmt.polarity );
+    if ( !vstream ) {
+        fprintf ( stderr, "%s():%d - Can't create stream\n", __func__, __LINE__ );
+        cmt_stream_destroy ( stream );
+        return NULL;
+    };
+    stream->str.vstream = vstream;
+
+    printf ( "%s vstream size: %0.2f kB\n", cmtext_get_name ( g_cmt_wav ), (float) ( vstream->size / (float) 1024 ) );
+    printf ( "%s rate: %d Hz\n", cmtext_get_name ( g_cmt_wav ), vstream->rate );
+    printf ( "%s length: %1.2f s\n", cmtext_get_name ( g_cmt_wav ), vstream->stream_length );
+#endif
+
 
     st_CMTEXT_BLOCK *block = cmtext_block_new ( block_id, CMTEXT_BLOCK_TYPE_WAV, stream, CMTEXT_BLOCK_SPEED_NONE, pause_after, NULL );
     if ( !block ) {
         cmt_stream_destroy ( stream );
     };
 
-    printf ( "%s block id: %d\n", cmtext_get_name ( g_cmt_wav ), block_id );
-    printf ( "%s bitstream size: %0.2f kB\n", cmtext_get_name ( g_cmt_wav ), (float) ( bitstream->scans / CMT_BITSTREAM_BLOCK_SIZE ) / (float) 1024 );
-    printf ( "%s polarity: %s\n", cmtext_get_name ( g_cmt_wav ), ( g_cmt.polarity == CMT_STREAM_POLARITY_NORMAL ) ? "normal" : "inverted" );
-    printf ( "%s rate: %d Hz\n", cmtext_get_name ( g_cmt_wav ), bitstream->rate );
-    printf ( "%s length: %1.2f s\n", cmtext_get_name ( g_cmt_wav ), ( bitstream->scan_time * bitstream->scans ) );
+
 
     block->cb_play = cmtext_block_play;
     block->cb_get_playname = cmtext_block_get_playname;
@@ -157,13 +179,13 @@ static void cmtwav_exit ( void ) {
 
 
 st_CMTEXT g_cmt_wav_extension = {
-                                     &g_cmt_wav_info,
-                                     (st_CMTEXT_CONTAINER*) NULL,
-                                     (st_CMTEXT_BLOCK*) NULL,
-                                     cmtwav_init,
-                                     cmtwav_exit,
-                                     cmtwav_container_open,
-                                     cmtwav_eject,
+                                 &g_cmt_wav_info,
+                                 (st_CMTEXT_CONTAINER*) NULL,
+                                 (st_CMTEXT_BLOCK*) NULL,
+                                 cmtwav_init,
+                                 cmtwav_exit,
+                                 cmtwav_container_open,
+                                 cmtwav_eject,
 };
 
 st_CMTEXT *g_cmt_wav = &g_cmt_wav_extension;

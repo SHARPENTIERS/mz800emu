@@ -47,6 +47,8 @@ extern "C" {
 
     typedef struct st_CMT_VSTREAM {
         uint32_t rate; //samplovaci frequence
+        uint32_t scan_gdgticks;
+        uint32_t msticks; // pocet scanu v 1 ms 
         double scan_time; // delka jednoho scanu = ( 1 / rate )
         double stream_length; // celkova doba streamu
         en_CMT_VSTREAM_BYTELENGTH min_byte_length; // nejmensi velikost jednoho eventu v bajtech [1|2|4]]
@@ -78,6 +80,8 @@ extern "C" {
     extern int cmt_vstream_add_value ( st_CMT_VSTREAM *cmt_vstream, int value, uint32_t count_samples );
 
     extern void cmt_vstream_change_polarity ( st_CMT_VSTREAM *stream, en_CMT_STREAM_POLARITY polarity );
+
+    extern st_CMT_VSTREAM* cmt_vstream_new_from_wav ( st_HANDLER *h, en_CMT_STREAM_POLARITY polarity );
 
 
     static inline uint32_t cmt_vstream_get_last_read_event ( st_CMT_VSTREAM *cmt_vstream, int *event_byte_length ) {

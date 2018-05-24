@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <math.h>
 #include <assert.h>
 
 #include "libs/cmt_stream/cmt_stream.h"
@@ -34,8 +35,6 @@
 
 #include "cmtext_block.h"
 #include "cmtext.h"
-
-#define CMTEXT_1MS_TICKS    ( 0.001 / ( 1 / (float) GDGCLK_BASE ) )
 
 
 void cmtext_block_destroy ( st_CMTEXT_BLOCK *block ) {
@@ -115,14 +114,14 @@ en_CMTEXT_BLOCK_PLAYSTS cmtext_block_get_output ( st_CMTEXT_BLOCK *block, uint64
 
     if ( CMT_STREAM_TYPE_VSTREAM == block->stream->stream_type ) {
         st_CMT_VSTREAM *vstream = block->stream->str.vstream;
-        assert ( vstream->rate == GDGCLK_BASE );
-        if ( EXIT_SUCCESS == cmt_vstream_get_value ( vstream, play_gdgticks, output ) ) return CMTEXT_BLOCK_PLAYSTS_BODY;
+        uint64_t play_scans_count = round ( (double) play_gdgticks / vstream->scan_gdgticks );
+        if ( EXIT_SUCCESS == cmt_vstream_get_value ( vstream, play_scans_count, output ) ) return CMTEXT_BLOCK_PLAYSTS_BODY;
         // Prekrocili jsme delku streamu
-        uint64_t pause_ticks = block->pause_after * CMTEXT_1MS_TICKS;
-        uint64_t total_ticks = vstream->scans + pause_ticks;
-        if ( play_gdgticks < total_ticks ) return CMTEXT_BLOCK_PLAYSTS_PAUSE; // prehravame pauzu
+        uint64_t pause_scans_count = block->pause_after * vstream->msticks;
+        uint64_t total_scans_count = vstream->scans + pause_scans_count;
+        if ( play_scans_count < total_scans_count ) return CMTEXT_BLOCK_PLAYSTS_PAUSE; // prehravame pauzu
         // pauza uz skoncila
-        *transferred_gdgticks = play_gdgticks - total_ticks;
+        *transferred_gdgticks = ( play_scans_count - total_scans_count ) * vstream->scan_gdgticks;
         return CMTEXT_BLOCK_PLAYSTS_STOP;
 
     } else if ( CMT_STREAM_TYPE_BITSTREAM == block->stream->stream_type ) {
