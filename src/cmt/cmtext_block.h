@@ -77,7 +77,7 @@ extern "C" {
     extern uint16_t cmtext_block_get_pause_after ( st_CMTEXT_BLOCK *block );
     extern en_CMT_STREAM_TYPE cmtext_block_get_stream_type ( st_CMTEXT_BLOCK *block );
     extern int cmtext_block_get_block_id ( st_CMTEXT_BLOCK *block );
-    extern uint64_t cmtext_block_get_scans ( st_CMTEXT_BLOCK *block );
+    extern uint64_t cmtext_block_get_count_scans ( st_CMTEXT_BLOCK *block );
     extern double cmtext_block_get_scantime ( st_CMTEXT_BLOCK *block );
     extern en_CMTEXT_BLOCK_SPEED cmtext_block_get_block_speed ( st_CMTEXT_BLOCK *block );
 

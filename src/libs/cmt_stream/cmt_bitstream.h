@@ -62,6 +62,12 @@ extern "C" {
     extern int cmt_bitstream_create_wav ( st_HANDLER *wav_handler, st_CMT_BITSTREAM *stream );
     extern void cmt_bitstream_change_polarity ( st_CMT_BITSTREAM *stream, en_CMT_STREAM_POLARITY polarity );
 
+    extern uint32_t cmt_bitstream_get_size ( st_CMT_BITSTREAM *bitstream );
+    extern uint32_t cmt_bitstream_get_rate ( st_CMT_BITSTREAM *bitstream );
+    extern double cmt_bitstream_get_length ( st_CMT_BITSTREAM *bitstream );
+    extern uint64_t cmt_bitstream_get_count_scans ( st_CMT_BITSTREAM *bitstream );
+    extern double cmt_bitstream_get_scantime ( st_CMT_BITSTREAM *bitstream );
+
 
     /**
      * 

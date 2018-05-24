@@ -207,3 +207,33 @@ void cmt_bitstream_change_polarity ( st_CMT_BITSTREAM *stream, en_CMT_STREAM_POL
         stream->data[i] = ~stream->data[i];
     };
 }
+
+
+uint32_t cmt_bitstream_get_size ( st_CMT_BITSTREAM *bitstream ) {
+    assert ( bitstream != NULL );
+    return (bitstream->scans / CMT_BITSTREAM_BLOCK_SIZE );
+}
+
+
+uint32_t cmt_bitstream_get_rate ( st_CMT_BITSTREAM *bitstream ) {
+    assert ( bitstream != NULL );
+    return bitstream->rate;
+}
+
+
+double cmt_bitstream_get_length ( st_CMT_BITSTREAM *bitstream ) {
+    assert ( bitstream != NULL );
+    return bitstream->stream_length;
+}
+
+
+uint64_t cmt_bitstream_get_count_scans ( st_CMT_BITSTREAM *bitstream ) {
+    assert ( bitstream != NULL );
+    return bitstream->scans;
+}
+
+
+double cmt_bitstream_get_scantime ( st_CMT_BITSTREAM *bitstream ) {
+    assert ( bitstream != NULL );
+    return bitstream->scan_time;
+}

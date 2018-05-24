@@ -138,38 +138,22 @@ static void cmtmzf_eject ( void ) {
 }
 
 
-st_CMT_BITSTREAM* cmtmzf_generate_bitstream ( st_MZTAPE_MZF *mztmzf, en_CMTSPEED cmtspeed ) {
+st_CMT_STREAM* cmtmzf_generate_stream_from_mztapemzf ( st_MZTAPE_MZF *mztapemzf, en_CMTSPEED cmtspeed, en_CMT_STREAM_TYPE type ) {
 
-    st_CMT_BITSTREAM *bitstream = mztape_create_cmt_bitstream_from_mztmzf ( mztmzf, MZTAPE_FORMATSET_MZ800_SANE, cmtspeed, CMTMZF_DEFAULT_BITSTREAM_RATE );
-    if ( !bitstream ) {
-        fprintf ( stderr, "%s():%d - Can't create bitstream\n", __func__, __LINE__ );
+    st_CMT_STREAM *stream = mztape_create_stream_from_mztapemzf ( mztapemzf, cmtspeed, type, MZTAPE_FORMATSET_MZ800_SANE, CMTMZF_DEFAULT_BITSTREAM_RATE );
+    if ( !stream ) {
         return NULL;
     };
 
-    printf ( "%s rate: %d\n", cmtext_get_name ( g_cmt_mzf ), bitstream->rate );
-    printf ( "%s speed: %d Bd\n", cmtext_get_name ( g_cmt_mzf ), (int) round ( MZTAPE_DEFAULT_BDSPEED * g_cmtspeed_divisor[cmtspeed] ) );
-    printf ( "%s length: %1.2f s\n", cmtext_get_name ( g_cmt_mzf ), bitstream->stream_length );
-    printf ( "%s bitstream size: %0.2f kB\n", cmtext_get_name ( g_cmt_mzf ), (float) ( bitstream->scans / CMT_BITSTREAM_BLOCK_SIZE ) / (float) 1024 );
-    //printf ( "DEBUG bitstream scans: %u\n", cmt_bitstream->scans );
+    char buff[100];
+    cmtspeed_get_speedtxt ( buff, sizeof ( buff ), cmtspeed, MZTAPE_DEFAULT_BDSPEED );
+    printf ( "%s speed: %s\n", cmtext_get_name ( g_cmt_mzf ), buff );
+    printf ( "%s stream type: %s\n", cmtext_get_name ( g_cmt_mzf ), cmt_stream_get_stream_type_txt ( stream ) );
+    printf ( "%s stream size: %0.2f kB\n", cmtext_get_name ( g_cmt_mzf ), (float) cmt_stream_get_size ( stream ) / 1024 );
+    printf ( "%s rate: %d Hz\n", cmtext_get_name ( g_cmt_mzf ), cmt_stream_get_rate ( stream ) );
+    printf ( "%s length: %1.2f s\n", cmtext_get_name ( g_cmt_mzf ), cmt_stream_get_length ( stream ) );
 
-    return bitstream;
-}
-
-
-st_CMT_VSTREAM* cmtmzf_generate_vstream ( st_MZTAPE_MZF *mztmzf, en_CMTSPEED cmtspeed ) {
-
-    st_CMT_VSTREAM *vstream = mztape_create_17MHz_cmt_vstream_from_mztmzf ( mztmzf, MZTAPE_FORMATSET_MZ800_SANE, cmtspeed );
-    if ( !vstream ) {
-        fprintf ( stderr, "%s() - %d: Can't create vstream\n", __func__, __LINE__ );
-        return NULL;
-    };
-
-    printf ( "%s rate: %d Hz\n", cmtext_get_name ( g_cmt_mzf ), vstream->rate );
-    printf ( "%s speed: %d Bd\n", cmtext_get_name ( g_cmt_mzf ), (int) round ( MZTAPE_DEFAULT_BDSPEED * g_cmtspeed_divisor[cmtspeed] ) );
-    printf ( "%s length: %1.2f s\n", cmtext_get_name ( g_cmt_mzf ), vstream->stream_length );
-    printf ( "%s vstream size: %0.2f kB\n", cmtext_get_name ( g_cmt_mzf ), (float) ( vstream->size / (float) 1024 ) );
-
-    return vstream;
+    return stream;
 }
 
 
@@ -184,28 +168,10 @@ static int cmtmzf_set_speed ( void *cmtext, en_CMTSPEED cmtspeed ) {
 
     assert ( block->stream != NULL );
 
-    st_CMT_BITSTREAM *bitstream = NULL;
-    st_CMT_VSTREAM *vstream = NULL;
-
-    switch ( block->stream->stream_type ) {
-        case CMT_STREAM_TYPE_BITSTREAM:
-            bitstream = cmtmzf_generate_bitstream ( blspec->mztmzf, cmtspeed );
-            if ( !bitstream ) return EXIT_FAILURE;
-            cmt_bitstream_destroy ( block->stream->str.bitstream );
-            block->stream->str.bitstream = bitstream;
-            break;
-
-        case CMT_STREAM_TYPE_VSTREAM:
-            vstream = cmtmzf_generate_vstream ( blspec->mztmzf, cmtspeed );
-            if ( !vstream ) return EXIT_FAILURE;
-            cmt_vstream_destroy ( block->stream->str.vstream );
-            block->stream->str.vstream = vstream;
-            break;
-
-        default:
-            fprintf ( stderr, "%s():%d - Unknown stream type '%d'\n", __func__, __LINE__, block->stream->stream_type );
-            return EXIT_FAILURE;
-    };
+    st_CMT_STREAM *stream = cmtmzf_generate_stream_from_mztapemzf ( blspec->mztmzf, cmtspeed, block->stream->stream_type );
+    if ( !stream ) return EXIT_FAILURE;
+    cmt_stream_destroy ( block->stream );
+    block->stream = stream;
 
     blspec->cmtspeed = cmtspeed;
     return EXIT_SUCCESS;
@@ -234,38 +200,16 @@ st_CMTEXT_BLOCK* cmtmzf_block_open ( st_HANDLER *h, uint32_t offset, int block_i
         return NULL;
     }
 
-    st_CMT_STREAM *stream = (st_CMT_STREAM*) ui_utils_mem_alloc0 ( sizeof ( st_CMT_STREAM ) );
-    if ( !stream ) {
-        fprintf ( stderr, "%s():%d - Can't alocate memory (%d)\n", __func__, __LINE__, (int) sizeof ( st_CMT_STREAM ) );
-        cmtmzf_blockspec_destroy ( blspec );
-        return NULL;
-    };
-
 #ifdef CMTMZF_DEFAULT_STREAM_BITSTREAM
-    st_CMT_BITSTREAM *bitstream = cmtmzf_generate_bitstream ( blspec->mztmzf, cmtspeed );
-    if ( !bitstream ) {
-        fprintf ( stderr, "%s():%d - Can't generate bitstream\n", __func__, __LINE__ );
-        cmtmzf_blockspec_destroy ( blspec );
-        cmt_stream_destroy ( stream );
-        return NULL;
-    };
-
-    stream->stream_type = CMT_STREAM_TYPE_BITSTREAM;
-    stream->str.bitstream = bitstream;
+    st_CMT_STREAM *stream = cmtmzf_generate_stream_from_mztapemzf ( blspec->mztmzf, cmtspeed, CMT_STREAM_TYPE_BITSTREAM );
 #endif
-
 #ifdef CMTMZF_DEFAULT_STREAM_VSTREAM
-    st_CMT_VSTREAM *vstream = cmtmzf_generate_vstream ( blspec->mztmzf, cmtspeed );
-    if ( !vstream ) {
-        fprintf ( stderr, "%s():%d - Can't generate vstream\n", __func__, __LINE__ );
+    st_CMT_STREAM *stream = cmtmzf_generate_stream_from_mztapemzf ( blspec->mztmzf, cmtspeed, CMT_STREAM_TYPE_VSTREAM );
+#endif
+    if ( !stream ) {
         cmtmzf_blockspec_destroy ( blspec );
-        cmt_stream_destroy ( stream );
         return NULL;
     };
-
-    stream->str.vstream = vstream;
-    stream->stream_type = CMT_STREAM_TYPE_VSTREAM;
-#endif
 
     st_CMTEXT_BLOCK *block = cmtext_block_new ( block_id, CMTEXT_BLOCK_TYPE_MZF, stream, block_speed, pause_after, blspec );
     if ( !block ) {

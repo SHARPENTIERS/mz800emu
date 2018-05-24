@@ -38,7 +38,7 @@
 #include "cmt_tap.h"
 
 static st_DRIVER *g_driver = &g_ui_memory_driver_static;
-static st_DRIVER *g_driver_realloc = &g_ui_memory_driver_realloc;
+//static st_DRIVER *g_driver_realloc = &g_ui_memory_driver_realloc;
 
 char *g_cmt_tap_fileext[] = {
                              "tap",
@@ -104,6 +104,7 @@ st_CMTTAP_BLOCKSPEC* cmttap_blockspec_new ( st_HANDLER *h, uint32_t offset, en_Z
         printf ( "%s data block fsize: 0x%04x\n", cmtext_get_name ( g_cmt_tap ), flspec->data.size - 2 );
     } else {
         fprintf ( stderr, "%s():%d - Unknown TAP block flag 0x%02x\n", __func__, __LINE__, flag );
+        return NULL;
     };
 
     uint8_t *data = (uint8_t*) ui_utils_mem_alloc ( data_size );
@@ -311,46 +312,22 @@ static st_CMTEXT_TAPE_INDEX* cmttap_container_index_new ( st_HANDLER *h, uint32_
 }
 
 
-st_CMT_BITSTREAM* cmttap_generate_bitstream ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t *data, uint16_t data_size ) {
+st_CMT_STREAM* cmttap_generate_stream ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t *data, uint16_t data_size, en_CMTSPEED cmtspeed, en_CMT_STREAM_TYPE type ) {
 
-    en_CMTSPEED cmtspeed = CMTSPEED_1_1;
-
-    st_CMT_BITSTREAM *bitstream = zxtape_create_cmt_bitstream_from_tapblock ( flag, data, data_size );
-    if ( !bitstream ) {
-        fprintf ( stderr, "%s():%d - Can't create bitstream\n", __func__, __LINE__ );
+    st_CMT_STREAM *stream = zxtape_create_stream_from_tapblock ( flag, data, data_size, cmtspeed, CMTTAP_DEFAULT_BITSTREAM_RATE, type );
+    if ( !stream ) {
         return NULL;
     };
 
-    printf ( "%s rate: %d\n", cmtext_get_name ( g_cmt_tap ), bitstream->rate );
     char buff[100];
     cmtspeed_get_speedtxt ( buff, sizeof ( buff ), cmtspeed, ZXTAPE_DEFAULT_BDSPEED );
     printf ( "%s speed: %s\n", cmtext_get_name ( g_cmt_tap ), buff );
-    printf ( "%s length: %1.2f s\n", cmtext_get_name ( g_cmt_tap ), bitstream->stream_length );
-    printf ( "%s bitstream size: %0.2f kB\n", cmtext_get_name ( g_cmt_tap ), (float) ( bitstream->scans / CMT_BITSTREAM_BLOCK_SIZE ) / (float) 1024 );
-    //printf ( "DEBUG bitstream scans: %u\n", cmt_bitstream->scans );
+    printf ( "%s stream type: %s\n", cmtext_get_name ( g_cmt_tap ), cmt_stream_get_stream_type_txt ( stream ) );
+    printf ( "%s stream size: %0.2f kB\n", cmtext_get_name ( g_cmt_tap ), (float) cmt_stream_get_size ( stream ) / 1024 );
+    printf ( "%s rate: %d Hz\n", cmtext_get_name ( g_cmt_tap ), cmt_stream_get_rate ( stream ) );
+    printf ( "%s length: %1.2f s\n", cmtext_get_name ( g_cmt_tap ), cmt_stream_get_length ( stream ) );
 
-    return bitstream;
-}
-
-
-st_CMT_VSTREAM* cmttap_generate_vstream ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t *data, uint16_t data_size ) {
-
-    en_CMTSPEED cmtspeed = CMTSPEED_1_1;
-
-    st_CMT_VSTREAM *vstream = zxtape_create_17MHz_cmt_vstream_from_tapblock ( flag, data, data_size );
-    if ( !vstream ) {
-        fprintf ( stderr, "%s() - %d: Can't create vstream\n", __func__, __LINE__ );
-        return NULL;
-    };
-
-    printf ( "%s rate: %d Hz\n", cmtext_get_name ( g_cmt_tap ), vstream->rate );
-    char buff[100];
-    cmtspeed_get_speedtxt ( buff, sizeof ( buff ), cmtspeed, ZXTAPE_DEFAULT_BDSPEED );
-    printf ( "%s speed: %s\n", cmtext_get_name ( g_cmt_tap ), buff );
-    printf ( "%s length: %1.2f s\n", cmtext_get_name ( g_cmt_tap ), vstream->stream_length );
-    printf ( "%s vstream size: %0.2f kB\n", cmtext_get_name ( g_cmt_tap ), (float) ( vstream->size / (float) 1024 ) );
-
-    return vstream;
+    return stream;
 }
 
 
@@ -365,28 +342,10 @@ static int cmttap_set_speed ( void *cmtext, en_CMTSPEED cmtspeed ) {
 
     assert ( block->stream != NULL );
 
-    st_CMT_BITSTREAM *bitstream = NULL;
-    st_CMT_VSTREAM *vstream = NULL;
-
-    switch ( block->stream->stream_type ) {
-        case CMT_STREAM_TYPE_BITSTREAM:
-            bitstream = cmttap_generate_bitstream ( blspec->flag, blspec->data, blspec->data_size );
-            if ( !bitstream ) return EXIT_FAILURE;
-            cmt_bitstream_destroy ( block->stream->str.bitstream );
-            block->stream->str.bitstream = bitstream;
-            break;
-
-        case CMT_STREAM_TYPE_VSTREAM:
-            vstream = cmttap_generate_vstream ( blspec->flag, blspec->data, blspec->data_size );
-            if ( !vstream ) return EXIT_FAILURE;
-            cmt_vstream_destroy ( block->stream->str.vstream );
-            block->stream->str.vstream = vstream;
-            break;
-
-        default:
-            fprintf ( stderr, "%s():%d - Unknown stream type '%d'\n", __func__, __LINE__, block->stream->stream_type );
-            return EXIT_FAILURE;
-    };
+    st_CMT_STREAM *stream = cmttap_generate_stream ( blspec->flag, blspec->data, blspec->data_size, cmtspeed, block->stream->stream_type );
+    if ( !stream ) return EXIT_FAILURE;
+    cmt_stream_destroy ( block->stream );
+    block->stream = stream;
 
     blspec->cmtspeed = cmtspeed;
     return EXIT_SUCCESS;
@@ -460,30 +419,9 @@ st_CMTEXT_BLOCK* cmttap_block_open ( st_CMTEXT *cmtext, int block_id ) {
         return NULL;
     }
 
-    st_CMT_STREAM *stream = (st_CMT_STREAM*) ui_utils_mem_alloc0 ( sizeof ( st_CMT_STREAM ) );
-    if ( !stream ) {
-        fprintf ( stderr, "%s():%d - Can't alocate memory (%d)\n", __func__, __LINE__, (int) sizeof ( st_CMT_STREAM ) );
-        cmttap_blockspec_destroy ( blspec );
-        return NULL;
-    };
-
 
 #ifdef CMTTAP_DEFAULT_STREAM_BITSTREAM
-    st_CMT_BITSTREAM *bitstream = cmttap_generate_bitstream ( blspec->flag, blspec->data, blspec->data_size );
-    if ( !bitstream ) {
-        fprintf ( stderr, "%s():%d - Can't generate bitstream\n", __func__, __LINE__ );
-        cmttap_blockspec_destroy ( blspec );
-        cmt_stream_destroy ( stream );
-        return NULL;
-    };
-
-    stream->stream_type = CMT_STREAM_TYPE_BITSTREAM;
-    stream->str.bitstream = bitstream;
-
-    st_HANDLER *hwav = generic_driver_open_memory ( NULL, g_driver_realloc, 1 );
-    generic_driver_set_handler_readonly_status ( hwav, 0 );
-    hwav->spec.memspec.swelling_enabled = 1;
-
+    st_CMT_STREAM *stream = cmttap_generate_stream ( blspec->flag, blspec->data, blspec->data_size, cmtspeed, CMT_STREAM_TYPE_BITSTREAM );
 #if 0
     if ( EXIT_FAILURE == cmt_bitstream_create_wav ( hwav, bitstream ) ) {
         fprintf ( stderr, "%s():%d - Can't create WAV from bitstream\n", __func__, __LINE__ );
@@ -499,20 +437,13 @@ st_CMTEXT_BLOCK* cmttap_block_open ( st_CMTEXT *cmtext, int block_id ) {
     };
 #endif
 #endif
-
 #ifdef CMTTAP_DEFAULT_STREAM_VSTREAM
-
-    st_CMT_VSTREAM *vstream = cmttap_generate_vstream ( blspec->flag, blspec->data, blspec->data_size );
-    if ( !vstream ) {
-        fprintf ( stderr, "%s():%d - Can't generate vstream\n", __func__, __LINE__ );
+    st_CMT_STREAM *stream = cmttap_generate_stream ( blspec->flag, blspec->data, blspec->data_size, cmtspeed, CMT_STREAM_TYPE_VSTREAM );
+#endif
+    if ( !stream ) {
         cmttap_blockspec_destroy ( blspec );
-        cmt_stream_destroy ( stream );
         return NULL;
     };
-
-    stream->str.vstream = vstream;
-    stream->stream_type = CMT_STREAM_TYPE_VSTREAM;
-#endif
 
     st_CMTEXT_BLOCK *block = cmtext_block_new ( block_id, idx->bltype, stream, blspeed, pause_after, blspec );
     if ( !block ) {

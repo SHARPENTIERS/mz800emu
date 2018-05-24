@@ -677,7 +677,7 @@ void ui_cmt_update_player ( void ) {
 
     if ( TEST_CMT_FILLED ) {
         double scan_time = cmtext_block_get_scantime ( g_cmt.ext->block );
-        uint64_t scans = cmtext_block_get_scans ( g_cmt.ext->block );
+        uint64_t scans = cmtext_block_get_count_scans ( g_cmt.ext->block );
         gdouble body_total_time = ( scan_time * scans );
         if ( !TEST_CMT_STOP ) {
             if ( g_cmt.playsts == CMTEXT_BLOCK_PLAYSTS_PAUSE ) {

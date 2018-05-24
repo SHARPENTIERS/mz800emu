@@ -45,9 +45,6 @@ extern "C" {
     extern void cmtmzf_blockspec_destroy ( st_CMTMZF_BLOCKSPEC *blspec );
     extern st_CMTMZF_BLOCKSPEC* cmtmzf_blockspec_new ( st_HANDLER *h, uint32_t offset, en_CMTSPEED cmtspeed );
 
-    extern st_CMT_BITSTREAM* cmtmzf_generate_bitstream ( st_MZTAPE_MZF *mztmzf, en_CMTSPEED cmtspeed );
-    extern st_CMT_VSTREAM* cmtmzf_generate_vstream ( st_MZTAPE_MZF *mztmzf, en_CMTSPEED cmtspeed );
-
     extern st_CMTEXT_BLOCK* cmtmzf_block_open ( st_HANDLER *h, uint32_t offset, int block_id, int pause_after, en_CMTEXT_BLOCK_SPEED block_speed, en_CMTSPEED cmtspeed );
     extern void cmtmzf_block_close ( st_CMTEXT_BLOCK *block );
 
