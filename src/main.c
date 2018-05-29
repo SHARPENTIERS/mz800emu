@@ -56,7 +56,7 @@ void main_app_quit ( int exit_value ) {
 
     ui_exit ( );
     iface_sdl_quit ( );
-
+    
     exit ( exit_value );
 }
 
@@ -95,7 +95,7 @@ int main ( int argc, char** argv ) {
 #endif
 
     IFACE_DBG ( "Application start!" );
-
+  
     /* cfgmain musi byt prvni init funkce !!! */
     cfgmain_init ( );
 
@@ -104,12 +104,13 @@ int main ( int argc, char** argv ) {
     iface_sdl_init ( );
     //ui_init ( argc, argv );
     ui_init ( );
-    mz800_init ( );
 
     printf ( "\nTips:\n" );
     printf ( "   - use right-click mouse button on the emulator window to show the MAIN MENU.\n" );
     printf ( "   - edit the file ./ui_resources/mz800emu.css, if you need change menu fonts, colors, etc...\n" );
     printf ( "\n" );
+
+    mz800_init ( );
 
     mz800_main ( );
 

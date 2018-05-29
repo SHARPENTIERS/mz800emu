@@ -113,12 +113,12 @@ echo -e "Release version: ${EMULATOR_VERSION_TXT}\n"
 
 # Macros
 TOP=`pwd`
-CND_PLATFORM=i686-w64-mingw32-Linux
+CND_PLATFORM=i686-w64-mingw32-Linux-x86
 CND_DISTDIR=dist   
 CND_BUILDDIR=build
 NBTMPDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mz800emu-x86.exe
+OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mz800emu.exe
 OUTPUT_BASENAME=mz800emu.exe
 PACKAGE_TOP_DIR=${PROJECT_NAME}-${EMULATOR_VERSION_TXT}-${PACKAGE_PLATFORM}/
 PACKAGE_ARCHIVE_NAME=${PROJECT_NAME}-${EMULATOR_VERSION_TXT}-${PACKAGE_PLATFORM}-${PACKAGE_SURFIX}
@@ -137,14 +137,7 @@ ${MKDIR_EXE} -p ${NBTMPDIR}
 
 PACKAGE_DIRS="
 	${PACKAGE_TOP_DIR} \
-	${PACKAGE_TOP_DIR}/ui_resources/vkbd \
-	${PACKAGE_TOP_DIR}/ui_resources/vkbd/cursor_keys \
-	${PACKAGE_TOP_DIR}/ui_resources/vkbd/row0 \
-	${PACKAGE_TOP_DIR}/ui_resources/vkbd/row1 \
-	${PACKAGE_TOP_DIR}/ui_resources/vkbd/row2 \
-	${PACKAGE_TOP_DIR}/ui_resources/vkbd/row3 \
-	${PACKAGE_TOP_DIR}/ui_resources/vkbd/row4 \
-	${PACKAGE_TOP_DIR}/ui_resources/vkbd/row5 \
+	${PACKAGE_TOP_DIR}/ui_resources \
 	${PACKAGE_TOP_DIR}/Documentation \
 	${PACKAGE_TOP_DIR}/runtime/sdl-2 \
 	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/glib-2.0/schemas \
@@ -172,51 +165,9 @@ copyFileToTmpDir "src/windows_icon/mz800emu.ico" "${NBTMPDIR}/${PACKAGE_TOP_DIR}
 
 
 # ui_resources
-for filename in mz800emu_cmt.glade  mz800emu.css  mz800emu_debugger.glade  mz800emu.glade dsk_tool.glade mz800emu_logo.png
+for filename in mz800emu_cmt.glade  mz800emu.css  mz800emu_debugger.glade  mz800emu.glade  mz800emu_logo.png
 do
 	copyFileToTmpDir "ui_resources/${filename}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}/ui_resources/${filename}" 0644
-done
-
-# vkbd/cursor_keys
-for filename in down.bmp left.bmp right.bmp up.bmp
-do
-	copyFileToTmpDir "ui_resources/vkbd/cursor_keys/${filename}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}/ui_resources/vkbd/cursor_keys/${filename}" 0644
-done
-
-# vkbd/row0
-for filename in del.bmp f1.bmp f2.bmp f3.bmp f4.bmp f5.bmp inst.bmp
-do
-	copyFileToTmpDir "ui_resources/vkbd/row0/${filename}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}/ui_resources/vkbd/row0/${filename}" 0644
-done
-
-# vkbd/row1
-for filename in arrow_up.bmp backslash.bmp break.bmp graph.bmp minus.bmp 0.bmp 1.bmp 2.bmp 3.bmp 4.bmp 5.bmp 6.bmp 7.bmp 8.bmp 9.bmp
-do
-	copyFileToTmpDir "ui_resources/vkbd/row1/${filename}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}/ui_resources/vkbd/row1/${filename}" 0644
-done
-
-# vkbd/row2
-for filename in at.bmp blank.bmp bracketleft.bmp e.bmp i.bmp libra.bmp o.bmp p.bmp q.bmp r.bmp tab.bmp t.bmp u.bmp w.bmp y.bmp
-do
-	copyFileToTmpDir "ui_resources/vkbd/row2/${filename}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}/ui_resources/vkbd/row2/${filename}" 0644
-done
-
-# vkbd/row3
-for filename in a.bmp bracketright.bmp colon.bmp cr.bmp ctrl.bmp d.bmp f.bmp g.bmp h.bmp j.bmp k.bmp l.bmp s.bmp semicolon.bmp
-do
-	copyFileToTmpDir "ui_resources/vkbd/row3/${filename}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}/ui_resources/vkbd/row3/${filename}" 0644
-done
-
-# vkbd/row4
-for filename in alpha.bmp b.bmp c.bmp coma.bmp m.bmp n.bmp period.bmp question.bmp shift_l.bmp shift_r.bmp slash.bmp v.bmp x.bmp z.bmp
-do
-	copyFileToTmpDir "ui_resources/vkbd/row4/${filename}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}/ui_resources/vkbd/row4/${filename}" 0644
-done
-
-# vkbd/row5
-for filename in space.bmp
-do
-	copyFileToTmpDir "ui_resources/vkbd/row5/${filename}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}/ui_resources/vkbd/row5/${filename}" 0644
 done
 
 

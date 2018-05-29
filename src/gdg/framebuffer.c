@@ -58,9 +58,11 @@ void framebuffer_update_MZ700_screen_row ( void ) {
     Z80EX_BYTE *VRAM_CHAR = &g_memoryVRAM [ 0x1000 ];
     Z80EX_BYTE *VRAM_ATTR = &g_memoryVRAM [ 0x1800 ];
 
-    uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + ( beam_row * VIDEO_DISPLAY_WIDTH + VIDEO_BORDER_LEFT_WIDTH ) * sizeof ( uint8_t );
+    uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + ( beam_row * DISPLAY_VISIBLE_WIDTH + DISPLAY_BORDER_LEFT_WIDTH ) * sizeof ( uint8_t );
 
-    unsigned pos_Y = beam_row - VIDEO_BEAM_CANVAS_FIRST_ROW;
+    unsigned pos_Y = beam_row - DISPLAY_SCREEN_FIRST_ROW;
+
+    //    vram_addr = ( start_pixel / 2 / 8 ) + ( ( pos_Y / 8 ) * 40 );
 
     unsigned vram_addr = ( ( pos_Y / 8 ) * 40 );
 
@@ -69,8 +71,10 @@ void framebuffer_update_MZ700_screen_row ( void ) {
 
     unsigned pos_X;
 
-    for ( pos_X = 0; pos_X < VIDEO_CANVAS_WIDTH; pos_X += 16 ) {
 
+    for ( pos_X = 0; pos_X < DISPLAY_SCREEN_WIDTH; pos_X += 16 ) {
+
+        //        if ( ( pos_X & 0x0f ) == 0 ) {
         mz700_attr_fgc = ( *vram_attr >> 4 ) & 0x07;
         mz700_attr_bgc = *vram_attr & 0x07;
         mz700_attr_grp = ( ( *vram_attr << 4 ) & 0x0800 );
@@ -82,47 +86,56 @@ void framebuffer_update_MZ700_screen_row ( void ) {
 
         vram_data++;
         vram_attr++;
+        //        };
+
+        uint8_t igrb;
 
         /* 0. pixel */
-        p[0] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[1] = p[0];
+        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        *p++ = igrb;
+        *p++ = igrb;
         mz700_mask = mz700_mask >> 1;
 
         /* 1. pixel */
-        p[2] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[3] = p[2];
+        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        *p++ = igrb;
+        *p++ = igrb;
         mz700_mask = mz700_mask >> 1;
 
         /* 2. pixel */
-        p[4] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[5] = p[4];
+        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        *p++ = igrb;
+        *p++ = igrb;
         mz700_mask = mz700_mask >> 1;
 
         /* 3. pixel */
-        p[6] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[7] = p[6];
+        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        *p++ = igrb;
+        *p++ = igrb;
         mz700_mask = mz700_mask >> 1;
 
         /* 4. pixel */
-        p[8] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[9] = p[8];
+        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        *p++ = igrb;
+        *p++ = igrb;
         mz700_mask = mz700_mask >> 1;
 
         /* 5. pixel */
-        p[10] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[11] = p[10];
+        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        *p++ = igrb;
+        *p++ = igrb;
         mz700_mask = mz700_mask >> 1;
 
         /* 6. pixel */
-        p[12] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[13] = p[12];
+        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        *p++ = igrb;
+        *p++ = igrb;
         mz700_mask = mz700_mask >> 1;
 
         /* 7. pixel */
-        p[14] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[15] = p[14];
-
-        p += 16;
+        igrb = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
+        *p++ = igrb;
+        *p++ = igrb;
     };
 }
 
@@ -135,19 +148,19 @@ void framebuffer_update_MZ700_screen_row ( void ) {
 void framebuffer_border_row_fill ( void ) {
 
     /* Pokud uz je radek ve framebufferu hotov, tak jdeme pryc */
-    if ( g_gdg.last_updated_border_pixel == VIDEO_BEAM_DISPLAY_LAST_COLUMN + 1 ) return;
+    if ( g_gdg.last_updated_border_pixel == DISPLAY_VISIBLE_LAST_COLUMN + 1 ) return;
 
     unsigned beam_row = g_gdg.beam_row;
-    uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + beam_row * VIDEO_DISPLAY_WIDTH;
+    uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + beam_row * DISPLAY_VISIBLE_WIDTH;
 
-    if ( ( beam_row < VIDEO_BORDER_TOP_HEIGHT ) || ( beam_row > VIDEO_BORDER_TOP_HEIGHT + VIDEO_CANVAS_HEIGHT - 1 ) ) {
-        memset ( &p [ g_gdg.last_updated_border_pixel ], g_gdg.regBOR, VIDEO_DISPLAY_WIDTH - g_gdg.last_updated_border_pixel );
+    if ( ( beam_row < DISPLAY_BORDER_TOP_HEIGHT ) || ( beam_row > DISPLAY_BORDER_TOP_HEIGHT + DISPLAY_SCREEN_HEIGHT - 1 ) ) {
+        memset ( &p [ g_gdg.last_updated_border_pixel ], g_gdg.regBOR, DISPLAY_VISIBLE_WIDTH - g_gdg.last_updated_border_pixel );
     } else {
-        if ( g_gdg.last_updated_border_pixel < VIDEO_BORDER_LEFT_WIDTH ) {
-            memset ( &p [ g_gdg.last_updated_border_pixel ], g_gdg.regBOR, VIDEO_BORDER_LEFT_WIDTH - g_gdg.last_updated_border_pixel );
+        if ( g_gdg.last_updated_border_pixel < DISPLAY_BORDER_LEFT_WIDTH ) {
+            memset ( &p [ g_gdg.last_updated_border_pixel ], g_gdg.regBOR, DISPLAY_BORDER_LEFT_WIDTH - g_gdg.last_updated_border_pixel );
         };
-        unsigned pos_x = ( g_gdg.last_updated_border_pixel >= VIDEO_BORDER_LEFT_WIDTH + VIDEO_CANVAS_WIDTH ) ? g_gdg.last_updated_border_pixel : VIDEO_BORDER_LEFT_WIDTH + VIDEO_CANVAS_WIDTH;
-        memset ( &p [ pos_x ], g_gdg.regBOR, VIDEO_DISPLAY_WIDTH - pos_x );
+        unsigned pos_x = ( g_gdg.last_updated_border_pixel >= DISPLAY_BORDER_LEFT_WIDTH + DISPLAY_SCREEN_WIDTH ) ? g_gdg.last_updated_border_pixel : DISPLAY_BORDER_LEFT_WIDTH + DISPLAY_SCREEN_WIDTH;
+        memset ( &p [ pos_x ], g_gdg.regBOR, DISPLAY_VISIBLE_WIDTH - pos_x );
     };
 }
 
@@ -161,26 +174,26 @@ void framebuffer_border_changed ( void ) {
 
     g_gdg.border_changes = SCRSTS_THIS_IS_CHANGED;
 
-    unsigned beam_col = VIDEO_GET_SCREEN_COL ( g_gdg.total_elapsed.ticks );
-    unsigned beam_row = VIDEO_GET_SCREEN_ROW ( g_gdg.total_elapsed.ticks );
+    unsigned beam_col = BEAM_COL ( g_gdg.screen_ticks_elapsed );
+    unsigned beam_row = BEAM_ROW ( g_gdg.screen_ticks_elapsed );
 
 
     /* Osetreni situace, kdy OUT provedl zmenu na hranici mezi dvema snimky. */
-    if ( beam_row == VIDEO_SCREEN_HEIGHT ) {
+    if ( beam_row == BEAM_TOTAL_ROWS ) {
         beam_row = 0;
     };
 
     /* Pokud jsme na radku, ktery je mimo viditelnou oblast, tak neni potreba aktualizovat framebuffer. */
-    if ( beam_row > VIDEO_BEAM_DISPLAY_LAST_ROW ) return;
+    if ( beam_row > DISPLAY_VISIBLE_LAST_ROW ) return;
 
     /* Pokud je tento radek ve framebufferu uz hotov, tak muzeme jit pryc. */
-    if ( ( beam_row == g_gdg.beam_row ) && ( g_gdg.last_updated_border_pixel == VIDEO_BEAM_DISPLAY_LAST_COLUMN + 1 ) ) return;
+    if ( ( beam_row == g_gdg.beam_row ) && ( g_gdg.last_updated_border_pixel == DISPLAY_VISIBLE_LAST_COLUMN + 1 ) ) return;
 
     /* Pokud doslo ke zmene na zacatku framebufferu, tak neni co updatovat. */
     if ( beam_col == 0 ) return;
 
     /* Osetreni maximalni horni hranice paprsku na radku. */
-    beam_col = ( beam_col > VIDEO_BEAM_DISPLAY_LAST_COLUMN ) ? ( VIDEO_BEAM_DISPLAY_LAST_COLUMN + 1 ) : beam_col;
+    beam_col = ( beam_col > DISPLAY_VISIBLE_LAST_COLUMN ) ? ( DISPLAY_VISIBLE_LAST_COLUMN + 1 ) : beam_col;
 
     /* */
     if ( beam_row != g_gdg.beam_row ) {
@@ -192,10 +205,10 @@ void framebuffer_border_changed ( void ) {
      *  Do last_updated ulozime pozici od ktere bude platit novy stav.
      *  Pokud do last_updated ulozime DISPLAY_VISIBLE_LAST_COLUMN + 1, tak to znamena, ze uz je cely radek hotovy.
      */
-    uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + beam_row * VIDEO_DISPLAY_WIDTH;
+    uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + beam_row * DISPLAY_VISIBLE_WIDTH;
 
     /* Jsme v hornim, nebo dolnim borderu? */
-    if ( ( beam_row <= VIDEO_BEAM_BORDER_TOP_LAST_ROW ) || ( beam_row >= VIDEO_BEAM_BORDER_BOTOM_FIRST_ROW ) ) {
+    if ( ( beam_row <= DISPLAY_BORDER_TOP_LAST_ROW ) || ( beam_row >= DISPLAY_BORDER_BOTOM_FIRST_ROW ) ) {
         memset ( &p [ g_gdg.last_updated_border_pixel ], g_gdg.regBOR, beam_col - g_gdg.last_updated_border_pixel );
 
         g_gdg.last_updated_border_pixel = beam_col;
@@ -203,18 +216,18 @@ void framebuffer_border_changed ( void ) {
     } else {
 
         /* Je potreba aktualizovat levy border? */
-        if ( g_gdg.last_updated_border_pixel <= VIDEO_BEAM_BORDER_LEFT_LAST_COLUMN ) {
+        if ( g_gdg.last_updated_border_pixel <= DISPLAY_BORDER_LEFT_LAST_COLUMN ) {
 
-            unsigned last_pixel = ( beam_col < VIDEO_BEAM_BORDER_LEFT_LAST_COLUMN ) ? beam_col : VIDEO_BEAM_BORDER_LEFT_LAST_COLUMN + 1;
+            unsigned last_pixel = ( beam_col < DISPLAY_BORDER_LEFT_LAST_COLUMN ) ? beam_col : DISPLAY_BORDER_LEFT_LAST_COLUMN + 1;
             memset ( &p [ g_gdg.last_updated_border_pixel ], g_gdg.regBOR, last_pixel - g_gdg.last_updated_border_pixel );
 
             g_gdg.last_updated_border_pixel = last_pixel;
         };
 
         /* Je potreba aktualizovat pravy border? */
-        if ( beam_col >= VIDEO_BEAM_BORDER_RIGHT_FIRST_COLUMN ) {
+        if ( beam_col >= DISPLAY_BORDER_RIGHT_FIRST_COLUMN ) {
 
-            unsigned start_pixel = ( g_gdg.last_updated_border_pixel >= VIDEO_BEAM_BORDER_RIGHT_FIRST_COLUMN ) ? g_gdg.last_updated_border_pixel : VIDEO_BEAM_BORDER_RIGHT_FIRST_COLUMN;
+            unsigned start_pixel = ( g_gdg.last_updated_border_pixel >= DISPLAY_BORDER_RIGHT_FIRST_COLUMN ) ? g_gdg.last_updated_border_pixel : DISPLAY_BORDER_RIGHT_FIRST_COLUMN;
             memset ( &p [ start_pixel ], g_gdg.regBOR, beam_col - start_pixel );
 
             g_gdg.last_updated_border_pixel = beam_col;
@@ -225,9 +238,9 @@ void framebuffer_border_changed ( void ) {
 
 void framebuffer_MZ800_screen_changed ( void ) {
     g_gdg.screen_changes = SCRSTS_THIS_IS_CHANGED;
-    unsigned column = VIDEO_GET_SCREEN_COL ( g_gdg.total_elapsed.ticks );
-    if ( ( column < VIDEO_BEAM_CANVAS_FIRST_COLUMN + 3 ) || ( column > VIDEO_BEAM_CANVAS_LAST_COLUMN ) || ( g_gdg.beam_row < VIDEO_BEAM_CANVAS_FIRST_ROW ) || ( g_gdg.beam_row > VIDEO_BEAM_CANVAS_LAST_ROW ) ) return;
-    framebuffer_MZ800_screen_row_fill ( column - VIDEO_BEAM_CANVAS_FIRST_COLUMN );
+    unsigned column = BEAM_COL ( g_gdg.screen_ticks_elapsed );
+    if ( ( column < DISPLAY_SCREEN_FIRST_COLUMN + 3 ) || ( column > DISPLAY_SCREEN_LAST_COLUMN ) || ( g_gdg.beam_row < DISPLAY_SCREEN_FIRST_ROW ) || ( g_gdg.beam_row > DISPLAY_SCREEN_LAST_ROW ) ) return;
+    framebuffer_MZ800_screen_row_fill ( column - DISPLAY_SCREEN_FIRST_COLUMN );
 }
 
 
@@ -242,10 +255,10 @@ void framebuffer_MZ800_screen_row_fill ( unsigned last_pixel ) {
     static unsigned vram_data4 = 0;
 
     unsigned beam_row = g_gdg.beam_row;
-    unsigned pos_Y = beam_row - VIDEO_BEAM_CANVAS_FIRST_ROW;
+    unsigned pos_Y = beam_row - DISPLAY_SCREEN_FIRST_ROW;
     unsigned pos_X = g_gdg.screen_need_update_from;
 
-    uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + ( ( beam_row * VIDEO_DISPLAY_WIDTH ) + VIDEO_BORDER_LEFT_WIDTH + pos_X ) * sizeof ( uint8_t );
+    uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + ( ( beam_row * DISPLAY_VISIBLE_WIDTH ) + DISPLAY_BORDER_LEFT_WIDTH + pos_X ) * sizeof ( uint8_t );
 
     unsigned vram_addr;
     vram_addr = ( pos_X / 16 ) + ( pos_Y * 40 );

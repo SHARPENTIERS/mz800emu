@@ -31,7 +31,7 @@
 
 #include "rom.h"
 #include "memory.h"
-#include "cmt/cmthack.h"
+#include "cmt/cmt_hack.h"
 
 #include "cfgmain.h"
 

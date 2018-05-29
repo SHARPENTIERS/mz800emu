@@ -23,12 +23,10 @@
  * ---------------------------------------------------------------------------
  */
 
-#include "mz800emu_cfg.h"
-
 #include <stdio.h>
 #include <string.h>
 
-#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+#ifdef MZ800_DEBUGGER
 
 
 #include "debugger.h"
@@ -42,7 +40,6 @@
 #include "cfgmain.h"
 
 st_DEBUGGER g_debugger;
-st_DEBUGGER_HISTORY g_debugger_history;
 
 
 void debugger_step_call ( unsigned value ) {
@@ -76,36 +73,28 @@ void debugger_exit ( void ) {
 }
 
 
-void debugger_reset_history ( void ) {
-    memset ( &g_debugger_history, 0x00, sizeof (g_debugger_history ) );
-}
-
-
 void debugger_init ( void ) {
     g_debugger.active = 0;
     g_debugger.memop_call = 0;
     debugger_step_call ( 0 );
-    g_debugger.animated_updates = DEBUGGER_ANIMATED_UPDATES_DISABLED;
+    g_debugger.animated_updates = 0;
     breakpoints_init ( );
 
     CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "DEBUGGER" );
 
     CFGELM *elm;
     elm = cfgmodule_register_new_element ( cmod, "animated_updates", CFGENTYPE_KEYWORD, 0,
-                                           0, "DISABLED",
-                                           1, "ENABLED",
-                                           -1 );
+            0, "DISABLED",
+            1, "ENABLED",
+            -1 );
     cfgelement_set_handlers ( elm, (void*) &g_debugger.animated_updates, (void*) &g_debugger.animated_updates );
 
     elm = cfgmodule_register_new_element ( cmod, "auto_save_breakpoints", CFGENTYPE_BOOL, 1 );
     cfgelement_set_handlers ( elm, (void*) &g_debugger.auto_save_breakpoints, (void*) &g_debugger.auto_save_breakpoints );
 
-    elm = cfgmodule_register_new_element ( cmod, "focus_to_addr_history", CFGENTYPE_TEXT, "0x0000" );
-    cfgelement_set_propagate_cb ( elm, ui_debugger_focus_to_addr_history_propagatecfg_cb, NULL );
-    cfgelement_set_save_cb ( elm, ui_debugger_focus_to_addr_history_save_cb, NULL );
-
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );
+
 }
 
 
@@ -146,22 +135,15 @@ void debugger_animation ( void ) {
 
 Z80EX_BYTE debugger_dasm_read_cb ( Z80EX_WORD addr, void *user_data ) {
     g_debugger.memop_call = 1;
-    Z80EX_BYTE retval = memory_read_byte ( addr );
+    Z80EX_BYTE retval = memory_read_cb ( g_mz800.cpu, addr, 0, NULL );
     g_debugger.memop_call = 0;
-    return retval;
-}
-
-
-Z80EX_BYTE debugger_dasm_history_read_cb ( Z80EX_WORD addr, void *user_data ) {
-    uint8_t *position = user_data;
-    uint8_t retval = g_debugger_history.row[*position].byte[addr - g_debugger_history.row[*position].addr];
     return retval;
 }
 
 
 void debugger_memory_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
     g_debugger.memop_call = 1;
-    memory_write_byte ( addr, value );
+    memory_write_cb ( g_mz800.cpu, addr, value, NULL );
     g_debugger.memop_call = 0;
 }
 

@@ -1,8 +1,8 @@
 /* 
- * File:   ui_memory_driver.h
+ * File:   cmt_hack.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 20. února 2017, 17:09
+ * Created on 2. července 2015, 20:50
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -23,25 +23,39 @@
  * ---------------------------------------------------------------------------
  */
 
+#ifndef CMT_HACK_H
+#define	CMT_HACK_H
 
-#ifndef UI_MEMORY_DRIVER_H
-#define UI_MEMORY_DRIVER_H
-
-#ifdef __cplusplus
+#ifdef	__cplusplus
 extern "C" {
 #endif
 
+#include <stdio.h>
 
-#include "libs/generic_driver/generic_driver.h"
+#define CMTHACK_FILENAME_LENGTH 1024
 
-    extern st_DRIVER g_ui_memory_driver_static;
-    extern st_DRIVER g_ui_memory_driver_realloc;
+    typedef struct st_CMTHACK {
+        FILE *fp;
+        unsigned load_patch_installed;
+        char filename [ CMTHACK_FILENAME_LENGTH ];
+    } st_CMTHACK;
 
-    extern void ui_memory_driver_init ( void );
+    extern st_CMTHACK g_cmthack;
 
-#ifdef __cplusplus
+    extern void cmthack_reinstall_rom_patch ( void );
+    extern void cmthack_load_rom_patch ( unsigned enabled );
+
+    extern void cmthack_reset ( void );
+    extern void cmthack_init ( void );
+    extern void cmthack_exit ( void );
+
+    extern void cmthack_load_header ( void );
+    extern void cmthack_load_body ( void );
+
+
+#ifdef	__cplusplus
 }
 #endif
 
-#endif /* UI_MEMORY_DRIVER_H */
+#endif	/* CMT_HACK_H */
 

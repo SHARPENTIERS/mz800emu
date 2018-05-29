@@ -1,19 +1,4 @@
 
-
-	- added new synchronisation features into emulation of PSG - SN76489AN
-	- many changes in interrupts and insideop synchronisation
-	- completly new memory module - tunning
-	- completly rewrited pioz80 emulation - new features
-	- bugfix in VBLN synchronisation (Interkarate+ CMT loader is now OK)
-
-	- a little bugfixes in WD279x
-	- performance tuning in framebuffer, HW scroll, keybord scan, audio scan
-	- little bugfix: CMT timing is now like service manual
-	- changed CLK1M1 (CTC0 source clock) - improved overall performance
-	- a little bugfix in file tools
-	- added mode switch (It can be changed in config file)
-	- little changes in PEZIK ramdisk
-
 2016-03-01
 
 	Released version 1.0.3

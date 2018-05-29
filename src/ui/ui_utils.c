@@ -25,10 +25,7 @@
 
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <string.h>
-#include <errno.h>
 
 #include <gtk/gtk.h>
 #include <glib.h>
@@ -37,101 +34,22 @@
 
 #include "ui_utils.h"
 
-#include "src/main.h"
-
 GError *g_ui_utils_error;
 
 
-/*
- * 
- * Obecne 
- * 
- */
-
-
-const gchar* ui_utils_get_error_message ( void ) {
-    if ( NULL == g_ui_utils_error ) {
-        return "(null error message)";
-    }
-    return g_ui_utils_error->message;
-}
-
-
-char* ui_utils_strerror ( void ) {
-    return strerror ( errno );
-}
-
-
-void ui_utils_mem_free ( void *ptr ) {
-    g_free ( ptr );
-}
-
-
-void* ui_utils_mem_alloc_raw ( guint32 size, int initialize0, const char *func, int line ) {
-    if ( size == 0 ) return NULL;
-    void *ptr;
-    if ( !initialize0 ) {
-        ptr = g_malloc ( size );
-    } else {
-        ptr = g_malloc0 ( size );
-    };
-    if ( ptr == NULL ) {
-        fprintf ( stderr, "%s():%d - Could not allocate %u bytes in memory: %s\n", func, line, size, ui_utils_strerror ( ) );
-        main_app_quit ( EXIT_FAILURE );
-    };
-    return ptr;
-}
-
-
-void* ui_utils_mem_realloc_raw ( void *ptr, guint32 size, const char *func, int line ) {
-    if ( ( ptr == NULL ) && ( size == 0 ) ) return NULL;
-    if ( size == 0 ) {
-        ui_utils_mem_free ( ptr );
-        return NULL;
-    };
-    void *newptr = g_realloc ( ptr, size );
-    if ( newptr == NULL ) {
-        fprintf ( stderr, "%s():%d - Could not reallocate %u bytes in memory: %s\n", func, line, size, ui_utils_strerror ( ) );
-        main_app_quit ( EXIT_FAILURE );
-    };
-    return newptr;
-}
-
-
-/**
- * basename() z <libgen.h> nefunguje v mingw32
- */
-char* ui_utils_basename ( const char *file_name ) {
-    return g_path_get_basename ( file_name );
-}
-
-
-/*
- * 
- * Souborove funkce
- * 
- * 
- */
-
-
-FILE* ui_utils_file_open ( const char *filename_in_utf8, const char *mode ) {
+FILE* ui_utils_fopen ( const char *filename_in_utf8, const char *mode ) {
     char *filename_in_locale;
     FILE *fp;
 
     filename_in_locale = g_locale_from_utf8 ( filename_in_utf8, -1, NULL, NULL, NULL );
     fp = fopen ( filename_in_locale, mode );
-    ui_utils_mem_free ( filename_in_locale );
+    g_free ( filename_in_locale );
     return fp;
 }
 
 
-void ui_utils_file_close ( FILE *fh ) {
-    fclose ( fh );
-}
-
-
-unsigned int ui_utils_file_read ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh ) {
-#ifdef WINDOWS
+unsigned int ui_utils_fread ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh ) {
+#ifdef WIN32
     /*  stdio bug projevujici se pri "RW" mode :( */
     fseek ( fh, ftell ( fh ), SEEK_SET );
 #endif
@@ -139,8 +57,8 @@ unsigned int ui_utils_file_read ( void *buffer, unsigned int size, unsigned int 
 }
 
 
-unsigned int ui_utils_file_write ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh ) {
-#ifdef WINDOWS
+unsigned int ui_utils_fwrite ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh ) {
+#ifdef WIN32
     /*  stdio bug projevujici se pri "RW" mode :( */
     fseek ( fh, ftell ( fh ), SEEK_SET );
 #endif
@@ -148,36 +66,14 @@ unsigned int ui_utils_file_write ( void *buffer, unsigned int size, unsigned int
 }
 
 
-int ui_utils_file_access ( const char *filename_in_utf8, int type ) {
+int ui_utils_access ( const char *filename_in_utf8, int type ) {
     char *filename_in_locale;
     filename_in_locale = g_locale_from_utf8 ( filename_in_utf8, -1, NULL, NULL, NULL );
     int retval = access ( filename_in_locale, type );
-    ui_utils_mem_free ( filename_in_locale );
+    g_free ( filename_in_locale );
     return retval;
 }
 
-
-int ui_utils_file_rename ( char *path, char *oldname, char *newname ) {
-
-    gchar* filepath1 = g_build_filename ( path, oldname, (gchar*) NULL );
-    gchar* filepath2 = g_build_filename ( path, newname, (gchar*) NULL );
-
-    int retval = g_rename ( filepath1, filepath2 );
-
-    ui_utils_mem_free ( (void*) filepath1 );
-    ui_utils_mem_free ( (void*) filepath2 );
-
-    return retval;
-}
-
-
-/*
- * 
- * 
- * Prace s adresari
- * 
- * 
- */
 
 UI_UTILS_DIR_HANDLE* ui_utils_dir_open ( char *path ) {
     return g_dir_open ( path, 0, &g_ui_utils_error );
@@ -204,10 +100,33 @@ const gchar* ui_utils_ditem_get_filepath ( const char *path, UI_UTILS_DIR_ITEM *
 }
 
 
+void ui_utils_free ( void *ptr ) {
+    g_free ( ptr );
+}
+
+
 unsigned ui_utils_ditem_is_file ( char *path, UI_UTILS_DIR_ITEM *ditem ) {
     const gchar* filepath = ui_utils_ditem_get_filepath ( path, ditem );
     unsigned retval = g_file_test ( filepath, G_FILE_TEST_IS_REGULAR );
-    ui_utils_mem_free ( (void*) filepath );
+    ui_utils_free ( (void*) filepath );
     return retval;
 }
 
+
+const gchar* ui_utils_get_error_message ( void ) {
+    return g_ui_utils_error->message;
+}
+
+
+int ui_utils_rename_file ( char *path, char *oldname, char *newname ) {
+
+    gchar* filepath1 = g_build_filename ( path, oldname, (gchar*) NULL );
+    gchar* filepath2 = g_build_filename ( path, newname, (gchar*) NULL );
+
+    int retval = g_rename ( filepath1, filepath2 );
+
+    ui_utils_free ( (void*) filepath1 );
+    ui_utils_free ( (void*) filepath2 );
+
+    return retval;
+}

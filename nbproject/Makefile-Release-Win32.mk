@@ -21,7 +21,7 @@ FC=i686-w64-mingw32-gfortran
 AS=i686-w64-mingw32-as
 
 # Macros
-CND_PLATFORM=i686-w64-mingw32-Linux
+CND_PLATFORM=i686-w64-mingw32-Linux-x86
 CND_DLIB_EXT=so
 CND_CONF=Release-Win32
 CND_DISTDIR=dist
@@ -40,17 +40,9 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/cfgfile/cfgelement.o \
 	${OBJECTDIR}/src/cfgfile/cfgmodule.o \
 	${OBJECTDIR}/src/cfgfile/cfgroot.o \
-	${OBJECTDIR}/src/cfgfile/cfgtools.o \
 	${OBJECTDIR}/src/cfgmain.o \
 	${OBJECTDIR}/src/cmt/cmt.o \
-	${OBJECTDIR}/src/cmt/cmt_mzf.o \
-	${OBJECTDIR}/src/cmt/cmt_mzftape.o \
-	${OBJECTDIR}/src/cmt/cmt_tap.o \
-	${OBJECTDIR}/src/cmt/cmt_wav.o \
-	${OBJECTDIR}/src/cmt/cmtext.o \
-	${OBJECTDIR}/src/cmt/cmtext_block.o \
-	${OBJECTDIR}/src/cmt/cmtext_container.o \
-	${OBJECTDIR}/src/cmt/cmthack.o \
+	${OBJECTDIR}/src/cmt/cmt_hack.o \
 	${OBJECTDIR}/src/ctc8253/ctc8253.o \
 	${OBJECTDIR}/src/debugger/breakpoints.o \
 	${OBJECTDIR}/src/debugger/debugger.o \
@@ -65,24 +57,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/gdg/vramctrl.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_audio.o \
-	${OBJECTDIR}/src/iface_sdl/iface_sdl_joy.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_keyboard.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_log.o \
-	${OBJECTDIR}/src/joy/joy.o \
-	${OBJECTDIR}/src/libs/cmt_stream/cmt_bitstream.o \
-	${OBJECTDIR}/src/libs/cmt_stream/cmt_stream.o \
-	${OBJECTDIR}/src/libs/cmt_stream/cmt_vstream.o \
-	${OBJECTDIR}/src/libs/dsk/dsk.o \
-	${OBJECTDIR}/src/libs/dsk/dsk_tools.o \
-	${OBJECTDIR}/src/libs/endianity/endianity.o \
-	${OBJECTDIR}/src/libs/generic_driver/generic_driver.o \
-	${OBJECTDIR}/src/libs/mzf/mzf.o \
-	${OBJECTDIR}/src/libs/mzf/mzf_tools.o \
-	${OBJECTDIR}/src/libs/mztape/cmtspeed.o \
-	${OBJECTDIR}/src/libs/mztape/mztape.o \
-	${OBJECTDIR}/src/libs/qd/qd.o \
-	${OBJECTDIR}/src/libs/wav/wav.o \
-	${OBJECTDIR}/src/libs/zxtape/zxtape.o \
 	${OBJECTDIR}/src/main.o \
 	${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.o \
 	${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.o \
@@ -121,30 +97,21 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger_callbacks.o \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger_iasm.o \
 	${OBJECTDIR}/src/ui/debugger/ui_memdump.o \
-	${OBJECTDIR}/src/ui/dsk_tool/ui_dsk_tool.o \
-	${OBJECTDIR}/src/ui/generic_driver/ui_file_driver.o \
-	${OBJECTDIR}/src/ui/generic_driver/ui_memory_driver.o \
-	${OBJECTDIR}/src/ui/tools/ui_tool_pixbuf.o \
 	${OBJECTDIR}/src/ui/ui_cmt.o \
 	${OBJECTDIR}/src/ui/ui_display.o \
-	${OBJECTDIR}/src/ui/ui_fcbutton.o \
 	${OBJECTDIR}/src/ui/ui_fdc.o \
-	${OBJECTDIR}/src/ui/ui_hexeditable.o \
-	${OBJECTDIR}/src/ui/ui_joy.o \
 	${OBJECTDIR}/src/ui/ui_main.o \
 	${OBJECTDIR}/src/ui/ui_qdisk.o \
 	${OBJECTDIR}/src/ui/ui_ramdisk.o \
 	${OBJECTDIR}/src/ui/ui_rom.o \
 	${OBJECTDIR}/src/ui/ui_utils.o \
-	${OBJECTDIR}/src/ui/vkbd/ui_vkbd.o \
-	${OBJECTDIR}/src/ui/vkbd/ui_vkbd_linux_x11.o \
-	${OBJECTDIR}/src/ui/vkbd/ui_vkbd_windows.o \
 	${OBJECTDIR}/src/z80ex/z80ex.o \
 	${OBJECTDIR}/src/z80ex/z80ex_dasm.o
 
 
 # C Compiler Flags
-CFLAGS=-pedantic -pipe -Wl,--export-dynamic ${PROJECT_CFLAGS}
+CFLAGS=-pedantic -pipe -Wl,--export-dynamic `${MINGW32_SDL2_CONFIG} --cflags` `${MINGW32_PKGCONFIG} --cflags ${PKG_OBJECTS}`
+ 
 
 # CC Compiler Flags
 CCFLAGS=
@@ -161,543 +128,373 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mz800emu-x86.exe
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mz800emu.exe
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mz800emu-x86.exe: src/windows_icon/app.o
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mz800emu.exe: src/windows_icon/app.o
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mz800emu-x86.exe: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mz800emu.exe: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	i686-w64-mingw32-gcc -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mz800emu-x86.exe ${OBJECTFILES} ${LDLIBSOPTIONS} ${PROJECT_LIBS} ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/src/windows_icon/app.o
+	i686-w64-mingw32-gcc -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mz800emu.exe ${OBJECTFILES} ${LDLIBSOPTIONS} -lm ${MINGW32_SDL2_LIBS} `${MINGW32_PKGCONFIG} --libs ${PKG_OBJECTS}` ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/src/windows_icon/app.o
 
 ${OBJECTDIR}/src/audio.o: src/audio.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/audio.o src/audio.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/audio.o src/audio.c
 
 ${OBJECTDIR}/src/build_time.o: src/build_time.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/build_time.o src/build_time.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/build_time.o src/build_time.c
 
 ${OBJECTDIR}/src/cfgfile/cfgelement.o: src/cfgfile/cfgelement.c 
 	${MKDIR} -p ${OBJECTDIR}/src/cfgfile
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cfgfile/cfgelement.o src/cfgfile/cfgelement.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cfgfile/cfgelement.o src/cfgfile/cfgelement.c
 
 ${OBJECTDIR}/src/cfgfile/cfgmodule.o: src/cfgfile/cfgmodule.c 
 	${MKDIR} -p ${OBJECTDIR}/src/cfgfile
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cfgfile/cfgmodule.o src/cfgfile/cfgmodule.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cfgfile/cfgmodule.o src/cfgfile/cfgmodule.c
 
 ${OBJECTDIR}/src/cfgfile/cfgroot.o: src/cfgfile/cfgroot.c 
 	${MKDIR} -p ${OBJECTDIR}/src/cfgfile
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cfgfile/cfgroot.o src/cfgfile/cfgroot.c
-
-${OBJECTDIR}/src/cfgfile/cfgtools.o: src/cfgfile/cfgtools.c 
-	${MKDIR} -p ${OBJECTDIR}/src/cfgfile
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cfgfile/cfgtools.o src/cfgfile/cfgtools.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cfgfile/cfgroot.o src/cfgfile/cfgroot.c
 
 ${OBJECTDIR}/src/cfgmain.o: src/cfgmain.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cfgmain.o src/cfgmain.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cfgmain.o src/cfgmain.c
 
 ${OBJECTDIR}/src/cmt/cmt.o: src/cmt/cmt.c 
 	${MKDIR} -p ${OBJECTDIR}/src/cmt
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt.o src/cmt/cmt.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt.o src/cmt/cmt.c
 
-${OBJECTDIR}/src/cmt/cmt_mzf.o: src/cmt/cmt_mzf.c 
+${OBJECTDIR}/src/cmt/cmt_hack.o: src/cmt/cmt_hack.c 
 	${MKDIR} -p ${OBJECTDIR}/src/cmt
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_mzf.o src/cmt/cmt_mzf.c
-
-${OBJECTDIR}/src/cmt/cmt_mzftape.o: src/cmt/cmt_mzftape.c 
-	${MKDIR} -p ${OBJECTDIR}/src/cmt
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_mzftape.o src/cmt/cmt_mzftape.c
-
-${OBJECTDIR}/src/cmt/cmt_tap.o: src/cmt/cmt_tap.c 
-	${MKDIR} -p ${OBJECTDIR}/src/cmt
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_tap.o src/cmt/cmt_tap.c
-
-${OBJECTDIR}/src/cmt/cmt_wav.o: src/cmt/cmt_wav.c 
-	${MKDIR} -p ${OBJECTDIR}/src/cmt
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_wav.o src/cmt/cmt_wav.c
-
-${OBJECTDIR}/src/cmt/cmtext.o: src/cmt/cmtext.c 
-	${MKDIR} -p ${OBJECTDIR}/src/cmt
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmtext.o src/cmt/cmtext.c
-
-${OBJECTDIR}/src/cmt/cmtext_block.o: src/cmt/cmtext_block.c 
-	${MKDIR} -p ${OBJECTDIR}/src/cmt
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmtext_block.o src/cmt/cmtext_block.c
-
-${OBJECTDIR}/src/cmt/cmtext_container.o: src/cmt/cmtext_container.c 
-	${MKDIR} -p ${OBJECTDIR}/src/cmt
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmtext_container.o src/cmt/cmtext_container.c
-
-${OBJECTDIR}/src/cmt/cmthack.o: src/cmt/cmthack.c 
-	${MKDIR} -p ${OBJECTDIR}/src/cmt
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmthack.o src/cmt/cmthack.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_hack.o src/cmt/cmt_hack.c
 
 ${OBJECTDIR}/src/ctc8253/ctc8253.o: src/ctc8253/ctc8253.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ctc8253
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ctc8253/ctc8253.o src/ctc8253/ctc8253.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ctc8253/ctc8253.o src/ctc8253/ctc8253.c
 
 ${OBJECTDIR}/src/debugger/breakpoints.o: src/debugger/breakpoints.c 
 	${MKDIR} -p ${OBJECTDIR}/src/debugger
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/debugger/breakpoints.o src/debugger/breakpoints.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/debugger/breakpoints.o src/debugger/breakpoints.c
 
 ${OBJECTDIR}/src/debugger/debugger.o: src/debugger/debugger.c 
 	${MKDIR} -p ${OBJECTDIR}/src/debugger
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/debugger/debugger.o src/debugger/debugger.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/debugger/debugger.o src/debugger/debugger.c
 
 ${OBJECTDIR}/src/debugger/inline_asm.o: src/debugger/inline_asm.c 
 	${MKDIR} -p ${OBJECTDIR}/src/debugger
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/debugger/inline_asm.o src/debugger/inline_asm.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/debugger/inline_asm.o src/debugger/inline_asm.c
 
 ${OBJECTDIR}/src/display.o: src/display.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/display.o src/display.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/display.o src/display.c
 
 ${OBJECTDIR}/src/fdc/fdc.o: src/fdc/fdc.c 
 	${MKDIR} -p ${OBJECTDIR}/src/fdc
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/fdc/fdc.o src/fdc/fdc.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/fdc/fdc.o src/fdc/fdc.c
 
 ${OBJECTDIR}/src/fdc/wd279x.o: src/fdc/wd279x.c 
 	${MKDIR} -p ${OBJECTDIR}/src/fdc
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/fdc/wd279x.o src/fdc/wd279x.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/fdc/wd279x.o src/fdc/wd279x.c
 
 ${OBJECTDIR}/src/fs_layer.o: src/fs_layer.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/fs_layer.o src/fs_layer.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/fs_layer.o src/fs_layer.c
 
 ${OBJECTDIR}/src/gdg/framebuffer.o: src/gdg/framebuffer.c 
 	${MKDIR} -p ${OBJECTDIR}/src/gdg
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/gdg/framebuffer.o src/gdg/framebuffer.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/gdg/framebuffer.o src/gdg/framebuffer.c
 
 ${OBJECTDIR}/src/gdg/gdg.o: src/gdg/gdg.c 
 	${MKDIR} -p ${OBJECTDIR}/src/gdg
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/gdg/gdg.o src/gdg/gdg.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/gdg/gdg.o src/gdg/gdg.c
 
 ${OBJECTDIR}/src/gdg/hwscroll.o: src/gdg/hwscroll.c 
 	${MKDIR} -p ${OBJECTDIR}/src/gdg
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/gdg/hwscroll.o src/gdg/hwscroll.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/gdg/hwscroll.o src/gdg/hwscroll.c
 
 ${OBJECTDIR}/src/gdg/vramctrl.o: src/gdg/vramctrl.c 
 	${MKDIR} -p ${OBJECTDIR}/src/gdg
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/gdg/vramctrl.o src/gdg/vramctrl.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/gdg/vramctrl.o src/gdg/vramctrl.c
 
 ${OBJECTDIR}/src/iface_sdl/iface_sdl.o: src/iface_sdl/iface_sdl.c 
 	${MKDIR} -p ${OBJECTDIR}/src/iface_sdl
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/iface_sdl/iface_sdl.o src/iface_sdl/iface_sdl.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/iface_sdl/iface_sdl.o src/iface_sdl/iface_sdl.c
 
 ${OBJECTDIR}/src/iface_sdl/iface_sdl_audio.o: src/iface_sdl/iface_sdl_audio.c 
 	${MKDIR} -p ${OBJECTDIR}/src/iface_sdl
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/iface_sdl/iface_sdl_audio.o src/iface_sdl/iface_sdl_audio.c
-
-${OBJECTDIR}/src/iface_sdl/iface_sdl_joy.o: src/iface_sdl/iface_sdl_joy.c 
-	${MKDIR} -p ${OBJECTDIR}/src/iface_sdl
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/iface_sdl/iface_sdl_joy.o src/iface_sdl/iface_sdl_joy.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/iface_sdl/iface_sdl_audio.o src/iface_sdl/iface_sdl_audio.c
 
 ${OBJECTDIR}/src/iface_sdl/iface_sdl_keyboard.o: src/iface_sdl/iface_sdl_keyboard.c 
 	${MKDIR} -p ${OBJECTDIR}/src/iface_sdl
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/iface_sdl/iface_sdl_keyboard.o src/iface_sdl/iface_sdl_keyboard.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/iface_sdl/iface_sdl_keyboard.o src/iface_sdl/iface_sdl_keyboard.c
 
 ${OBJECTDIR}/src/iface_sdl/iface_sdl_log.o: src/iface_sdl/iface_sdl_log.c 
 	${MKDIR} -p ${OBJECTDIR}/src/iface_sdl
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/iface_sdl/iface_sdl_log.o src/iface_sdl/iface_sdl_log.c
-
-${OBJECTDIR}/src/joy/joy.o: src/joy/joy.c 
-	${MKDIR} -p ${OBJECTDIR}/src/joy
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/joy/joy.o src/joy/joy.c
-
-${OBJECTDIR}/src/libs/cmt_stream/cmt_bitstream.o: src/libs/cmt_stream/cmt_bitstream.c 
-	${MKDIR} -p ${OBJECTDIR}/src/libs/cmt_stream
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/cmt_stream/cmt_bitstream.o src/libs/cmt_stream/cmt_bitstream.c
-
-${OBJECTDIR}/src/libs/cmt_stream/cmt_stream.o: src/libs/cmt_stream/cmt_stream.c 
-	${MKDIR} -p ${OBJECTDIR}/src/libs/cmt_stream
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/cmt_stream/cmt_stream.o src/libs/cmt_stream/cmt_stream.c
-
-${OBJECTDIR}/src/libs/cmt_stream/cmt_vstream.o: src/libs/cmt_stream/cmt_vstream.c 
-	${MKDIR} -p ${OBJECTDIR}/src/libs/cmt_stream
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/cmt_stream/cmt_vstream.o src/libs/cmt_stream/cmt_vstream.c
-
-${OBJECTDIR}/src/libs/dsk/dsk.o: src/libs/dsk/dsk.c 
-	${MKDIR} -p ${OBJECTDIR}/src/libs/dsk
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/dsk/dsk.o src/libs/dsk/dsk.c
-
-${OBJECTDIR}/src/libs/dsk/dsk_tools.o: src/libs/dsk/dsk_tools.c 
-	${MKDIR} -p ${OBJECTDIR}/src/libs/dsk
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/dsk/dsk_tools.o src/libs/dsk/dsk_tools.c
-
-${OBJECTDIR}/src/libs/endianity/endianity.o: src/libs/endianity/endianity.c 
-	${MKDIR} -p ${OBJECTDIR}/src/libs/endianity
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/endianity/endianity.o src/libs/endianity/endianity.c
-
-${OBJECTDIR}/src/libs/generic_driver/generic_driver.o: src/libs/generic_driver/generic_driver.c 
-	${MKDIR} -p ${OBJECTDIR}/src/libs/generic_driver
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/generic_driver/generic_driver.o src/libs/generic_driver/generic_driver.c
-
-${OBJECTDIR}/src/libs/mzf/mzf.o: src/libs/mzf/mzf.c 
-	${MKDIR} -p ${OBJECTDIR}/src/libs/mzf
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/mzf/mzf.o src/libs/mzf/mzf.c
-
-${OBJECTDIR}/src/libs/mzf/mzf_tools.o: src/libs/mzf/mzf_tools.c 
-	${MKDIR} -p ${OBJECTDIR}/src/libs/mzf
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/mzf/mzf_tools.o src/libs/mzf/mzf_tools.c
-
-${OBJECTDIR}/src/libs/mztape/cmtspeed.o: src/libs/mztape/cmtspeed.c 
-	${MKDIR} -p ${OBJECTDIR}/src/libs/mztape
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/mztape/cmtspeed.o src/libs/mztape/cmtspeed.c
-
-${OBJECTDIR}/src/libs/mztape/mztape.o: src/libs/mztape/mztape.c 
-	${MKDIR} -p ${OBJECTDIR}/src/libs/mztape
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/mztape/mztape.o src/libs/mztape/mztape.c
-
-${OBJECTDIR}/src/libs/qd/qd.o: src/libs/qd/qd.c 
-	${MKDIR} -p ${OBJECTDIR}/src/libs/qd
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/qd/qd.o src/libs/qd/qd.c
-
-${OBJECTDIR}/src/libs/wav/wav.o: src/libs/wav/wav.c 
-	${MKDIR} -p ${OBJECTDIR}/src/libs/wav
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/wav/wav.o src/libs/wav/wav.c
-
-${OBJECTDIR}/src/libs/zxtape/zxtape.o: src/libs/zxtape/zxtape.c 
-	${MKDIR} -p ${OBJECTDIR}/src/libs/zxtape
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/zxtape/zxtape.o src/libs/zxtape/zxtape.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/iface_sdl/iface_sdl_log.o src/iface_sdl/iface_sdl_log.c
 
 ${OBJECTDIR}/src/main.o: src/main.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/main.o src/main.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/main.o src/main.c
 
 ${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.o: src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.3
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.o src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.o src/memory/ROM/JSS-1.3/ROM_JSS103_CGROM.c
 
 ${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.o: src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.3
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.o src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.o src/memory/ROM/JSS-1.3/ROM_JSS103_MZ700.c
 
 ${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.o: src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.3
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.o src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.o src/memory/ROM/JSS-1.3/ROM_JSS103_MZ800.c
 
 ${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.o: src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.5C
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.o src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.o src/memory/ROM/JSS-1.5C/ROM_JSS105C_CGROM.c
 
 ${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.o: src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.5C
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.o src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.o src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ700.c
 
 ${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.o: src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.5C
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.o src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.o src/memory/ROM/JSS-1.5C/ROM_JSS105C_MZ800.c
 
 ${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.o: src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.6A
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.o src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.o src/memory/ROM/JSS-1.6A/ROM_JSS106A_CGROM.c
 
 ${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.o: src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.6A
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.o src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.o src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ700.c
 
 ${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.o: src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.6A
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.o src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.o src/memory/ROM/JSS-1.6A/ROM_JSS106A_MZ800.c
 
 ${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.o: src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.8C
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.o src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.o src/memory/ROM/JSS-1.8C/ROM_JSS108C_CGROM.c
 
 ${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.o: src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.8C
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.o src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.o src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ700.c
 
 ${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.o: src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/JSS-1.8C
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.o src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.o src/memory/ROM/JSS-1.8C/ROM_JSS108C_MZ800.c
 
 ${OBJECTDIR}/src/memory/ROM/ROM_CGROM.o: src/memory/ROM/ROM_CGROM.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/ROM_CGROM.o src/memory/ROM/ROM_CGROM.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/ROM_CGROM.o src/memory/ROM/ROM_CGROM.c
 
 ${OBJECTDIR}/src/memory/ROM/ROM_MZ700.o: src/memory/ROM/ROM_MZ700.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/ROM_MZ700.o src/memory/ROM/ROM_MZ700.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/ROM_MZ700.o src/memory/ROM/ROM_MZ700.c
 
 ${OBJECTDIR}/src/memory/ROM/ROM_MZ800.o: src/memory/ROM/ROM_MZ800.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/ROM_MZ800.o src/memory/ROM/ROM_MZ800.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/ROM_MZ800.o src/memory/ROM/ROM_MZ800.c
 
 ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_MZ700.o: src/memory/ROM/WILLY/ROM_WILLY_MZ700.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/WILLY
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_MZ700.o src/memory/ROM/WILLY/ROM_WILLY_MZ700.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_MZ700.o src/memory/ROM/WILLY/ROM_WILLY_MZ700.c
 
 ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.o: src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/WILLY
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.o src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.o src/memory/ROM/WILLY/ROM_WILLY_en_CGROM.c
 
 ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.o: src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/WILLY
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.o src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.o src/memory/ROM/WILLY/ROM_WILLY_en_MZ800.c
 
 ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.o: src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/WILLY
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.o src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.o src/memory/ROM/WILLY/ROM_WILLY_ge_CGROM.c
 
 ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.o: src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/WILLY
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.o src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.o src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.c
 
 ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.o: src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/WILLY
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.o src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.o src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.c
 
 ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.o: src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory/ROM/WILLY
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.o src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.o src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.c
 
 ${OBJECTDIR}/src/memory/memory.o: src/memory/memory.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/memory.o src/memory/memory.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/memory.o src/memory/memory.c
 
 ${OBJECTDIR}/src/memory/rom.o: src/memory/rom.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/rom.o src/memory/rom.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/rom.o src/memory/rom.c
 
 ${OBJECTDIR}/src/mz800.o: src/mz800.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/mz800.o src/mz800.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/mz800.o src/mz800.c
 
 ${OBJECTDIR}/src/pio8255/pio8255.o: src/pio8255/pio8255.c 
 	${MKDIR} -p ${OBJECTDIR}/src/pio8255
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/pio8255/pio8255.o src/pio8255/pio8255.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/pio8255/pio8255.o src/pio8255/pio8255.c
 
 ${OBJECTDIR}/src/pioz80/pioz80.o: src/pioz80/pioz80.c 
 	${MKDIR} -p ${OBJECTDIR}/src/pioz80
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/pioz80/pioz80.o src/pioz80/pioz80.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/pioz80/pioz80.o src/pioz80/pioz80.c
 
 ${OBJECTDIR}/src/port.o: src/port.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/port.o src/port.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/port.o src/port.c
 
 ${OBJECTDIR}/src/psg/psg.o: src/psg/psg.c 
 	${MKDIR} -p ${OBJECTDIR}/src/psg
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/psg/psg.o src/psg/psg.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/psg/psg.o src/psg/psg.c
 
 ${OBJECTDIR}/src/qdisk/qdisk.o: src/qdisk/qdisk.c 
 	${MKDIR} -p ${OBJECTDIR}/src/qdisk
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/qdisk/qdisk.o src/qdisk/qdisk.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/qdisk/qdisk.o src/qdisk/qdisk.c
 
 ${OBJECTDIR}/src/ramdisk/ramdisk.o: src/ramdisk/ramdisk.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ramdisk
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ramdisk/ramdisk.o src/ramdisk/ramdisk.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ramdisk/ramdisk.o src/ramdisk/ramdisk.c
 
 ${OBJECTDIR}/src/sharpmz_ascii.o: src/sharpmz_ascii.c 
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/sharpmz_ascii.o src/sharpmz_ascii.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/sharpmz_ascii.o src/sharpmz_ascii.c
 
 ${OBJECTDIR}/src/ui/debugger/ui_breakpoints.o: src/ui/debugger/ui_breakpoints.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_breakpoints.o src/ui/debugger/ui_breakpoints.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_breakpoints.o src/ui/debugger/ui_breakpoints.c
 
 ${OBJECTDIR}/src/ui/debugger/ui_debugger.o: src/ui/debugger/ui_debugger.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_debugger.o src/ui/debugger/ui_debugger.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_debugger.o src/ui/debugger/ui_debugger.c
 
 ${OBJECTDIR}/src/ui/debugger/ui_debugger_callbacks.o: src/ui/debugger/ui_debugger_callbacks.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_debugger_callbacks.o src/ui/debugger/ui_debugger_callbacks.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_debugger_callbacks.o src/ui/debugger/ui_debugger_callbacks.c
 
 ${OBJECTDIR}/src/ui/debugger/ui_debugger_iasm.o: src/ui/debugger/ui_debugger_iasm.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_debugger_iasm.o src/ui/debugger/ui_debugger_iasm.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_debugger_iasm.o src/ui/debugger/ui_debugger_iasm.c
 
 ${OBJECTDIR}/src/ui/debugger/ui_memdump.o: src/ui/debugger/ui_memdump.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_memdump.o src/ui/debugger/ui_memdump.c
-
-${OBJECTDIR}/src/ui/dsk_tool/ui_dsk_tool.o: src/ui/dsk_tool/ui_dsk_tool.c 
-	${MKDIR} -p ${OBJECTDIR}/src/ui/dsk_tool
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/dsk_tool/ui_dsk_tool.o src/ui/dsk_tool/ui_dsk_tool.c
-
-${OBJECTDIR}/src/ui/generic_driver/ui_file_driver.o: src/ui/generic_driver/ui_file_driver.c 
-	${MKDIR} -p ${OBJECTDIR}/src/ui/generic_driver
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/generic_driver/ui_file_driver.o src/ui/generic_driver/ui_file_driver.c
-
-${OBJECTDIR}/src/ui/generic_driver/ui_memory_driver.o: src/ui/generic_driver/ui_memory_driver.c 
-	${MKDIR} -p ${OBJECTDIR}/src/ui/generic_driver
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/generic_driver/ui_memory_driver.o src/ui/generic_driver/ui_memory_driver.c
-
-${OBJECTDIR}/src/ui/tools/ui_tool_pixbuf.o: src/ui/tools/ui_tool_pixbuf.c 
-	${MKDIR} -p ${OBJECTDIR}/src/ui/tools
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/tools/ui_tool_pixbuf.o src/ui/tools/ui_tool_pixbuf.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_memdump.o src/ui/debugger/ui_memdump.c
 
 ${OBJECTDIR}/src/ui/ui_cmt.o: src/ui/ui_cmt.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_cmt.o src/ui/ui_cmt.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_cmt.o src/ui/ui_cmt.c
 
 ${OBJECTDIR}/src/ui/ui_display.o: src/ui/ui_display.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_display.o src/ui/ui_display.c
-
-${OBJECTDIR}/src/ui/ui_fcbutton.o: src/ui/ui_fcbutton.c 
-	${MKDIR} -p ${OBJECTDIR}/src/ui
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_fcbutton.o src/ui/ui_fcbutton.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_display.o src/ui/ui_display.c
 
 ${OBJECTDIR}/src/ui/ui_fdc.o: src/ui/ui_fdc.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_fdc.o src/ui/ui_fdc.c
-
-${OBJECTDIR}/src/ui/ui_hexeditable.o: src/ui/ui_hexeditable.c 
-	${MKDIR} -p ${OBJECTDIR}/src/ui
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_hexeditable.o src/ui/ui_hexeditable.c
-
-${OBJECTDIR}/src/ui/ui_joy.o: src/ui/ui_joy.c 
-	${MKDIR} -p ${OBJECTDIR}/src/ui
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_joy.o src/ui/ui_joy.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_fdc.o src/ui/ui_fdc.c
 
 ${OBJECTDIR}/src/ui/ui_main.o: src/ui/ui_main.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_main.o src/ui/ui_main.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_main.o src/ui/ui_main.c
 
 ${OBJECTDIR}/src/ui/ui_qdisk.o: src/ui/ui_qdisk.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_qdisk.o src/ui/ui_qdisk.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_qdisk.o src/ui/ui_qdisk.c
 
 ${OBJECTDIR}/src/ui/ui_ramdisk.o: src/ui/ui_ramdisk.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_ramdisk.o src/ui/ui_ramdisk.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_ramdisk.o src/ui/ui_ramdisk.c
 
 ${OBJECTDIR}/src/ui/ui_rom.o: src/ui/ui_rom.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_rom.o src/ui/ui_rom.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_rom.o src/ui/ui_rom.c
 
 ${OBJECTDIR}/src/ui/ui_utils.o: src/ui/ui_utils.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_utils.o src/ui/ui_utils.c
-
-${OBJECTDIR}/src/ui/vkbd/ui_vkbd.o: src/ui/vkbd/ui_vkbd.c 
-	${MKDIR} -p ${OBJECTDIR}/src/ui/vkbd
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/vkbd/ui_vkbd.o src/ui/vkbd/ui_vkbd.c
-
-${OBJECTDIR}/src/ui/vkbd/ui_vkbd_linux_x11.o: src/ui/vkbd/ui_vkbd_linux_x11.c 
-	${MKDIR} -p ${OBJECTDIR}/src/ui/vkbd
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/vkbd/ui_vkbd_linux_x11.o src/ui/vkbd/ui_vkbd_linux_x11.c
-
-${OBJECTDIR}/src/ui/vkbd/ui_vkbd_windows.o: src/ui/vkbd/ui_vkbd_windows.c 
-	${MKDIR} -p ${OBJECTDIR}/src/ui/vkbd
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/vkbd/ui_vkbd_windows.o src/ui/vkbd/ui_vkbd_windows.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_utils.o src/ui/ui_utils.c
 
 ${OBJECTDIR}/src/z80ex/z80ex.o: src/z80ex/z80ex.c 
 	${MKDIR} -p ${OBJECTDIR}/src/z80ex
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/z80ex/z80ex.o src/z80ex/z80ex.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/z80ex/z80ex.o src/z80ex/z80ex.c
 
 ${OBJECTDIR}/src/z80ex/z80ex_dasm.o: src/z80ex/z80ex_dasm.c 
 	${MKDIR} -p ${OBJECTDIR}/src/z80ex
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/z80ex/z80ex_dasm.o src/z80ex/z80ex_dasm.c
+	$(COMPILE.c) -O2 -Wall -DMZ800_DEBUGGER -DWIN32 -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/z80ex/z80ex_dasm.o src/z80ex/z80ex_dasm.c
 
 # Subprojects
 .build-subprojects:
@@ -705,7 +502,7 @@ ${OBJECTDIR}/src/z80ex/z80ex_dasm.o: src/z80ex/z80ex_dasm.c
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mz800emu-x86.exe
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mz800emu.exe
 
 # Subprojects
 .clean-subprojects:

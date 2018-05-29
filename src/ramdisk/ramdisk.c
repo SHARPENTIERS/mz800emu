@@ -56,7 +56,7 @@
  *
  */
 
-#ifdef WINDOWS
+#ifdef WIN32
 #include<windows.h>
 #endif
 
@@ -89,58 +89,23 @@
 st_RAMDISK g_ramdisk;
 
 
-void ramdisk_load_backup_file ( uint8_t *memory, char *filepath, unsigned ramdisk_size ) {
-
-    FILE *fp;
-
-    if ( ui_utils_file_access ( filepath, F_OK ) != -1 ) {
-        if ( ( fp = ui_utils_file_open ( filepath, "rb" ) ) ) {
-            unsigned filesize = ui_utils_file_read ( memory, 1, ramdisk_size, fp );
-            if ( filesize != ramdisk_size ) {
-                ui_show_warning ( "Your RD file has only %d bytes of requested %d bytes. Peace, this is not problem ... this is only warning :)", filesize, ramdisk_size );
-            };
-        } else {
-            ui_show_error ( "%s() - Can't open file '%s': %s", __func__, filepath, strerror ( errno ) );
-        };
-        fclose ( fp );
-    };
-}
-
-
-void ramdisk_save_backup_file ( uint8_t *memory, char *filepath, unsigned ramdisk_size ) {
-
-    FILE *fp;
-
-    if ( ( fp = ui_utils_file_open ( filepath, "wb" ) ) ) {
-        unsigned filesize = ui_utils_file_write ( memory, 1, ramdisk_size, fp );
-        if ( filesize != ramdisk_size ) {
-            ui_show_error ( "%s() - saved only %d bytes of %d - file '%s': %s", __func__, filesize, ramdisk_size, filepath, strerror ( errno ) );
-        };
-        fclose ( fp );
-
-    } else {
-        ui_show_error ( "%s() - Can't open file '%s': %s", __func__, filepath, strerror ( errno ) );
-    };
-}
-
-
 void ramdisk_std_save ( void ) {
+
+    FILE *fp;
 
     if ( ( g_ramdisk.std.connected ) && ( g_ramdisk.std.memory != NULL ) ) {
         if ( g_ramdisk.std.type == RAMDISK_TYPE_SRAM ) {
-            unsigned ramdisk_size = ( g_ramdisk.std.size + 1 ) * DEF_BANK_SIZE;
-            ramdisk_save_backup_file ( g_ramdisk.std.memory, g_ramdisk.std.filepath, ramdisk_size );
-        };
-    };
-}
+            if ( ( fp = ui_utils_fopen ( g_ramdisk.std.filepath, "wb" ) ) ) {
+                unsigned ramdisksize = ( g_ramdisk.std.size + 1 ) * 0x10000;
+                unsigned filesize = ui_utils_fwrite ( g_ramdisk.std.memory, 1, ramdisksize, fp );
+                if ( filesize != ramdisksize ) {
+                    ui_show_error ( "%s() - saved only %d bytes of %d - file '%s': %s", __func__, filesize, ramdisksize, g_ramdisk.std.filepath, strerror ( errno ) );
+                };
+                fclose ( fp );
 
-
-void ramdisk_pezik_save ( unsigned pezik_type ) {
-
-    if ( ( g_ramdisk.pezik [ pezik_type ]. connected ) && ( g_ramdisk.pezik [ pezik_type ]. memory != NULL ) ) {
-        if ( g_ramdisk.pezik [ pezik_type ].backuped == PEZIK_BACKUPED_YES ) {
-            unsigned ramdisk_size = 8 * DEF_BANK_SIZE;
-            ramdisk_save_backup_file ( g_ramdisk.pezik [ pezik_type ].memory, g_ramdisk.pezik [ pezik_type ].filepath, ramdisk_size );
+            } else {
+                ui_show_error ( "%s() - Can't open file '%s': %s", __func__, g_ramdisk.std.filepath, strerror ( errno ) );
+            };
         };
     };
 }
@@ -160,6 +125,8 @@ void ramdisk_std_disconnect ( void ) {
 
 void ramdisk_std_init ( int connect, en_RAMDISK_TYPE type, en_RAMDISK_BANKMASK size, char *filepath ) {
 
+    FILE *fp;
+
     DBGPRINTF ( DBGINF, "connect = %d, type = %d, bank_mask = 0x%02x, file = %s\n", connect, type, size, filepath );
 
     if ( connect ) {
@@ -172,7 +139,7 @@ void ramdisk_std_init ( int connect, en_RAMDISK_TYPE type, en_RAMDISK_BANKMASK s
         ramdisk_std_save ( );
 
         if ( g_ramdisk.std.memory == NULL ) {
-            g_ramdisk.std.memory = malloc ( ( size + 1 ) * DEF_BANK_SIZE );
+            g_ramdisk.std.memory = malloc ( ( size + 1 ) * 0x10000 );
 
             if ( g_ramdisk.std.memory == NULL ) {
                 fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __func__, __LINE__, strerror ( errno ) );
@@ -181,9 +148,9 @@ void ramdisk_std_init ( int connect, en_RAMDISK_TYPE type, en_RAMDISK_BANKMASK s
 
             /* implicitni obsah nesmi byt 0x00 - jinak se pri bootu zacne nacitat program :) */
             /* TODO: radeji to jeste proverime */
-            memset ( g_ramdisk.std.memory, 0xff, ( size + 1 ) * DEF_BANK_SIZE );
+            memset ( g_ramdisk.std.memory, 0xff, ( size + 1 ) * 0x10000 );
         } else {
-            g_ramdisk.std.memory = realloc ( g_ramdisk.std.memory, ( size + 1 ) * DEF_BANK_SIZE );
+            g_ramdisk.std.memory = realloc ( g_ramdisk.std.memory, ( size + 1 ) * 0x10000 );
 
             if ( g_ramdisk.std.memory == NULL ) {
                 fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __func__, __LINE__, strerror ( errno ) );
@@ -202,8 +169,18 @@ void ramdisk_std_init ( int connect, en_RAMDISK_TYPE type, en_RAMDISK_BANKMASK s
             };
             g_ramdisk.std.filepath [ sizeof ( g_ramdisk.std.filepath ) - 1 ] = 0x00;
 
-            unsigned ramdisk_size = ( g_ramdisk.std.size + 1 ) * DEF_BANK_SIZE;
-            ramdisk_load_backup_file ( g_ramdisk.std.memory, g_ramdisk.std.filepath, ramdisk_size );
+            if ( ui_utils_access ( g_ramdisk.std.filepath, F_OK ) != -1 ) {
+                if ( ( fp = ui_utils_fopen ( g_ramdisk.std.filepath, "rb" ) ) ) {
+                    unsigned ramdisksize = ( g_ramdisk.std.size + 1 ) * 0x10000;
+                    unsigned filesize = ui_utils_fread ( g_ramdisk.std.memory, 1, ( g_ramdisk.std.size + 1 ) * 0x10000, fp );
+                    if ( filesize != ramdisksize ) {
+                        ui_show_warning ( "Your RD file has only %d bytes of requested %d bytes. Peace, this is not problem ... this is only warning :)", filesize, ramdisksize );
+                    };
+                } else {
+                    ui_show_error ( "%s() - Can't open file '%s': %s", __func__, g_ramdisk.std.filepath, strerror ( errno ) );
+                };
+                fclose ( fp );
+            };
         };
 
     } else {
@@ -222,13 +199,12 @@ void ramdisk_std_open_file ( void ) {
     char filename [ RAMDISK_FILENAME_LENGTH ];
 
     filename[0] = 0x00;
-    char *filename_p = filename; // TODO: fix me
     if ( g_ramdisk.std.type == RAMDISK_TYPE_SRAM ) {
         char window_title[] = "Select SRAM disk DAT file to open";
-        ui_open_file ( &filename_p, g_ramdisk.std.filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_SAVE );
+        ui_open_file ( filename, g_ramdisk.std.filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_SAVE );
     } else {
         char window_title[] = "Select ROM disk DAT file to open";
-        ui_open_file ( &filename_p, g_ramdisk.std.filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_READ );
+        ui_open_file ( filename, g_ramdisk.std.filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_READ );
     };
 
     if ( filename[0] != 0x00 ) {
@@ -237,117 +213,40 @@ void ramdisk_std_open_file ( void ) {
 }
 
 
-void ramdisk_pezik_disconnect ( int pezik_type ) {
+void ramdisk_pezik_init ( int pezik_type, int connect ) {
 
-    if ( RAMDISK_DISCONNECTED == g_ramdisk.pezik [ pezik_type ].connected ) return;
+    pezik_type &= 0x01;
 
-    if ( g_ramdisk.pezik [ pezik_type ].memory != NULL ) {
-
-        if ( PEZIK_BACKUPED_YES == g_ramdisk.pezik [ pezik_type ].backuped ) {
-            unsigned ramdisk_size = 8 * DEF_BANK_SIZE;
-            ramdisk_save_backup_file ( g_ramdisk.pezik [ pezik_type ].memory, g_ramdisk.pezik [ pezik_type ].filepath, ramdisk_size );
+    if ( !connect ) {
+        if ( g_ramdisk.pezik [ pezik_type ].memory != NULL ) {
+            free ( g_ramdisk.pezik [ pezik_type ].memory );
+            g_ramdisk.pezik [ pezik_type ].memory = NULL;
         };
+    } else {
+        if ( ( pezik_type == RAMDISK_PEZIK_E8 ) && ( g_ramdisk.std.connected ) ) {
+            /* nepovolena kombinace */
+            g_ramdisk.pezik [ RAMDISK_PEZIK_E8 ]. connected = RAMDISK_DISCONNECTED;
+            return;
+        };
+        if ( g_ramdisk.std.memory == NULL ) {
+            g_ramdisk.pezik [ pezik_type ].memory = malloc ( 8 * 0x10000 );
 
-        free ( g_ramdisk.pezik [ pezik_type ].memory );
-        g_ramdisk.pezik [ pezik_type ].memory = NULL;
-    };
+            if ( g_ramdisk.pezik [ pezik_type ].memory == NULL ) {
+                fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __func__, __LINE__, strerror ( errno ) );
+                main_app_quit ( EXIT_FAILURE );
+            };
 
-    g_ramdisk.pezik [ pezik_type ].connected = RAMDISK_DISCONNECTED;
-}
-
-
-void ramdisk_pezik_connect ( int pezik_type ) {
-
-    if ( RAMDISK_CONNECTED == g_ramdisk.pezik [ pezik_type ].connected ) return;
-
-    if ( ( pezik_type == RAMDISK_PEZIK_E8 ) && ( g_ramdisk.std.connected ) ) {
-        /* nepovolena kombinace */
-        g_ramdisk.pezik [ RAMDISK_PEZIK_E8 ]. connected = RAMDISK_DISCONNECTED;
-        return;
-    };
-
-    unsigned ramdisk_size = 8 * DEF_BANK_SIZE;
-
-    if ( g_ramdisk.pezik [ pezik_type ].memory == NULL ) {
-        g_ramdisk.pezik [ pezik_type ].memory = malloc ( ramdisk_size );
-
-        if ( g_ramdisk.pezik [ pezik_type ].memory == NULL ) {
-            fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __func__, __LINE__, strerror ( errno ) );
-            main_app_quit ( EXIT_FAILURE );
+            memset ( g_ramdisk.pezik [ pezik_type ].memory, 0xff, 8 * 0x10000 );
         };
     };
-
-    memset ( g_ramdisk.pezik [ pezik_type ].memory, 0xff, ramdisk_size );
-
-    if ( PEZIK_BACKUPED_YES == g_ramdisk.pezik [ pezik_type ].backuped ) {
-        ramdisk_load_backup_file ( g_ramdisk.pezik [ pezik_type ].memory, g_ramdisk.pezik [ pezik_type ].filepath, ramdisk_size );
-    };
-
-    g_ramdisk.pezik [ pezik_type ].connected = RAMDISK_CONNECTED;
-}
-
-
-void ramdisk_pezik_init ( int pezik_type, int connect, int portmask, int backuped, char *filepath ) {
-
-    if ( ( !connect ) && ( g_ramdisk.pezik [ pezik_type ].connected ) ) {
-        ramdisk_pezik_disconnect ( pezik_type );
-    };
-
-    g_ramdisk.pezik [ pezik_type ].portmask = portmask;
-
-    unsigned len = strlen ( filepath );
-
-    if ( len ) {
-        g_ramdisk.pezik [ pezik_type ].backuped = backuped;
-    } else {
-        g_ramdisk.pezik [ pezik_type ].backuped = PEZIK_BACKUPED_NO;
-    };
-
-#if 0
-    len++;
-
-    if ( NULL == g_ramdisk.pezik [ pezik_type ].filepath ) {
-        g_ramdisk.pezik [ pezik_type ].filepath = (char*) malloc ( len );
-    } else {
-        g_ramdisk.pezik [ pezik_type ].filepath = (char*) realloc ( g_ramdisk.pezik [ pezik_type ].filepath, len );
-    };
-
-    if ( NULL == g_ramdisk.pezik [ pezik_type ].filepath ) {
-        fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __func__, __LINE__, strerror ( errno ) );
-        main_app_quit ( EXIT_FAILURE );
-    };
-    strcpy ( g_ramdisk.pezik [ pezik_type ].filepath, filepath );
-#else
-    strncpy ( g_ramdisk.pezik [ pezik_type ].filepath, filepath, RAMDISK_FILENAME_LENGTH );
-    g_ramdisk.pezik [ pezik_type ].filepath[ RAMDISK_FILENAME_LENGTH - 1 ] = 0x00;
-#endif
-
-    if ( connect ) {
-        ramdisk_pezik_connect ( pezik_type );
-    };
+    g_ramdisk.pezik [ pezik_type ].connected = connect;
 }
 
 
 void ramdisk_propagatecfg ( void *m, void *data ) {
 
-    unsigned pezik_pluged;
-    unsigned pezik_portmask;
-    unsigned pezik_backuped;
-    char *pezik_filepath;
-
-    pezik_pluged = cfgmodule_get_element_bool_value_by_name ( (CFGMOD *) m, "pezik_e8_pluged" );
-    pezik_portmask = cfgmodule_get_element_unsigned_value_by_name ( (CFGMOD *) m, "pezik_e8_portmask" );
-    pezik_backuped = cfgmodule_get_element_bool_value_by_name ( (CFGMOD *) m, "pezik_e8_backuped" );
-    pezik_filepath = cfgmodule_get_element_text_value_by_name ( (CFGMOD *) m, "pezik_e8_filepath" );
-
-    ramdisk_pezik_init ( RAMDISK_PEZIK_E8, pezik_pluged, pezik_portmask, pezik_backuped, pezik_filepath );
-
-    pezik_pluged = cfgmodule_get_element_bool_value_by_name ( (CFGMOD *) m, "pezik_68_pluged" );
-    pezik_portmask = cfgmodule_get_element_unsigned_value_by_name ( (CFGMOD *) m, "pezik_68_portmask" );
-    pezik_backuped = cfgmodule_get_element_bool_value_by_name ( (CFGMOD *) m, "pezik_68_backuped" );
-    pezik_filepath = cfgmodule_get_element_text_value_by_name ( (CFGMOD *) m, "pezik_68_filepath" );
-
-    ramdisk_pezik_init ( RAMDISK_PEZIK_68, pezik_pluged, pezik_portmask, pezik_backuped, pezik_filepath );
+    ramdisk_pezik_init ( RAMDISK_PEZIK_E8, cfgmodule_get_element_bool_value_by_name ( (CFGMOD *) m, "pezik_std_e8_pluged" ) );
+    ramdisk_pezik_init ( RAMDISK_PEZIK_68, cfgmodule_get_element_bool_value_by_name ( (CFGMOD *) m, "pezik_std_e8_pluged" ) );
 
     int mr1r18_pluged = cfgmodule_get_element_bool_value_by_name ( (CFGMOD *) m, "mr1r18_pluged" );
     en_RAMDISK_TYPE mr1r18_type = cfgmodule_get_element_keyword_value_by_name ( (CFGMOD *) m, "mr1r18_type" );
@@ -363,14 +262,10 @@ void ramdisk_propagatecfg ( void *m, void *data ) {
 void ramdisk_init ( void ) {
 
     memset ( &g_ramdisk, 0x00, sizeof ( g_ramdisk ) );
-    g_ramdisk.pezik[RAMDISK_PEZIK_E8].portmask = 0xff;
-    g_ramdisk.pezik[RAMDISK_PEZIK_68].portmask = 0xff;
 
     CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "RAMDISK" );
 
     CFGELM *elm;
-
-    /* MR1R18 */
     elm = cfgmodule_register_new_element ( cmod, "mr1r18_pluged", CFGENTYPE_BOOL, RAMDISK_CONNECTED );
     cfgelement_set_handlers ( elm, NULL, (void*) &g_ramdisk.std.connected );
 
@@ -394,31 +289,11 @@ void ramdisk_init ( void ) {
     elm = cfgmodule_register_new_element ( cmod, "mr1r18_filepath", CFGENTYPE_TEXT, RAMDISK_DEFAULT_FILENAME );
     cfgelement_set_handlers ( elm, NULL, (void*) &g_ramdisk.std.filepath );
 
-    /* pezik e8 */
-    elm = cfgmodule_register_new_element ( cmod, "pezik_e8_pluged", CFGENTYPE_BOOL, RAMDISK_DISCONNECTED );
+    elm = cfgmodule_register_new_element ( cmod, "pezik_std_e8_pluged", CFGENTYPE_BOOL, RAMDISK_DISCONNECTED );
     cfgelement_set_handlers ( elm, NULL, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_E8].connected );
 
-    elm = cfgmodule_register_new_element ( cmod, "pezik_e8_portmask", CFGENTYPE_UNSIGNED, 0xff, 0x01, 0xff );
-    cfgelement_set_handlers ( elm, (void*) NULL, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_E8].portmask );
-
-    elm = cfgmodule_register_new_element ( cmod, "pezik_e8_backuped", CFGENTYPE_BOOL, PEZIK_BACKUPED_NO );
-    cfgelement_set_handlers ( elm, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_E8].backuped, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_E8].backuped );
-
-    elm = cfgmodule_register_new_element ( cmod, "pezik_e8_filepath", CFGENTYPE_TEXT, RAMDISK_PEZIK_E8_DEFAULT_FILENAME );
-    cfgelement_set_handlers ( elm, NULL, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_E8].filepath );
-
-    /* pezik 68 */
-    elm = cfgmodule_register_new_element ( cmod, "pezik_68_pluged", CFGENTYPE_BOOL, RAMDISK_DISCONNECTED );
+    elm = cfgmodule_register_new_element ( cmod, "pezik_shifted_68_pluged", CFGENTYPE_BOOL, RAMDISK_DISCONNECTED );
     cfgelement_set_handlers ( elm, NULL, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_68].connected );
-
-    elm = cfgmodule_register_new_element ( cmod, "pezik_68_portmask", CFGENTYPE_UNSIGNED, 0xff, 0x01, 0xff );
-    cfgelement_set_handlers ( elm, (void*) NULL, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_68].portmask );
-
-    elm = cfgmodule_register_new_element ( cmod, "pezik_68_backuped", CFGENTYPE_BOOL, PEZIK_BACKUPED_NO );
-    cfgelement_set_handlers ( elm, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_68].backuped, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_68].backuped );
-
-    elm = cfgmodule_register_new_element ( cmod, "pezik_68_filepath", CFGENTYPE_TEXT, RAMDISK_PEZIK_68_DEFAULT_FILENAME );
-    cfgelement_set_handlers ( elm, NULL, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_68].filepath );
 
     cfgmodule_set_propagate_cb ( cmod, ramdisk_propagatecfg, NULL );
 
@@ -431,8 +306,6 @@ void ramdisc_exit ( void ) {
     int i;
 
     ramdisk_std_save ( );
-    ramdisk_pezik_save ( RAMDISK_PEZIK_E8 );
-    ramdisk_pezik_save ( RAMDISK_PEZIK_68 );
 
     if ( ( g_ramdisk.std.connected ) && ( g_ramdisk.std.memory != NULL ) ) {
         free ( g_ramdisk.std.memory );
@@ -495,17 +368,12 @@ void ramdisk_std_write_byte ( unsigned addr, Z80EX_BYTE value ) {
 
 Z80EX_BYTE ramdisk_pezik_read_byte ( unsigned addr ) {
 
-    unsigned pezik_addr;
-    unsigned pezik_type;
-    unsigned pezik_bank;
+    int pezik_addr;
+    int pezik_type;
 
     pezik_type = ( addr & 0x80 ) >> 7;
-    pezik_bank = 1 << ( addr & 0x07 );
-
-    if ( !( pezik_bank & g_ramdisk.pezik [ pezik_type ].portmask ) ) return g_mz800.regDBUS_latch;
-
-    pezik_addr = ( ( addr & 0x07 ) << 16 ) | g_ramdisk.pezik [ pezik_type ] . latch | ( ( addr >> 8 ) & 0x00ff );
-    g_ramdisk.pezik [ pezik_type ] . latch = addr & 0xff00;
+    pezik_addr = ( ( addr & 0x07 ) << 16 ) | ( addr & 0xff00 ) | g_ramdisk.pezik [ pezik_type ] . latch;
+    g_ramdisk.pezik [ pezik_type ] . latch = ( addr & 0xff00 ) >> 8;
 
     return g_ramdisk.pezik [ pezik_type ] . memory [ pezik_addr ];
 }
@@ -515,14 +383,10 @@ void ramdisk_pezik_write_byte ( unsigned addr, Z80EX_BYTE value ) {
 
     unsigned pezik_addr;
     unsigned pezik_type;
-    unsigned pezik_bank;
 
     pezik_type = ( addr & 0x80 ) >> 7;
-    pezik_bank = 1 << ( addr & 0x07 );
-
-    if ( !( pezik_bank & g_ramdisk.pezik [ pezik_type ].portmask ) ) return;
-
-    pezik_addr = ( ( addr & 0x07 ) << 16 ) | g_ramdisk.pezik [ pezik_type ] . latch | ( ( addr >> 8 ) & 0x00ff );
+    pezik_addr = ( ( addr & 0x07 ) << 16 ) | ( addr & 0xff00 ) | g_ramdisk.pezik [ pezik_type ] . latch;
 
     g_ramdisk.pezik [ pezik_type ] . memory [ pezik_addr ] = value;
 }
+

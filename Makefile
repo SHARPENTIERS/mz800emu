@@ -43,8 +43,7 @@
 #
 # NOCDDL
 
-MY_HOME_SHAREDIR    := ${HOME}/share/mz800emu/
-	
+
 # Environment 
 MKDIR=mkdir
 CP=cp
@@ -75,15 +74,28 @@ WINDRES			:= windres
 # Pokud kompilujeme v Linuxu
 #
 
-#else ifeq (${BUILD_HOST_OS},GNU/Linux)
-#else
-#$(error  "Unknown build host OS! '${BUILD_HOST_OS}'")
+else ifeq (${BUILD_HOST_OS},GNU/Linux)
+
+# definice pro CROSS WIN32
+MINGW32_PLATFORM	:= i686-w64-mingw32
+MINGW32_TOOLS_PREFIX	:= ${MINGW32_PLATFORM}-
+MINGW32_PKGCONFIG	:= ${MINGW32_TOOLS_PREFIX}pkg-config
+MINGW32_SDL2_CONFIG	:= /usr/local/cross-tools/$(MINGW32_PLATFORM)/bin/sdl2-config
+# ve win32 verzi odstranenim -mwindows vynutime vystupni consoli
+MINGW32_SDL2_LIBS	:= ${shell ${MINGW32_SDL2_CONFIG} --libs | /bin/sed -e 's/-mwindows//' } -lSDL2
+WINDRES			:= ${MINGW32_TOOLS_PREFIX}windres
+
+# definice pro NATIVE LINUX
+LINUX_TOOLS_PREFIX	:=
+LINUX_PKGCONFIG		:= ${TOOLS_PREFIX}pkg-config 
+LINUX_SDL2_CONFIG	:= sdl2-config
+LINUX_SDL2_LIBS         := ${shell ${LINUX_SDL2_CONFIG} --libs} -lSDL2
+
+else
+
+$(error  "Unknovn build host OS! '${BUILD_HOST_OS}'")
+
 endif
-
-
-SDL2_CONFIG_LINUX=/usr/local/bin/sdl2-config
-SDL2_CONFIG_MINGW32=/usr/local/cross-tools/i686-w64-mingw32/bin/sdl2-config
-SDL2_CONFIG_MINGW64=/usr/local/cross-tools/x86_64-w64-mingw32/bin/sdl2-config
 
 
 # build
@@ -103,35 +115,12 @@ build: .build-post
 .build-post: .build-impl
 	@# Add your post 'build' code here...
 	@#echo ${CND_ARTIFACT_PATH_${CONF}}
-		
-	@# vzdy nakopirujeme ui_resources do adresare s binarkou
-	@echo -e "\n";
-	@./tools/copy_ui_resources.sh ${CND_ARTIFACT_DIR_${CONF}}
-
-	@# zobrazime si informaci o buildu
-	@echo -e "`cat src/build_time.c | sed -e 's/";/\n/' -e 's/"/\nBuild time: /' | egrep "^Build time: "`\n"
+	
+	@# Linuxakum pro jistotu nakopirujeme ui_resources do adresare s binarkou
+	@./tools/copy_ui_resources-Release-Linux.sh "${CONF}"
 	
 	@# Zkopirujeme vysledek do adresare sdileneho s windows - jen na mem desktopu
-	@if [ ! -z "`uname -n|egrep 'arrakis.ordoz.com|atreides.ordoz.com'`" ]; then \
-	    if [ ! -z "`echo "${CONF}"|egrep 'Release-Win32|Release-Win64'`" ]; then \
-		echo -e "Copy ${CND_ARTIFACT_PATH_${CONF}} to ${MY_HOME_SHAREDIR}\n"; \
-		$(CP) ${CND_ARTIFACT_PATH_${CONF}} ${MY_HOME_SHAREDIR}; \
-	    fi; \
-	fi
-		
-	@# Pokud profilujeme
-	@if [ "${CONF}" = "Gprof-Debug-Linux" ]; then \
-	    echo -e "\n\n********** ${CONF} **********\n"; \
-	    echo -e "\nprof1) gprof - http://www.thegeekstuff.com/2012/08/gprof-tutorial/"; \
-	    echo -e "prof2) valgrind --tool=callgrind ${CND_ARTIFACT_PATH_${CONF}}\n(visualise in KCachegrind)"; \
-	    echo "Now:"; \
-	    echo "1. Run '${CND_ARTIFACT_PATH_${CONF}}' to create gmon.out (exit the program)"; \
-	    echo "2. Run gprof ${CND_ARTIFACT_PATH_${CONF}} gmon.out > analysis.txt"; \
-	    echo -e "3. cat analysis.txt\n\n"; \
-	    ${CND_ARTIFACT_PATH_${CONF}}; \
-	    gprof ${CND_ARTIFACT_PATH_${CONF}} gmon.out > analysis.txt; \
-	    cat analysis.txt; \
-	fi
+	@./tools/copy_win32_exe_to_sharedir.sh "${CONF}"
 
 # clean
 clean: .clean-post
@@ -185,10 +174,7 @@ test: .test-post
 
 # help
 help: .help-post
-	@echo "CFLAGS config:"
-	@echo -e "\tshowcfg - copy&paste inc. dirs, definitions and additional opts"
-	@echo -e "\n"
-	@echo "Targets available only for WIN_X86:"
+	@echo "Targets available only for WIN32:"
 	@echo -e "\tpackage"
 	@echo -e "\n"
 
@@ -206,59 +192,18 @@ include nbproject/Makefile-impl.mk
 # include project make variables
 include nbproject/Makefile-variables.mk
 
-PROJECT_CFLAGS=
-PROJECT_LIBS=-lm
 
-ifeq (${CONF},Release-Linux)
-    SDL2_CONFIG=${SDL2_CONFIG_LINUX}
-    TOOLS_PREFIX=
-else ifeq (${CONF},Debug-Linux)
-    SDL2_CONFIG=${SDL2_CONFIG_LINUX}
-    TOOLS_PREFIX=
-else ifeq (${CONF},Gprof-Debug-Linux)
-    SDL2_CONFIG=${SDL2_CONFIG_LINUX}
-    TOOLS_PREFIX=
-else ifeq (${CONF},Release-Win32)
-    SDL2_CONFIG=${SDL2_CONFIG_MINGW32}
-    TOOLS_PREFIX=mingw32-
-    WINDRES_PREFIX=i686-w64-mingw32-
-else ifeq (${CONF},Release-Win64)
-    SDL2_CONFIG=${SDL2_CONFIG_MINGW64}
-    TOOLS_PREFIX=mingw64-
-    WINDRES_PREFIX=x86_64-w64-mingw32-
-else
-    $(error  "Unknown config! '${CONF}'")
-endif
-
-PKGCONFIG=${TOOLS_PREFIX}pkg-config
-WINDRES=${WINDRES_PREFIX}windres
-
-PROJECT_CFLAGS += ${shell ${SDL2_CONFIG} --cflags}
-PROJECT_CFLAGS += ${shell ${PKGCONFIG} --cflags ${PKG_OBJECTS}}
-
-# ve windows verzi odstranenim -mwindows vynutime vystupni consoli
-PROJECT_LIBS += ${shell ${SDL2_CONFIG} --libs | /bin/sed -e 's/-mwindows//'}
-PROJECT_LIBS += ${shell ${PKGCONFIG} --libs ${PKG_OBJECTS}}
+#
+#
+#
 
 # windows icon
 src/windows_icon/app.o: src/windows_icon/app.rc src/windows_icon/mz800emu.ico
 	${MKDIR} -p ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/src/windows_icon
-	${WINDRES} src/windows_icon/app.rc -o ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/$@; \
+	$(WINDRES) src/windows_icon/app.rc -o ${CND_BUILDDIR}/${CONF}/${CND_PLATFORM_${CONF}}/$@
 
 
 package: build
 	./tools/create_package-Release-Win32.sh "${CONF}"
-
-
-showcfg:
-	@echo
-	@echo "cflags:"
-	@echo
-	@echo "${PROJECT_CFLAGS}"
-	@echo
 	
-	@echo "libs:"
-	@echo
-	@echo "${PROJECT_LIBS}"
-	@echo
 	                

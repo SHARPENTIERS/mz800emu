@@ -23,12 +23,10 @@
  * ---------------------------------------------------------------------------
  */
 
-#include "mz800emu_cfg.h"
-
 #include <stdio.h>
 #include <string.h>
 
-#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+#ifdef MZ800_DEBUGGER
 
 #include "breakpoints.h"
 #include "ui/debugger/ui_breakpoints.h"

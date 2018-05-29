@@ -24,59 +24,13 @@
  */
 
 #ifndef PSG_H
-#define PSG_H
+#define	PSG_H
 
-#ifdef __cplusplus
+#ifdef	__cplusplus
 extern "C" {
 #endif
 
-#include "mz800emu_cfg.h"
 #include "z80ex/include/z80ex.h"
-#include "audio.h"
-#include "gdg/video.h"
-#include "gdg/gdg.h"
-
-#include <stdio.h>
-
-
-#define PSG_DIVIDER                     ( 16 * GDGCLK2CPU_DIVIDER )
-
-    // pokud je definovano, tak pri inicializaci emulujeme nahodnou desynchronizaci psg.process_clock
-#define PSG_USE_RANDOM_INIT 1    
-
-#ifdef AUDIO_FILLBUFF_v2
-
-
-    typedef struct st_PSG_SAMPLE {
-        unsigned timestamp;
-        int16_t value;
-    } st_PSG_SAMPLE;
-
-
-
-#if ( MZ800EMU_CFG_MAX_SYNC_SPEED == 1000 )
-#define PSG_MIN_EVENT_WIDTH  ( GDGCLK2CPU_DIVIDER * 11 )  /* 11 CPUTICKS = out (n), a ... ( 55 = 5 * 11 ) */
-#define PSG_MAX_SCAN_WIDTH  ( MZ800EMU_CFG_MAX_SYNC_SPEED * 0.01 * VIDEO_SCREEN_TICKS )  /* ( 3544320 = 1000 * 0.01 * 354432 ) */
-#define PSG_MAX_SAMPLES ( 3544320 / PSG_MIN_EVENT_WIDTH )
-#else
-#if ( MZ800EMU_CFG_MAX_SYNC_SPEED == 100 )
-#define PSG_MIN_EVENT_WIDTH  ( GDGCLK2CPU_DIVIDER * 11 )  /* 11 CPUTICKS = out (n), a ... ( 55 = 5 * 11 ) */
-#define PSG_MAX_SCAN_WIDTH  VIDEO_SCREEN_TICKS
-#define PSG_MAX_SAMPLES ( PSG_MAX_SCAN_WIDTH / PSG_MIN_EVENT_WIDTH )
-#else
-#error Plese define PSG_MAX_SAMPLES
-#endif
-#endif
-
-
-    typedef struct st_PSG_SAMPLES {
-        st_PSG_SAMPLE samples [ PSG_MAX_SAMPLES ];
-        unsigned count;
-    } st_PSG_SAMPLES;
-
-    extern st_PSG_SAMPLES g_psg_audio;
-#endif
-
 
     typedef enum en_PSG_CHANNELS {
         PSG_CHANNEL_0 = 0,
@@ -86,12 +40,10 @@ extern "C" {
         PSG_CHANNELS_COUNT
     } en_PSG_CHANNELS;
 
-
     typedef enum en_PSG_CHTYPE {
         PSG_CHTYPE_TONE, /* square wave tone generator */
         PSG_CHTYPE_NOISE, /* periodic noise | white noise */
     } en_PSG_CHTYPE;
-
 
     typedef enum en_ATTENUATOR {
         PSG_OUT_MAX = 0, /* hodnota 0, utlum 0 db = max. hlasitost */
@@ -112,7 +64,6 @@ extern "C" {
         PSG_OUT_OFF /* hodnota 15, zvukovy vystup kanalu je vypnuty */
     } en_ATTENUATOR;
 
-
     typedef enum en_NOISE_DIV_TYPE {
         NOISE_DIV_TYPE0 = 0, /* noise divider 0x10, 6.928 kHz pri CPUDIV = 5 */
         NOISE_DIV_TYPE1, /* noise divider 0x20, 3.464 kHz pri CPUDIV = 5 */
@@ -120,12 +71,10 @@ extern "C" {
         NOISE_DIV_TYPE3, /* noise divider nastavit podle channel 2 */
     } en_NOISE_DIV_TYPE;
 
-
     typedef enum en_NOISE_TYPE {
         NOISE_TYPE_PERIODIC = 0,
         NOISE_TYPE_WHITE
     } en_NOISE_TYPE;
-
 
     typedef struct st_PSG_NOISE {
         en_NOISE_DIV_TYPE div_type;
@@ -134,12 +83,10 @@ extern "C" {
         uint16_t shiftregister;
     } st_PSG_NOISE;
 
-
     typedef struct st_PSG_TONE {
         unsigned divider;
         unsigned latch_divider;
     } st_PSG_TONE;
-
 
     typedef struct st_PSG_CHANNEL {
         en_PSG_CHTYPE type;
@@ -149,7 +96,6 @@ extern "C" {
         st_PSG_NOISE noise;
         unsigned output_signal;
     } st_PSG_CHANNEL;
-
 
     typedef struct st_PSG {
         unsigned latch_cs;
@@ -161,13 +107,13 @@ extern "C" {
     extern st_PSG g_psg;
 
     extern void psg_init ( void );
-    extern void psg_real_write_byte ( Z80EX_BYTE value );
-    extern void psg_write_byte ( Z80EX_BYTE value );
     extern void psg_step ( void );
-    
-#ifdef __cplusplus
+    extern void psg_write_byte ( Z80EX_BYTE value );
+
+
+#ifdef	__cplusplus
 }
 #endif
 
-#endif /* PSG_H */
+#endif	/* PSG_H */
 

@@ -24,25 +24,22 @@
  */
 
 #ifndef PIO8255_H
-#define PIO8255_H
+#define	PIO8255_H
 
-#ifdef __cplusplus
+#ifdef	__cplusplus
 extern "C" {
 #endif
 
 #include "z80ex/include/z80ex.h"
 
-
+    
 #define CTC_AUDIO_MASK  ( g_pio8255.signal_pc00 )
-
-
+    
+    
     typedef struct st_PIO8255 {
         Z80EX_BYTE keyboard_matrix [ 10 ];
-        Z80EX_BYTE vkbd_matrix [ 10 ];
         unsigned signal_PA; /* Vystupni port A */
-        unsigned signal_PA_keybord_column; /* vzorkovani klavesnice: 0. - 3. bit (0 - 9) */
-        unsigned signal_PA_joy1_enabled; /* vzorkovani JOY1: 4. bit (L) */
-        unsigned signal_PA_joy2_enabled; /* vzorkovani JOY2: 5. bit (L) */
+        unsigned signal_PA_keybord_column; /* vzorkovani klavesnice: 0 - 9 */
         unsigned signal_PC; /* Port C: 0 - 3 je vystup, 4 - 7 je vstup */
         unsigned signal_pc00; /* OUT: blokovani zvuku z CTC0 */
         unsigned signal_pc01; /* OUT: data do CMT */
@@ -68,17 +65,13 @@ extern "C" {
     /* vrati *keyboard_matrix */
     extern Z80EX_BYTE* interface_keyboard_scan ( void );
 
-#define PIO8255_KEYBOARD_MATRIX_RESET()  pio8255_keyboard_matrix_reset()
-#define PIO8255_VKBD_MATRIX_RESET()  pio8255_vkbd_matrix_reset()
-
-#define PIO8255_MZKEYBIT_RESET( column, bit ) g_pio8255.keyboard_matrix [ column ] &= ~ ( 1 << bit );
-#define PIO8255_VKBDBIT_RESET( column, bit ) g_pio8255.vkbd_matrix [ column ] &= ~ ( 1 << bit );
-#define PIO8255_VKBDBIT_SET( column, bit ) g_pio8255.vkbd_matrix [ column ] |= ( 1 << bit );
+#define KEYBOARD_MATRIX_RESET()		pio8255_keyboard_matrix_reset()
 
 
-#ifdef __cplusplus
+
+#ifdef	__cplusplus
 }
 #endif
 
-#endif /* PIO8255_H */
+#endif	/* PIO8255_H */
 

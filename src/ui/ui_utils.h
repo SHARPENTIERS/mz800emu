@@ -24,9 +24,9 @@
  */
 
 #ifndef UI_UTILS_H
-#define UI_UTILS_H
+#define	UI_UTILS_H
 
-#ifdef __cplusplus
+#ifdef	__cplusplus
 extern "C" {
 #endif
 
@@ -34,40 +34,13 @@ extern "C" {
 #include <gtk/gtk.h>
 
 
-    /*
-     * 
-     * Obecne
-     * 
-     */
-    extern const gchar* ui_utils_get_error_message ( void );
-    extern char* ui_utils_strerror ( void );
-    extern void ui_utils_mem_free ( void *ptr );
+    extern FILE* ui_utils_fopen ( const char *filename_in_utf8, const char *mode );
+    
+    extern unsigned int ui_utils_fread ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh );
+    extern unsigned int ui_utils_fwrite ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh );
+    
+    extern int ui_utils_access ( const char *filename_in_utf8, int type );
 
-    void* ui_utils_mem_alloc_raw ( guint32 size, int initialize0, const char *func, int line );
-#define ui_utils_mem_alloc(size) ui_utils_mem_alloc_raw ( size, 0, __func__, __LINE__ )
-#define ui_utils_mem_alloc0(size) ui_utils_mem_alloc_raw ( size, 1, __func__, __LINE__ )
-    extern void* ui_utils_mem_realloc_raw ( void *ptr, guint32 size, const char *func, int line );
-#define ui_utils_mem_realloc(ptr,size) ui_utils_mem_realloc_raw ( ptr, size, __func__, __LINE__ )
-
-    extern char* ui_utils_basename ( const char *file_name );
-
-    /*
-     * 
-     * Prace se soubory
-     * 
-     */
-    extern FILE* ui_utils_file_open ( const char *filename_in_utf8, const char *mode );
-    extern void ui_utils_file_close ( FILE *fh );
-    extern unsigned int ui_utils_file_read ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh );
-    extern unsigned int ui_utils_file_write ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh );
-    extern int ui_utils_file_access ( const char *filename_in_utf8, int type );
-    extern int ui_utils_file_rename ( char *path, char *oldname, char *newname );
-
-    /*
-     * 
-     * Adresarove funkce
-     * 
-     */
     typedef GDir UI_UTILS_DIR_HANDLE;
     typedef const char UI_UTILS_DIR_ITEM;
 
@@ -81,13 +54,18 @@ extern "C" {
 
     extern const gchar* ui_utils_ditem_get_name ( UI_UTILS_DIR_ITEM *ditem );
 
+    extern const gchar* ui_utils_get_error_message ( void );
+
+    extern void ui_utils_free ( void *ptr );
+    
+    extern int ui_utils_rename_file ( char *path, char *oldname, char *newname );
 
 #define ui_utils_build_filepath( path, filename ) ui_utils_ditem_get_filepath ( path, filename )
-#define ui_utils_free_filepath( filepath ) ui_utils_mem_free ( (void *) filepath )
+#define ui_utils_free_free_filepath( filepath ) ui_utils_free ( (void *) filepath )
 
-#ifdef __cplusplus
+#ifdef	__cplusplus
 }
 #endif
 
-#endif /* UI_UTILS_H */
+#endif	/* UI_UTILS_H */
 

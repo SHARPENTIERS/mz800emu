@@ -23,13 +23,10 @@
  * ---------------------------------------------------------------------------
  */
 
-#include "mz800emu_cfg.h"
-
-#include <string.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
-#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+#ifdef MZ800_DEBUGGER
 
 
 #include "ui/ui_main.h"
@@ -42,27 +39,10 @@
 #include "gdg/gdg.h"
 #include "memory/memory.h"
 
-#include "src/ui/tools/ui_tool_pixbuf.h"
-
-#include "cfgmain.h"
-#include "ui/ui_utils.h"
-#include "cfgfile/cfgtools.h"
-
 
 #define DEBUGGER_STACK_ROWS             20
-#define DEBUGGER_DISASSEMBLED_ROWS      32
+#define DEBUGGER_DISASSEMBLED_ROWS      30
 #define DEBUGGER_MNEMONIC_MAXLEN        20
-#define DEBUGGER_HISTORY_ROWS           DEBUGGER_HISTORY_LENGTH
-
-
-static const uint32_t g_mmap_color[MMBSTATE_COUNT] = {
-                                                      0x008000, /* RAM - green */
-                                                      0xff0000, /* ROM - red */
-                                                      0x000000, /* CGROM - black */
-                                                      0xffffff, /* CGRAM - white */
-                                                      0xffc0cb, /* VRAM - ping */
-                                                      0x0000ff, /* PORTS - blue */
-};
 
 
 struct st_UIDEBUGGER g_uidebugger;
@@ -142,20 +122,6 @@ void ui_debugger_update_internals ( void ) {
 }
 
 
-void ui_debugger_set_mmap_forced ( st_UIMMAPBANK *mmbank, en_UI_MMBSTATE state ) {
-    ui_tool_pixbuf_fill ( mmbank->pixbuf, g_mmap_color[state] );
-    mmbank->state = state;
-    gtk_widget_queue_draw ( mmbank->drawing_area );
-}
-
-
-static inline void ui_debugger_set_mmap ( st_UIMMAPBANK *mmbank, en_UI_MMBSTATE state ) {
-    if ( mmbank->state != state ) {
-        ui_debugger_set_mmap_forced ( mmbank, state );
-    };
-}
-
-
 void ui_debugger_update_mmap ( void ) {
 
     static int last_map = -1;
@@ -168,64 +134,117 @@ void ui_debugger_update_mmap ( void ) {
     last_map = g_memory.map;
     last_dmd = g_gdg.regDMD;
 
+    GtkStyleContext *context;
+    GtkStyleContext *context1;
+
+    context = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingarea0" ) );
     if ( MEMORY_MAP_TEST_ROM_0000 ) {
-        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_0], MMBSTATE_ROM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_RAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_ROM" );
     } else {
-        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_0], MMBSTATE_RAM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_ROM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_RAM" );
     };
 
+    context = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingarea1" ) );
     if ( MEMORY_MAP_TEST_ROM_1000 ) {
-        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_1], MMBSTATE_CGROM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_RAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_CGROM" );
     } else {
-        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_1], MMBSTATE_RAM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_CGROM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_RAM" );
     };
 
+    context = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingarea8" ) );
+    context1 = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingarea9" ) );
     if ( MEMORY_MAP_TEST_VRAM_8000 ) {
-        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_8], MMBSTATE_VRAM );
-        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_9], MMBSTATE_VRAM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_RAM" );
+        gtk_style_context_remove_class ( context1, "class_dbg_mmap_RAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_VRAM" );
+        gtk_style_context_add_class ( context1, "class_dbg_mmap_VRAM" );
     } else {
-        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_8], MMBSTATE_RAM );
-        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_9], MMBSTATE_RAM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_VRAM" );
+        gtk_style_context_remove_class ( context1, "class_dbg_mmap_VRAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_RAM" );
+        gtk_style_context_add_class ( context1, "class_dbg_mmap_RAM" );
     };
 
+    context = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingareaA" ) );
+    context1 = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingareaB" ) );
     if ( MEMORY_MAP_TEST_VRAM_A000 ) {
-        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_A], MMBSTATE_VRAM );
-        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_B], MMBSTATE_VRAM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_RAM" );
+        gtk_style_context_remove_class ( context1, "class_dbg_mmap_RAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_VRAM" );
+        gtk_style_context_add_class ( context1, "class_dbg_mmap_VRAM" );
     } else {
-        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_A], MMBSTATE_RAM );
-        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_B], MMBSTATE_RAM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_VRAM" );
+        gtk_style_context_remove_class ( context1, "class_dbg_mmap_VRAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_RAM" );
+        gtk_style_context_add_class ( context1, "class_dbg_mmap_RAM" );
     };
 
+    context = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingareaC" ) );
     if ( MEMORY_MAP_TEST_CGRAM ) {
-        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_C], MMBSTATE_CGRAM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_RAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_CGRAM" );
     } else {
-        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_C], MMBSTATE_RAM );
+        gtk_style_context_remove_class ( context, "class_dbg_mmap_CGRAM" );
+        gtk_style_context_add_class ( context, "class_dbg_mmap_RAM" );
     };
 
+    GtkStyleContext *contextD = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingareaD" ) );
+    GtkStyleContext *contextE_ports = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingareaE_ports" ) );
+    GtkStyleContext *contextE = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingareaE" ) );
+    GtkStyleContext *contextF = gtk_widget_get_style_context ( ui_get_widget ( "dbg_mmap_drawingareaF" ) );
     if ( DMD_TEST_MZ700 ) {
         if ( MEMORY_MAP_TEST_ROM_E000 ) {
-            ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_D], MMBSTATE_VRAM );
-            ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E_PORTS], MMBSTATE_PORTS );
-            ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E], MMBSTATE_ROM );
-            ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_F], MMBSTATE_ROM );
+            gtk_style_context_remove_class ( contextD, "class_dbg_mmap_RAM" );
+            gtk_style_context_add_class ( contextD, "class_dbg_mmap_VRAM" );
+
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_RAM" );
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_ROM" );
+            gtk_style_context_add_class ( contextE_ports, "class_dbg_mmap_PORTS" );
+
+            gtk_style_context_remove_class ( contextE, "class_dbg_mmap_RAM" );
+            gtk_style_context_remove_class ( contextF, "class_dbg_mmap_RAM" );
+            gtk_style_context_add_class ( contextE, "class_dbg_mmap_ROM" );
+            gtk_style_context_add_class ( contextF, "class_dbg_mmap_ROM" );
+
         } else {
-            ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_D], MMBSTATE_RAM );
-            ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E_PORTS], MMBSTATE_RAM );
-            ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E], MMBSTATE_RAM );
-            ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_F], MMBSTATE_RAM );
+            gtk_style_context_remove_class ( contextD, "class_dbg_mmap_VRAM" );
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_PORTS" );
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_ROM" );
+            gtk_style_context_remove_class ( contextE, "class_dbg_mmap_ROM" );
+            gtk_style_context_remove_class ( contextF, "class_dbg_mmap_ROM" );
+
+            gtk_style_context_add_class ( contextD, "class_dbg_mmap_RAM" );
+            gtk_style_context_add_class ( contextE_ports, "class_dbg_mmap_RAM" );
+            gtk_style_context_add_class ( contextE, "class_dbg_mmap_RAM" );
+            gtk_style_context_add_class ( contextF, "class_dbg_mmap_RAM" );
         };
     } else {
 
-        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_D], MMBSTATE_RAM );
+        gtk_style_context_remove_class ( contextD, "class_dbg_mmap_VRAM" );
+        gtk_style_context_add_class ( contextD, "class_dbg_mmap_RAM" );
 
         if ( MEMORY_MAP_TEST_ROM_E000 ) {
-            ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E_PORTS], MMBSTATE_ROM );
-            ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E], MMBSTATE_ROM );
-            ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_F], MMBSTATE_ROM );
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_PORTS" );
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_RAM" );
+            gtk_style_context_remove_class ( contextE, "class_dbg_mmap_RAM" );
+            gtk_style_context_remove_class ( contextF, "class_dbg_mmap_RAM" );
+
+            gtk_style_context_add_class ( contextE_ports, "class_dbg_mmap_ROM" );
+            gtk_style_context_add_class ( contextE, "class_dbg_mmap_ROM" );
+            gtk_style_context_add_class ( contextF, "class_dbg_mmap_ROM" );
         } else {
-            ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E_PORTS], MMBSTATE_RAM );
-            ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E], MMBSTATE_RAM );
-            ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_F], MMBSTATE_RAM );
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_PORTS" );
+            gtk_style_context_remove_class ( contextE_ports, "class_dbg_mmap_ROM" );
+            gtk_style_context_remove_class ( contextE, "class_dbg_mmap_ROM" );
+            gtk_style_context_remove_class ( contextF, "class_dbg_mmap_ROM" );
+
+            gtk_style_context_add_class ( contextE_ports, "class_dbg_mmap_RAM" );
+            gtk_style_context_add_class ( contextE, "class_dbg_mmap_RAM" );
+            gtk_style_context_add_class ( contextF, "class_dbg_mmap_RAM" );
         };
     };
 }
@@ -237,10 +256,10 @@ void ui_debugger_init_stack ( GtkTreeModel *model ) {
         GtkTreeIter iter;
         gtk_list_store_append ( GTK_LIST_STORE ( model ), &iter );
         gtk_list_store_set ( GTK_LIST_STORE ( model ), &iter,
-                             DBG_STACK_ADDR, 0,
-                             DBG_STACK_ADDR_TXT, "",
-                             DBG_STACK_VALUE, "",
-                             -1 );
+                DBG_STACK_ADDR, 0,
+                DBG_STACK_ADDR_TXT, "",
+                DBG_STACK_VALUE, "",
+                -1 );
     };
 }
 
@@ -277,10 +296,10 @@ void ui_debugger_update_stack ( void ) {
         sprintf ( value_txt, "%04X", value );
 
         gtk_list_store_set ( GTK_LIST_STORE ( model ), &iter,
-                             DBG_STACK_ADDR, addr,
-                             DBG_STACK_ADDR_TXT, addr_txt,
-                             DBG_STACK_VALUE, value_txt,
-                             -1 );
+                DBG_STACK_ADDR, addr,
+                DBG_STACK_ADDR_TXT, addr_txt,
+                DBG_STACK_VALUE, value_txt,
+                -1 );
         addr += 2;
         gtk_tree_model_iter_next ( model, &iter );
     };
@@ -299,101 +318,15 @@ void ui_debugger_init_disassembled ( GtkTreeModel *model, unsigned start_row, un
         GtkTreeIter iter;
         gtk_list_store_append ( GTK_LIST_STORE ( model ), &iter );
         gtk_list_store_set ( GTK_LIST_STORE ( model ), &iter,
-                             DBG_DIS_ADDR, 0,
-                             DBG_DIS_ADDR_TXT, "",
-                             DBG_DIS_BYTE0, "",
-                             DBG_DIS_BYTE1, "",
-                             DBG_DIS_BYTE2, "",
-                             DBG_DIS_BYTE3, "",
-                             DBG_DIS_MNEMONIC, "",
-                             -1 );
+                DBG_DIS_ADDR, 0,
+                DBG_DIS_ADDR_TXT, "",
+                DBG_DIS_BYTE0, "",
+                DBG_DIS_BYTE1, "",
+                DBG_DIS_BYTE2, "",
+                DBG_DIS_BYTE3, "",
+                DBG_DIS_MNEMONIC, "",
+                -1 );
     };
-}
-
-
-static inline void ui_debugger_init_history ( GtkTreeModel *model, unsigned start_row, unsigned count ) {
-    ui_debugger_init_disassembled ( model, start_row, count );
-}
-
-
-void ui_debugger_update_history ( void ) {
-
-    GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_history_liststore" ) );
-    GtkTreeIter iter;
-
-    if ( 0 == gtk_tree_model_iter_n_children ( model, NULL ) ) ui_debugger_init_history ( model, 0, DEBUGGER_HISTORY_ROWS );
-
-    int row = 0;
-    gtk_tree_model_get_iter_first ( model, &iter );
-
-    unsigned i;
-    for ( i = row; i < DEBUGGER_HISTORY_ROWS; i++ ) {
-
-        uint8_t position = debugger_history_position ( g_debugger_history.position - DEBUGGER_HISTORY_ROWS + 1 + i );
-
-        Z80EX_WORD addr = g_debugger_history.row[position].addr;
-
-        char addr_txt [ 6 ];
-        char byte0 [ 3 ];
-        char byte1 [ 3 ];
-        char byte2 [ 3 ];
-        char byte3 [ 3 ];
-        char mnemonic [ DEBUGGER_MNEMONIC_MAXLEN ];
-        int t_states, t_states2;
-
-        sprintf ( addr_txt, "%04X:", addr );
-        Z80EX_WORD addr_row = addr;
-
-        unsigned bytecode_length = z80ex_dasm ( mnemonic, DEBUGGER_MNEMONIC_MAXLEN - 1, 0, &t_states, &t_states2, debugger_dasm_history_read_cb, addr, &position );
-
-        sprintf ( byte0, "%02X", g_debugger_history.row[position].byte[0] );
-
-        if ( 1 < bytecode_length ) {
-            sprintf ( byte1, "%02X", g_debugger_history.row[position].byte[1] );
-        } else {
-            byte1 [ 0 ] = 0x00;
-        };
-
-        if ( 2 < bytecode_length ) {
-            sprintf ( byte2, "%02X", g_debugger_history.row[position].byte[2] );
-        } else {
-            byte2 [ 0 ] = 0x00;
-        };
-
-        if ( 3 < bytecode_length ) {
-            sprintf ( byte3, "%02X", g_debugger_history.row[position].byte[3] );
-        } else {
-            byte3 [ 0 ] = 0x00;
-        };
-
-        /* mnemonics se mi ctou lepe, kdyz jsou napsany malym pismem */
-        char *c = mnemonic;
-        while ( *c != 0x00 ) {
-            if ( ( *c >= 'A' ) && ( *c <= 'Z' ) ) {
-                *c += 0x20;
-            };
-            c++;
-        };
-
-        gtk_list_store_set ( GTK_LIST_STORE ( model ), &iter,
-                             DBG_DIS_ADDR, addr_row,
-                             DBG_DIS_BYTES, bytecode_length,
-                             DBG_DIS_ADDR_TXT, addr_txt,
-                             DBG_DIS_BYTE0, byte0,
-                             DBG_DIS_BYTE1, byte1,
-                             DBG_DIS_BYTE2, byte2,
-                             DBG_DIS_BYTE3, byte3,
-                             DBG_DIS_MNEMONIC, mnemonic,
-                             -1 );
-
-        if ( i == ( DEBUGGER_HISTORY_ROWS - 1 ) ) {
-            GtkTreePath *path = gtk_tree_model_get_path ( model, &iter );
-            gtk_tree_view_scroll_to_cell ( ui_get_tree_view ( "dbg_history_treeview" ), path, NULL, FALSE, 0.0, 0.0 );
-        };
-
-        gtk_tree_model_iter_next ( model, &iter );
-    };
-
 }
 
 
@@ -471,7 +404,7 @@ void ui_debugger_update_disassembled ( Z80EX_WORD addr, int row ) {
         };
 
         if ( 3 < bytecode_length ) {
-            sprintf ( byte3, "%02X", debugger_memory_read_byte ( addr++ ) );
+            sprintf ( byte3, "%02X ", debugger_memory_read_byte ( addr++ ) );
         } else {
             byte3 [ 0 ] = 0x00;
         };
@@ -486,15 +419,15 @@ void ui_debugger_update_disassembled ( Z80EX_WORD addr, int row ) {
         };
 
         gtk_list_store_set ( GTK_LIST_STORE ( model ), &iter,
-                             DBG_DIS_ADDR, addr_row,
-                             DBG_DIS_BYTES, bytecode_length,
-                             DBG_DIS_ADDR_TXT, addr_txt,
-                             DBG_DIS_BYTE0, byte0,
-                             DBG_DIS_BYTE1, byte1,
-                             DBG_DIS_BYTE2, byte2,
-                             DBG_DIS_BYTE3, byte3,
-                             DBG_DIS_MNEMONIC, mnemonic,
-                             -1 );
+                DBG_DIS_ADDR, addr_row,
+                DBG_DIS_BYTES, bytecode_length,
+                DBG_DIS_ADDR_TXT, addr_txt,
+                DBG_DIS_BYTE0, byte0,
+                DBG_DIS_BYTE1, byte1,
+                DBG_DIS_BYTE2, byte2,
+                DBG_DIS_BYTE3, byte3,
+                DBG_DIS_MNEMONIC, mnemonic,
+                -1 );
 
         if ( i == select_row ) {
             GtkTreeSelection *selection = gtk_tree_view_get_selection ( ui_get_tree_view ( "dbg_disassembled_treeview" ) );
@@ -527,7 +460,6 @@ void ui_debugger_update_all ( void ) {
     ui_debugger_update_mmap ( );
     ui_debugger_update_stack ( );
     ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
-    ui_debugger_update_history ( );
 }
 
 
@@ -555,7 +487,7 @@ void ui_debugger_update_animated ( void ) {
 
         case 3:
             ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
-            ui_debugger_update_history ( );
+            //break;
 
         case 4:
             animate_phase = 0;
@@ -585,7 +517,7 @@ gboolean on_dbg_disassembled_addr_vscale_button_press_event ( GtkWidget *widget,
 
 void ui_debugger_show_spinner_window ( void ) {
 
-    if ( g_debugger.animated_updates != DEBUGGER_ANIMATED_UPDATES_DISABLED ) return;
+    if ( g_debugger.animated_updates != 0 ) return;
     if ( TEST_EMULATION_PAUSED ) return;
 
     GtkWidget *w_main = ui_get_widget ( "debugger_main_window" );
@@ -647,83 +579,18 @@ void ui_debugger_hide_spinner_window ( void ) {
 }
 
 
-static gboolean on_mmap_drawing_area_draw ( GtkWidget *widget, cairo_t *cr, gpointer user_data ) {
-    st_UIMMAPBANK *mmbank = (st_UIMMAPBANK *) user_data;
-    gdk_cairo_set_source_pixbuf ( cr, mmbank->pixbuf, 0, 0 );
-    cairo_paint ( cr );
-    return TRUE;
-}
-
-
-void ui_debugger_create_mmap_pixbuf ( GtkWidget *widget, st_UIMMAPBANK *mmbank ) {
-
-    mmbank->drawing_area = widget;
-
-    GtkAllocation *alloc = g_new ( GtkAllocation, 1 );
-    gtk_widget_get_allocation ( mmbank->drawing_area, alloc );
-
-    mmbank->pixbuf = gdk_pixbuf_new ( GDK_COLORSPACE_RGB, FALSE, 8, alloc->width, alloc->height );
-
-    g_signal_connect ( G_OBJECT ( mmbank->drawing_area ), "draw",
-                       G_CALLBACK ( on_mmap_drawing_area_draw ), mmbank );
-
-    ui_debugger_set_mmap_forced ( mmbank, MMBSTATE_RAM );
-
-    g_free ( alloc );
-}
-
-
-void ui_debugger_initialize_mmap ( void ) {
-
-    char *g_mmap_names[MMBANK_COUNT] = {
-                                        "dbg_mmap_drawingarea0",
-                                        "dbg_mmap_drawingarea1",
-                                        "dbg_mmap_drawingarea2",
-                                        "dbg_mmap_drawingarea3",
-                                        "dbg_mmap_drawingarea4",
-                                        "dbg_mmap_drawingarea5",
-                                        "dbg_mmap_drawingarea6",
-                                        "dbg_mmap_drawingarea7",
-                                        "dbg_mmap_drawingarea8",
-                                        "dbg_mmap_drawingarea9",
-                                        "dbg_mmap_drawingareaA",
-                                        "dbg_mmap_drawingareaB",
-                                        "dbg_mmap_drawingareaC",
-                                        "dbg_mmap_drawingareaD",
-                                        "dbg_mmap_drawingareaE_ports",
-                                        "dbg_mmap_drawingareaE",
-                                        "dbg_mmap_drawingareaF",
-    };
-
-    int i;
-    for ( i = 0; i < MMBANK_COUNT; i++ ) {
-        GtkWidget *widget = ui_get_widget ( g_mmap_names[i] );
-        ui_debugger_create_mmap_pixbuf ( widget, &g_uidebugger.mmapbank[i] );
-    };
-}
-
-
 void ui_debugger_show_main_window ( void ) {
 
     GtkWidget *window = ui_get_widget ( "debugger_main_window" );
-    if ( gtk_widget_is_visible ( window ) ) {
-        ui_debugger_update_all ( );
-        return;
-    };
-
-    // zapneme ukladani historie
-    z80ex_set_memread_callback ( g_mz800.cpu, memory_read_with_history_cb, NULL );
-    debugger_reset_history ( );
-
 
     ui_main_win_move_to_pos ( GTK_WINDOW ( window ), &g_uidebugger.pos );
     gtk_widget_show ( window );
     gtk_widget_grab_focus ( window );
 
     /* inicializace prvku, ktere neumime udelat pres glade */
-    static gboolean initialised = FALSE;
+    static unsigned initialised = 0;
     if ( !initialised ) {
-        initialised = TRUE;
+        initialised = 1;
 
         /* Tyto vlastnosti se mi nepovedlo nastavit pomoci glade */
         g_object_set ( ui_get_object ( "dbg_reg0_value_cellrenderertext" ), "editable", TRUE, "xalign", 1.0, NULL );
@@ -738,45 +605,36 @@ void ui_debugger_show_main_window ( void ) {
         gtk_scale_set_draw_value ( GTK_SCALE ( dbg_disassembled_addr_vscale ), FALSE );
 
         g_signal_connect ( (gpointer) dbg_disassembled_addr_vscale, "adjust_bounds",
-                           G_CALLBACK ( on_dbg_disassembled_addr_vscale_adjust_bounds ),
-                           NULL );
+                G_CALLBACK ( on_dbg_disassembled_addr_vscale_adjust_bounds ),
+                NULL );
 
         g_signal_connect ( (gpointer) dbg_disassembled_addr_vscale, "button_press_event",
-                           G_CALLBACK ( on_dbg_disassembled_addr_vscale_button_press_event ),
-                           NULL );
+                G_CALLBACK ( on_dbg_disassembled_addr_vscale_button_press_event ),
+                NULL );
 
+        g_uidebugger.last_focus_addr = 0x0000;
 
         ui_main_setpos ( &g_uidebugger.pos, -1, -1 );
-
-        GtkTreeSelection *selection = gtk_tree_view_get_selection ( GTK_TREE_VIEW ( ui_get_object ( "dbg_history_treeview" ) ) );
-        gtk_tree_selection_set_mode ( selection, GTK_SELECTION_NONE );
     };
 
     g_uidebugger.accelerators_locked = 1;
 
-    if ( g_debugger.animated_updates == DEBUGGER_ANIMATED_UPDATES_DISABLED ) {
+    if ( g_debugger.animated_updates == 0 ) {
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "dbg_animated_disabled_radiomenuitem" ), TRUE );
         ui_debugger_show_spinner_window ( );
-    } else if ( g_debugger.animated_updates == DEBUGGER_ANIMATED_UPDATES_ENABLED ) {
+    } else {
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "dbg_animated_enabled_radiomenuitem" ), TRUE );
         ui_debugger_hide_spinner_window ( );
-    } else {
-        printf ( "%s() - %d: Error: unknow animation state '%d'\n", __func__, __LINE__, g_debugger.animated_updates );
     };
 
     g_uidebugger.accelerators_locked = 0;
 
-    ui_debugger_initialize_mmap ( );
-
     ui_debugger_update_all ( );
+
 }
 
 
 void ui_debugger_hide_main_window ( void ) {
-
-    // vypneme ukladani historie
-    z80ex_set_memread_callback ( g_mz800.cpu, memory_read_cb, NULL );
-
     ui_debugger_hide_spinner_window ( );
     GtkWidget *window = ui_get_widget ( "debugger_main_window" );
     ui_main_win_get_pos ( GTK_WINDOW ( window ), &g_uidebugger.pos );
@@ -788,7 +646,7 @@ void ui_debugger_pause_emulation ( void ) {
 
     gchar msg[] = "Emulation was paused. Now you can make any changes...";
     mz800_pause_emulation ( 1 );
-    GtkWidget *dialog = gtk_message_dialog_new ( ui_get_window ( "debugger_main_window" ), GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, msg );
+    GtkWidget *dialog = gtk_message_dialog_new ( NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, msg );
     gtk_window_set_position ( GTK_WINDOW ( dialog ), GTK_WIN_POS_MOUSE );
     gtk_dialog_run ( GTK_DIALOG ( dialog ) );
     gtk_widget_destroy ( dialog );
@@ -796,49 +654,13 @@ void ui_debugger_pause_emulation ( void ) {
 }
 
 
-void ui_debugger_focus_to_addr_history_propagatecfg_cb ( void *e, void *data ) {
-    char *encoded_txt = cfgelement_get_text_value ( (CFGELM *) e );
-
-    int ret = EXIT_FAILURE;
-    long int li_array[DBG_FOCUS_ADDR_HIST_LENGTH];
-    int length = cfgtool_strtol_array ( encoded_txt, li_array, DBG_FOCUS_ADDR_HIST_LENGTH, NULL, &ret );
-
-    if ( ( length == 0 ) || ( ret != EXIT_SUCCESS ) ) {
-        g_uidebugger.focus_addr_hist_count = 1;
-        g_uidebugger.focus_addr_history[0] = 0x0000;
-    } else {
-        int i;
-        for ( i = 0; i < length; i++ ) {
-            g_uidebugger.focus_addr_history[i] = li_array[i];
-        };
-        g_uidebugger.focus_addr_hist_count = length;
-    };
-
-    g_uidebugger.last_focus_addr = g_uidebugger.focus_addr_history[0];
+void ui_debugger_show_hide_mmap_menu ( void ) {
+    gtk_menu_popup ( GTK_MENU ( ui_get_widget ( "dbg_mmap_menu" ) ), NULL, NULL, NULL, NULL, 0, 0 );
 }
 
 
-void ui_debugger_focus_to_addr_history_save_cb ( void *e, void *data ) {
-
-    const char *separator = ", ";
-    int separator_length = strlen ( separator );
-    int value_length = 6;
-    int count = g_uidebugger.focus_addr_hist_count;
-
-    char *encoded_txt = ui_utils_mem_alloc0 ( ( count * value_length ) + ( ( count - 1 ) * separator_length ) + 1 );
-    char *value_txt = ui_utils_mem_alloc0 ( value_length + 1 );
-
-    int i;
-    for ( i = 0; i < count; i++ ) {
-        if ( i != 0 ) strncat ( encoded_txt, separator, separator_length + 1 );
-        sprintf ( value_txt, "0x%04x", g_uidebugger.focus_addr_history[i] );
-        strncat ( encoded_txt, value_txt, value_length + 1 );
-    };
-
-    cfgelement_set_text_value ( (CFGELM *) e, encoded_txt );
-
-    ui_utils_mem_free ( encoded_txt );
-    ui_utils_mem_free ( value_txt );
+void ui_debugger_show_hide_disassembled_menu ( void ) {
+    gtk_menu_popup ( GTK_MENU ( ui_get_widget ( "dbg_disassembled_menu" ) ), NULL, NULL, NULL, NULL, 0, 0 );
 }
 
 #endif

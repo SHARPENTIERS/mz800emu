@@ -24,14 +24,13 @@
  */
 
 #ifndef VRAMCTRL_H
-#define VRAMCTRL_H
+#define	VRAMCTRL_H
 
-#ifdef __cplusplus
+#ifdef	__cplusplus
 extern "C" {
 #endif
 
 #include "z80ex/include/z80ex.h"
-
 
     typedef enum {
         GDG_WF_MODE_SINGLE = 0,
@@ -41,7 +40,6 @@ extern "C" {
         GDG_WF_MODE_REPLACE,
         GDG_WF_MODE_PSET = 6
     } WFR_MODE;
-
 
     typedef struct st_VRAMCTRL {
         unsigned regWF_PLANE;
@@ -58,97 +56,17 @@ extern "C" {
 
     extern void vramctrl_reset ( void );
 
-    extern void vramctrl_mz800_set_wf_rf_reg ( int addr, Z80EX_BYTE value );
+    extern void vramctrl_set_reg (int addr, Z80EX_BYTE value);
 
-#if 0
-    extern Z80EX_BYTE vramctrl_mz700_memop_read_byte_sync ( Z80EX_WORD addr );
-    extern void vramctrl_mz700_memop_write_byte_sync ( Z80EX_WORD addr, Z80EX_BYTE value );
-
-    extern Z80EX_BYTE vramctrl_mz700_memop_read_byte ( Z80EX_WORD addr );
-    extern void vramctrl_mz700_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value );
-#endif
-
-    extern Z80EX_BYTE vramctrl_mz800_memop_read_byte_sync ( Z80EX_WORD addr );
-    extern Z80EX_BYTE vramctrl_mz800_memop_read_byte ( Z80EX_WORD addr );
-    extern void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value );
-
-#if 1
-#include "gdg.h"
-#include "memory/memory.h"
-    /*******************************************************************************
-     *
-     * VRAM kontroler pro rezimy MZ-700
-     * 
-     ******************************************************************************/
-
-    /**
-     * Cteni z MZ-700 VRAM bez ohledu na synchronizaci
-     * 
-     * @param addr
-     * @return 
-     */
-#define vramctrl_mz700_memop_read_byte( addr ) g_memory.VRAM [ addr ]
+    extern Z80EX_BYTE vramctrl_mz700_memop_read (Z80EX_WORD addr, int m1_state);
+    extern void vramctrl_mz700_memop_write (Z80EX_WORD addr, Z80EX_BYTE value);
+    extern Z80EX_BYTE vramctrl_mz800_memop_read (Z80EX_WORD addr);
+    extern void vramctrl_mz800_memop_write (Z80EX_WORD addr, Z80EX_BYTE value);
 
 
-    /**
-     * Cteni z MZ-700 VRAM s ohledem na synchronizaci
-     * 
-     * @param addr
-     * @return 
-     */
-    static inline Z80EX_BYTE vramctrl_mz700_memop_read_byte_sync ( Z80EX_WORD addr ) {
-        mz800_sync_insideop_mreq ( );
-        if ( SIGNAL_GDG_HBLNK ) {
-            mz800_sync_insideop_mreq_mz700_vramctrl ( );
-        };
-        return vramctrl_mz700_memop_read_byte ( addr );
-    }
-
-
-    /**
-     * Interni subrutina fyzickeho zapisu do MZ-700 VRAM - generuje vsak zmenu ve screenu
-     * 
-     * @param addr
-     * @param value
-     */
-#define vramctrl_mz700_memop_write_byte_internal( addr, value ) {\
-        /* TODO: meli by jsme nastavovat jen pokud se zapisuje do CG-RAM, nebo do VRAM, ktera je opravdu videt */\
-        g_gdg.screen_changes = SCRSTS_THIS_IS_CHANGED;\
-        g_memory.VRAM [ addr ] = value;\
-}
-
-
-    /**
-     * Zapis do MZ-700 VRAM s ohledem na synchronizaci
-     * 
-     * @param addr
-     * @param value
-     */
-#define vramctrl_mz700_memop_write_byte_sync( addr, value ) {\
-        mz800_sync_insideop_mreq ( );\
-        if ( SIGNAL_GDG_HBLNK ) {\
-            if ( g_vramctrl.mz700_wr_latch_is_used++ != 0 ) {\
-                mz800_sync_insideop_mreq_mz700_vramctrl ( );\
-            };\
-        };\
-        vramctrl_mz700_memop_write_byte_internal ( addr, value );\
-}
-
-
-    /**
-     * Zapis do MZ-700 VRAM bez synchronizace - generuje vsak zmenu ve screenu
-     * 
-     * @param addr
-     * @param value
-     */
-#define vramctrl_mz700_memop_write_byte( addr, value ) vramctrl_mz700_memop_write_byte_internal ( addr, value )
-
-#endif
-
-
-#ifdef __cplusplus
+#ifdef	__cplusplus
 }
 #endif
 
-#endif /* VRAMCTRL_H */
+#endif	/* VRAMCTRL_H */
 

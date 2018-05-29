@@ -23,11 +23,10 @@
  * ---------------------------------------------------------------------------
  */
 
-#include "mz800emu_cfg.h"
 
 #define _GNU_SOURCE /* vasprintf */
 
-#ifdef WINDOWS
+#ifdef WIN32
 #include<windows.h>
 #endif
 
@@ -38,8 +37,6 @@
 #define GETTEXT_PACKAGE "gtk30"
  */
 #include <gtk/gtk.h>
-#include <glib.h>
-#include <glib/gprintf.h>
 
 /*
 #include <gdk/gdk.h>
@@ -68,18 +65,12 @@
 #include "build_time.h"
 
 
-#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+
+#ifdef MZ800_DEBUGGER
 #include "debugger/debugger.h"
 #include "ui/debugger/ui_breakpoints.h"
 #include "ui/debugger/ui_memdump.h"
 #endif
-
-#include "generic_driver/ui_file_driver.h"
-#include "generic_driver/ui_memory_driver.h"
-
-#include "dsk_tool/ui_dsk_tool.h"
-#include "ui_joy.h"
-#include "cmt/cmt.h"
 
 st_UI g_ui;
 static int g_ui_is_initialised = 0;
@@ -138,30 +129,7 @@ void ui_savecfg_folder ( void *e, void *data ) {
     cfgelement_set_text_value ( (CFGELM *) e, g_ui.last_folder [ (en_FILETYPE) data ] );
 }
 
-
-void ui_main_update_menuitem_disabled_hotkeys ( unsigned state ) {
-    LOCK_UICALLBACKS ( );
-    if ( state ) {
-        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_keyboard_disable_hotkeys" ), TRUE );
-    } else {
-        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_keyboard_disable_hotkeys" ), FALSE );
-    };
-    UNLOCK_UICALLBACKS ( );
-}
-
-
-void ui_disable_hotkeys ( unsigned value ) {
-    value &= 1;
-    if ( value == g_ui.disable_hotkeys ) return;
-    g_ui.disable_hotkeys = value;
-    ui_main_update_menuitem_disabled_hotkeys ( value );
-    printf ( "INFO: Hotkeys in the main emulator window are %s.\n", ( !value ) ? "ENABLED" : "DISABLED" );
-}
-
-
-void ui_propagatecfg_disable_hotkeys ( void *e, void *data ) {
-    ui_disable_hotkeys ( cfgelement_get_bool_value ( (CFGELM *) e ) );
-}
+//void ui_init ( int argc, char *argv[] ) {
 
 
 void ui_init ( void ) {
@@ -208,11 +176,9 @@ void ui_init ( void ) {
     if ( 0 == gtk_builder_add_from_file ( g_ui.builder, UI_RESOURCES_DIR "mz800emu_cmt.glade", &err ) ) {
         printf ( "GtkBuilder error: %s\n", err->message );
     };
-    if ( 0 == gtk_builder_add_from_file ( g_ui.builder, UI_RESOURCES_DIR "dsk_tool.glade", &err ) ) {
-        printf ( "GtkBuilder error: %s\n", err->message );
-    };
 
-#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+
+#ifdef MZ800_DEBUGGER
     /* TODO: prozkoumat GtkCssProvider - nastavit rules hint pro disassembled a stack treeview */
     if ( 0 == gtk_builder_add_from_file ( g_ui.builder, UI_RESOURCES_DIR "mz800emu_debugger.glade", &err ) ) {
         printf ( "GtkBuilder error: %s\n", err->message );
@@ -237,30 +203,30 @@ void ui_init ( void ) {
     screen = gdk_display_get_default_screen ( display );
 
     gtk_style_context_add_provider_for_screen ( screen,
-                                                GTK_STYLE_PROVIDER ( provider ),
-                                                GTK_STYLE_PROVIDER_PRIORITY_APPLICATION );
+            GTK_STYLE_PROVIDER ( provider ),
+            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION );
 
 
 
     gtk_style_context_add_provider_for_screen ( screen,
-                                                GTK_STYLE_PROVIDER ( provider ),
-                                                GTK_STYLE_PROVIDER_PRIORITY_APPLICATION );
+            GTK_STYLE_PROVIDER ( provider ),
+            GTK_STYLE_PROVIDER_PRIORITY_APPLICATION );
 
 #if 0
     gtk_css_provider_load_from_data ( GTK_CSS_PROVIDER ( provider ),
-                                      " GtkWindow {\n"
-                                      "   -GtkWidget-focus-line-width: 0;\n"
-                                      /* The next 2 lines are not guaranteed to work, they can be can be overridden by the window manager*/
-                                      "   -GtkWindow-resize-grip-height: 0;\n"
-                                      "   -GtkWindow-resize-grip-width: 0;\n"
-                                      /* The next 4 lines are just 4 different ways to make the background blue. Each one overrides the last one.
-            Their just different color units: named color units, rgb,  rgba, hexidecimal, and shade*/
-                                      "   background-color: blue;\n"
-                                      "   background-color: rgb (0, 0, 255);\n"
-                                      "   background-color: rgba (0,0,255,1);\n"
-                                      "   background-color: #0000FF;\n"
-                                      "   background-color: shade(blue, 1.0);\n"
-                                      "}\n", -1, NULL );
+            " GtkWindow {\n"
+            "   -GtkWidget-focus-line-width: 0;\n"
+            /* The next 2 lines are not guaranteed to work, they can be can be overridden by the window manager*/
+            "   -GtkWindow-resize-grip-height: 0;\n"
+            "   -GtkWindow-resize-grip-width: 0;\n"
+            /* The next 4 lines are just 4 different ways to make the background blue. Each one overrides the last one.
+                Their just different color units: named color units, rgb,  rgba, hexidecimal, and shade*/
+            "   background-color: blue;\n"
+            "   background-color: rgb (0, 0, 255);\n"
+            "   background-color: rgba (0,0,255,1);\n"
+            "   background-color: #0000FF;\n"
+            "   background-color: shade(blue, 1.0);\n"
+            "}\n", -1, NULL );
 #endif
 
     gtk_css_provider_load_from_path ( GTK_CSS_PROVIDER ( provider ), UI_RESOURCES_DIR "mz800emu.css", &err );
@@ -302,24 +268,14 @@ void ui_init ( void ) {
     cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_DIR );
     cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_DIR );
 
-    elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_cmt_file", CFGENTYPE_TEXT, "" );
-    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_ALLCMTFILES );
-    cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_ALLCMTFILES );
-
     elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_filetype", CFGENTYPE_KEYWORD, FILETYPE_MZF,
-                                           FILETYPE_MZF, "MZF",
-                                           FILETYPE_DSK, "DSK",
-                                           FILETYPE_DAT, "DAT",
-                                           FILETYPE_MZQ, "MZQ",
-                                           FILETYPE_DIR, "DIR",
-                                           FILETYPE_ALLCMTFILES, "CMT_FILE",
-                                           -1 );
+            FILETYPE_MZF, "MZF",
+            FILETYPE_DSK, "DSK",
+            FILETYPE_DAT, "DAT",
+            FILETYPE_MZQ, "MZQ",
+            FILETYPE_DIR, "DIR",
+            -1 );
     cfgelement_set_handlers ( elm, (void*) &g_ui.last_filetype, (void*) &g_ui.last_filetype );
-
-    elm = cfgmodule_register_new_element ( cmod, "disable_hot_keys", CFGENTYPE_BOOL, 0 );
-
-    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_disable_hotkeys, NULL );
-    cfgelement_set_handlers ( elm, (void*) &g_ui.disable_hotkeys, (void*) &g_ui.disable_hotkeys );
 
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );
@@ -330,10 +286,6 @@ void ui_init ( void ) {
 
     /* display bylo nacteno jeste pred inicializaci ui, proto udelame update_menu nyni */
     ui_display_update_menu ( );
-
-    /* inicializace generickych driveru */
-    ui_file_driver_init ( );
-    ui_memory_driver_init ( );
 }
 
 
@@ -384,7 +336,7 @@ void ui_show_error_dialog ( char *error_message ) {
 
 void ui_write_errorlog ( char *lvl, char *msg ) {
     FILE *fp;
-    if ( NULL == ( fp = ui_utils_file_open ( UI_ERRORLOG_FILE, "a" ) ) ) {
+    if ( NULL == ( fp = ui_utils_fopen ( UI_ERRORLOG_FILE, "a" ) ) ) {
         fprintf ( stderr, "%s():%d - '%s' - fopen error: %s", __func__, __LINE__, UI_ERRORLOG_FILE, strerror ( errno ) );
     } else {
         fprintf ( fp, "%s %s:\t%s\n", cfgmain_create_timestamp ( ), lvl, msg );
@@ -394,57 +346,6 @@ void ui_write_errorlog ( char *lvl, char *msg ) {
 #endif
 
 
-/* modalni okno s [YES/NO] dialogem */
-int ui_show_yesno_dialog ( char *format, ... ) {
-
-    char *msg = NULL;
-    va_list args;
-    va_start ( args, format );
-
-#if 0
-    /* TODO: W32NAT nezna vasprintf - asi by bylo reseni pouzit vsnprintf (pokud jej tam existuje) */
-#if W32NAT
-    msg = "Unknown Error Message: your build is completed on host without vasprintf()\nCheck console for details.";
-    vprintf ( format, args );
-#else
-    vasprintf ( &msg, format, args );
-#endif
-#else
-    g_vasprintf ( &msg, format, args );
-#endif    
-    va_end ( args );
-
-    GtkWidget *dialog = NULL;
-    if ( g_ui_is_initialised == 1 ) {
-        dialog = gtk_message_dialog_new ( ui_get_window ( "main_window" ), GTK_DIALOG_MODAL, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, msg );
-    };
-
-#if 0
-#ifndef W32NAT
-    char *msg_in_locale;
-    msg_in_locale = g_locale_from_utf8 ( msg, -1, NULL, NULL, NULL );
-    fprintf ( stderr, "\nUI_ERROR: %s\n", msg_in_locale );
-    g_free ( msg_in_locale );
-#endif
-#endif
-
-    free ( msg );
-
-    gint result = GTK_RESPONSE_NO;
-
-    if ( g_ui_is_initialised == 1 ) {
-        result = gtk_dialog_run ( GTK_DIALOG ( dialog ) );
-        gtk_widget_destroy ( dialog );
-    };
-
-    if ( result == GTK_RESPONSE_YES ) {
-        return EXIT_SUCCESS;
-    };
-
-    return EXIT_FAILURE;
-}
-
-
 /* modalni okno s chybou */
 void ui_show_error ( char *format, ... ) {
 
@@ -452,7 +353,6 @@ void ui_show_error ( char *format, ... ) {
     va_list args;
     va_start ( args, format );
 
-#if 0
     /* TODO: W32NAT nezna vasprintf - asi by bylo reseni pouzit vsnprintf (pokud jej tam existuje) */
 #if W32NAT
     msg = "Unknown Error Message: your build is completed on host without vasprintf()\nCheck console for details.";
@@ -460,23 +360,18 @@ void ui_show_error ( char *format, ... ) {
 #else
     vasprintf ( &msg, format, args );
 #endif
-#else
-    g_vasprintf ( &msg, format, args );
-#endif    
     va_end ( args );
 
     GtkWidget *dialog = NULL;
     if ( g_ui_is_initialised == 1 ) {
-        dialog = gtk_message_dialog_new ( ui_get_window ( "main_window" ), GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, msg );
+        dialog = gtk_message_dialog_new ( NULL, GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, msg );
     };
 
-#if 0
 #ifndef W32NAT
     char *msg_in_locale;
     msg_in_locale = g_locale_from_utf8 ( msg, -1, NULL, NULL, NULL );
     fprintf ( stderr, "\nUI_ERROR: %s\n", msg_in_locale );
     g_free ( msg_in_locale );
-#endif
 #endif
 
 #ifdef UI_USE_ERRORLOG
@@ -499,7 +394,6 @@ void ui_show_warning ( char *format, ... ) {
     va_list args;
     va_start ( args, format );
 
-#if 0
     /* TODO: W32NAT nezna vasprintf  - asi by bylo reseni pouzit vsnprintf (pokud jej tam existuje) */
 #if W32NAT
     msg = "Unknown Error Message: your build is completed on host without vasprintf()\nCheck console for details.";
@@ -507,24 +401,20 @@ void ui_show_warning ( char *format, ... ) {
 #else
     vasprintf ( &msg, format, args );
 #endif
-#else
-    g_vasprintf ( &msg, format, args );
-#endif
 
     va_end ( args );
 
     GtkWidget *dialog = NULL;
     if ( g_ui_is_initialised == 1 ) {
-        dialog = gtk_message_dialog_new ( ui_get_window ( "main_window" ), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, msg );
+        dialog = gtk_message_dialog_new ( NULL, GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, msg );
     };
 
-#if 0
+
 #ifndef W32NAT
     char *msg_in_locale;
     msg_in_locale = g_locale_from_utf8 ( msg, -1, NULL, NULL, NULL );
     fprintf ( stderr, "\nUI_WARNING: %s\n", msg_in_locale );
     g_free ( msg_in_locale );
-#endif
 #endif
 
 #ifdef UI_USE_ERRORLOG
@@ -540,20 +430,7 @@ void ui_show_warning ( char *format, ... ) {
 }
 
 
-/**
- * 
- * Pokud filename != NULL, tak se do nej nakopiruje max_filename_size znaku.
- * Pokud filename == NULL, tak vratime nove naalokovany filename, ktery je potom potreba uvolnit.
- * 
- * @param filename
- * @param predefined_filename
- * @param max_filename_size
- * @param filetype
- * @param window_title
- * @param openmode
- * @return 
- */
-unsigned ui_open_file ( char **filename, char *predefined_filename, unsigned max_filename_size, en_FILETYPE filetype, char *window_title, en_OPENMODE openmode ) {
+unsigned ui_open_file ( char *filename, char *predefined_filename, unsigned max_filename_size, en_FILETYPE filetype, char *window_title, en_OPENMODE openmode ) {
 
     GtkWidget *filechooserdialog;
     GtkFileFilter *filter = NULL;
@@ -573,10 +450,10 @@ unsigned ui_open_file ( char **filename, char *predefined_filename, unsigned max
     };
 
     filechooserdialog = gtk_file_chooser_dialog_new ( window_title, NULL,
-                                                      fcaction,
-                                                      "_Cancel", GTK_RESPONSE_CANCEL,
-                                                      "_Open", GTK_RESPONSE_ACCEPT,
-                                                      NULL );
+            fcaction,
+            "_Cancel", GTK_RESPONSE_CANCEL,
+            "_Open", GTK_RESPONSE_ACCEPT,
+            NULL );
 
     gtk_container_set_border_width ( GTK_CONTAINER ( filechooserdialog ), 5 );
     g_object_set ( filechooserdialog, "local-only", FALSE, NULL );
@@ -592,7 +469,7 @@ unsigned ui_open_file ( char **filename, char *predefined_filename, unsigned max
     if ( filetype == FILETYPE_MZF ) {
         gtk_file_filter_add_pattern ( filter, "*.mzf" );
         gtk_file_filter_add_pattern ( filter, "*.MZF" );
-        gtk_file_filter_set_name ( filter, "MZ-800 Tape File (MZF)" );
+        gtk_file_filter_set_name ( filter, "MZ-800 Tape File" );
     } else if ( filetype == FILETYPE_DSK ) {
         gtk_file_filter_add_pattern ( filter, "*.dsk" );
         gtk_file_filter_add_pattern ( filter, "*.DSK" );
@@ -608,18 +485,6 @@ unsigned ui_open_file ( char **filename, char *predefined_filename, unsigned max
     } else if ( filetype == FILETYPE_DIR ) {
         gtk_file_filter_add_pattern ( filter, "*" );
         gtk_file_filter_set_name ( filter, "Directory" );
-    } else if ( filetype == FILETYPE_ALLCMTFILES ) {
-        gtk_file_filter_add_pattern ( filter, "*.mzf" );
-        gtk_file_filter_add_pattern ( filter, "*.MZF" );
-        gtk_file_filter_add_pattern ( filter, "*.m12" );
-        gtk_file_filter_add_pattern ( filter, "*.M12" );
-        gtk_file_filter_add_pattern ( filter, "*.wav" );
-        gtk_file_filter_add_pattern ( filter, "*.WAV" );
-        gtk_file_filter_add_pattern ( filter, "*.mzt" );
-        gtk_file_filter_add_pattern ( filter, "*.MZT" );
-        gtk_file_filter_add_pattern ( filter, "*.tap" );
-        gtk_file_filter_add_pattern ( filter, "*.TAP" );
-        gtk_file_filter_set_name ( filter, "CMT File: .mzf, .mzt, .wav" );
     };
 
     gtk_file_chooser_add_filter ( (GtkFileChooser*) filechooserdialog, filter );
@@ -645,24 +510,15 @@ unsigned ui_open_file ( char **filename, char *predefined_filename, unsigned max
         ui_update_last_folder_value ( filetype, current_folder );
         g_ui.last_filetype = filetype;
 
-        int filename_length = strlen ( (char*) gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) ) );
-
-        if ( *filename != NULL ) {
-            if ( filename_length < max_filename_size ) {
-                gchar *fname = gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) );
-                char *filename_cp = *filename;
-                strncpy ( filename_cp, (char*) fname, max_filename_size );
-                g_free ( fname );
-                filename_cp [ max_filename_size - 1 ] = 0x00;
-                uiret = UIRET_OK;
-                break;
-            } else {
-                ui_show_error ( "Sorry, filepath is too big!" );
-            };
-        } else {
-            *filename = gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) );
+        if ( strlen ( (char*) gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) ) ) < max_filename_size ) {
+            gchar *fname = gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) );
+            strncpy ( filename, (char*) fname, max_filename_size );
+            g_free ( fname );
+            filename [ max_filename_size - 1 ] = 0x00;
             uiret = UIRET_OK;
             break;
+        } else {
+            ui_show_error ( "Sorry, filepath is too big!" );
         };
     };
 
@@ -738,9 +594,9 @@ G_MODULE_EXPORT void on_max_cpu_speed ( GtkCheckMenuItem *menuitem, gpointer dat
 #endif
 
     if ( FALSE == gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_max_cpu_speed" ) ) ) {
-        mz800_switch_emulation_speed ( MZ800_EMULATION_SPEED_NORMAL );
+        mz800_set_cpu_speed ( MZ800_EMULATION_SPEED_NORMAL );
     } else {
-        mz800_switch_emulation_speed ( MZ800_EMULATION_SPEED_MAX );
+        mz800_set_cpu_speed ( MZ800_EMULATION_SPEED_MAX );
     };
 }
 
@@ -796,7 +652,7 @@ void ui_main_update_emulation_state ( unsigned state ) {
 
 
 
-#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+#ifdef MZ800_DEBUGGER
 
 
 G_MODULE_EXPORT void on_open_debugger ( GtkMenuItem *menuitem, gpointer data ) {
@@ -853,10 +709,10 @@ G_MODULE_EXPORT void on_menuitem_open_memdump_activate ( GtkMenuItem *menuitem, 
 
 
 
-#ifdef WINDOWS
+#ifdef WIN32
 
 
-/* BUGFIX: ve WINDOWS (WIN32 i WIN64?) nefunguje spravne gtk_show_uri() */
+/* BUGFIX: ve win32 nefunguje spravne gtk_show_uri() */
 void on_aboutdialog_activate_link_event ( GtkMenuItem *menuitem, gpointer user_data ) {
     GtkWidget *window = ui_get_widget ( "emulator_aboutdialog" );
     ShellExecute ( NULL, "open", gtk_about_dialog_get_website ( GTK_ABOUT_DIALOG ( window ) ), NULL, NULL, SW_SHOWNORMAL );
@@ -875,21 +731,21 @@ G_MODULE_EXPORT void on_about_menuitem_activate ( GtkMenuItem *menuitem, gpointe
     if ( initialised == 0 ) {
 
         unsigned version_length = 0;
-        char *version_format = "version: %s\nbuild: %s (%s)"; /* verze, build time, platform */
+        char *version_format = "version: %s\nbuild: %s"; /* verze, build time */
 
         version_length += strlen ( CFGMAIN_EMULATOR_VERSION_TEXT );
         version_length += strlen ( build_time_get ( ) );
         version_length += strlen ( version_format ) + 1;
 
         gchar *version_txt = malloc ( version_length );
-        sprintf ( version_txt, version_format, CFGMAIN_EMULATOR_VERSION_TEXT, build_time_get ( ), CFGMAIN_PLATFORM );
+        sprintf ( version_txt, version_format, CFGMAIN_EMULATOR_VERSION_TEXT, build_time_get ( ) );
 
         gtk_about_dialog_set_version ( GTK_ABOUT_DIALOG ( window ), version_txt );
 
         free ( version_txt );
 
         g_signal_connect ( GTK_DIALOG ( window ), "response", G_CALLBACK ( gtk_widget_hide ), window );
-#ifdef WINDOWS
+#ifdef WIN32
         g_signal_connect ( GTK_DIALOG ( window ), "activate-link", G_CALLBACK ( on_aboutdialog_activate_link_event ), NULL );
 #endif
         initialised = 1;
@@ -902,112 +758,4 @@ G_MODULE_EXPORT gboolean on_emulator_aboutdialog_delete_event ( GtkWidget *widge
     GtkWidget *window = ui_get_widget ( "emulator_aboutdialog" );
     gtk_widget_hide ( window );
     return TRUE;
-}
-
-
-void ui_main_update_rear_dip_switch_mz800_mode ( unsigned state ) {
-    LOCK_UICALLBACKS ( );
-    if ( state ) {
-        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_dip_switch_mz800_mode" ), TRUE );
-    } else {
-        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_dip_switch_mz800_mode" ), FALSE );
-    };
-    UNLOCK_UICALLBACKS ( );
-}
-
-
-G_MODULE_EXPORT void on_menuitem_dip_switch_mz800_mode_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
-    (void) menuitem;
-    (void) data;
-
-    if ( TEST_UICALLBACKS_LOCKED ) return;
-
-#ifdef UI_TOPMENU_IS_WINDOW
-    ui_hide_main_menu ( );
-#endif
-
-    if ( FALSE == gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_dip_switch_mz800_mode" ) ) ) {
-        mz800_rear_dip_switch_mz800_mode ( 0 );
-    } else {
-        mz800_rear_dip_switch_mz800_mode ( 1 );
-    };
-
-    printf ( "Rear dip switch - Mode: %s\n", ( !g_mz800.mz800_switch ) ? "MZ-700" : "MZ-800" );
-}
-
-
-void ui_main_update_rear_dip_switch_cmt_inverted_polarity ( unsigned state ) {
-    LOCK_UICALLBACKS ( );
-    if ( state ) {
-        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_dip_switch_cmt_inverted_polarity" ), TRUE );
-    } else {
-        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_dip_switch_cmt_inverted_polarity" ), FALSE );
-    };
-    UNLOCK_UICALLBACKS ( );
-}
-
-
-G_MODULE_EXPORT void on_menuitem_dip_switch_cmt_inverted_polarity_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
-    (void) menuitem;
-    (void) data;
-
-    if ( TEST_UICALLBACKS_LOCKED ) return;
-
-#ifdef UI_TOPMENU_IS_WINDOW
-    ui_hide_main_menu ( );
-#endif
-
-    if ( FALSE == gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_dip_switch_cmt_inverted_polarity" ) ) ) {
-        cmt_rear_dip_switch_cmt_inverted_polarity ( 0 );
-    } else {
-        cmt_rear_dip_switch_cmt_inverted_polarity ( 1 );
-    };
-
-    printf ( "Rear dip switch - CMT polarity: %s\n", ( !g_cmt.polarity ) ? "Normal" : "Inverted" );
-}
-
-
-G_MODULE_EXPORT void on_menuitem_keyboard_disable_hotkeys_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
-    (void) menuitem;
-    (void) data;
-
-    if ( TEST_UICALLBACKS_LOCKED ) return;
-
-#ifdef UI_TOPMENU_IS_WINDOW
-    ui_hide_main_menu ( );
-#endif
-
-    if ( FALSE == gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_keyboard_disable_hotkeys" ) ) ) {
-        ui_disable_hotkeys ( 0 );
-    } else {
-        ui_disable_hotkeys ( 1 );
-    };
-}
-
-
-G_MODULE_EXPORT void on_menuitem_dsk_tool_activate ( GtkMenuItem *menuitem, gpointer data ) {
-    (void) menuitem;
-    (void) data;
-
-    if ( TEST_UICALLBACKS_LOCKED ) return;
-
-#ifdef UI_TOPMENU_IS_WINDOW
-    ui_hide_main_menu ( );
-#endif
-
-    ui_dsk_tool_show_window ( );
-}
-
-
-G_MODULE_EXPORT void on_menuitem_joystick_setup_activate ( GtkMenuItem *menuitem, gpointer data ) {
-    (void) menuitem;
-    (void) data;
-
-    if ( TEST_UICALLBACKS_LOCKED ) return;
-
-#ifdef UI_TOPMENU_IS_WINDOW
-    ui_hide_main_menu ( );
-#endif
-
-    ui_joy_show_window ( );
 }

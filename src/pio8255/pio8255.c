@@ -39,7 +39,6 @@
 //#define DBGLEVEL (DBGNON /* | DBGERR | DBGWAR | DBGINF*/)
 //#define DBGLEVEL (DBGNON | DBGERR | DBGWAR | DBGINF )
 #include "debug.h"
-#include "ui/vkbd/windows_virtual_key_codes.h"
 
 
 /*
@@ -49,10 +48,10 @@
  */
 
 
-#define DEF_PIO8255_PORTA 0x00
-#define DEF_PIO8255_PORTB 0x01
-#define DEF_PIO8255_PORTC 0x02
-#define DEF_PIO8255_MASTER 0x03
+#define DEF_PIO8255_PORTA	0x00
+#define DEF_PIO8255_PORTB	0x01
+#define DEF_PIO8255_PORTC	0x02
+#define DEF_PIO8255_MASTER	0x03
 
 
 st_PIO8255 g_pio8255;
@@ -63,43 +62,15 @@ void pio8255_keyboard_matrix_reset ( void ) {
 }
 
 
-void pio8255_vkbd_matrix_reset ( void ) {
-    memset ( &g_pio8255.vkbd_matrix, 0xff, sizeof ( g_pio8255.vkbd_matrix ) );
-}
-
-
 void pio8255_init ( void ) {
-    PIO8255_KEYBOARD_MATRIX_RESET ( );
-    memset ( &g_pio8255.vkbd_matrix, 0xff, sizeof ( g_pio8255.vkbd_matrix ) );
+    KEYBOARD_MATRIX_RESET ( );
     g_pio8255.signal_PA = 0x00;
     g_pio8255.signal_PA_keybord_column = 0x00;
     g_pio8255.signal_PC = 0x00;
 }
 
-//static unsigned long bdcounter = 0;
-
-
-/* data do CMT */
-void static inline pio8255_set_pc01 ( uint8_t new_pc01 ) {
-    if ( new_pc01 != g_pio8255.signal_pc01 ) {
-        g_pio8255.signal_pc01 = new_pc01;
-        //printf("bdc=%lu\n", bdcounter++);
-#if 0
-        static uint32_t last = 0;
-#ifdef LINUX
-        printf ( "CMT: %d - %lu\n", new_pc01, gdg_get_total_ticks ( ) - last );
-#else
-        printf ( "CMT: %d - %llu\n", new_pc01, gdg_get_total_ticks ( ) - last );
-#endif
-        last = gdg_get_total_ticks ( );
-#endif
-    };
-}
-
 
 void pio8255_write ( int addr, Z80EX_BYTE value ) {
-
-    DBGPRINTF ( DBGINF, "addr = 0x%02x, value = 0x%02x, PC = 0x%04x\n", addr, value, g_mz800.instruction_addr );
 
     int bit_setres;
 
@@ -110,42 +81,29 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
         case DEF_PIO8255_PORTA:
             //DBGPRINTF ( DBGINF, "addr = %d (PORT_A), value = 0x%02x )\n", addr, value );
             g_pio8255.signal_PA = value;
-
-            // 0. - 3. bit vzorkovani klavesnice - aktivni pri H
+            /* TODO: vzorkovani klavesnice co se stane, kdyz se posle vyssi hodnota, nez 9 ? */
             if ( 9 >= ( value & 0x0f ) ) {
                 g_pio8255.signal_PA_keybord_column = value & 0x0f;
             };
-
-            // 4. bit Joystick-1 strobe - aktivni pri L
-            g_pio8255.signal_PA_joy1_enabled = ( !( value & 0x20 ) ) ? 1 : 0;
-
-            // 5. bit Joystick-2 strobe - aktivni pri L
-            g_pio8255.signal_PA_joy2_enabled = ( !( value & 0x40 ) ) ? 1 : 0;
-
-            // 7. bit cursor timer reset - aktivni pri L
-            if ( !( value & 0x80 ) ) {
-                mz800_cursor_timer_reset ( );
-            };
-
             break;
 
         case DEF_PIO8255_PORTC:
 
-            DBGPRINTF ( DBGINF, "addr = %d (PORT_C), value = 0x%02x), PC = 0x%04x\n", addr, value, g_mz800.instruction_addr );
+            //DBGPRINTF ( DBGINF, "addr = %d (PORT_C), value = 0x%02x )\n", addr, value );
             //printf ( "WR addr = %d (PORT_C), value = 0x%02x )\n", addr, value );
 
             /* blokovani CTC0 - zvukovy vystup */
             g_pio8255.signal_pc00 = ( value >> 0 ) & 0x01;
             DBGPRINTF ( DBGINF, "audio ctc0 mask (pc00): %d\n", g_pio8255.signal_pc00 );
-            audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), gdg_get_insigeop_ticks ( ) );
+            audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), g_gdg.screen_ticks_elapsed );
 
             /* data do CMT */
-            pio8255_set_pc01 ( ( value >> 1 ) & 0x01 );
+            g_pio8255.signal_pc01 = ( value >> 1 ) & 0x01;
 
             /* blokovani CTC2 - preruseni z CTC */
             g_pio8255.signal_pc02 = ( value >> 2 ) & 0x01;
             DBGPRINTF ( DBGINF, "interrupt ctc2 mask (pc02): %d\n", g_pio8255.signal_pc02 );
-            mz800_interrupt_manager ( );
+            mz800_ctc2_interrupt_handle ( );
 
             /* rizeni motoru CMT - nabezna hrana provede zmenu */
             unsigned old_pc03_state = g_pio8255.signal_pc03;
@@ -159,7 +117,7 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
 
         case DEF_PIO8255_MASTER:
 
-            DBGPRINTF ( DBGINF, "addr = %d (MASTER_PORT), value = 0x%02x, PC = 0x%04x\n", addr, value, g_mz800.instruction_addr );
+            DBGPRINTF ( DBGINF, "addr = %d (MASTER_PORT), value = 0x%02x\n", addr, value );
 
             if ( value & 0x80 ) {
                 if ( value == 0x8a ) {
@@ -168,12 +126,11 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
                     g_pio8255.signal_PA = 0x00;
                     g_pio8255.signal_PA_keybord_column = 0x00;
                     g_pio8255.signal_pc00 = 0;
-                    pio8255_set_pc01 ( 0 );
                     g_pio8255.signal_pc02 = 0;
                     DBGPRINTF ( DBGINF, "reset - pc00 - pc03 = 0x00\n" );
 
-                    audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), gdg_get_insigeop_ticks ( ) );
-                    mz800_interrupt_manager ( );
+                    audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), g_gdg.screen_ticks_elapsed );
+                    mz800_ctc2_interrupt_handle ( );
 #if ( DBGLEVEL & DBGWAR )
                 } else {
                     DBGPRINTF ( DBGWAR, "addr = %d, value = 0x%02x - UNSUPORTED MODE! PC: 0x%04x\n", addr, value, z80ex_get_reg ( g_mz800.cpu, regPC ) );
@@ -185,15 +142,15 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
                 if ( bit_setres == 0 ) {
                     g_pio8255.signal_pc00 = value & 0x01;
                     DBGPRINTF ( DBGINF, "audio ctc0 mask (pc00): %d\n", g_pio8255.signal_pc00 );
-                    audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), gdg_get_insigeop_ticks ( ) );
+                    audio_ctc0_changed ( ( CTC8253_OUT ( 0 ) & CTC_AUDIO_MASK ), g_gdg.screen_ticks_elapsed );
 
                 } else if ( bit_setres == 1 ) {
-                    pio8255_set_pc01 ( value & 0x01 );
+                    g_pio8255.signal_pc01 = value & 0x01;
 
                 } else if ( bit_setres == 2 ) {
                     g_pio8255.signal_pc02 = value & 0x01;
                     DBGPRINTF ( DBGINF, "interrupt ctc2 mask (pc02): %d\n", g_pio8255.signal_pc02 );
-                    mz800_interrupt_manager ( );
+                    mz800_ctc2_interrupt_handle ( );
 
                 } else if ( bit_setres == 3 ) {
                     /* rizeni motoru CMT - nabezna hrana provede zmenu */
@@ -229,7 +186,7 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
 
 Z80EX_BYTE pio8255_read ( int addr ) {
 
-    DBGPRINTF ( DBGINF, "addr = 0x%02x, PC = 0x%04x\n", addr, g_mz800.instruction_addr );
+    Z80EX_BYTE retval;
 
     switch ( addr ) {
 
@@ -239,11 +196,9 @@ Z80EX_BYTE pio8255_read ( int addr ) {
 
         case DEF_PIO8255_PORTB:
 
-            iface_sdl_pool_keyboard_events ( );
-            //g_pio8255.keyboard_matrix [ 2 ] &= 0xdf;
-            Z80EX_BYTE retval = g_pio8255.keyboard_matrix [ g_pio8255.signal_PA_keybord_column ] & g_pio8255.vkbd_matrix [ g_pio8255.signal_PA_keybord_column ];
-            //DBGPRINTF ( DBGINF, "addr = 0x%02x, keyboard_matrix[%d] = 0x%02x, PC = 0x%04x\n", addr, g_pio8255.signal_PA_keybord_column, retval, g_mz800.instruction_addr );
-            return retval;
+            iface_sdl_keybord_scan ( );
+            //BGPRINTF ( DBGINF, "addr = %d (PORT_B - key scan: %d ), value = 0x%02x, PC = 0x%04x\n", addr, g_pio8255.signal_PA_keybord_column, g_pio8255.keyboard_matrix [ g_pio8255.signal_PA_keybord_column ], z80ex_get_reg ( g_mz800.cpu, regPC ) );
+            return g_pio8255.keyboard_matrix [ g_pio8255.signal_PA_keybord_column ];
 
             /* TODO: prozatim mame jen ty nejpodstatnejsi bity */
         case DEF_PIO8255_PORTC:
@@ -261,19 +216,10 @@ Z80EX_BYTE pio8255_read ( int addr ) {
 
             retval = 0x00;
             retval |= SIGNAL_GDG_VBLNK ? 1 << 7 : 0;
-            retval |= mz800_get_cursor_timer_state ( ) << 6;
-#if 1
-            retval |= ( cmt_read_data ( ) & 1 ) << 5;
-#else
-            int cmtdata = ( cmt_read_data ( ) & 1 );
-            retval |= ( cmtdata ) << 5;
-            static uint32_t gdg_last_time = 0;
-            printf ( "IORQ - %d, %d\n", cmtdata, gdg_get_total_ticks ( ) - gdg_last_time );
-            gdg_last_time = gdg_get_total_ticks ( );
-#endif
-            retval |= g_pio8255.signal_pc04 << 4;
-            //retval |= SIGNAL_GDG_VBLNK << 4; /* simulujeme promenlivy stav motoru (jinak neni mozne spustit hru "24" - musel by se manualne menit stav motoru ) */
-
+            retval |= ( ( g_gdg.screens_counter / 25 ) & 1 ) << 6;
+            retval |= g_cmt.output_signal << 5;
+            //retval |= g_pio8255.signal_pc04 << 4;
+            retval |= SIGNAL_GDG_VBLNK << 4; /* simulujeme promenlivy stav motoru (jinak neni mozne spustut hru "24" - musel by se manualne menit stav motoru ) */
             retval |= g_pio8255.signal_pc02 << 2;
             retval |= g_pio8255.signal_pc00;
 

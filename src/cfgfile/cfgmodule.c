@@ -23,7 +23,7 @@
  * ---------------------------------------------------------------------------
  */
 
-#ifdef WINDOWS
+#ifdef WIN32
 #include<windows.h>
 #endif
 
@@ -90,7 +90,6 @@ void cfgcommon_destroy_module ( st_CFGMODULE *m ) {
  * 
  *      - default_value
  *      - pro CFGENTYPE_KEYWORD nasleduje seznam hodnot a keywordu, hodnota -1 znaci konec seznamu
- *      - pro CFGENTYPE_UNSIGNED nasleduje min a max hodnota
  * 
  */
 st_CFGELEMENT* cfgmodule_register_new_element ( st_CFGMODULE *m, char *element_name, en_CFGELEMENTTYPE type, ... ) {
@@ -169,11 +168,6 @@ void cfgmodule_set_save_cb ( st_CFGMODULE *m, cfgmodule_save_cb_t cbexec, void *
 }
 
 
-unsigned cfgmodule_get_element_unsigned_value_by_name ( st_CFGMODULE *m, char *element_name ) {
-    return cfgelement_get_unsigned_value ( cfgmodule_get_element_by_name ( (CFGMOD *) m, element_name ) );
-}
-
-
 char* cfgmodule_get_element_text_value_by_name ( st_CFGMODULE *m, char *element_name ) {
     return cfgelement_get_text_value ( cfgmodule_get_element_by_name ( (CFGMOD *) m, element_name ) );
 }
@@ -191,11 +185,6 @@ int cfgmodule_get_element_keyword_value_by_name ( st_CFGMODULE *m, char *element
 
 char* cfgmodule_get_element_text_default_value_by_name ( st_CFGMODULE *m, char *element_name ) {
     return cfgelement_get_text_default_value ( cfgmodule_get_element_by_name ( (CFGMOD *) m, element_name ) );
-}
-
-
-unsigned cfgmodule_get_element_unsigned_default_value_by_name ( st_CFGMODULE *m, char *element_name ) {
-    return cfgelement_get_unsigned_default_value ( cfgmodule_get_element_by_name ( (CFGMOD *) m, element_name ) );
 }
 
 
@@ -281,17 +270,17 @@ static char* cfgcommon_search_word_end ( char *str, unsigned str_length ) {
 #define CFG_MAX_LINE_LENGTH     4096
 
 
-int cfgmodule_parse ( st_CFGMODULE *m ) {
+void cfgmodule_parse ( st_CFGMODULE *m ) {
 
     assert ( m != NULL );
 
     st_CFGROOT *r = m->parent;
 
-    if ( access ( r->filename, F_OK ) == -1 ) return EXIT_FAILURE; /* Konfiguracni soubor neexistuje */
-
-    if ( !( r->ini_fp = ui_utils_file_open ( r->filename, "r" ) ) ) {
+    if ( access ( r->filename, F_OK ) == -1 ) return; /* Konfiguracni soubor neexistuje */
+    
+    if ( !( r->ini_fp = ui_utils_fopen ( r->filename, "r" ) ) ) {
         ui_show_error ( "%s() - Can't open file '%s' to read: %s", __func__, r->filename, strerror ( errno ) );
-        return EXIT_FAILURE;
+        return;
     };
 
     char str_line [ CFG_MAX_LINE_LENGTH ];
@@ -350,7 +339,7 @@ int cfgmodule_parse ( st_CFGMODULE *m ) {
 
 
                 } else {
-
+                    
                     if ( *word0 == '[' ) break; /* Koncime! zacina tu dalsi modul */
 
                     char *element_name = word0;
@@ -389,9 +378,7 @@ int cfgmodule_parse ( st_CFGMODULE *m ) {
 
                             if ( e->type == CFGENTYPE_TEXT ) {
 
-                                if ( strlen ( element_valtxt ) ) {
-                                    cfgelement_set_text_value ( e, element_valtxt );
-                                };
+                                cfgelement_set_text_value ( e, element_valtxt );
 
                             } else if ( e->type == CFGENTYPE_BOOL ) {
 
@@ -403,48 +390,9 @@ int cfgmodule_parse ( st_CFGMODULE *m ) {
 
                             } else if ( e->type == CFGENTYPE_KEYWORD ) {
 
-                                int value = cfgelement_property_get_value_by_keyword ( e->pkw, element_valtxt );
-                                if ( value != -1 ) {
+                                int value = cfgelement_property_get_value_by_keyword ( e->properties, element_valtxt );
+                                if ( value != - 1 ) {
                                     cfgelement_set_keyword_value ( e, value );
-                                };
-
-                            } else if ( e->type == CFGENTYPE_UNSIGNED ) {
-
-                                /* najdeme zacatek ascii hex cisla */
-                                if ( strncmp ( element_valtxt, "0x", 2 ) ) {
-                                    element_valtxt += 2;
-                                } else if ( strncmp ( element_valtxt, "0X", 2 ) ) {
-                                    element_valtxt += 2;
-                                } else if ( *element_valtxt == '#' ) {
-                                    element_valtxt++;
-                                };
-
-                                unsigned length = strlen ( element_valtxt );
-                                unsigned value = 0;
-                                int bitpos = 0;
-
-                                while ( length ) {
-
-                                    char c = element_valtxt [ length - 1 ];
-                                    unsigned position_value;
-
-                                    if ( c >= '0' && c <= '9' ) {
-                                        position_value = c - '0';
-                                    } else if ( c >= 'a' && c <= 'f' ) {
-                                        position_value = c - 'a' + 0x0a;
-                                    } else if ( c >= 'A' && c <= 'F' ) {
-                                        position_value = c - 'A' + 0x0a;
-                                    } else {
-                                        break;
-                                    };
-
-                                    value += position_value << bitpos;
-                                    length--;
-                                    bitpos += 4;
-                                };
-
-                                if ( -1 != cfgelement_property_test_unsigned_value ( e->ppu, value ) ) {
-                                    cfgelement_set_unsigned_value ( e, value );
                                 };
                             };
                         };
@@ -456,6 +404,5 @@ int cfgmodule_parse ( st_CFGMODULE *m ) {
 
     fclose ( r->ini_fp );
 
-    return EXIT_SUCCESS;
 }
 

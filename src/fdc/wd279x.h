@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 
-#ifdef WINDOWS
+#ifdef WIN32
 #define COMPILE_FOR_EMULATOR
 #undef COMPILE_FOR_UNICARD
 #undef FS_LAYER_FATFS
@@ -193,8 +193,8 @@ extern "C" {
     extern void wd279x_close_dsk ( st_WD279X *FDC, uint8_t drive_id );
     extern int wd279x_open_dsk ( st_WD279X *FDC, uint8_t drive_id, char *DSK_filename );
 
-    extern int wd279x_write_byte ( st_WD279X *FDC, int i_addroffset, unsigned char *io_data );
-    extern int wd279x_read_byte ( st_WD279X *FDC, int i_addroffset, unsigned char *io_data );
+    extern int wd279x_write_byte ( st_WD279X *FDC, int i_addroffset, unsigned int *io_data );
+    extern int wd279x_read_byte ( st_WD279X *FDC, int i_addroffset, unsigned int *io_data );
     extern int wd279x_check_interrupt ( st_WD279X *FDC );
 
 #ifdef	__cplusplus

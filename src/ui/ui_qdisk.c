@@ -23,15 +23,12 @@
  * ---------------------------------------------------------------------------
  */
 
-#include <string.h>
-#include <strings.h>
-#include <glib.h>
-#include <glib/gstdio.h>
-
+#include <gtk/gtk.h>
+#include <gtk-3.0/gtk/gtkwidget.h>
+#include <gtk-2.0/gtk/gtkwidget.h>
 
 #include "ui_main.h"
 #include "ui_qdisk.h"
-#include "ui_utils.h"
 
 #include "qdisk/qdisk.h"
 
@@ -54,7 +51,7 @@ void ui_qdisk_set_path ( char *path ) {
 
 
 void ui_qdisk_menu_update ( void ) {
-
+    
     LOCK_UICALLBACKS ( );
     if ( g_qdisk.connected == QDISK_DISCONNECTED ) {
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_qdisk_not_connected" ), TRUE );
@@ -162,127 +159,4 @@ G_MODULE_EXPORT void on_menuitem_qdisk_write_protected ( GtkMenuItem *menuitem, 
 #endif
 
     qdisk_set_write_protected ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_qdisk_write_protected" ) ) );
-}
-
-
-void ui_qdisk_create_show_window ( void ) {
-
-    GtkWidget *window = ui_get_widget ( "window_qdisk_new" );
-    if ( gtk_widget_get_visible ( window ) ) return;
-
-    GtkEntry *entry = ui_get_entry ( "entry_qdisk_new_filename" );
-    gtk_entry_set_text ( entry, UI_QDISK_NEW_IMAGE_NAME );
-    gtk_widget_grab_focus ( GTK_WIDGET ( entry ) );
-    gint len = strlen ( UI_QDISK_NEW_IMAGE_NAME );
-    gtk_editable_set_position ( GTK_EDITABLE ( entry ), len );
-    gtk_editable_select_region ( GTK_EDITABLE ( entry ), 0, -1 );
-
-
-    GtkWidget *fcdialog = ui_get_widget ( "filechooserbutton_qdisk_new" );
-
-    if ( g_ui.last_folder[FILETYPE_MZQ][0] != 0x00 ) {
-        gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER ( fcdialog ), g_ui.last_folder[FILETYPE_MZQ] );
-    } else if ( g_ui.last_folder[g_ui.last_filetype][0] != 0x00 ) {
-        gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER ( fcdialog ), g_ui.last_folder[g_ui.last_filetype] );
-    } else {
-        gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER ( fcdialog ), "./" );
-    };
-
-
-    gtk_widget_show ( window );
-}
-
-
-G_MODULE_EXPORT void on_menuitem_qdisk_create_new ( GtkMenuItem *menuitem, gpointer data ) {
-    (void) menuitem;
-    (void) data;
-#ifdef UI_TOPMENU_IS_WINDOW
-    ui_hide_main_menu ( );
-#endif
-
-    ui_qdisk_create_show_window ( );
-}
-
-
-G_MODULE_EXPORT gboolean on_window_qdisk_new_delete_event ( GtkWidget *widget, GdkEvent *event, gpointer user_data ) {
-    gtk_widget_hide ( widget );
-    return TRUE;
-}
-
-
-G_MODULE_EXPORT gboolean on_window_qdisk_new_key_press_event ( GtkWidget *widget, GdkEventKey *event, gpointer user_data ) {
-    if ( event->keyval == GDK_KEY_Escape ) {
-        GtkWidget *window = ui_get_widget ( "window_qdisk_new" );
-        gtk_widget_hide ( window );
-        return TRUE;
-    } else if ( event->keyval == GDK_KEY_Return ) {
-        gtk_button_clicked ( GTK_BUTTON ( ui_get_widget ( "button_qdisk_new_ok" ) ) );
-
-    };
-    return FALSE;
-}
-
-
-G_MODULE_EXPORT void on_button_qdisk_new_close_clicked ( GtkButton *button, gpointer user_data ) {
-    GtkWidget *window = ui_get_widget ( "window_qdisk_new" );
-    gtk_widget_hide ( window );
-}
-
-
-G_MODULE_EXPORT void on_button_qdisk_new_ok_clicked ( GtkButton *button, gpointer user_data ) {
-    GtkWidget *window = ui_get_widget ( "window_qdisk_new" );
-
-    GtkEntry *entry = ui_get_entry ( "entry_qdisk_new_filename" );
-
-    gchar *filename = (gchar*) gtk_entry_get_text ( entry );
-
-    int filename_len = strlen ( filename );
-    int filename_mzq_len = filename_len;
-
-    int fl_add_surfix = 1;
-
-    if ( filename_len > 4 ) {
-        if ( 0 == strcasecmp ( &filename [ filename_len - 4 ], ".mzq" ) ) {
-            fl_add_surfix = 0;
-        } else {
-            filename_mzq_len += 4;
-        };
-    } else {
-        filename_mzq_len += 4;
-    }
-
-    char *fname_mzq = g_malloc ( filename_mzq_len );
-
-    strncpy ( fname_mzq, filename, filename_mzq_len );
-
-    if ( fl_add_surfix ) {
-        strncat ( fname_mzq, ".mzq", 4 );
-    };
-
-    GtkWidget *fcdialog = ui_get_widget ( "filechooserbutton_qdisk_new" );
-
-    gchar *path = gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( fcdialog ) );
-    if ( path == NULL ) {
-        path = g_malloc ( 3 );
-        memcpy ( path, "./", 3 );
-    };
-    ui_update_last_folder_value ( FILETYPE_MZQ, path );
-
-    gchar *full_name_mzq = g_build_filename ( path, fname_mzq, (gchar*) NULL );
-
-    if ( ui_utils_file_access ( full_name_mzq, F_OK ) == -1 ) {
-        qdisk_create_image ( full_name_mzq );
-        gtk_widget_hide ( window );
-    } else {
-        ui_show_error ( "Can't create QD image '%s' - file already exists!", full_name_mzq );
-        GtkEntry *entry = ui_get_entry ( "entry_qdisk_new_filename" );
-        //gtk_entry_set_text ( entry, fname_mzq );
-        gtk_widget_grab_focus ( GTK_WIDGET ( entry ) );
-        gtk_editable_set_position ( GTK_EDITABLE ( entry ), filename_len );
-        gtk_editable_select_region ( GTK_EDITABLE ( entry ), 0, filename_len );
-    };
-
-    g_free ( path );
-    g_free ( fname_mzq );
-    g_free ( full_name_mzq );
 }

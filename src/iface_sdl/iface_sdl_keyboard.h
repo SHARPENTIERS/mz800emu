@@ -24,22 +24,18 @@
  */
 
 #ifndef IFACE_SDL_KEYBOARD_H
-#define IFACE_SDL_KEYBOARD_H
+#define	IFACE_SDL_KEYBOARD_H
 
-#ifdef __cplusplus
+#ifdef	__cplusplus
 extern "C" {
 #endif
 
-#include "iface_sdl.h"
+    extern void iface_sdl_keybord_scan ( void );
 
-    extern void iface_sdl_full_keyboard_scan ( void );
-    extern void iface_sdl_keydown_event ( SDL_Event *event );
-    extern void iface_sdl_keyup_event ( SDL_Event *event );
-    extern void iface_sdl_pool_keyboard_events ( void );
 
-#ifdef __cplusplus
+#ifdef	__cplusplus
 }
 #endif
 
-#endif /* IFACE_SDL_KEYBOARD_H */
+#endif	/* IFACE_SDL_KEYBOARD_H */
 

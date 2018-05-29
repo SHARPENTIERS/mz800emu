@@ -23,11 +23,9 @@
  * ---------------------------------------------------------------------------
  */
 
-#include "mz800emu_cfg.h"
-
 #include <gtk/gtk.h>
 
-#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+#ifdef MZ800_DEBUGGER
 
 #include <string.h>
 
@@ -39,17 +37,16 @@
 #include "memory/memory.h"
 #include "ui_breakpoints.h"
 #include "ui_memdump.h"
-#include "ui/ui_hexeditable.h"
 
 
 G_MODULE_EXPORT void on_debugger_main_window_size_allocate ( GtkWidget *widget, GdkRectangle *allocation, gpointer user_data ) {
-    if ( g_debugger.animated_updates != DEBUGGER_ANIMATED_UPDATES_DISABLED ) return;
+    if ( g_debugger.animated_updates != 0 ) return;
     ui_debugger_show_spinner_window ( );
 }
 
 
 G_MODULE_EXPORT gboolean on_debugger_main_window_configure_event ( GtkWidget *widget, GdkEventConfigure *event ) {
-    if ( g_debugger.animated_updates == DEBUGGER_ANIMATED_UPDATES_DISABLED ) ui_debugger_show_spinner_window ( );
+    if ( g_debugger.animated_updates == 0 ) ui_debugger_show_spinner_window ( );
     return FALSE;
 }
 
@@ -91,7 +88,7 @@ G_MODULE_EXPORT void on_dbg_reset_menuitem_activate ( GtkCheckMenuItem *menuitem
 G_MODULE_EXPORT void on_dbg_speed_menuitem_activate ( GtkCheckMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
-    mz800_switch_emulation_speed ( ( ~g_mz800.use_max_emulation_speed ) & 0x01 );
+    mz800_set_cpu_speed ( ( ~g_mz800.emulation_speed ) & 0x01 );
 }
 
 
@@ -135,7 +132,7 @@ G_MODULE_EXPORT void on_dbg_animated_enabled_radiomenuitem_toggled ( GtkCheckMen
     (void) data;
 
     if ( g_uidebugger.accelerators_locked != 0 ) return;
-    g_debugger.animated_updates = DEBUGGER_ANIMATED_UPDATES_ENABLED;
+    g_debugger.animated_updates = 1;
     ui_debugger_hide_spinner_window ( );
     debugger_step_call ( 0 );
 }
@@ -146,13 +143,54 @@ G_MODULE_EXPORT void on_dbg_animated_disabled_radiomenuitem_toggled ( GtkCheckMe
     (void) data;
 
     if ( g_uidebugger.accelerators_locked != 0 ) return;
-    g_debugger.animated_updates = DEBUGGER_ANIMATED_UPDATES_DISABLED;
+    g_debugger.animated_updates = 0;
     ui_debugger_show_spinner_window ( );
 }
 
 
 G_MODULE_EXPORT void on_dbg_hexeditable_changed ( GtkEditable *ed, gpointer user_data ) {
-    ui_hexeditable_changed ( ed, user_data );
+
+    gchar *text;
+    gchar output[5];
+    gint position;
+    gint changed = 0;
+    gint i, j = 0;
+
+    text = gtk_editable_get_chars ( ed, 0, -1 );
+
+    if ( text [ 0 ] == 0x00 ) {
+        g_free ( text );
+        return;
+    };
+
+    for ( i = 0; i < sizeof ( output ); i++ ) {
+        if ( ( text [ i ] >= '0' && text [ i ] <= '9' ) ||
+                ( text [ i ] >= 'a' && text [ i ] <= 'f' ) ||
+                ( text [ i ] >= 'A' && text [ i ] <= 'F' ) ) {
+
+            if ( text [ i ] >= 'a' && text [ i ] <= 'f' ) {
+                output [ j ] = text [ i ] - 0x20;
+                changed++;
+            } else {
+                output [ j ] = text [ i ];
+            };
+            j++;
+        } else if ( text [ i ] == 0x00 ) {
+            break;
+        } else {
+            changed++;
+        };
+    };
+    output [ j ] = 0x00;
+    /*    
+        printf ( "o: %s\nn: %s\n\n", text, output );
+     */
+
+    if ( changed ) {
+        gtk_editable_delete_text ( ed, 0, -1 );
+        gtk_editable_insert_text ( ed, output, j, &position );
+    };
+    g_free ( text );
 }
 
 
@@ -240,12 +278,7 @@ G_MODULE_EXPORT gboolean on_dbg_mmap ( GtkWidget *widget, GdkEventButton *event,
     if ( !TEST_EMULATION_PAUSED ) {
         ui_debugger_pause_emulation ( );
     } else {
-        // win32 a win64 GTK ve stavajici verzi umi jen gtk_menu_popup, ktery je vsak v novych verzich deprecated
-#ifdef WINDOWS
-        gtk_menu_popup ( GTK_MENU ( ui_get_widget ( "dbg_mmap_menu" ) ), NULL, NULL, NULL, NULL, 0, 0 );
-#else
-        gtk_menu_popup_at_pointer ( GTK_MENU ( ui_get_widget ( "dbg_mmap_menu" ) ), (GdkEvent*) event );
-#endif
+        ui_debugger_show_hide_mmap_menu ( );
     };
     return FALSE;
 }
@@ -448,22 +481,8 @@ G_MODULE_EXPORT gboolean on_dbg_disassembled_treeview_button_press_event ( GtkWi
         ui_debugger_pause_emulation ( );
     } else {
         if ( 3 == event->button ) {
-#ifdef WINDOWS
-            // win32 a win64 GTK ve stavajici verzi umi jen gtk_menu_popup, ktery je vsak v novych verzich deprecated
-            gtk_menu_popup ( GTK_MENU ( ui_get_widget ( "dbg_disassembled_menu" ) ), NULL, NULL, NULL, NULL, 0, 0 );
-#else
-            gtk_menu_popup_at_pointer ( GTK_MENU ( ui_get_widget ( "dbg_disassembled_menu" ) ), (GdkEvent*) event );
-#endif
+            ui_debugger_show_hide_disassembled_menu ( );
         };
-    };
-    return FALSE;
-}
-
-
-G_MODULE_EXPORT gboolean on_dbg_history_treeview_button_press_event ( GtkWidget *widget, GdkEventButton *event, gpointer user_data ) {
-
-    if ( !TEST_EMULATION_PAUSED ) {
-        ui_debugger_pause_emulation ( );
     };
     return FALSE;
 }
@@ -518,44 +537,16 @@ G_MODULE_EXPORT void on_dbg_set_as_pc_menuitem_activate ( GtkMenuItem *menuitem,
 }
 
 
-static void fill_combo_entry ( GtkWidget *combo ) {
-    gtk_combo_box_text_remove_all ( GTK_COMBO_BOX_TEXT ( combo ) );
-    int i;
-    for ( i = 0; i < g_uidebugger.focus_addr_hist_count; i++ ) {
-        gchar addr_txt [ 5 ];
-        sprintf ( addr_txt, "%04X", g_uidebugger.focus_addr_history[i] );
-        gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( combo ), addr_txt );
-    };
-}
-
-
-static GtkWidget *g_dbg_focus_to_addr_entry;
-
-
 G_MODULE_EXPORT void on_dbg_focus_to_menuitem_activate ( GtkMenuItem *menuitem, gpointer user_data ) {
-
-    static GtkWidget *combo = NULL;
-
-    if ( combo == NULL ) {
-        combo = gtk_combo_box_text_new_with_entry ( );
-        gtk_widget_show ( combo );
-        gtk_container_add ( GTK_CONTAINER ( ui_get_widget ( "dbg_focus_to_addr_box" ) ), combo );
-        g_dbg_focus_to_addr_entry = gtk_bin_get_child ( GTK_BIN ( combo ) );
-        gtk_entry_set_alignment ( GTK_ENTRY ( g_dbg_focus_to_addr_entry ), 1 );
-        gtk_entry_set_max_length ( GTK_ENTRY ( g_dbg_focus_to_addr_entry ), 4 );
-        g_signal_connect ( g_dbg_focus_to_addr_entry, "changed", G_CALLBACK ( on_dbg_hexeditable_changed ), NULL );
-    };
-
-    fill_combo_entry ( combo );
-
-    gchar addr_txt [ 5 ];
-    sprintf ( addr_txt, "%04X", g_uidebugger.last_focus_addr );
-    gtk_entry_set_text ( GTK_ENTRY ( g_dbg_focus_to_addr_entry ), addr_txt );
-    gtk_editable_select_region ( GTK_EDITABLE ( g_dbg_focus_to_addr_entry ), 0, -1 );
-
     GtkWidget *window = ui_get_widget ( "dbg_focus_to_window" );
     gtk_widget_show ( window );
-    gtk_widget_grab_focus ( g_dbg_focus_to_addr_entry );
+    GtkWidget *entry = ui_get_widget ( "dbg_focus_to_addr_entry" );
+    gtk_entry_set_alignment ( GTK_ENTRY ( entry ), 1 );
+    gchar addr_txt [ 5 ];
+    sprintf ( addr_txt, "%04X", g_uidebugger.last_focus_addr );
+    gtk_entry_set_text ( GTK_ENTRY ( entry ), addr_txt );
+    gtk_editable_select_region ( GTK_EDITABLE ( entry ), 0, -1 );
+    gtk_widget_grab_focus ( entry );
 }
 
 
@@ -589,27 +580,13 @@ G_MODULE_EXPORT void on_dbg_focus_to_cancel_button_clicked ( GtkButton *button, 
 
 
 G_MODULE_EXPORT void on_dbg_focus_to_ok_button_clicked ( GtkButton *button, gpointer user_data ) {
-    const gchar *addr_txt = gtk_entry_get_text ( GTK_ENTRY ( g_dbg_focus_to_addr_entry ) );
+    GtkWidget *entry = ui_get_widget ( "dbg_focus_to_addr_entry" );
+    const gchar *addr_txt = gtk_entry_get_text ( GTK_ENTRY ( entry ) );
     if ( strlen ( addr_txt ) ) {
         g_uidebugger.last_focus_addr = (Z80EX_WORD) debuger_text_to_z80_word ( addr_txt );
         ui_debugger_update_disassembled ( g_uidebugger.last_focus_addr, -1 );
         GtkWidget *window = ui_get_widget ( "dbg_focus_to_window" );
         gtk_widget_hide ( window );
-
-        Z80EX_WORD history[DBG_FOCUS_ADDR_HIST_LENGTH];
-        memcpy ( history, g_uidebugger.focus_addr_history, sizeof ( history ) );
-        int i = 0;
-        g_uidebugger.focus_addr_history[i++] = g_uidebugger.last_focus_addr;
-
-        int j;
-        for ( j = 0; j < DBG_FOCUS_ADDR_HIST_LENGTH; j++ ) {
-            if ( j >= g_uidebugger.focus_addr_hist_count ) break;
-            if ( history[j] != g_uidebugger.last_focus_addr ) {
-                g_uidebugger.focus_addr_history[i++] = history[j];
-            };
-        };
-
-        g_uidebugger.focus_addr_hist_count = ( i > DBG_FOCUS_ADDR_HIST_LENGTH ) ? DBG_FOCUS_ADDR_HIST_LENGTH : i;
     };
 }
 

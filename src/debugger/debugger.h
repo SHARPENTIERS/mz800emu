@@ -24,26 +24,19 @@
  */
 
 #ifndef DEBUGGER_H
-#define DEBUGGER_H
+#define	DEBUGGER_H
 
-#ifdef __cplusplus
+#ifdef	__cplusplus
 extern "C" {
 #endif
 
 #include "z80ex/include/z80ex.h"
 
-
-    typedef enum en_DEBUGGER_ANIMATED_UPDATES {
-        DEBUGGER_ANIMATED_UPDATES_DISABLED = 0, // ukazeme spinner
-        DEBUGGER_ANIMATED_UPDATES_ENABLED, // animujeme
-    } en_DEBUGGER_ANIMATED_UPDATES;
-
-
     typedef struct st_DEBUGGER {
         unsigned active;
         unsigned step_call;
         unsigned memop_call;
-        en_DEBUGGER_ANIMATED_UPDATES animated_updates;
+        unsigned animated_updates;
         unsigned auto_save_breakpoints;
     } st_DEBUGGER;
 
@@ -53,30 +46,8 @@ extern "C" {
 #define TEST_DEBUGGER_STEP_CALL         ( g_debugger.step_call != 0 )
 #define TEST_DEBUGGER_ACTIVE            ( g_debugger.active != 0 )
 
-#define DEBUGGER_HISTORY_POSMASK 0x1f
-#define DEBUGGER_HISTORY_LENGTH (DEBUGGER_HISTORY_POSMASK + 1)
-#define DEBUGGER_MAX_INSTR_BYTES 4
-
-
-    typedef struct st_DEBUGGER_HISTORY_ROW {
-        uint16_t addr;
-        uint8_t byte[DEBUGGER_MAX_INSTR_BYTES];
-    } st_DEBUGGER_HISTORY_ROW;
-
-
-    typedef struct st_DEBUGGER_HISTORY {
-        unsigned position;
-        unsigned byte_position;
-        st_DEBUGGER_HISTORY_ROW row[DEBUGGER_HISTORY_LENGTH];
-    } st_DEBUGGER_HISTORY;
-
-    extern st_DEBUGGER_HISTORY g_debugger_history;
-
-#define debugger_history_position(i) ((i) & DEBUGGER_HISTORY_POSMASK)
-
-
+    
     extern void debugger_step_call ( unsigned value );
-    extern void debugger_reset_history ( void );
     extern void debugger_init ( void );
     extern void debugger_exit ( void );
     extern void debugger_show_main_window ( void );
@@ -85,7 +56,6 @@ extern "C" {
     extern void debugger_update_all ( void );
     extern void debugger_animation ( void );
     extern Z80EX_BYTE debugger_dasm_read_cb ( Z80EX_WORD addr, void *user_data );
-    extern Z80EX_BYTE debugger_dasm_history_read_cb ( Z80EX_WORD addr, void *user_data );
     extern void debugger_memory_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value );
     extern void debugger_mmap_mount ( unsigned value );
     extern void debugger_mmap_umount ( unsigned value );
@@ -93,12 +63,12 @@ extern "C" {
     extern void debugger_change_z80_register ( Z80_REG_T reg, Z80EX_WORD value );
     extern void debugger_change_dmd ( Z80EX_BYTE value );
     extern Z80EX_WORD debuger_text_to_z80_word ( const char *txt );
-
+    
 #define debugger_memory_read_byte(addr) debugger_dasm_read_cb ( addr, NULL )
 
-#ifdef __cplusplus
+#ifdef	__cplusplus
 }
 #endif
 
-#endif /* DEBUGGER_H */
+#endif	/* DEBUGGER_H */
 

@@ -32,14 +32,13 @@
 #include "gdg/gdg.h"
 #include "ctc8253/ctc8253.h"
 #include "pio8255/pio8255.h"
-#include "cmt/cmthack.h"
+#include "cmt/cmt_hack.h"
 #include "pioz80/pioz80.h"
 #include "typedefs.h"
 #include "psg/psg.h"
 #include "fdc/fdc.h"
 #include "ramdisk/ramdisk.h"
 #include "qdisk/qdisk.h"
-#include "joy/joy.h"
 
 
 
@@ -52,7 +51,7 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
 
     Z80EX_BYTE port_lsb = port & 0xff;
 
-    mz800_sync_insideop_iorq ( );
+    mz800_sync_inside_cpu ( INSIDEOP_IORQ_RD );
 
     Z80EX_BYTE retval;
 
@@ -119,7 +118,7 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
         case 0xe0:
         case 0xe1:
             /* cteme memory mapper: 0xe0 - 0xe1 */
-            memory_map_pread ( port_lsb );
+            memory_map_set ( MEMORY_MAPRQ_IOOP_IN, port_lsb );
             retval = g_mz800.regDBUS_latch;
             break;
 
@@ -172,21 +171,10 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
             break;
 
         case 0xf0:
-            /* cteme JOY1 */
-            if ( g_pio8255.signal_PA_joy1_enabled ) {
-                retval = joy_read_byte ( JOY_DEVID_0 );
-            } else {
-                retval = g_mz800.regDBUS_latch;
-            };
-            break;
-            
         case 0xf1:
-            /* cteme JOY2 */
-            if ( g_pio8255.signal_PA_joy2_enabled ) {
-                retval = joy_read_byte ( JOY_DEVID_1 );
-            } else {
-                retval = g_mz800.regDBUS_latch;
-            };
+            /* cteme JOY1, JOY2: 0xf0 - 0xf1 */
+            /* BUGFIX: aby nedochazelo k falesne identifikaci */
+            retval = 0xff;
             break;
 
         case 0xfc:
@@ -216,16 +204,16 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
 
     Z80EX_BYTE port_lsb = port & 0xff;
 
-    mz800_sync_insideop_iorq ( );
+    mz800_sync_inside_cpu ( INSIDEOP_IORQ_WR );
 
     switch ( port_lsb ) {
 
         case 0x01:
-            cmthack_load_file ( );
+            cmthack_load_header ( );
             break;
 
         case 0x02:
-            cmthack_read_mzf_body ( );
+            cmthack_load_body ( );
             break;
 
         case 0x68:
@@ -295,7 +283,7 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
         case 0xe5:
         case 0xe6:
             /* zapisujeme na memory mapper: 0xe0 - 0xe6 */
-            memory_map_pwrite ( port_lsb );
+            memory_map_set ( MEMORY_MAP_IOOP_OUT, port_lsb );
             break;
 
 

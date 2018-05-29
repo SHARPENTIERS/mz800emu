@@ -24,9 +24,9 @@
  */
 
 #ifndef VIDEO_H
-#define VIDEO_H
+#define	VIDEO_H
 
-#ifdef __cplusplus
+#ifdef	__cplusplus
 extern "C" {
 #endif
 
@@ -101,151 +101,88 @@ extern "C" {
      * PIO8255_PC7 - VBLN
      * PIOZ80_PA5 - VBLN
      * 
-     * 
-     * Trochu to jeste pro prehlednost shrnu :)
-     * 
-     * 
-     * 
-     *   +----------------------------- Screen ------------------------------+     
-     *   |                                                                   |
-     *   |                                                                   |
-     *   |                                                                   |
-     *   |  0,0 -> +------------- Display (visible area) ----------+         |
-     *   |  beam   |Top border                                     |         |
-     *   |  start  |                                               |         |
-     *   |  here   |                                               |         |
-     *   |         | Left  +----------- Canvas ------------+ Right |         |
-     *   |         | border|                               | border|         |
-     *   |         |       |                               |       |         |
-     *   |         |       |                               |       |         |
-     *   |         |       |                               |       |         |
-     *   |         |       |                               |       |         |
-     *   |         |       |                               |       |         |
-     *   |         |       |                               |       |         |
-     *   |         |       +---------- 640 x 200 ----------+       |         |
-     *   |         |Botom border                                   |         |
-     *   |         |                                               |         |
-     *   |         |                                               |         |
-     *   |         +------------------ 928 x 288 ------------------+         |
-     *   |                                                                   |
-     *   |                                                                   |
-     *   |                                                                   |
-     *   +--------------------------- 1136 x 312 ----------------------------+     
-     * 
-     * 
-     * 
      */
 
 
-    /*
-     * 
-     * Definice rozmeru
-     * 
-     */
+    /* viditelny obraz */
+#define DISPLAY_BORDER_LEFT_WIDTH       154
+#define DISPLAY_SCREEN_WIDTH            640
+#define DISPLAY_BORDER_RIGHT_WIDTH      134
 
-#define VIDEO_BORDER_LEFT_WIDTH     154
-#define VIDEO_BORDER_RIGHT_WIDTH    134
-#define VIDEO_BORDER_TOP_HEIGHT     46
-#define VIDEO_BORDER_BOTOM_HEIGHT   42
-
-    /* celkove rozmery uzivatelsky pouzitelne (kreslitelne) oblasti */
-#define VIDEO_CANVAS_WIDTH          640
-#define VIDEO_CANVAS_HEIGHT         200
+#define DISPLAY_BORDER_TOP_HEIGHT       46
+#define DISPLAY_SCREEN_HEIGHT           200
+#define DISPLAY_BORDER_BOTOM_HEIGHT     42
 
 
-    /* celkove rozmery viditelneho displeje */
-#define VIDEO_DISPLAY_WIDTH         ( VIDEO_BORDER_LEFT_WIDTH + VIDEO_CANVAS_WIDTH + VIDEO_BORDER_RIGHT_WIDTH )
-#define VIDEO_DISPLAY_HEIGHT        ( VIDEO_BORDER_TOP_HEIGHT + VIDEO_CANVAS_HEIGHT + VIDEO_BORDER_BOTOM_HEIGHT )
-
-
-#define VIDEO_BORDER_TOP_WIDTH      VIDEO_DISPLAY_WIDTH
-#define VIDEO_BORDER_LEFT_HEIGHT    VIDEO_CANVAS_HEIGHT
-
-
-#define VIDEO_BORDER_RIGHT_HEIGHT   VIDEO_CANVAS_HEIGHT
-#define VIDEO_BORDER_BOTOM_WIDTH    VIDEO_DISPLAY_WIDTH
-
-
-    /* Definice obrazoveho radku */
-#define VIDEO_H_SYNC_TICKS          80 /* skutecny Hsync, ktery je na video vystupu pocitace - v emulaci jej nepouzivame */
-#define VIDEO_H_BACK_PORCH_TICKS    106
-#define VIDEO_H_ENABLED_TICKS       VIDEO_DISPLAY_WIDTH
-#define VIDEO_H_FRONT_PORCH_TICKS   22
-
-
-    /* Celkove rozmery screen */
-#define VIDEO_SCREEN_WIDTH          ( VIDEO_H_SYNC_TICKS + VIDEO_H_BACK_PORCH_TICKS + VIDEO_H_ENABLED_TICKS + VIDEO_H_FRONT_PORCH_TICKS )
-#define VIDEO_SCREEN_HEIGHT         312
-#define VIDEO_SCREEN_TICKS          ( VIDEO_SCREEN_HEIGHT * VIDEO_SCREEN_WIDTH )
+    /* celkove rozmery displeje */
+#define DISPLAY_VISIBLE_WIDTH               ( DISPLAY_BORDER_LEFT_WIDTH + DISPLAY_SCREEN_WIDTH + DISPLAY_BORDER_RIGHT_WIDTH )
+#define DISPLAY_VISIBLE_HEIGHT              ( DISPLAY_BORDER_TOP_HEIGHT + DISPLAY_SCREEN_HEIGHT + DISPLAY_BORDER_BOTOM_HEIGHT )
 
 
 
-//#define VIDEO_V_SYNC_TICKS          ( 3 * VIDEO_SCREEN_WIDTH )
-//#define VIDEO_V_BACK_PORCH_TICKS    ( 19 * VIDEO_SCREEN_WIDTH + 2 ) /* uz si fakt nejsem jisty, zda jsem tohle zmeril presne */
-//#define VIDEO_V_ENABLED_TICKS       ( 287 * VIDEO_SCREEN_WIDTH )
-//#define VIDEO_V_FRONT_PORCH_TICKS   ( 3 * VIDEO_SCREEN_WIDTH )
+#define DISPLAY_BORDER_TOP_WIDTH            DISPLAY_VISIBLE_WIDTH
+#define DISPLAY_BORDER_TOP_FIRST_COLUMN     0
+#define DISPLAY_BORDER_TOP_LAST_COLUMN      ( DISPLAY_VISIBLE_WIDTH - 1 )
+#define DISPLAY_BORDER_TOP_FIRST_ROW        0
+#define DISPLAY_BORDER_TOP_LAST_ROW         ( DISPLAY_BORDER_TOP_HEIGHT - 1 )
+
+#define DISPLAY_SCREEN_FIRST_COLUMN         ( DISPLAY_BORDER_LEFT_WIDTH )
+#define DISPLAY_SCREEN_LAST_COLUMN          ( DISPLAY_SCREEN_FIRST_COLUMN + DISPLAY_SCREEN_WIDTH - 1 )
+#define DISPLAY_SCREEN_FIRST_ROW            ( DISPLAY_BORDER_TOP_LAST_ROW + 1 )
+#define DISPLAY_SCREEN_LAST_ROW             ( DISPLAY_SCREEN_FIRST_ROW + DISPLAY_SCREEN_HEIGHT - 1 )
+
+#define DISPLAY_BORDER_LEFT_HEIGHT          DISPLAY_SCREEN_HEIGHT
+#define DISPLAY_BORDER_LEFT_FIRST_COLUMN    0
+#define DISPLAY_BORDER_LEFT_LAST_COLUMN     ( DISPLAY_BORDER_LEFT_WIDTH - 1 )
+#define DISPLAY_BORDER_LEFT_FIRST_ROW       ( DISPLAY_SCREEN_FIRST_ROW )
+#define DISPLAY_BORDER_LEFT_LAST_ROW        ( DISPLAY_SCREEN_LAST_ROW )
+
+#define DISPLAY_BORDER_RIGHT_HEIGHT          DISPLAY_SCREEN_HEIGHT
+#define DISPLAY_BORDER_RIGHT_FIRST_COLUMN   ( DISPLAY_SCREEN_LAST_COLUMN + 1 )
+#define DISPLAY_BORDER_RIGHT_LAST_COLUMN    ( DISPLAY_BORDER_RIGHT_FIRST_COLUMN + DISPLAY_BORDER_RIGHT_WIDTH - 1 )
+#define DISPLAY_BORDER_RIGHT_FIRST_ROW      ( DISPLAY_SCREEN_FIRST_ROW )
+#define DISPLAY_BORDER_RIGHT_LAST_ROW       ( DISPLAY_SCREEN_LAST_ROW )
+
+#define DISPLAY_BORDER_BOTOM_WIDTH          DISPLAY_VISIBLE_WIDTH
+#define DISPLAY_BORDER_BOTOM_FIRST_COLUMN   0
+#define DISPLAY_BORDER_BOTOM_LAST_COLUMN    ( DISPLAY_VISIBLE_WIDTH - 1 )
+#define DISPLAY_BORDER_BOTOM_FIRST_ROW      ( DISPLAY_SCREEN_LAST_ROW + 1 )
+#define DISPLAY_BORDER_BOTOM_LAST_ROW       ( DISPLAY_BORDER_BOTOM_FIRST_ROW + DISPLAY_BORDER_BOTOM_HEIGHT - 1 )
+
+#define DISPLAY_VISIBLE_LAST_COLUMN         ( DISPLAY_VISIBLE_WIDTH - 1 )
+#define DISPLAY_VISIBLE_LAST_ROW            ( DISPLAY_VISIBLE_HEIGHT - 1 )
+
+    /* skutecny Hsync */
+#define BEAM_H_SYNC_TICKS               80
+#define BEAM_H_BACK_PORCH_TICKS         106
+#define BEAM_H_VIDEO_ENABLE_TICKS       DISPLAY_VISIBLE_WIDTH
+#define BEAM_H_FRONT_PORCH_TICKS        22
+
+#define BEAM_TOTAL_COLS                  ( BEAM_H_SYNC_TICKS + BEAM_H_BACK_PORCH_TICKS + BEAM_H_VIDEO_ENABLE_TICKS + BEAM_H_FRONT_PORCH_TICKS )
+#define BEAM_TOTAL_ROWS                  312
+#define PICTURE_TICKS                    ( BEAM_TOTAL_ROWS * BEAM_TOTAL_COLS )
+
+#define BEAM_V_SYNC_TICKS               ( 3 * BEAM_TOTAL_COLS )
+#define BEAM_V_BACK_PORCH_TICKS         ( 19 * BEAM_TOTAL_COLS + 2 )
+#define BEAM_V_VIDEO_ENABLE_TICKS       ( 287 * BEAM_TOTAL_COLS )
+#define BEAM_V_FRONT_PORCH_TICKS        ( 3 * BEAM_TOTAL_COLS )
+
+#define BEAM_VSYNC_START_ROW            270
+#define BEAM_VSYNC_END_ROW              311
+
+#define BEAM_SCREEN_TICKS               ( BEAM_V_SYNC_TICKS + BEAM_V_BACK_PORCH_TICKS + BEAM_V_VIDEO_ENABLE_TICKS + BEAM_V_FRONT_PORCH_TICKS )
+
+#define BEAM_HBLN_START_COLUMN          ( DISPLAY_SCREEN_LAST_COLUMN - 3 )
+
+#define BEAM_ROW(ticks) ( ticks / BEAM_TOTAL_COLS )
+#define BEAM_COL(ticks) ( ticks % BEAM_TOTAL_COLS )
+    
+#define BEAM_TICKS(row,col) ( ( row * DISPLAY_VISIBLE_WIDTH ) + col )
 
 
-//#define BEAM_SCREEN_TICKS           ( VIDEO_V_SYNC_TICKS + VIDEO_V_BACK_PORCH_TICKS + VIDEO_V_ENABLED_TICKS + VIDEO_V_FRONT_PORCH_TICKS )
-
-
-
-    /*
-     * 
-     * Definice umisteni na ceste paprsku
-     * 
-     */
-
-#define VIDEO_BEAM_BORDER_TOP_FIRST_COLUMN      0
-#define VIDEO_BEAM_BORDER_TOP_FIRST_ROW         0
-#define VIDEO_BEAM_BORDER_TOP_LAST_COLUMN       ( VIDEO_DISPLAY_WIDTH - 1 )
-#define VIDEO_BEAM_BORDER_TOP_LAST_ROW          ( VIDEO_BORDER_TOP_HEIGHT - 1 )
-
-#define VIDEO_BEAM_CANVAS_FIRST_COLUMN          ( VIDEO_BORDER_LEFT_WIDTH )
-#define VIDEO_BEAM_CANVAS_FIRST_ROW             ( VIDEO_BEAM_BORDER_TOP_LAST_ROW + 1 )
-#define VIDEO_BEAM_CANVAS_LAST_COLUMN           ( VIDEO_BEAM_CANVAS_FIRST_COLUMN + VIDEO_CANVAS_WIDTH - 1 )
-#define VIDEO_BEAM_CANVAS_LAST_ROW              ( VIDEO_BEAM_CANVAS_FIRST_ROW + VIDEO_CANVAS_HEIGHT - 1 )
-
-#define VIDEO_BEAM_BORDER_LEFT_FIRST_COLUMN     0
-#define VIDEO_BEAM_BORDER_LEFT_FIRST_ROW        ( VIDEO_BEAM_CANVAS_FIRST_ROW )
-#define VIDEO_BEAM_BORDER_LEFT_LAST_COLUMN      ( VIDEO_BORDER_LEFT_WIDTH - 1 )
-#define VIDEO_BEAM_BORDER_LEFT_LAST_ROW         ( VIDEO_BEAM_CANVAS_LAST_ROW )
-
-#define VIDEO_BEAM_BORDER_RIGHT_FIRST_COLUMN    ( VIDEO_BEAM_CANVAS_LAST_COLUMN + 1 )
-#define VIDEO_BEAM_BORDER_RIGHT_FIRST_ROW       ( VIDEO_BEAM_CANVAS_FIRST_ROW )
-#define VIDEO_BEAM_BORDER_RIGHT_LAST_COLUMN     ( VIDEO_BEAM_BORDER_RIGHT_FIRST_COLUMN + VIDEO_BORDER_RIGHT_WIDTH - 1 )
-#define VIDEO_BEAM_BORDER_RIGHT_LAST_ROW        ( VIDEO_BEAM_CANVAS_LAST_ROW )
-
-#define VIDEO_BEAM_BORDER_BOTOM_FIRST_COLUMN    0
-#define VIDEO_BEAM_BORDER_BOTOM_FIRST_ROW       ( VIDEO_BEAM_CANVAS_LAST_ROW + 1 )
-#define VIDEO_BEAM_BORDER_BOTOM_LAST_COLUMN     ( VIDEO_DISPLAY_WIDTH - 1 )
-#define VIDEO_BEAM_BORDER_BOTOM_LAST_ROW        ( VIDEO_BEAM_BORDER_BOTOM_FIRST_ROW + VIDEO_BORDER_BOTOM_HEIGHT - 1 )
-
-#define VIDEO_BEAM_DISPLAY_FIRST_COLUMN         0
-#define VIDEO_BEAM_DISPLAY_FIRST_ROW            0
-#define VIDEO_BEAM_DISPLAY_LAST_COLUMN          ( VIDEO_DISPLAY_WIDTH - 1 )
-#define VIDEO_BEAM_DISPLAY_LAST_ROW             ( VIDEO_DISPLAY_HEIGHT - 1 )
-
-
-#define VIDEO_BEAM_HBLN_FIRST_COLUMN            ( VIDEO_BEAM_CANVAS_LAST_COLUMN - 3 )
-
-#define VIDEO_BEAM_VSYNC_FIRST_ROW              270
-#define VIDEO_BEAM_VSYNC_LAST_ROW               311
-
-
-
-
-
-
-#define VIDEO_GET_SCREEN_ROW( screen_ticks ) ( screen_ticks / VIDEO_SCREEN_WIDTH )
-#define VIDEO_GET_SCREEN_COL( screen_ticks ) ( screen_ticks % VIDEO_SCREEN_WIDTH )
-
-#define VIDEO_GET_DISPLAY_ADDR( display_row, display_col ) ( ( display_row * VIDEO_DISPLAY_WIDTH ) + display_col )
-
-
-#ifdef __cplusplus
+#ifdef	__cplusplus
 }
 #endif
 
-#endif /* VIDEO_H */
+#endif	/* VIDEO_H */
 

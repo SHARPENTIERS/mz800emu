@@ -45,21 +45,6 @@ extern "C" {
 
 #define CFGMAIN_EMULATOR_VERSION_TEXT CFGMAIN_EMULATOR_VERSION
 
-#ifdef LINUX
-#define CFGMAIN_PLATFORM    "Linux"
-#endif
-
-#ifdef WINDOWS
-#ifdef WINDOWS_X86
-#define CFGMAIN_PLATFORM    "Windows x86"
-#else
-#ifdef WINDOWS_X64
-#define CFGMAIN_PLATFORM    "Windows x64"
-#else
-#define CFGMAIN_PLATFORM    "Windows"
-#endif
-#endif
-#endif
 
     extern struct st_CFGROOT *g_cfgmain;
 

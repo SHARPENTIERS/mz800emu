@@ -24,9 +24,9 @@
  */
 
 #ifndef IFACE_SDL_AUDIO_H
-#define IFACE_SDL_AUDIO_H
+#define	IFACE_SDL_AUDIO_H
 
-#ifdef __cplusplus
+#ifdef	__cplusplus
 extern "C" {
 #endif
 
@@ -37,17 +37,15 @@ extern "C" {
 
 
 
-    extern int iface_sdl_audio_init ( const char *preferedAudioDriverName, int preferedAudioDeviceId );
+    extern void iface_sdl_audio_init ( void );
     extern void iface_sdl_audio_quit ( void );
     extern void audio_sdl_start_cycle ( void );
-    extern void iface_sdl_audio_sync_20ms_cycle ( void );
-    extern void iface_sdl_audio_update_buffer_state ( void );
-    extern void iface_sdl_audio_pause_emulation ( unsigned value );
+    extern void audio_sdl_wait_to_cycle_done ( void );
 
 
-#ifdef __cplusplus
+#ifdef	__cplusplus
 }
 #endif
 
-#endif /* IFACE_SDL_AUDIO_H */
+#endif	/* IFACE_SDL_AUDIO_H */
 

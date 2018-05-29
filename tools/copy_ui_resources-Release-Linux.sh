@@ -1,5 +1,13 @@
 #!/bin/sh
 
+
+
+if [ "${1}" != "Release-Linux" ]; then
+	exit 0;
+fi
+
+CND_CONF="Release-Linux"
+
 #
 # EXE definitions
 #
@@ -17,7 +25,7 @@ BASENAME_EXE=basename
 #done
 
 
-DIST_DIR=${1}
+DIST_DIR=./dist/Release-Linux/GNU-Linux-x86
 
 
 if [ ! -e ${DIST_DIR} ]; then
@@ -35,24 +43,23 @@ checkReturnCode () {
 
 
 if [ ! -e ${DIST_DIR}/ui_resources ]; then
-	echo "Making copy ui_resources into '${DIST_DIR}' ..."
+	echo -e "Make copy ui_resources into DIST_DIR ...\n"
 	${MKDIR_EXE} ${DIST_DIR}/ui_resources
 	checkReturnCode
 else
-	echo "Checking ui_resources in '${DIST_DIR}' ..."
+	echo -e "Updating ui_resources in DIST_DIR ...\n"
 fi
 
 
 ${FIND_EXE} ./ui_resources/ -type f -name "*.glade" -or -name "*.css" -or -name "*.png" |\
-( while read src_file;do
+while read src_file;do
 	filename=`${BASENAME_EXE} ${src_file}`
 	dst_file=${DIST_DIR}/ui_resources/${filename}
 	if [ ! -e ${dst_file} ] || [ ${src_file} -nt ${dst_file} ]; then
-		echo -e "\nCOPY ${filename} into ${DIST_DIR}/ui_resources/\c"
+		echo "COPY ${filename} into DIST_DIR ..."
 		${CP_EXE} "${src_file}" "${dst_file}"
 		checkReturnCode
-		PRINT_NEWLINE="\n"
 	fi
-done && echo -e $PRINT_NEWLINE )
+done
 
 exit 0

@@ -24,77 +24,112 @@
  */
 
 #ifndef CMT_H
-#define CMT_H
+#define	CMT_H
 
-#ifdef __cplusplus
+#ifdef	__cplusplus
 extern "C" {
 #endif
 
-#include <stdint.h>
+#include "z80ex/include/z80ex.h"
 
-#include "gdg/gdg.h"
+#define CMT_FILENAME_LENGTH 1024
 
-#include "cmtext.h"
+#define DEF_CMT_BYTE_LENGTH		9
+#define DEF_CMT_HEADER_SIZE		0x80
+#define DEF_CMT_HEADER_LENGTH		( DEF_CMT_HEADER_SIZE * DEF_CMT_BYTE_LENGTH )
 
-#include "libs/mztape/cmtspeed.h"
-#include "libs/cmt_stream/cmt_stream.h"
+#if 1
+#define DEF_CMT_HEADER_PILOT_LENGTH	4400	/* podle SM 22000 */
+#define	DEF_CMT_BODY_PILOT_LENGTH	4400	/* podle SM 11000 */
+#else
+#define DEF_CMT_HEADER_PILOT_LENGTH	22000	/* podle SM 22000 */
+#define	DEF_CMT_BODY_PILOT_LENGTH	11000	/* podle SM 11000 */
+#endif
+
+#define DEF_CMT_HEADER_TMARK_LENGTH	80
+#define DEF_CMT_BODY_TMARK_LENGTH	40
+#define DEF_CMT_BLOCK_PREFIX_LENGTH	2	/* podle SM 1 !!! */
+#define DEF_CMT_BLOCK_SURFIX_LENGTH	2	/* podle SM 1 !!! */
+#define DEF_CMT_CHKSUM_LENGTH		( 2 * DEF_CMT_BYTE_LENGTH )
 
 
-    typedef enum en_CMT_STATE {
-        CMT_STATE_STOP = 0,
-        CMT_STATE_PLAY
-    } en_CMT_STATE;
+#define RET_CMT_ERROR	0
+#define RET_CMT_OK	1
 
+    typedef enum {
+        CMT_PLAY_NONE = 0,
+        CMT_PLAY_START,
+        CMT_PLAY_HEADER_PILOT,
+        CMT_PLAY_HEADER_TMARK_L,
+        CMT_PLAY_HEADER_TMARK_S,
+        CMT_PLAY_HEADER_PREFIX,
+        CMT_PLAY_HEADER,
+        CMT_PLAY_HEADER_CHKSUM,
+        CMT_PLAY_HEADER_SURFIX,
+        CMT_PLAY_BODY_PILOT,
+        CMT_PLAY_BODY_TMARK_L,
+        CMT_PLAY_BODY_TMARK_S,
+        CMT_PLAY_BODY_PREFIX,
+        CMT_PLAY_BODY,
+        CMT_PLAY_BODY_CHKSUM,
+        CMT_PLAY_BODY_SURFIX,
+        CMT_PLAY_DONE
 
-    typedef struct st_CMT {
-        st_CMTEXT *ext;
-        char *last_filename;
-        en_CMT_STREAM_POLARITY polarity;
-        en_CMTSPEED mz_cmtspeed;
-        en_CMT_STATE state;
-        en_CMTEXT_BLOCK_PLAYSTS playsts;
-        int output;
-        uint64_t start_time;
-        int ui_player_update;
-    } st_CMT;
+    } mz800_cmt_play_state_t;
 
-    extern st_CMT g_cmt;
+    typedef enum {
+        CMT_SPEED_1200 = 0,
+        CMT_SPEED_2400,
+        CMT_SPEED_3600
+    } mz800_cmt_speed_t;
 
+    typedef struct {
+        FILE *fh;
+        char filename [ CMT_FILENAME_LENGTH ];
+        int output_signal;
+        mz800_cmt_play_state_t state;
+        int bit_counter;
+        int tick_counter;
+        int tick_counter_low;
+        int data_bit_position;
+        Z80EX_BYTE data;
+        Z80EX_WORD checksum;
+        mz800_cmt_speed_t speed;
+
+        int play_time;
+        int refresh_counter;
+        unsigned int play_iface_refresh_timer;
+
+        unsigned int file_bits;
+        unsigned int file_bits_elapsed;
+
+        int mzf_filetype;
+        char mzf_filename [ 17 ];
+        Z80EX_WORD mzf_size;
+        Z80EX_WORD mzf_exec;
+        Z80EX_WORD mzf_start;
+
+    } mz800_cmt_t;
+
+    extern mz800_cmt_t g_cmt;
+
+#define TEST_CMT_PLAYING ( ( g_cmt.fh != NULL ) && ( CMT_PLAY_NONE != g_cmt.state ) )
+    
     extern void cmt_init ( void );
     extern void cmt_exit ( void );
-    extern void cmt_rear_dip_switch_cmt_inverted_polarity ( unsigned value );
 
-    extern int cmt_open_file_by_extension ( char *filename );
+
     extern int cmt_open ( void );
+    extern void cmt_eject ( void );
+    extern void cmt_stop ( void );
     extern void cmt_play ( void );
     extern void cmt_stop ( void );
-    extern void cmt_eject ( void );
-    extern int cmt_change_speed ( en_CMTSPEED cmtspeed );
-
-    extern void cmt_screen_done_period ( void );
-    extern int cmt_read_data ( void );
-    extern void cmt_update_output ( void );
-
-#define TEST_CMT_FILLED (g_cmt.ext != NULL)
-#define TEST_CMT_STOP (g_cmt.state == CMT_STATE_STOP)
-#define TEST_CMT_PLAY (g_cmt.state == CMT_STATE_PLAY)
-
-#define cmt_on_screen_done_event( ) { if ( !TEST_CMT_STOP ) cmt_screen_done_period (); }
+    extern void cmt_step ( void );
 
 
-    static inline double cmt_get_playtime ( void ) {
-        if ( !TEST_CMT_FILLED ) return 0;
-        if ( TEST_CMT_STOP ) return 0;
-        uint64_t now_ticks = gdg_get_total_ticks ( );
-        uint64_t play_ticks = ( now_ticks - g_cmt.start_time );
-        double play_time = play_ticks * ( 1 / (double) GDGCLK_BASE );
-        return play_time;
-    }
-
-
-#ifdef __cplusplus
+#ifdef	__cplusplus
 }
 #endif
 
-#endif /* CMT_H */
+#endif	/* CMT_H */
 

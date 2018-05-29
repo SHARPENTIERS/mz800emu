@@ -50,13 +50,11 @@ extern "C" {
     extern int fdc_read_byte ( int i_addroffset, uint8_t *io_data );
     extern int fdc_write_byte ( int i_addroffset, uint8_t *io_data );
 
-    extern int fdc_get_interrupt_state ( void );
-
     extern void fdc_mount ( unsigned drive_id );
     extern void fdc_umount ( unsigned drive_id );
     
     extern void ui_fdc_set_dsk ( unsigned drive_id, char *dsk_filename );
-    
+
 #ifdef	__cplusplus
 }
 #endif

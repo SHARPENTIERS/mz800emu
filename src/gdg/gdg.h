@@ -24,21 +24,17 @@
  */
 
 #ifndef GDG_H
-#define GDG_H
+#define	GDG_H
 
-#ifdef __cplusplus
+#ifdef	__cplusplus
 extern "C" {
 #endif
 
-#include <stdint.h>
 
-#include "mz800emu_cfg.h"
-
-#include "video.h"
 #include "mz800.h"
 
-    //#define GDGCLK_BASE                 17734475
-#define GDGCLK_BASE                 ( VIDEO_SCREEN_TICKS * 50 )   /* 312 * 1136 * 50 = 17 721 600, snimek realneho sharpa netrva presne 20 ms, coz ovsem neumim dobre emulovat */
+//#define GDGCLK_BASE                 17734475
+#define GDGCLK_BASE                 (312*1136*50)   /* 17721600, snimek realneho sharpa netrva presne 20 ms, coz ovsem neumim dobre emulovat */
 
 #define GDGCLK2CPU_DIVIDER          5
 #define GDGCLK_1M1_DIVIDER          16
@@ -69,7 +65,6 @@ extern "C" {
 #define SIGNAL_GDG_STS_VS   ( g_gdg.sts_vsync )
 #define SIGNAL_GDG_TEMPO    ( g_gdg.tempo & 1 )
 
-
     typedef enum en_SCRSTS {
         SCRSTS_IS_NOT_CHANGED = 0,
         SCRSTS_PREVIOUS_IS_CHANGED,
@@ -89,7 +84,6 @@ extern "C" {
 #define VSYN_ACTIVE     0
 #define VSYN_OFF        1
 
-
     typedef struct st_GDGEVENT {
         en_MZEVENT event;
         unsigned start_row; /* od ktereho radku event volame */
@@ -97,20 +91,12 @@ extern "C" {
         unsigned event_column; /* na kterem sloupci se event zavola */
     } st_GDGEVENT;
 
-
-    typedef struct st_GDG_TIMESTAMP {
-        unsigned screens; /* celkovy pocet vykonanych obrazovek */
-        unsigned ticks; /* celkovy pocet vykonanych pixelu z posledniho nedokonceneho screenu
-                         * Hodnota 0 odpovida 1. pixelu viditelneho obrazu <0; 354431> 
-                         */
-
-    } st_GDG_TIMESTAMP;
-
-
     typedef struct st_GDG {
         st_EVENT event;
 
-        st_GDG_TIMESTAMP total_elapsed; /* Celkovy pocet vykonanych snimku a pixelu */
+        unsigned screen_ticks_elapsed; /* 0 == 1. pixel viditelneho obrazu */
+
+        unsigned screens_counter; /* citac celkoveho poctu vykonanych snimku */
 
         unsigned beam_row;
         unsigned screen_is_already_rendered_at_beam_pos; /* pokud byla pauza a probehnul render obrazovky, tak tady mame posledmi pozici paprsku, ktera uz je zobrazena */
@@ -143,13 +129,13 @@ extern "C" {
         unsigned tempo;
         unsigned tempo_divider;
 
-#ifdef MZ800EMU_CFG_CLK1M1_SLOW
-        unsigned ctc0clk;
-#endif
+        unsigned ctc0clk; /* pomala verze ctc0 */
 
     } st_GDG;
 
     extern st_GDG g_gdg;
+
+
 
 
     extern const struct st_GDGEVENT g_gdgevent [];
@@ -162,22 +148,10 @@ extern "C" {
     extern Z80EX_BYTE gdg_read_dmd_status ( void );
     extern void gdg_write_byte ( unsigned addr, Z80EX_BYTE value );
 
-#define gdg_compute_total_ticks( now_ticks ) ( now_ticks + ( (uint64_t) g_gdg.total_elapsed.screens * VIDEO_SCREEN_TICKS ) )
-#define gdg_get_total_ticks() gdg_compute_total_ticks( g_gdg.total_elapsed.ticks )
-#define gdg_get_insigeop_ticks() ( g_gdg.total_elapsed.ticks + g_mz800.instruction_insideop_sync_ticks )
 
-#ifdef MZ800EMU_CFG_CLK1M1_FAST
-#define gdg_proximate_clk1m1_event( now_ticks ) ( now_ticks + ( 0x10 - ( gdg_compute_total_ticks ( now_ticks ) & 0x0f ) ) )
-#endif
-
-
-    static inline void gdg_get_timestamp ( st_GDG_TIMESTAMP *tm ) {
-        tm->screens = g_gdg.total_elapsed.screens;
-        tm->ticks = g_gdg.total_elapsed.ticks;
-    }
-#ifdef __cplusplus
+#ifdef	__cplusplus
 }
 #endif
 
-#endif /* GDG_H */
+#endif	/* GDG_H */
 
