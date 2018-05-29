@@ -1,0 +1,55 @@
+
+2016-03-01
+
+	Released version 1.0.3
+
+	- bugfix: in the Pezik ramdisk
+	- added breakpoints and memory dump viewer
+	- added Quick Disk emulation
+
+	- added an additional Sharp ROM's, possible to switch between:
+
+		Standard MZ-800 ROM
+		JSS v1.08C - for MR-1R18 compatibile ramdisk
+		JSS v1.06A - for the Pezik (0x0e8 - 0x0ef) ramdisk
+		WILLY English
+		WILLY German
+		WILLY Japanese
+
+	- many litle improvements and bugfixes
+
+
+2015-09-23
+
+	Released version 1.0.2
+
+	- trivial bugfix: locale encoded errors and warning messages in console
+        - trivial bugxix: step mode in debugger sometime stepped over multiple lines
+	- a little improved emulation speed
+        - inline assembler bugfix: fixed instructions with relative
+        - inline assembler bug fixed of generating instruction with relative
+        - value (JR %, DJNZ %, etc.)
+
+
+
+2015-09-20
+	
+	Released version 1.0.1
+
+
+	Bugfix:
+		- trivial bugfix in memory allocation
+		- added loging into error.log
+ 		- localized file names and paths are now fully supported
+
+        This is tested only in my Czech localization of Windows 7.
+
+        Does it work in other codepages? For example in the Japanese localization of Windows?
+
+
+
+2015-09-17
+
+	Released version 1.0
+
+

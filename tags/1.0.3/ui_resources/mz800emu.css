@@ -1,0 +1,78 @@
+
+/* 
+  Here is space for you games :)
+ 
+
+  Some description about structure of this file:
+  https://developer.gnome.org/gtk3/stable/GtkCssProvider.html#GtkCssProvider.description
+
+*/
+
+
+GtkMenu GtkLabel {                
+        margin-top: 50px;
+        margin-right: 50px;
+        margin-bottom: 50px;
+        margin-left: 50px;
+	padding: 2px;
+}
+
+
+.class_iasm_help_textview {
+	font-family: Arial;
+	font-size: 16px;
+	color: black;
+}
+
+
+.class_dbg_mmap_RAM {
+	background-color: green;
+}
+
+
+.class_dbg_mmap_ROM {
+	background-color: red;
+}
+
+
+.class_dbg_mmap_CGROM {
+	background-color: black;
+}
+
+
+.class_dbg_mmap_CGRAM {
+	background-color: white;
+}
+
+
+.class_dbg_mmap_VRAM {
+	background-color: pink;
+}
+
+
+.class_dbg_mmap_PORTS {
+	background-color: blue;
+}
+
+
+* {
+	/* Arial, etc... */
+	/* font-family: Segoe UI, Arial, Helvetica, sans-serif; */
+	font-family: Segoe UI;
+        
+        /* font-style: [normal|oblique|italic]; */
+        font-style: normal;
+        
+        /* font-variant: [normal|small-caps]; */
+        font-variant: normal;
+        
+        /* font-weight: [normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900]; */
+        font-weight: normal;
+        
+        /* font-size: [absolute-size|relative-size|percentage]; */
+	/* font-size: 12; */
+	/* font-size: small; */
+	/* font-size: large; */
+}
+
+
