@@ -705,11 +705,16 @@ void ui_debugger_initialize_mmap ( void ) {
 
 void ui_debugger_show_main_window ( void ) {
 
+    GtkWidget *window = ui_get_widget ( "debugger_main_window" );
+    if ( gtk_widget_is_visible ( window ) ) {
+        ui_debugger_update_all ( );
+        return;
+    };
+
     // zapneme ukladani historie
     z80ex_set_memread_callback ( g_mz800.cpu, memory_read_with_history_cb, NULL );
     debugger_reset_history ( );
 
-    GtkWidget *window = ui_get_widget ( "debugger_main_window" );
 
     ui_main_win_move_to_pos ( GTK_WINDOW ( window ), &g_uidebugger.pos );
     gtk_widget_show ( window );
@@ -788,16 +793,6 @@ void ui_debugger_pause_emulation ( void ) {
     gtk_dialog_run ( GTK_DIALOG ( dialog ) );
     gtk_widget_destroy ( dialog );
     //ui_iteration ( );
-}
-
-
-void ui_debugger_show_hide_mmap_menu ( void ) {
-    gtk_menu_popup ( GTK_MENU ( ui_get_widget ( "dbg_mmap_menu" ) ), NULL, NULL, NULL, NULL, 0, 0 );
-}
-
-
-void ui_debugger_show_hide_disassembled_menu ( void ) {
-    gtk_menu_popup ( GTK_MENU ( ui_get_widget ( "dbg_disassembled_menu" ) ), NULL, NULL, NULL, NULL, 0, 0 );
 }
 
 

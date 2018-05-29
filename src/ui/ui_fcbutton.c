@@ -43,19 +43,24 @@ st_UI_FCBUTTON* ui_fcbutton_new ( void ) {
 
     fcb->label = gtk_label_new ( "(none)" );
     gtk_widget_show ( fcb->label );
+#ifdef WINDOWS
     gtk_misc_set_alignment ( GTK_MISC ( fcb->label ), 0, 0.5 );
+#else
+    gtk_label_set_xalign ( GTK_LABEL ( fcb->label ), 0 );
+    gtk_label_set_yalign ( GTK_LABEL ( fcb->label ), 0.5 );
+#endif
     gtk_box_pack_start ( GTK_BOX ( fcb->box ), fcb->label, TRUE, TRUE, 0 );
 
     fcb->separator = gtk_separator_new ( GTK_ORIENTATION_VERTICAL );
     gtk_widget_show ( fcb->separator );
     gtk_box_pack_start ( GTK_BOX ( fcb->box ), fcb->separator, FALSE, FALSE, 0 );
     gtk_widget_set_size_request ( fcb->separator, 10, -1 );
-    
-    /* ..._from_stock je deprecated, nicmene ..._from_icon_name mi nefunguje ve verzi pod win32 */
-#ifdef LINUX
-    fcb->image = gtk_image_new_from_icon_name ( "gtk-open", GTK_ICON_SIZE_BUTTON );
-#else
+
+#ifdef WINDOWS
+    // ..._from_stock je deprecated, nicmene ..._from_icon_name mi nefunguje ve verzi pod win32
     fcb->image = gtk_image_new_from_stock ( "gtk-open", GTK_ICON_SIZE_BUTTON );
+#else
+    fcb->image = gtk_image_new_from_icon_name ( "gtk-open", GTK_ICON_SIZE_BUTTON );
 #endif
     gtk_widget_show ( fcb->image );
     gtk_box_pack_start ( GTK_BOX ( fcb->box ), fcb->image, FALSE, FALSE, 0 );
@@ -73,11 +78,11 @@ void ui_fcbutton_destroy ( st_UI_FCBUTTON *fcb ) {
 
 
 void ui_fcbutton_set_filepath ( st_UI_FCBUTTON *fcb, gchar *filepath ) {
-    
+
     guint len = strlen ( filepath );
     fcb->filepath = g_realloc ( fcb->filepath, len + 1 );
     strcpy ( fcb->filepath, filepath );
-    
+
     if ( len ) {
         gchar *txt = g_path_get_basename ( filepath );
         gtk_label_set_text ( (GtkLabel*) fcb->label, txt );

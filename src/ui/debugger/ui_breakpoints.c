@@ -1114,7 +1114,13 @@ G_MODULE_EXPORT void on_dbg_breakpoints_treeview_drag_end ( GtkWidget *widget, G
 G_MODULE_EXPORT gboolean on_dbg_breakpoints_treeview_button_press_event ( GtkWidget *widget, GdkEventButton *event, gpointer user_data ) {
 
     if ( 3 == event->button ) {
+#ifdef WINDOWS
+        // win32 a win64 GTK ve stavajici verzi umi jen gtk_menu_popup, ktery je vsak v novych verzich deprecated
         gtk_menu_popup ( GTK_MENU ( ui_get_widget ( "bpt_menu" ) ), NULL, NULL, NULL, NULL, 0, 0 );
+#else
+        gtk_menu_popup_at_pointer ( GTK_MENU ( ui_get_widget ( "bpt_menu" ) ), (GdkEvent*) event );
+#endif
+
         GtkTreeModel *model = gtk_tree_view_get_model ( GTK_TREE_VIEW ( widget ) );
         GtkTreeSelection *selection = gtk_tree_view_get_selection ( ui_get_tree_view ( "dbg_breakpoints_treeview" ) );
         GtkTreeIter iter;
