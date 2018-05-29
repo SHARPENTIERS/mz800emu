@@ -240,7 +240,12 @@ G_MODULE_EXPORT gboolean on_dbg_mmap ( GtkWidget *widget, GdkEventButton *event,
     if ( !TEST_EMULATION_PAUSED ) {
         ui_debugger_pause_emulation ( );
     } else {
-        ui_debugger_show_hide_mmap_menu ( );
+        // win32 a win64 GTK ve stavajici verzi umi jen gtk_menu_popup, ktery je vsak v novych verzich deprecated
+#ifdef WINDOWS
+        gtk_menu_popup ( GTK_MENU ( ui_get_widget ( "dbg_mmap_menu" ) ), NULL, NULL, NULL, NULL, 0, 0 );
+#else
+        gtk_menu_popup_at_pointer ( GTK_MENU ( ui_get_widget ( "dbg_mmap_menu" ) ), (GdkEvent*) event );
+#endif
     };
     return FALSE;
 }
@@ -443,7 +448,12 @@ G_MODULE_EXPORT gboolean on_dbg_disassembled_treeview_button_press_event ( GtkWi
         ui_debugger_pause_emulation ( );
     } else {
         if ( 3 == event->button ) {
-            ui_debugger_show_hide_disassembled_menu ( );
+#ifdef WINDOWS
+            // win32 a win64 GTK ve stavajici verzi umi jen gtk_menu_popup, ktery je vsak v novych verzich deprecated
+            gtk_menu_popup ( GTK_MENU ( ui_get_widget ( "dbg_disassembled_menu" ) ), NULL, NULL, NULL, NULL, 0, 0 );
+#else
+            gtk_menu_popup_at_pointer ( GTK_MENU ( ui_get_widget ( "dbg_disassembled_menu" ) ), (GdkEvent*) event );
+#endif
         };
     };
     return FALSE;

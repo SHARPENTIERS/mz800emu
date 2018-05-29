@@ -124,8 +124,6 @@ extern "C" {
     extern void ui_debugger_show_main_window ( void );
     extern void ui_debugger_hide_main_window ( void );
     extern void ui_debugger_pause_emulation ( void );
-    extern void ui_debugger_show_hide_mmap_menu ( void );
-    extern void ui_debugger_show_hide_disassembled_menu ( void );
 
     extern void ui_debugger_show_spinner_window ( void );
     extern void ui_debugger_hide_spinner_window ( void );
