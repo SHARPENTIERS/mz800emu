@@ -33,6 +33,12 @@ extern "C" {
 #include "z80ex/include/z80ex.h"
 #include "ui/ui_main.h"
 
+#define DEBUGGER_STACK_ROWS             20
+#define DEBUGGER_DISASSEMBLED_ROWS      32
+#define DEBUGGER_DISASSEMBLED_PGSTEP    32
+#define DEBUGGER_MNEMONIC_MAXLEN        20
+#define DEBUGGER_HISTORY_ROWS           DEBUGGER_HISTORY_LENGTH
+
 
     typedef enum en_DBGREGLSTORE {
         DBG_REG_ID = 0,

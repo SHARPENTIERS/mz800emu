@@ -480,6 +480,48 @@ G_MODULE_EXPORT gboolean on_dbg_disassembled_treeview_key_press_event ( GtkWidge
     /* ridici klavesy maji hodnotu 0x00, 0x0d a 0x20 se pouzivaji pro aktivaci radku */
     //if ( event->string[0] <= 0x20 ) return FALSE;
 
+    if ( ( event->keyval == GDK_KEY_Up ) || ( event->keyval == GDK_KEY_Down ) || ( event->keyval == GDK_KEY_Page_Up ) || ( event->keyval == GDK_KEY_Page_Down ) ) {
+
+        GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_disassembled_liststore" ) );
+        GtkTreeSelection *selection = gtk_tree_view_get_selection ( ui_get_tree_view ( "dbg_disassembled_treeview" ) );
+        GtkTreeIter iter;
+        gtk_tree_selection_get_selected ( selection, &model, &iter );
+        GtkTreePath *path = gtk_tree_model_get_path ( model, &iter );
+
+        gint row = gtk_tree_path_get_indices ( path )[0];
+
+        GValue addr_gvalue = G_VALUE_INIT;
+        gtk_tree_model_get_value ( model, &iter, DBG_DIS_ADDR, &addr_gvalue );
+        Z80EX_WORD addr = (Z80EX_WORD) g_value_get_uint ( &addr_gvalue );
+
+        //printf ( "row: %d\n", row );
+
+        if ( row == 0 ) {
+            if ( event->keyval == GDK_KEY_Up ) {
+                addr--;
+                ui_debugger_update_disassembled ( addr, -1 );
+                return TRUE;
+            };
+            if ( event->keyval == GDK_KEY_Page_Up ) {
+                addr -= DEBUGGER_DISASSEMBLED_PGSTEP;
+                ui_debugger_update_disassembled ( addr, -1 );
+                return TRUE;
+            };
+        } else if ( row == ( DEBUGGER_DISASSEMBLED_ROWS - 1 ) ) {
+            if ( event->keyval == GDK_KEY_Down ) {
+                addr++;
+                ui_debugger_update_disassembled ( addr, row );
+                return TRUE;
+            };
+            if ( event->keyval == GDK_KEY_Page_Down ) {
+                addr += DEBUGGER_DISASSEMBLED_PGSTEP;
+                ui_debugger_update_disassembled ( addr, row );
+                return TRUE;
+            };
+        };
+        return FALSE;
+    };
+
     char c = event->string[0];
     if ( ( ( c >= 'a' ) && ( c <= 'z' ) ) || ( ( c >= 'A' ) && ( c <= 'Z' ) ) ) {
 
