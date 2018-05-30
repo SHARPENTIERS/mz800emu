@@ -49,12 +49,6 @@
 #include "cfgfile/cfgtools.h"
 
 
-#define DEBUGGER_STACK_ROWS             20
-#define DEBUGGER_DISASSEMBLED_ROWS      32
-#define DEBUGGER_MNEMONIC_MAXLEN        20
-#define DEBUGGER_HISTORY_ROWS           DEBUGGER_HISTORY_LENGTH
-
-
 static const uint32_t g_mmap_color[MMBSTATE_COUNT] = {
                                                       0x008000, /* RAM - green */
                                                       0xff0000, /* ROM - red */
