@@ -469,6 +469,56 @@ G_MODULE_EXPORT void on_dbg_memdump_toolbutton_clicked ( GtkToolButton *toolbutt
 }
 
 
+G_MODULE_EXPORT gboolean on_dbg_disassembled_treeview_scroll_event ( GtkWidget *widget, GdkEventScroll *event, gpointer user_data ) {
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        //ui_debugger_pause_emulation ( );
+        return FALSE;
+    };
+
+    GdkScrollDirection direction = event->direction;
+
+    //gdk_event_get_scroll_direction ( (GdkEvent) event, &direction );
+    if ( direction == GDK_SCROLL_SMOOTH ) {
+        gdouble delta_x = 0;
+        gdouble delta_y = 0;
+        gdk_event_get_scroll_deltas ( (GdkEvent*) event, &delta_x, &delta_y );
+        if ( delta_y < 0 ) {
+            direction = GDK_SCROLL_UP;
+        } else if ( delta_y > 0 ) {
+            direction = GDK_SCROLL_DOWN;
+        };
+    };
+
+    if ( ( direction == GDK_SCROLL_UP ) || ( direction == GDK_SCROLL_DOWN ) ) {
+
+        GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_disassembled_liststore" ) );
+        GtkTreeSelection *selection = gtk_tree_view_get_selection ( ui_get_tree_view ( "dbg_disassembled_treeview" ) );
+        GtkTreeIter iter;
+        gtk_tree_selection_get_selected ( selection, &model, &iter );
+        GtkTreePath *path = gtk_tree_model_get_path ( model, &iter );
+
+        gint row = gtk_tree_path_get_indices ( path )[0];
+
+        GValue addr_gvalue = G_VALUE_INIT;
+        gtk_tree_model_get_value ( model, &iter, DBG_DIS_ADDR, &addr_gvalue );
+        Z80EX_WORD addr = (Z80EX_WORD) g_value_get_uint ( &addr_gvalue );
+
+        if ( ( row == 0 ) && ( direction == GDK_SCROLL_UP ) ) {
+            addr--;
+            ui_debugger_update_disassembled ( addr, -1 );
+            return TRUE;
+        } else if ( ( row == ( DEBUGGER_DISASSEMBLED_ROWS - 1 ) ) && ( direction == GDK_SCROLL_DOWN ) ) {
+            addr++;
+            ui_debugger_update_disassembled ( addr, row );
+            return TRUE;
+        };
+    };
+
+    return FALSE;
+}
+
+
 G_MODULE_EXPORT gboolean on_dbg_disassembled_treeview_key_press_event ( GtkWidget *widget, GdkEventKey *event, gpointer user_data ) {
 
     if ( !TEST_EMULATION_PAUSED ) {
