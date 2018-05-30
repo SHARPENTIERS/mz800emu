@@ -1686,6 +1686,16 @@
       </object>
     </child>
   </object>
+  <object class="GtkListStore" id="dbg_stack_liststore">
+    <columns>
+      <!-- column-name addr -->
+      <column type="guint"/>
+      <!-- column-name addr_txt -->
+      <column type="gchararray"/>
+      <!-- column-name value -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkWindow" id="debugger_iasm_help_window">
     <property name="width_request">700</property>
     <property name="height_request">550</property>
@@ -3958,6 +3968,7 @@ instruction to open inline assembler, or right click for menu</property>
                             <signal name="button-press-event" handler="on_dbg_disassembled_treeview_button_press_event" swapped="no"/>
                             <signal name="key-press-event" handler="on_dbg_disassembled_treeview_key_press_event" swapped="no"/>
                             <signal name="row-activated" handler="on_dbg_disassembled_treeview_row_activated" swapped="no"/>
+                            <signal name="scroll-event" handler="on_dbg_disassembled_treeview_scroll_event" swapped="no"/>
                             <child internal-child="selection">
                               <object class="GtkTreeSelection" id="treeview-selection8"/>
                             </child>
@@ -4087,16 +4098,6 @@ instruction to open inline assembler, or right click for menu</property>
       <widget name="dbg_reg0_treeview"/>
       <widget name="dbg_reg1_treeview"/>
     </widgets>
-  </object>
-  <object class="GtkListStore" id="dbg_stack_liststore">
-    <columns>
-      <!-- column-name addr -->
-      <column type="guint"/>
-      <!-- column-name addr_txt -->
-      <column type="gchararray"/>
-      <!-- column-name value -->
-      <column type="gchararray"/>
-    </columns>
   </object>
   <object class="GtkSizeGroup" id="sizegroup1">
     <widgets>
