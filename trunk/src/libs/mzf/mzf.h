@@ -63,6 +63,7 @@ extern "C" {
         uint8_t *body;
     } st_MZF;
 
+    extern void mzf_header_items_correction ( st_MZF_HEADER *mzfhdr );
     extern int mzf_read_header_on_offset ( st_HANDLER *h, uint32_t offset, st_MZF_HEADER *mzfhdr );
     extern int mzf_write_header_on_offset ( st_HANDLER *h, uint32_t offset, st_MZF_HEADER *mzfhdr );
 

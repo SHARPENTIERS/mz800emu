@@ -177,6 +177,62 @@ G_MODULE_EXPORT void on_dbg_reg_edited ( GtkCellRendererText *cell, const gchar 
 }
 
 
+void on_dbg_regX_treeview_row_activated ( GtkTreeView *tree_view, GtkTreePath *path, GtkTreeModel *model ) {
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        ui_debugger_pause_emulation ( );
+        return;
+    };
+
+    GtkTreeIter iter;
+    gtk_tree_model_get_iter ( model, &iter, path );
+
+    GValue reg_id = G_VALUE_INIT;
+    gtk_tree_model_get_value ( model, &iter, DBG_REG_ID, &reg_id );
+
+    Z80_REG_T reg = g_value_get_uint ( &reg_id );
+    if ( ( reg == regR ) || ( reg == regI ) ) return;
+
+    GValue addr_txt = G_VALUE_INIT;
+    gtk_tree_model_get_value ( model, &iter, DBG_REG_VALUE, &addr_txt );
+
+    Z80EX_WORD addr = debuger_text_to_z80_word ( (gchar*) g_value_get_string ( &addr_txt ) );
+    ui_debugger_update_disassembled ( addr, -1 );
+
+}
+
+
+G_MODULE_EXPORT void on_dbg_reg0_treeview_row_activated ( GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data ) {
+    GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_reg0_liststore" ) );
+    on_dbg_regX_treeview_row_activated ( tree_view, path, model );
+}
+
+
+G_MODULE_EXPORT void on_dbg_reg1_treeview_row_activated ( GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data ) {
+    GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_reg1_liststore" ) );
+    on_dbg_regX_treeview_row_activated ( tree_view, path, model );
+}
+
+
+G_MODULE_EXPORT void on_dbg_stack_treeview_row_activated ( GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data ) {
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        ui_debugger_pause_emulation ( );
+        return;
+    };
+
+    GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_stack_liststore" ) );
+    GtkTreeIter iter;
+    gtk_tree_model_get_iter ( model, &iter, path );
+
+    GValue addr_txt = G_VALUE_INIT;
+    gtk_tree_model_get_value ( model, &iter, DBG_STACK_VALUE, &addr_txt );
+
+    Z80EX_WORD addr = debuger_text_to_z80_word ( (gchar*) g_value_get_string ( &addr_txt ) );
+    ui_debugger_update_disassembled ( addr, -1 );
+}
+
+
 G_MODULE_EXPORT void on_dbg_stack_edited ( GtkCellRendererText *cell, const gchar *path_string, const gchar *new_text, gpointer data ) {
 
     g_uidebugger.accelerators_locked = 0;
@@ -556,6 +612,11 @@ G_MODULE_EXPORT void on_dbg_focus_to_menuitem_activate ( GtkMenuItem *menuitem, 
     GtkWidget *window = ui_get_widget ( "dbg_focus_to_window" );
     gtk_widget_show ( window );
     gtk_widget_grab_focus ( g_dbg_focus_to_addr_entry );
+}
+
+
+G_MODULE_EXPORT void on_dbg_focus_to_pc_menuitem_activate ( GtkMenuItem *menuitem, gpointer user_data ) {
+    ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
 }
 
 

@@ -61,14 +61,14 @@
  * - 1 Long
  * - HDR - Header1
  * - CHK - Check Sum (2 bajty)
- * - 1 Long
+ * - 2 Long (ve skutecnosti jde pouze o to, aby se tam vyskytovaly 2 nabezne hrany - delka neni moc dulezita)
  * - 256 Short
  * - HDR - Header2
  * - CHK - Check Sum (2 bajty)
  * - 1 Long
  * - Short GAP: 11 000 short
  * - Short Tape Mark: 20 long + 20 short
- * - 1 Long
+ * - 2 Long (ve skutecnosti jde pouze o to, aby se tam vyskytovaly 2 nabezne hrany - delka neni moc dulezita)
  * - FILE - Data1
  * - CHK - Check Sum (2 bajty)
  * - 1 Long

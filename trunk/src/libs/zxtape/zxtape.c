@@ -113,6 +113,9 @@ static inline void zxtape_bitstream_add_wave ( st_CMT_BITSTREAM *bitstream, uint
 
 st_CMT_BITSTREAM* zxtape_create_cmt_bitstream_from_tapblock ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t *data, uint16_t data_size, en_CMTSPEED cmtspeed, uint32_t rate ) {
 
+    /* prozatim natvrdo 44100, protoze tak mame pripravene delky pulzu */
+    rate = 44100;
+    
     uint32_t count_pilot_pulses = 0;
     uint32_t count_long_pulses = 0;
     uint32_t count_short_pulses = 0;
@@ -150,7 +153,7 @@ st_CMT_BITSTREAM* zxtape_create_cmt_bitstream_from_tapblock ( en_ZXTAPE_BLOCK_FL
      */
     uint32_t blocks = cmt_bitstream_compute_required_blocks_from_scans ( stream_bitsize );
 
-    st_CMT_BITSTREAM *bitstream = cmt_bitstream_new ( 44100, blocks, CMT_STREAM_POLARITY_NORMAL );
+    st_CMT_BITSTREAM *bitstream = cmt_bitstream_new ( rate, blocks, CMT_STREAM_POLARITY_NORMAL );
     if ( !bitstream ) {
         fprintf ( stderr, "%s():%d - Could create cmt bitstream\n", __func__, __LINE__ );
         return NULL;
