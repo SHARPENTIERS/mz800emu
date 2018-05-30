@@ -34,10 +34,7 @@
 #define MZF_FIX_FILENAME_TERMINATOR
 
 
-int mzf_read_header_on_offset ( st_HANDLER *h, uint32_t offset, st_MZF_HEADER *mzfhdr ) {
-
-    if ( EXIT_SUCCESS != generic_driver_read ( h, offset, mzfhdr, sizeof ( st_MZF_HEADER ) ) ) return EXIT_FAILURE;
-
+void mzf_header_items_correction ( st_MZF_HEADER *mzfhdr ) {
     mzfhdr->fsize = endianity_bswap16_LE ( mzfhdr->fsize );
     mzfhdr->fstrt = endianity_bswap16_LE ( mzfhdr->fstrt );
     mzfhdr->fexec = endianity_bswap16_LE ( mzfhdr->fexec );
@@ -46,6 +43,12 @@ int mzf_read_header_on_offset ( st_HANDLER *h, uint32_t offset, st_MZF_HEADER *m
     mzfhdr->fname.terminator = MZF_FNAME_TERMINATOR;
 #endif
 
+}
+
+
+int mzf_read_header_on_offset ( st_HANDLER *h, uint32_t offset, st_MZF_HEADER *mzfhdr ) {
+    if ( EXIT_SUCCESS != generic_driver_read ( h, offset, mzfhdr, sizeof ( st_MZF_HEADER ) ) ) return EXIT_FAILURE;
+    mzf_header_items_correction ( mzfhdr );
     return EXIT_SUCCESS;
 }
 
