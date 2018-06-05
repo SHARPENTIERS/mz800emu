@@ -229,7 +229,7 @@ inline void vramctrl_mz700_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
  * @param addr
  * @param value
  */
-inline void vramctrl_mz800_set_wf_rf_reg ( int addr, Z80EX_BYTE value ) {
+void vramctrl_mz800_set_wf_rf_reg ( int addr, Z80EX_BYTE value ) {
 
     switch ( addr ) {
 

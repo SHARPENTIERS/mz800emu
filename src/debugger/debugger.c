@@ -209,7 +209,6 @@ void debugger_change_z80_flagbit ( unsigned flagbit, unsigned value ) {
 void debugger_change_z80_register ( Z80_REG_T reg, Z80EX_WORD value ) {
 
     if ( !TEST_EMULATION_PAUSED ) {
-        /* Hodnoty neni potreba nastavovat zpet, protoze po pauze dojde k update */
         ui_debugger_pause_emulation ( );
         return;
     };
@@ -244,6 +243,74 @@ void debugger_change_dmd ( Z80EX_BYTE value ) {
     gdg_write_byte ( 0xce, value );
 
     ui_debugger_update_mmap ( );
+    ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
+    ui_debugger_update_stack ( );
+}
+
+
+void debugger_change_gdg_reg_border ( Z80EX_BYTE value ) {
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        /* Hodnotu comboboxu neni potreba nastavovat zpet, protoze po pauze dojde k update */
+        ui_debugger_pause_emulation ( );
+        return;
+    };
+
+    gdg_write_byte ( 0x06cf, value );
+}
+
+
+void debugger_change_gdg_reg_palgrp ( Z80EX_BYTE value ) {
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        /* Hodnotu comboboxu neni potreba nastavovat zpet, protoze po pauze dojde k update */
+        ui_debugger_pause_emulation ( );
+        return;
+    };
+
+    gdg_write_byte ( 0xf0, value | 0x40 );
+}
+
+
+void debugger_change_gdg_reg_pal ( Z80EX_BYTE pal, Z80EX_BYTE value ) {
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        /* Hodnotu comboboxu neni potreba nastavovat zpet, protoze po pauze dojde k update */
+        ui_debugger_pause_emulation ( );
+        return;
+    };
+
+    gdg_write_byte ( 0xf0, value | ( pal << 4 ) );
+}
+
+
+void debugger_change_gdg_rfr ( Z80EX_BYTE value ) {
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        /* Hodnotu comboboxu neni potreba nastavovat zpet, protoze po pauze dojde k update */
+        ui_debugger_pause_emulation ( );
+        return;
+    };
+
+    gdg_write_byte ( 0xcd, value );
+
+    ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
+    ui_debugger_update_stack ( );
+}
+
+
+void debugger_change_gdg_wfr ( Z80EX_BYTE value ) {
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        /* Hodnotu comboboxu neni potreba nastavovat zpet, protoze po pauze dojde k update */
+        ui_debugger_pause_emulation ( );
+        return;
+    };
+
+    gdg_write_byte ( 0xcc, value );
+
+    // pokud se nahodou zmenila i banka A/B, tak ta je pro WF a RF spolecna, takze musime udelat aktualizaci kvili cteni z pameti
+    // TODO: fakt? :)
     ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
     ui_debugger_update_stack ( );
 }

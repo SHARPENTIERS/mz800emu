@@ -137,6 +137,7 @@ extern "C" {
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
     extern void ctc8253_ctc1m1_event ( unsigned event_ticks );
+    extern void ctc8253_sync_ctc0 ( void );
 #endif
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST

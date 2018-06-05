@@ -41,6 +41,7 @@
 #include "cmt_mzf.h"
 
 static st_DRIVER *g_driver = &g_ui_memory_driver_static;
+static st_DRIVER *g_driver_realloc = &g_ui_memory_driver_realloc;
 
 char *g_cmt_mzf_fileext[] = {
                              "mzf",
@@ -187,8 +188,8 @@ static uint16_t cmtmzf_get_bdspeed ( void *cmtext ) {
 }
 
 
-//#define CMTMZF_DEFAULT_STREAM_BITSTREAM
-#define CMTMZF_DEFAULT_STREAM_VSTREAM
+#define CMTMZF_DEFAULT_STREAM_BITSTREAM
+//#define CMTMZF_DEFAULT_STREAM_VSTREAM
 
 
 st_CMTEXT_BLOCK* cmtmzf_block_open ( st_HANDLER *h, uint32_t offset, int block_id, int pause_after, en_CMTEXT_BLOCK_SPEED block_speed, en_CMTSPEED cmtspeed ) {
@@ -202,6 +203,29 @@ st_CMTEXT_BLOCK* cmtmzf_block_open ( st_HANDLER *h, uint32_t offset, int block_i
 
 #ifdef CMTMZF_DEFAULT_STREAM_BITSTREAM
     st_CMT_STREAM *stream = cmtmzf_generate_stream_from_mztapemzf ( blspec->mztmzf, cmtspeed, CMT_STREAM_TYPE_BITSTREAM );
+#if 0
+    st_HANDLER *hwav = generic_driver_open_memory ( NULL, g_driver_realloc, 1 );
+    if ( !hwav ) {
+        fprintf ( stderr, "%s():%d - Can't open handler\n", __func__, __LINE__ );
+    } else {
+        generic_driver_set_handler_readonly_status ( hwav, 0 );
+        hwav->spec.memspec.swelling_enabled = 1;
+
+        if ( EXIT_FAILURE == cmt_bitstream_create_wav ( hwav, stream->str.bitstream ) ) {
+            fprintf ( stderr, "%s():%d - Can't create WAV from bitstream\n", __func__, __LINE__ );
+            generic_driver_close ( hwav );
+        } else {
+            char filename[100];
+            snprintf ( filename, sizeof (filename ), "mzf2wav_block_%d.wav", block_id );
+            printf ( "Save WAV: %s\n", filename );
+            if ( EXIT_FAILURE == generic_driver_save_memory ( hwav, filename ) ) {
+                fprintf ( stderr, "%s():%d - Can't write WAV\n", __func__, __LINE__ );
+            };
+            generic_driver_close ( hwav );
+        };
+    };
+#endif
+
 #endif
 #ifdef CMTMZF_DEFAULT_STREAM_VSTREAM
     st_CMT_STREAM *stream = cmtmzf_generate_stream_from_mztapemzf ( blspec->mztmzf, cmtspeed, CMT_STREAM_TYPE_VSTREAM );

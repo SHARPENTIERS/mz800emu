@@ -123,6 +123,16 @@ static inline void ctc8253_update_ctc0_by_totalticks ( unsigned event_total_tick
     g_ctc8253[CTC_CS0].value -= decremented;
     g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks += decremented * GDGCLK_1M1_DIVIDER;
 }
+
+
+void ctc8253_sync_ctc0 ( void ) {
+    if ( !( g_ctc8253[CTC_CS0].latch_op == 1 ) ) {
+        if ( ( g_ctc8253[CTC_CS0].state >= CTC_STATE_COUNTDOWN ) && ( g_ctc8253[CTC_CS0].clk1m1_event.ticks != -1 ) ) {
+            ctc8253_update_ctc0_by_totalticks ( gdg_compute_total_ticks ( gdg_get_insigeop_ticks ( ) ) );
+        };
+    };
+}
+
 #endif
 
 
@@ -132,8 +142,13 @@ Z80EX_BYTE ctc8253_read_byte ( unsigned cs ) {
 
 #ifdef MZ800EMU_CFG_CLK1M1_FAST
     if ( !( g_ctc8253[cs].latch_op == 1 ) ) {
-        if ( ( cs == CTC_CS0 ) && ( g_ctc8253[CTC_CS0].state >= CTC_STATE_COUNTDOWN ) && ( g_ctc8253[CTC_CS0].clk1m1_event.ticks != -1 ) ) {
-            ctc8253_update_ctc0_by_totalticks ( gdg_compute_total_ticks ( gdg_get_insigeop_ticks ( ) ) );
+        /*
+                if ( ( cs == CTC_CS0 ) && ( g_ctc8253[CTC_CS0].state >= CTC_STATE_COUNTDOWN ) && ( g_ctc8253[CTC_CS0].clk1m1_event.ticks != -1 ) ) {
+                    ctc8253_update_ctc0_by_totalticks ( gdg_compute_total_ticks ( gdg_get_insigeop_ticks ( ) ) );
+                };
+         */
+        if ( cs == CTC_CS0 ) {
+            ctc8253_sync_ctc0 ( );
         };
     };
 #endif

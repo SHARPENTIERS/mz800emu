@@ -49,7 +49,7 @@ extern "C" {
         unsigned signal_pc02; /* OUT: blokovani preruseni z CTC2, 0 = zakazano rusit */
         unsigned signal_pc03; /* OUT: rizeni motoru CMT - zmenu provede nabezna hrana */
         unsigned signal_pc04; /* IN: stav motoru  */
-        unsigned signal_pc05; /* IN: data z CMT */
+        //unsigned signal_pc05; /* IN: data z CMT */
     } st_PIO8255;
 
     extern st_PIO8255 g_pio8255;
@@ -60,7 +60,9 @@ extern "C" {
     extern Z80EX_BYTE pio8255_read ( int addr );
     extern void pio8255_write ( int addr, Z80EX_BYTE value );
 
-    /* sluzby poskytovane interfacem */
+    extern void pio8255_pc2_set ( int value );
+    extern int pio8255_pc1_get ( void );
+    extern int pio8255_pc2_get ( void );
 
     /* priprava klavesove matrix */
     extern void interface_keyboard_init ( void );

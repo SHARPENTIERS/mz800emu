@@ -74,6 +74,7 @@ void cmt_play ( void ) {
     g_cmt.state = CMT_STATE_PLAY;
     g_cmt.playsts = CMTEXT_BLOCK_PLAYSTS_BODY;
     g_cmt.start_time = gdg_get_total_ticks ( );
+    //printf ( "CMT start: %ul\n", gdg_get_total_ticks ( ) );
     g_cmt.ui_player_update = 0;
     ui_cmt_window_update ( );
     g_cmt.ext->block->cb_play ( g_cmt.ext );

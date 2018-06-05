@@ -40,6 +40,7 @@
 #include "ui_breakpoints.h"
 #include "ui_memdump.h"
 #include "ui/ui_hexeditable.h"
+#include "pio8255/pio8255.h"
 
 
 G_MODULE_EXPORT void on_debugger_main_window_size_allocate ( GtkWidget *widget, GdkRectangle *allocation, gpointer user_data ) {
@@ -102,34 +103,6 @@ G_MODULE_EXPORT void on_dbg_pause_switch_menuitem_activate ( GtkCheckMenuItem *m
 }
 
 
-G_MODULE_EXPORT void on_dbg_play_menuitem_activate ( GtkCheckMenuItem *menuitem, gpointer data ) {
-    (void) menuitem;
-    (void) data;
-
-    if ( !TEST_EMULATION_PAUSED ) {
-        ui_debugger_pause_emulation ( );
-        return;
-    };
-
-    debugger_step_call ( 0 );
-    mz800_pause_emulation ( 0 );
-}
-
-
-G_MODULE_EXPORT void on_dbg_pause_menuitem_activate ( GtkCheckMenuItem *menuitem, gpointer data ) {
-    (void) menuitem;
-    (void) data;
-    mz800_pause_emulation ( 1 );
-}
-
-
-G_MODULE_EXPORT void on_dbg_step_menuitem_activate ( GtkCheckMenuItem *menuitem, gpointer data ) {
-    (void) menuitem;
-    (void) data;
-    debugger_step_call ( 1 );
-}
-
-
 G_MODULE_EXPORT void on_dbg_animated_enabled_radiomenuitem_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
@@ -187,18 +160,17 @@ void on_dbg_regX_treeview_row_activated ( GtkTreeView *tree_view, GtkTreePath *p
     GtkTreeIter iter;
     gtk_tree_model_get_iter ( model, &iter, path );
 
-    GValue reg_id = G_VALUE_INIT;
-    gtk_tree_model_get_value ( model, &iter, DBG_REG_ID, &reg_id );
+    GValue gv_reg = G_VALUE_INIT;
+    gtk_tree_model_get_value ( model, &iter, DBG_REG_ID, &gv_reg );
+    Z80_REG_T reg = (Z80_REG_T) g_value_get_uint ( &gv_reg );
 
-    Z80_REG_T reg = g_value_get_uint ( &reg_id );
     if ( ( reg == regR ) || ( reg == regI ) ) return;
 
-    GValue addr_txt = G_VALUE_INIT;
-    gtk_tree_model_get_value ( model, &iter, DBG_REG_VALUE, &addr_txt );
+    GValue gv_value = G_VALUE_INIT;
+    gtk_tree_model_get_value ( model, &iter, DBG_REG_VALUE, &gv_value );
+    Z80EX_WORD addr = (Z80EX_WORD) g_value_get_uint ( &gv_value );
 
-    Z80EX_WORD addr = debuger_text_to_z80_word ( (gchar*) g_value_get_string ( &addr_txt ) );
     ui_debugger_update_disassembled ( addr, -1 );
-
 }
 
 
@@ -225,10 +197,10 @@ G_MODULE_EXPORT void on_dbg_stack_treeview_row_activated ( GtkTreeView *tree_vie
     GtkTreeIter iter;
     gtk_tree_model_get_iter ( model, &iter, path );
 
-    GValue addr_txt = G_VALUE_INIT;
-    gtk_tree_model_get_value ( model, &iter, DBG_STACK_VALUE, &addr_txt );
+    GValue gv_value = G_VALUE_INIT;
+    gtk_tree_model_get_value ( model, &iter, DBG_STACK_VALUE, &gv_value );
+    Z80EX_WORD addr = (Z80EX_WORD) g_value_get_uint ( &gv_value );
 
-    Z80EX_WORD addr = debuger_text_to_z80_word ( (gchar*) g_value_get_string ( &addr_txt ) );
     ui_debugger_update_disassembled ( addr, -1 );
 }
 
@@ -357,65 +329,73 @@ G_MODULE_EXPORT void on_dbg_mmap_umount_all ( GtkMenuItem *menuitem, gpointer us
 }
 
 
+static void ui_debugger_change_z80_flagbit ( unsigned flagbit, unsigned value ) {
+    debugger_change_z80_flagbit ( flagbit, value );
+    g_uidebugger.last_flagreg[flagbit] = ( value ) ? TRUE : FALSE;
+}
+
+
 G_MODULE_EXPORT void on_dbg_flagreg_bit0 ( GtkToggleButton *togglebutton, gpointer user_data ) {
     if ( TEST_UICALLBACKS_LOCKED ) return;
     unsigned value = gtk_toggle_button_get_active ( togglebutton ) ? 1 : 0;
-    debugger_change_z80_flagbit ( 0, value );
+    ui_debugger_change_z80_flagbit ( 0, value );
 }
 
 
 G_MODULE_EXPORT void on_dbg_flagreg_bit1 ( GtkToggleButton *togglebutton, gpointer user_data ) {
     if ( TEST_UICALLBACKS_LOCKED ) return;
     unsigned value = gtk_toggle_button_get_active ( togglebutton ) ? 1 : 0;
-    debugger_change_z80_flagbit ( 1, value );
+    ui_debugger_change_z80_flagbit ( 1, value );
 }
 
 
 G_MODULE_EXPORT void on_dbg_flagreg_bit2 ( GtkToggleButton *togglebutton, gpointer user_data ) {
     if ( TEST_UICALLBACKS_LOCKED ) return;
     unsigned value = gtk_toggle_button_get_active ( togglebutton ) ? 1 : 0;
-    debugger_change_z80_flagbit ( 2, value );
+    ui_debugger_change_z80_flagbit ( 2, value );
 }
 
 
 G_MODULE_EXPORT void on_dbg_flagreg_bit3 ( GtkToggleButton *togglebutton, gpointer user_data ) {
     if ( TEST_UICALLBACKS_LOCKED ) return;
     unsigned value = gtk_toggle_button_get_active ( togglebutton ) ? 1 : 0;
-    debugger_change_z80_flagbit ( 3, value );
+    ui_debugger_change_z80_flagbit ( 3, value );
 }
 
 
 G_MODULE_EXPORT void on_dbg_flagreg_bit4 ( GtkToggleButton *togglebutton, gpointer user_data ) {
     if ( TEST_UICALLBACKS_LOCKED ) return;
     unsigned value = gtk_toggle_button_get_active ( togglebutton ) ? 1 : 0;
-    debugger_change_z80_flagbit ( 4, value );
+    ui_debugger_change_z80_flagbit ( 4, value );
 }
 
 
 G_MODULE_EXPORT void on_dbg_flagreg_bit5 ( GtkToggleButton *togglebutton, gpointer user_data ) {
     if ( TEST_UICALLBACKS_LOCKED ) return;
     unsigned value = gtk_toggle_button_get_active ( togglebutton ) ? 1 : 0;
-    debugger_change_z80_flagbit ( 5, value );
+    ui_debugger_change_z80_flagbit ( 5, value );
 }
 
 
 G_MODULE_EXPORT void on_dbg_flagreg_bit6 ( GtkToggleButton *togglebutton, gpointer user_data ) {
     if ( TEST_UICALLBACKS_LOCKED ) return;
     unsigned value = gtk_toggle_button_get_active ( togglebutton ) ? 1 : 0;
-    debugger_change_z80_flagbit ( 6, value );
+    ui_debugger_change_z80_flagbit ( 6, value );
 }
 
 
 G_MODULE_EXPORT void on_dbg_flagreg_bit7 ( GtkToggleButton *togglebutton, gpointer user_data ) {
     if ( TEST_UICALLBACKS_LOCKED ) return;
     unsigned value = gtk_toggle_button_get_active ( togglebutton ) ? 1 : 0;
-    debugger_change_z80_flagbit ( 7, value );
+    ui_debugger_change_z80_flagbit ( 7, value );
 }
 
 
 G_MODULE_EXPORT void on_dbg_im ( GtkComboBox *combobox, gpointer user_data ) {
     if ( TEST_UICALLBACKS_LOCKED ) return;
-    debugger_change_z80_register ( regIM, gtk_combo_box_get_active ( combobox ) );
+    int value = gtk_combo_box_get_active ( combobox );
+    debugger_change_z80_register ( regIM, value );
+    g_uidebugger.last_im = value;
 }
 
 
@@ -423,6 +403,7 @@ G_MODULE_EXPORT void on_dbg_regiff1 ( GtkToggleButton *togglebutton, gpointer us
     if ( TEST_UICALLBACKS_LOCKED ) return;
     unsigned value = gtk_toggle_button_get_active ( togglebutton ) ? 1 : 0;
     debugger_change_z80_register ( regIFF1, value );
+    g_uidebugger.last_iff1 = value; // last je potreba zmenit i v pripade, ze teprve prechazime do pauzy (v update se nam v UI opet nastavi puvodni hodnota)
 }
 
 
@@ -430,16 +411,214 @@ G_MODULE_EXPORT void on_dbg_regiff2 ( GtkToggleButton *togglebutton, gpointer us
     if ( TEST_UICALLBACKS_LOCKED ) return;
     unsigned value = gtk_toggle_button_get_active ( togglebutton ) ? 1 : 0;
     debugger_change_z80_register ( regIFF2, value );
+    g_uidebugger.last_iff2 = value; // last je potreba zmenit i v pripade, ze teprve prechazime do pauzy (v update se nam v UI opet nastavi puvodni hodnota)
 }
 
 
 G_MODULE_EXPORT void on_dbg_regdmd ( GtkComboBox *combobox, gpointer user_data ) {
     if ( TEST_UICALLBACKS_LOCKED ) return;
-    debugger_change_dmd ( gtk_combo_box_get_active ( combobox ) );
+    int value = gtk_combo_box_get_active ( combobox );
+    debugger_change_dmd ( value );
+    g_uidebugger.last_dmd = value;
 }
 
 
-G_MODULE_EXPORT void on_dbg_play_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+G_MODULE_EXPORT void on_dbg_8255_ctc2_mask_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+
+    unsigned value = gtk_toggle_button_get_active ( togglebutton ) ? 1 : 0;
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        /* Toggle button neni potreba nastavovat zpet, protoze po pauze dojde k update */
+        ui_debugger_pause_emulation ( );
+    } else {
+        pio8255_pc2_set ( value );
+    };
+
+    g_uidebugger.last_i8255_ctc2_mask = value; // last je potreba zmenit i v pripade, ze teprve prechazime do pauzy (v update se nam v UI opet nastavi puvodni hodnota)
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_reg_border_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    int value = gtk_combo_box_get_active ( combobox );
+    debugger_change_gdg_reg_border ( value );
+    g_uidebugger.last_gdg_reg_border = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_reg_palgrp_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    int value = gtk_combo_box_get_active ( combobox );
+    debugger_change_gdg_reg_palgrp ( value );
+    g_uidebugger.last_gdg_reg_palgrp = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_reg_pal0_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    int value = gtk_combo_box_get_active ( combobox );
+    debugger_change_gdg_reg_pal ( 0, value );
+    g_uidebugger.last_gdg_reg_pal0 = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_reg_pal1_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    int value = gtk_combo_box_get_active ( combobox );
+    debugger_change_gdg_reg_pal ( 1, value );
+    g_uidebugger.last_gdg_reg_pal1 = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_reg_pal2_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    int value = gtk_combo_box_get_active ( combobox );
+    debugger_change_gdg_reg_pal ( 2, value );
+    g_uidebugger.last_gdg_reg_pal2 = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_reg_pal3_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    int value = gtk_combo_box_get_active ( combobox );
+    debugger_change_gdg_reg_pal ( 3, value );
+    g_uidebugger.last_gdg_reg_pal3 = value;
+}
+
+
+void ui_debugger_change_gdg_rfr ( void ) {
+    Z80EX_BYTE reg_value = 0x00;
+    reg_value |= gtk_combo_box_get_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_rfr_mode_comboboxtext ) ) << 7;
+    reg_value |= gtk_combo_box_get_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_rfr_bank_comboboxtext ) ) << 4;
+    reg_value |= gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_rfr_plane1_checkbutton ) ) << 0;
+    reg_value |= gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_rfr_plane2_checkbutton ) ) << 1;
+    reg_value |= gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_rfr_plane3_checkbutton ) ) << 2;
+    reg_value |= gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_rfr_plane4_checkbutton ) ) << 3;
+    debugger_change_gdg_rfr ( reg_value );
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_rfr_mode_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    int value = gtk_combo_box_get_active ( combobox );
+    ui_debugger_change_gdg_rfr ( );
+    g_uidebugger.last_gdg_rfr_mode = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_rfr_bank_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    int value = gtk_combo_box_get_active ( combobox );
+    ui_debugger_change_gdg_rfr ( );
+    g_uidebugger.last_gdg_rfr_bank = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_rfr_plane1_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    gboolean value = gtk_toggle_button_get_active ( togglebutton );
+    ui_debugger_change_gdg_rfr ( );
+    g_uidebugger.last_gdg_rfr_plane1 = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_rfr_plane2_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    gboolean value = gtk_toggle_button_get_active ( togglebutton );
+    ui_debugger_change_gdg_rfr ( );
+    g_uidebugger.last_gdg_rfr_plane2 = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_rfr_plane3_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    gboolean value = gtk_toggle_button_get_active ( togglebutton );
+    ui_debugger_change_gdg_rfr ( );
+    g_uidebugger.last_gdg_rfr_plane3 = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_rfr_plane4_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    gboolean value = gtk_toggle_button_get_active ( togglebutton );
+    ui_debugger_change_gdg_rfr ( );
+    g_uidebugger.last_gdg_rfr_plane4 = value;
+}
+
+
+void ui_debugger_change_gdg_wfr ( void ) {
+    Z80EX_BYTE reg_value = 0x00;
+    Z80EX_BYTE wf_mode = gtk_combo_box_get_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_wfr_mode_comboboxtext ) );
+    if ( wf_mode == 5 ) {
+        wf_mode++;
+    };
+    reg_value |= wf_mode << 5;
+    reg_value |= gtk_combo_box_get_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_wfr_bank_comboboxtext ) ) << 4;
+    reg_value |= gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_wfr_plane1_checkbutton ) ) << 0;
+    reg_value |= gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_wfr_plane2_checkbutton ) ) << 1;
+    reg_value |= gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_wfr_plane3_checkbutton ) ) << 2;
+    reg_value |= gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_wfr_plane4_checkbutton ) ) << 3;
+    debugger_change_gdg_wfr ( reg_value );
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_wfr_mode_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    int value = gtk_combo_box_get_active ( combobox );
+    ui_debugger_change_gdg_wfr ( );
+    g_uidebugger.last_gdg_wfr_mode = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_wfr_bank_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    int value = gtk_combo_box_get_active ( combobox );
+    ui_debugger_change_gdg_wfr ( );
+    g_uidebugger.last_gdg_wfr_bank = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_wfr_plane1_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    gboolean value = gtk_toggle_button_get_active ( togglebutton );
+    ui_debugger_change_gdg_wfr ( );
+    g_uidebugger.last_gdg_wfr_plane1 = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_wfr_plane2_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    gboolean value = gtk_toggle_button_get_active ( togglebutton );
+    ui_debugger_change_gdg_wfr ( );
+    g_uidebugger.last_gdg_wfr_plane2 = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_wfr_plane3_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    gboolean value = gtk_toggle_button_get_active ( togglebutton );
+    ui_debugger_change_gdg_wfr ( );
+    g_uidebugger.last_gdg_wfr_plane3 = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_wfr_plane4_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+    gboolean value = gtk_toggle_button_get_active ( togglebutton );
+    ui_debugger_change_gdg_wfr ( );
+    g_uidebugger.last_gdg_wfr_plane4 = value;
+}
+
+
+G_MODULE_EXPORT void on_dbg_cpu_ticks_reset_button_clicked ( GtkButton *button, gpointer user_data ) {
+    ui_debugger_cpu_tick_counter_reset ( );
+    ui_debugger_update_cpu_ticks ( );
+}
+
+
+G_MODULE_EXPORT void on_dbg_continue_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
     if ( !TEST_EMULATION_PAUSED ) {
         ui_debugger_pause_emulation ( );
         return;
@@ -449,13 +628,32 @@ G_MODULE_EXPORT void on_dbg_play_toolbutton_clicked ( GtkToolButton *toolbutton,
 }
 
 
-G_MODULE_EXPORT void on_dbg_stop_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+G_MODULE_EXPORT void on_dbg_pause_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
     mz800_pause_emulation ( 1 );
 }
 
 
-G_MODULE_EXPORT void on_dbg_step_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+G_MODULE_EXPORT void on_dbg_step_in_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+    if ( !TEST_EMULATION_PAUSED ) {
+        ui_debugger_pause_emulation ( );
+        return;
+    };
     debugger_step_call ( 1 );
+}
+
+
+G_MODULE_EXPORT void on_dbg_step_over_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+    printf ( "%s() - not implemented\n", __func__ );
+}
+
+
+G_MODULE_EXPORT void on_dbg_step_out_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+    printf ( "%s() - not implemented\n", __func__ );
+}
+
+
+G_MODULE_EXPORT void on_dbg_run_to_cursor_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+    printf ( "%s() - not implemented\n", __func__ );
 }
 
 
@@ -466,6 +664,11 @@ G_MODULE_EXPORT void on_dbg_breakpoints_toolbutton_clicked ( GtkToolButton *tool
 
 G_MODULE_EXPORT void on_dbg_memdump_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
     ui_memdump_show_hide_window ( );
+}
+
+
+G_MODULE_EXPORT void on_dbg_dissassembler_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+    printf ( "%s() - not implemented\n", __func__ );
 }
 
 

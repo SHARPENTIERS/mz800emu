@@ -92,6 +92,11 @@ extern "C" {
     extern void debugger_change_z80_flagbit ( unsigned flagbit, unsigned value );
     extern void debugger_change_z80_register ( Z80_REG_T reg, Z80EX_WORD value );
     extern void debugger_change_dmd ( Z80EX_BYTE value );
+    extern void debugger_change_gdg_reg_border ( Z80EX_BYTE value );
+    extern void debugger_change_gdg_reg_palgrp ( Z80EX_BYTE value );
+    extern void debugger_change_gdg_reg_pal ( Z80EX_BYTE pal, Z80EX_BYTE value );
+    extern void debugger_change_gdg_wfr ( Z80EX_BYTE value );
+    extern void debugger_change_gdg_rfr ( Z80EX_BYTE value );
     extern Z80EX_WORD debuger_text_to_z80_word ( const char *txt );
 
 #define debugger_memory_read_byte(addr) debugger_dasm_read_cb ( addr, NULL )

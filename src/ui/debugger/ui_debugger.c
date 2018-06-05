@@ -36,17 +36,27 @@
 #include "ui_debugger.h"
 #include "debugger/debugger.h"
 
+#include "main.h"
+
 #include "mz800.h"
 #include "z80ex/include/z80ex.h"
 #include "z80ex/include/z80ex_dasm.h"
 #include "gdg/gdg.h"
+#include "gdg/video.h"
 #include "memory/memory.h"
+#include "cmt/cmt.h"
+#include "pio8255/pio8255.h"
+#include "ctc8253/ctc8253.h"
 
 #include "src/ui/tools/ui_tool_pixbuf.h"
 
 #include "cfgmain.h"
 #include "ui/ui_utils.h"
 #include "cfgfile/cfgtools.h"
+#include "pio8255/pio8255.h"
+#include "pioz80/pioz80.h"
+#include "ctc8253/ctc8253.h"
+#include "gdg/vramctrl.h"
 
 
 static const uint32_t g_mmap_color[MMBSTATE_COUNT] = {
@@ -67,16 +77,17 @@ static GtkWidget *dbg_disassembled_addr_vscale = NULL;
 
 void ui_debugger_update_flag_reg ( void ) {
 
-    char checkbutton_name[] = "dbg_flagreg_bit0_checkbutton";
     uint8_t flag_reg = z80ex_get_reg ( g_mz800.cpu, regAF ) & 0xff;
-    unsigned i;
 
     LOCK_UICALLBACKS ( );
 
+    int i;
     for ( i = 0; i < 8; i++ ) {
-        checkbutton_name [ 15 ] = '0' + i;
         gboolean state = ( flag_reg & 1 ) ? TRUE : FALSE;
-        gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( ui_get_check_button ( checkbutton_name ) ), state );
+        if ( g_uidebugger.last_flagreg[i] != state ) {
+            gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.flagreg_checkbbutton[i] ), state );
+            g_uidebugger.last_flagreg[i] = state;
+        };
         flag_reg = flag_reg >> 1;
     };
 
@@ -85,23 +96,39 @@ void ui_debugger_update_flag_reg ( void ) {
 
 
 gboolean ui_debugger_update_register ( GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data ) {
+
     gint row = gtk_tree_path_get_indices ( path )[0];
-    GValue gv = G_VALUE_INIT;
-    gtk_tree_model_get_value ( model, iter, DBG_REG_ID, &gv );
-    char value_txt [5];
+
+    GValue gv_reg = G_VALUE_INIT;
+    gtk_tree_model_get_value ( model, iter, DBG_REG_ID, &gv_reg );
+    Z80_REG_T reg = g_value_get_uint ( &gv_reg );
+
+    GValue gv_value = G_VALUE_INIT;
+    gtk_tree_model_get_value ( model, iter, DBG_REG_VALUE, &gv_value );
+    Z80EX_WORD last_value = (Z80EX_WORD) g_value_get_uint ( &gv_value );
+
+    char *format;
+    Z80EX_WORD value = 0;
+
     if ( row != 6 ) {
-        sprintf ( value_txt, "%04X", z80ex_get_reg ( g_mz800.cpu, g_value_get_uint ( &gv ) ) );
+        value = z80ex_get_reg ( g_mz800.cpu, reg );
+        format = "%04X";
     } else {
-        Z80EX_BYTE value = 0;
-        if ( regR == g_value_get_uint ( &gv ) ) {
+        if ( regR == reg ) {
             value = z80ex_get_reg ( g_mz800.cpu, regR ) & 0x7f;
             value |= z80ex_get_reg ( g_mz800.cpu, regR7 ) & 0x80;
         } else {
-            value = z80ex_get_reg ( g_mz800.cpu, g_value_get_uint ( &gv ) ) & 0xff;
-        }
-        sprintf ( value_txt, "%02X", value );
+            value = z80ex_get_reg ( g_mz800.cpu, reg ) & 0xff;
+        };
+        format = "%02X";
     };
-    gtk_list_store_set ( (GtkListStore*) model, iter, DBG_REG_VALUE, value_txt, -1 );
+
+    if ( last_value == value ) return FALSE;
+
+    char value_txt [5];
+    snprintf ( value_txt, sizeof ( value_txt ), format, value );
+
+    gtk_list_store_set ( (GtkListStore*) model, iter, DBG_REG_VALUE_TXT, value_txt, DBG_REG_VALUE, value, -1 );
     return FALSE;
 }
 
@@ -112,25 +139,445 @@ void ui_debugger_update_registers ( void ) {
 }
 
 
+void ui_debugger_update_cpu_ticks ( void ) {
+    char cpu_ticks_buff[20];
+    snprintf ( cpu_ticks_buff, sizeof ( cpu_ticks_buff ), "%u", (uint32_t) ( ( gdg_get_total_ticks ( ) - g_uidebugger.cpu_ticks_start ) / GDGCLK2CPU_DIVIDER ) );
+    gtk_entry_set_text ( GTK_ENTRY ( g_uidebugger.cpu_ticks_entry ), cpu_ticks_buff );
+}
+
+
 void ui_debugger_update_internals ( void ) {
 
     LOCK_UICALLBACKS ( );
 
-    /* internals: IM */
-    gtk_combo_box_set_active ( ui_get_combo_box ( "dbg_im_comboboxtext" ), z80ex_get_reg ( g_mz800.cpu, regIM ) );
+    /*
+     * Z80 internals 
+     */
 
-    gboolean state;
+    /* internals: IM */
+    int im = z80ex_get_reg ( g_mz800.cpu, regIM );
+    if ( im != g_uidebugger.last_im ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.im_comboboxtext ), im );
+        g_uidebugger.last_im = im;
+    };
 
     /* internals: IFF1 */
-    state = ( z80ex_get_reg ( g_mz800.cpu, regIFF1 ) & 1 ) ? TRUE : FALSE;
-    gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( ui_get_check_button ( "dbg_regiff1_checkbutton" ) ), state );
+    gboolean iff1 = ( z80ex_get_reg ( g_mz800.cpu, regIFF1 ) & 1 ) ? TRUE : FALSE;
+    if ( iff1 != g_uidebugger.last_iff1 ) {
+        gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.iff1_checkbutton ), iff1 );
+        g_uidebugger.last_iff1 = iff1;
+    };
 
     /* internals: IFF2 */
-    state = ( z80ex_get_reg ( g_mz800.cpu, regIFF2 ) & 1 ) ? TRUE : FALSE;
-    gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( ui_get_check_button ( "dbg_regiff2_checkbutton" ) ), state );
+    gboolean iff2 = ( z80ex_get_reg ( g_mz800.cpu, regIFF2 ) & 1 ) ? TRUE : FALSE;
+    if ( iff2 != g_uidebugger.last_iff2 ) {
+        gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.iff2_checkbutton ), iff2 );
+        g_uidebugger.last_iff2 = iff2;
+    };
+
+
+    /*
+     * GDG registry
+     */
+
 
     /* regDMD */
-    gtk_combo_box_set_active ( ui_get_combo_box ( "dbg_regdmd_comboboxtext" ), g_gdg.regDMD );
+    if ( g_uidebugger.last_dmd != g_gdg.regDMD ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.dmd_comboboxtext ), g_gdg.regDMD );
+        g_uidebugger.last_dmd = g_gdg.regDMD;
+    };
+
+    /* regBORDER */
+    if ( g_uidebugger.last_gdg_reg_border != g_gdg.regBOR ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_border_comboboxtext ), g_gdg.regBOR );
+        g_uidebugger.last_gdg_reg_border = g_gdg.regBOR;
+    };
+
+    /* regPALGRP */
+    if ( g_uidebugger.last_gdg_reg_palgrp != g_gdg.regPALGRP ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_palgrp_comboboxtext ), g_gdg.regPALGRP );
+        g_uidebugger.last_gdg_reg_palgrp = g_gdg.regPALGRP;
+    };
+
+    /* regPAL0 */
+    if ( g_uidebugger.last_gdg_reg_pal0 != g_gdg.regPAL0 ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_pal0_comboboxtext ), g_gdg.regPAL0 );
+        g_uidebugger.last_gdg_reg_pal0 = g_gdg.regPAL0;
+    };
+
+    /* regPAL1 */
+    if ( g_uidebugger.last_gdg_reg_pal1 != g_gdg.regPAL1 ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_pal1_comboboxtext ), g_gdg.regPAL1 );
+        g_uidebugger.last_gdg_reg_pal1 = g_gdg.regPAL1;
+    };
+
+    /* regPAL2 */
+    if ( g_uidebugger.last_gdg_reg_pal2 != g_gdg.regPAL2 ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_pal2_comboboxtext ), g_gdg.regPAL2 );
+        g_uidebugger.last_gdg_reg_pal2 = g_gdg.regPAL2;
+    };
+
+    /* regPAL3 */
+    if ( g_uidebugger.last_gdg_reg_pal3 != g_gdg.regPAL3 ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_pal3_comboboxtext ), g_gdg.regPAL3 );
+        g_uidebugger.last_gdg_reg_pal3 = g_gdg.regPAL3;
+    };
+
+    /* regRF mode */
+    if ( g_uidebugger.last_gdg_rfr_mode != g_vramctrl.regRF_SEARCH ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_rfr_mode_comboboxtext ), g_vramctrl.regRF_SEARCH );
+        g_uidebugger.last_gdg_rfr_mode = g_vramctrl.regRF_SEARCH;
+    };
+
+    /* regRF bank */
+    if ( g_uidebugger.last_gdg_rfr_bank != g_vramctrl.regWFRF_VBANK ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_rfr_bank_comboboxtext ), g_vramctrl.regWFRF_VBANK );
+        g_uidebugger.last_gdg_rfr_bank = g_vramctrl.regWFRF_VBANK;
+    };
+
+    /* regRF plane1 */
+    gboolean rfr_plane1 = ( g_vramctrl.regRF_PLANE & 0x01 );
+    if ( g_uidebugger.last_gdg_rfr_plane1 != rfr_plane1 ) {
+        gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_rfr_plane1_checkbutton ), rfr_plane1 );
+        g_uidebugger.last_gdg_rfr_plane1 = rfr_plane1;
+    };
+
+    /* regRF plane2 */
+    gboolean rfr_plane2 = ( g_vramctrl.regRF_PLANE & 0x02 );
+    if ( g_uidebugger.last_gdg_rfr_plane2 != rfr_plane2 ) {
+        gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_rfr_plane2_checkbutton ), rfr_plane2 );
+        g_uidebugger.last_gdg_rfr_plane2 = rfr_plane2;
+    };
+
+    /* regRF plane3 */
+    gboolean rfr_plane3 = ( g_vramctrl.regRF_PLANE & 0x04 );
+    if ( g_uidebugger.last_gdg_rfr_plane3 != rfr_plane3 ) {
+        gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_rfr_plane3_checkbutton ), rfr_plane3 );
+        g_uidebugger.last_gdg_rfr_plane3 = rfr_plane3;
+    };
+
+    /* regRF plane4 */
+    gboolean rfr_plane4 = ( g_vramctrl.regRF_PLANE & 0x08 );
+    if ( g_uidebugger.last_gdg_rfr_plane4 != rfr_plane4 ) {
+        gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_rfr_plane4_checkbutton ), rfr_plane4 );
+        g_uidebugger.last_gdg_rfr_plane1 = rfr_plane4;
+    };
+
+    /* regWF mode */
+    if ( g_uidebugger.last_gdg_wfr_mode != g_vramctrl.regWF_MODE ) {
+        int wf_combo_mode = ( g_vramctrl.regWF_MODE <= GDG_WF_MODE_REPLACE ) ? g_vramctrl.regWF_MODE : GDG_WF_MODE_PSET;
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_wfr_mode_comboboxtext ), wf_combo_mode );
+        g_uidebugger.last_gdg_wfr_mode = g_vramctrl.regWF_MODE;
+    };
+
+    /* regWF bank */
+    if ( g_uidebugger.last_gdg_wfr_bank != g_vramctrl.regWFRF_VBANK ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_wfr_bank_comboboxtext ), g_vramctrl.regWFRF_VBANK );
+        g_uidebugger.last_gdg_wfr_bank = g_vramctrl.regWFRF_VBANK;
+    };
+
+    /* regWF plane1 */
+    gboolean wfr_plane1 = ( g_vramctrl.regWF_PLANE & 0x01 );
+    if ( g_uidebugger.last_gdg_wfr_plane1 != wfr_plane1 ) {
+        gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_wfr_plane1_checkbutton ), wfr_plane1 );
+        g_uidebugger.last_gdg_wfr_plane1 = wfr_plane1;
+    };
+
+    /* regWF plane2 */
+    gboolean wfr_plane2 = ( g_vramctrl.regWF_PLANE & 0x02 );
+    if ( g_uidebugger.last_gdg_wfr_plane2 != wfr_plane2 ) {
+        gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_wfr_plane2_checkbutton ), wfr_plane2 );
+        g_uidebugger.last_gdg_wfr_plane2 = wfr_plane2;
+    };
+
+    /* regWF plane3 */
+    gboolean wfr_plane3 = ( g_vramctrl.regWF_PLANE & 0x04 );
+    if ( g_uidebugger.last_gdg_wfr_plane3 != wfr_plane3 ) {
+        gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_wfr_plane3_checkbutton ), wfr_plane3 );
+        g_uidebugger.last_gdg_wfr_plane3 = wfr_plane3;
+    };
+
+    /* regWF plane4 */
+    gboolean wfr_plane4 = ( g_vramctrl.regWF_PLANE & 0x08 );
+    if ( g_uidebugger.last_gdg_wfr_plane4 != wfr_plane4 ) {
+        gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_wfr_plane4_checkbutton ), wfr_plane4 );
+        g_uidebugger.last_gdg_wfr_plane1 = wfr_plane4;
+    };
+
+
+    /*
+     * GDG signaly
+     */
+
+    /* GDG hbln */
+    if ( g_gdg.hbln != g_uidebugger.last_gdg_hbln ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hbln_label ), ( g_gdg.hbln ) ? "1" : "0" );
+        g_uidebugger.last_gdg_hbln = g_gdg.hbln;
+    };
+
+    /* GDG vbln */
+    if ( g_gdg.vbln != g_uidebugger.last_gdg_vbln ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_vbln_label ), ( g_gdg.vbln ) ? "1" : "0" );
+        g_uidebugger.last_gdg_vbln = g_gdg.vbln;
+    };
+
+    /* GDG hsync */
+    if ( g_gdg.sts_hsync != g_uidebugger.last_gdg_hsync ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hsync_label ), ( g_gdg.sts_hsync ) ? "1" : "0" );
+        g_uidebugger.last_gdg_hsync = g_gdg.sts_hsync;
+    };
+
+    /* GDG vsync */
+    if ( g_gdg.sts_vsync != g_uidebugger.last_gdg_vsync ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_vsync_label ), ( g_gdg.sts_vsync ) ? "1" : "0" );
+        g_uidebugger.last_gdg_vsync = g_gdg.sts_vsync;
+    };
+
+    /* GDG xpos */
+    int gdg_xpos = VIDEO_GET_SCREEN_COL ( g_gdg.total_elapsed.ticks );
+    char gdg_xpos_buff[5];
+    snprintf ( gdg_xpos_buff, sizeof ( gdg_xpos_buff ), "%d", gdg_xpos );
+    gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_xpos_label ), gdg_xpos_buff );
+
+    /* GDG ypos */
+    if ( g_gdg.beam_row != g_uidebugger.last_gdg_ypos ) {
+        char buff[4];
+        snprintf ( buff, sizeof ( buff ), "%d", g_gdg.beam_row );
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_ypos_label ), buff );
+        g_uidebugger.last_gdg_ypos = g_gdg.beam_row;
+    };
+
+    /* GDG tempo */
+    if ( g_gdg.tempo != g_uidebugger.last_gdg_tempo ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_tempo_label ), ( g_gdg.tempo ) ? "1" : "0" );
+        g_uidebugger.last_gdg_tempo = g_gdg.tempo;
+    };
+
+    /* GDG cnt */
+    char gdg_cnt_buff[20];
+    snprintf ( gdg_cnt_buff, sizeof ( gdg_cnt_buff ), "%u", g_gdg.total_elapsed.ticks );
+    gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_cnt_label ), gdg_cnt_buff );
+
+
+    /* GDG cnt */
+    const char *gdg_beam_state = "UNKNOWN STATE";
+
+    const char *bsts_vertical_retrace = "VERTICAL RETRACE";
+    const char *bsts_horizontal_retrace = "HORIZONTAL RETRACE";
+    const char *bsts_draw_top_border = "TOP BORDER";
+    const char *bsts_draw_bottom_border = "BOTTOM BORDER";
+    const char *bsts_draw_left_border = "LEFT BORDER";
+    const char *bsts_draw_right_border = "RIGHT BORDER";
+    const char *bsts_draw_screen = "SCREEN";
+
+    if ( g_gdg.beam_row > VIDEO_BEAM_BORDER_BOTOM_LAST_ROW ) {
+        gdg_beam_state = bsts_vertical_retrace;
+    } else {
+        if ( g_gdg.beam_row < VIDEO_BEAM_CANVAS_FIRST_ROW ) {
+            gdg_beam_state = bsts_draw_top_border;
+        } else if ( g_gdg.beam_row > VIDEO_BEAM_CANVAS_LAST_ROW ) {
+            gdg_beam_state = bsts_draw_bottom_border;
+        } else {
+            if ( gdg_xpos < VIDEO_BEAM_CANVAS_FIRST_COLUMN ) {
+                gdg_beam_state = bsts_draw_left_border;
+            } else if ( gdg_xpos < VIDEO_BEAM_BORDER_RIGHT_FIRST_COLUMN ) {
+                gdg_beam_state = bsts_draw_screen;
+            } else if ( gdg_xpos <= VIDEO_BEAM_BORDER_RIGHT_LAST_COLUMN ) {
+                gdg_beam_state = bsts_draw_right_border;
+            };
+        };
+
+        if ( gdg_xpos > VIDEO_BEAM_BORDER_RIGHT_LAST_COLUMN ) {
+            gdg_beam_state = bsts_horizontal_retrace;
+        };
+    };
+
+    if ( g_uidebugger.last_gdg_beam_state != gdg_beam_state ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_beam_label ), gdg_beam_state );
+        g_uidebugger.last_gdg_beam_state = gdg_beam_state;
+    };
+
+    /*
+     * i8255
+     */
+
+
+    /* i8255 cmt in */
+    int cmtin = cmt_read_data ( ) & 1;
+    if ( cmtin != g_uidebugger.last_cmtin ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.i8255_cmt_in_label ), ( cmtin ) ? "1" : "0" );
+        g_uidebugger.last_cmtin = cmtin;
+    };
+
+    /* i8255 cmt out */
+    int cmtout = pio8255_pc1_get ( );
+    if ( cmtout != g_uidebugger.last_cmtout ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.i8255_cmt_out_label ), ( cmtout ) ? "1" : "0" );
+        g_uidebugger.last_cmtout = cmtout;
+    };
+
+    /* i8255 cursor timer */
+    int cursor_timer = mz800_get_cursor_timer_state ( );
+    if ( cursor_timer != g_uidebugger.last_cursor_timer ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.i8255_cursor_timer_label ), ( cursor_timer ) ? "1" : "0" );
+        g_uidebugger.last_cursor_timer = cursor_timer;
+    };
+
+    /* i8255 CTC2 mask */
+    gboolean ctc2_mask = ( pio8255_pc2_get ( ) ) ? TRUE : FALSE;
+    if ( ctc2_mask != g_uidebugger.last_i8255_ctc2_mask ) {
+        gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.i8255_ctc2_mask_checkbutton ), ctc2_mask );
+        g_uidebugger.last_i8255_ctc2_mask = ctc2_mask;
+    };
+
+
+    /*
+     * Interrupts
+     */
+
+
+    /* interrupt pioz80 */
+    gboolean int_pioz80 = ( g_mz800.interrupt & MZ800_INTERRUPT_PIOZ80 );
+    if ( int_pioz80 != g_uidebugger.last_int_pioz80 ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.int_pioz80_label ), ( int_pioz80 ) ? "1" : "0" );
+        g_uidebugger.last_int_pioz80 = int_pioz80;
+    };
+
+    /* interrupt ctc2 */
+    gboolean int_ctc2 = ( g_mz800.interrupt & MZ800_INTERRUPT_CTC2 );
+    if ( int_ctc2 != g_uidebugger.last_int_ctc2 ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.int_ctc2_label ), ( int_ctc2 ) ? "1" : "0" );
+        g_uidebugger.last_int_ctc2 = int_ctc2;
+    };
+
+    /* interrupt fdc */
+    gboolean int_fdc = ( g_mz800.interrupt & MZ800_INTERRUPT_FDC );
+    if ( int_fdc != g_uidebugger.last_int_fdc ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.int_fdc_label ), ( int_fdc ) ? "1" : "0" );
+        g_uidebugger.last_int_fdc = int_fdc;
+    };
+
+
+    /*
+     * PIOZ80 PortA
+     */
+
+
+
+    /* pioz80 pa icena */
+    if ( g_pioz80.port[PIOZ80_PORT_A].icena != g_uidebugger.last_pioz80_pa_icena ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.pioz80_pa_icena_label ), ( g_pioz80.port[PIOZ80_PORT_A].icena == PIOZ80_ICENA_DISABLED ) ? "disabled" : "enabled" );
+        g_uidebugger.last_pioz80_pa_icena = g_pioz80.port[PIOZ80_PORT_A].icena;
+    };
+
+    /* pioz80 pa io_mask */
+    if ( g_pioz80.port[PIOZ80_PORT_A].io_mask != g_uidebugger.last_pioz80_pa_io_mask ) {
+        char buff[3];
+        snprintf ( buff, sizeof ( buff ), "%02X", g_pioz80.port[PIOZ80_PORT_A].io_mask );
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.pioz80_pa_io_mask_label ), buff );
+        g_uidebugger.last_pioz80_pa_io_mask = g_pioz80.port[PIOZ80_PORT_A].io_mask;
+    };
+
+    /* pioz80 pa icmask */
+    if ( g_pioz80.port[PIOZ80_PORT_A].icmask != g_uidebugger.last_pioz80_pa_icmask ) {
+        char buff[3];
+        snprintf ( buff, sizeof ( buff ), "%02X", g_pioz80.port[PIOZ80_PORT_A].icmask );
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.pioz80_pa_icmask_label ), buff );
+        g_uidebugger.last_pioz80_pa_icmask = g_pioz80.port[PIOZ80_PORT_A].icmask;
+    };
+
+    /* pioz80 pa icfnc */
+    if ( g_pioz80.port[PIOZ80_PORT_A].icfnc != g_uidebugger.last_pioz80_pa_icfnc ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.pioz80_pa_icfnc_label ), ( g_pioz80.port[PIOZ80_PORT_A].icfnc == PIOZ80_ICFNC_OR ) ? "Or" : "And" );
+        g_uidebugger.last_pioz80_pa_icfnc = g_pioz80.port[PIOZ80_PORT_A].icfnc;
+    };
+
+    /* pioz80 pa iclvl */
+    if ( g_pioz80.port[PIOZ80_PORT_A].iclvl != g_uidebugger.last_pioz80_pa_iclvl ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.pioz80_pa_iclvl_label ), ( g_pioz80.port[PIOZ80_PORT_A].iclvl == PIOZ80_ICLVL_LOW ) ? "Low" : "Hi" );
+        g_uidebugger.last_pioz80_pa_iclvl = g_pioz80.port[PIOZ80_PORT_A].iclvl;
+    };
+
+    /* pioz80 pa vector */
+    Z80EX_WORD pa_vector = ( z80ex_get_reg ( g_mz800.cpu, regI ) << 8 ) | g_pioz80.port[PIOZ80_PORT_A].interrupt_vector;
+    if ( pa_vector != g_uidebugger.last_pioz80_pa_vector ) {
+        char buff[5];
+        snprintf ( buff, sizeof ( buff ), "%04X", pa_vector );
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.pioz80_pa_vector_label ), buff );
+        g_uidebugger.last_pioz80_pa_icmask = pa_vector;
+    };
+
+
+    /*
+     * i8253
+     */
+
+#ifdef MZ800EMU_CFG_CLK1M1_FAST
+    ctc8253_sync_ctc0 ( );
+#endif
+
+    int i;
+    for ( i = 0; i < 3; i++ ) {
+
+        /* i8253 mode */
+        if ( g_ctc8253[i].mode != g_uidebugger.i8253_ctc[i].last_mode ) {
+            char buff[2];
+            snprintf ( buff, sizeof ( buff ), "%d", g_ctc8253[i].mode );
+            gtk_label_set_text ( GTK_LABEL ( g_uidebugger.i8253_ctc[i].mode_label ), buff );
+            g_uidebugger.i8253_ctc[i].last_mode = g_ctc8253[i].mode;
+        };
+
+        /* i8253 input */
+        int ctc_input;
+        if ( i == 0 ) {
+            ctc_input = ( g_gdg.total_elapsed.ticks & 0x08 ) ? 1 : 0;
+        } else if ( i == 1 ) {
+            ctc_input = g_gdg.sts_hsync;
+        } else {
+            ctc_input = g_ctc8253[1].out;
+        };
+        if ( ctc_input != g_uidebugger.i8253_ctc[i].last_input ) {
+            gtk_label_set_text ( GTK_LABEL ( g_uidebugger.i8253_ctc[i].input_label ), ( ctc_input ) ? "1" : "0" );
+            g_uidebugger.i8253_ctc[i].last_input = ctc_input;
+        };
+
+        /* i8253 output */
+        if ( g_ctc8253[i].out != g_uidebugger.i8253_ctc[i].last_output ) {
+            gtk_label_set_text ( GTK_LABEL ( g_uidebugger.i8253_ctc[i].output_label ), ( g_ctc8253[i].out ) ? "1" : "0" );
+            g_uidebugger.i8253_ctc[i].last_output = g_ctc8253[i].out;
+        };
+
+        /* i8253 preset */
+        if ( g_ctc8253[i].preset_value != g_uidebugger.i8253_ctc[i].last_preset ) {
+            char buff[5];
+            snprintf ( buff, sizeof ( buff ), "%04X", g_ctc8253[i].preset_value );
+            gtk_label_set_text ( GTK_LABEL ( g_uidebugger.i8253_ctc[i].preset_label ), buff );
+            g_uidebugger.i8253_ctc[i].last_preset = g_ctc8253[i].preset_value;
+        };
+
+        /* i8253 value */
+        if ( g_ctc8253[i].value != g_uidebugger.i8253_ctc[i].last_value ) {
+            char buff[5];
+            snprintf ( buff, sizeof ( buff ), "%04X", g_ctc8253[i].value );
+            gtk_label_set_text ( GTK_LABEL ( g_uidebugger.i8253_ctc[i].value_label ), buff );
+            g_uidebugger.i8253_ctc[i].last_value = g_ctc8253[i].value;
+        };
+
+        /* i8253 gate */
+        if ( i == 0 ) {
+            if ( g_ctc8253[i].gate != g_uidebugger.i8253_ctc[i].last_gate ) {
+                gtk_label_set_text ( GTK_LABEL ( g_uidebugger.i8253_ctc[i].gate_label ), ( g_ctc8253[i].gate ) ? "1" : "0" );
+                g_uidebugger.i8253_ctc[i].last_gate = g_ctc8253[i].gate;
+            };
+        };
+
+    };
+
+    /*
+     * CPU ticks 
+     */
+
+    ui_debugger_update_cpu_ticks ( );
 
     UNLOCK_UICALLBACKS ( );
 }
@@ -152,15 +599,12 @@ static inline void ui_debugger_set_mmap ( st_UIMMAPBANK *mmbank, en_UI_MMBSTATE 
 
 void ui_debugger_update_mmap ( void ) {
 
-    static int last_map = -1;
-    static int last_dmd = -1;
-
-    if ( ( g_gdg.regDMD == last_dmd ) && ( g_memory.map == last_map ) ) {
+    if ( ( g_gdg.regDMD == g_uidebugger.last_mmap_dmd ) && ( g_memory.map == g_uidebugger.last_map ) ) {
         return;
     };
 
-    last_map = g_memory.map;
-    last_dmd = g_gdg.regDMD;
+    g_uidebugger.last_map = g_memory.map;
+    g_uidebugger.last_mmap_dmd = g_gdg.regDMD;
 
     if ( MEMORY_MAP_TEST_ROM_0000 ) {
         ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_0], MMBSTATE_ROM );
@@ -233,7 +677,7 @@ void ui_debugger_init_stack ( GtkTreeModel *model ) {
         gtk_list_store_set ( GTK_LIST_STORE ( model ), &iter,
                              DBG_STACK_ADDR, 0,
                              DBG_STACK_ADDR_TXT, "",
-                             DBG_STACK_VALUE, "",
+                             DBG_STACK_VALUE_TXT, "",
                              -1 );
     };
 }
@@ -264,17 +708,28 @@ void ui_debugger_update_stack ( void ) {
         Z80EX_WORD value = debugger_memory_read_byte ( addr );
         value |= debugger_memory_read_byte ( addr + 1 ) << 8;
 
-        char addr_txt [ 6 ];
-        char value_txt [ 5 ];
+        GValue gv_addr = G_VALUE_INIT;
+        gtk_tree_model_get_value ( model, &iter, DBG_STACK_ADDR, &gv_addr );
+        Z80EX_WORD last_addr = (Z80EX_WORD) g_value_get_uint ( &gv_addr );
 
-        sprintf ( addr_txt, "%04X:", addr );
-        sprintf ( value_txt, "%04X", value );
+        GValue gv_value = G_VALUE_INIT;
+        gtk_tree_model_get_value ( model, &iter, DBG_STACK_VALUE, &gv_value );
+        Z80EX_WORD last_value = (Z80EX_WORD) g_value_get_uint ( &gv_value );
 
-        gtk_list_store_set ( GTK_LIST_STORE ( model ), &iter,
-                             DBG_STACK_ADDR, addr,
-                             DBG_STACK_ADDR_TXT, addr_txt,
-                             DBG_STACK_VALUE, value_txt,
-                             -1 );
+        if ( ( last_addr != addr ) || ( last_value != value ) ) {
+            char addr_txt [ 6 ];
+            char value_txt [ 5 ];
+
+            snprintf ( addr_txt, sizeof ( addr_txt ), "%04X:", addr );
+            snprintf ( value_txt, sizeof ( value_txt ), "%04X", value );
+
+            gtk_list_store_set ( GTK_LIST_STORE ( model ), &iter,
+                                 DBG_STACK_ADDR, addr,
+                                 DBG_STACK_ADDR_TXT, addr_txt,
+                                 DBG_STACK_VALUE_TXT, value_txt,
+                                 DBG_STACK_VALUE, value,
+                                 -1 );
+        };
         addr += 2;
         gtk_tree_model_iter_next ( model, &iter );
     };
@@ -669,6 +1124,9 @@ void ui_debugger_create_mmap_pixbuf ( GtkWidget *widget, st_UIMMAPBANK *mmbank )
 
 void ui_debugger_initialize_mmap ( void ) {
 
+    g_uidebugger.last_map = -1;
+    g_uidebugger.last_mmap_dmd = -1;
+
     char *g_mmap_names[MMBANK_COUNT] = {
                                         "dbg_mmap_drawingarea0",
                                         "dbg_mmap_drawingarea1",
@@ -694,6 +1152,49 @@ void ui_debugger_initialize_mmap ( void ) {
         GtkWidget *widget = ui_get_widget ( g_mmap_names[i] );
         ui_debugger_create_mmap_pixbuf ( widget, &g_uidebugger.mmapbank[i] );
     };
+}
+
+
+static void ui_debugger_create_tbutton_icon ( char *tbname, const char *filename ) {
+
+    GtkWidget *img = gtk_image_new_from_file ( filename );
+
+    if ( GTK_IMAGE_PIXBUF != gtk_image_get_storage_type ( GTK_IMAGE ( img ) ) ) {
+        ui_show_error ( "%s() - can't create pixbuf from %s\n", __func__, filename );
+        main_app_quit ( EXIT_FAILURE );
+    };
+    gtk_widget_show ( img );
+
+    GtkToolButton *button = GTK_TOOL_BUTTON ( ui_get_widget ( tbname ) );
+    gtk_tool_button_set_icon_widget ( button, img );
+}
+
+
+static void ui_debugger_create_toolbar_icons ( void ) {
+
+    ui_debugger_create_tbutton_icon ( "dbg_continue_toolbutton", "ui_resources/icons/debugger/Continue24.gif" );
+    ui_debugger_create_tbutton_icon ( "dbg_pause_toolbutton", "ui_resources/icons/debugger/Pause24.gif" );
+
+#if 1
+    ui_debugger_create_tbutton_icon ( "dbg_step_over_toolbutton", "ui_resources/icons/debugger/StepOver24.gif" );
+    ui_debugger_create_tbutton_icon ( "dbg_step_in_toolbutton", "ui_resources/icons/debugger/StepInto24.gif" );
+    ui_debugger_create_tbutton_icon ( "dbg_step_out_toolbutton", "ui_resources/icons/debugger/StepOut24.gif" );
+    ui_debugger_create_tbutton_icon ( "dbg_run_to_cursor_toolbutton", "ui_resources/icons/debugger/Run_To_Cursor.gif" );
+#else
+    ui_debugger_create_tbutton_icon ( "dbg_step_over_toolbutton", "ui_resources/icons/debugger/step_over_instruction24.png" );
+    ui_debugger_create_tbutton_icon ( "dbg_step_in_toolbutton", "ui_resources/icons/debugger/step_into_instruction24.png" );
+    ui_debugger_create_tbutton_icon ( "dbg_step_out_toolbutton", "ui_resources/icons/debugger/step_out_instruction24.png" );
+    ui_debugger_create_tbutton_icon ( "dbg_run_to_cursor_toolbutton", "ui_resources/icons/debugger/run_to_cursor_instruction24.png" );
+#endif
+
+    ui_debugger_create_tbutton_icon ( "dbg_breakpoints_toolbutton", "ui_resources/icons/debugger/Breakpoints24.png" );
+    ui_debugger_create_tbutton_icon ( "dbg_memdump_toolbutton", "ui_resources/icons/debugger/memory_dump24.png" );
+    ui_debugger_create_tbutton_icon ( "dbg_dissassembler_toolbutton", "ui_resources/icons/debugger/dissassembler24.png" );
+}
+
+
+void ui_debugger_cpu_tick_counter_reset ( void ) {
+    g_uidebugger.cpu_ticks_start = gdg_get_total_ticks ( );
 }
 
 
@@ -744,6 +1245,157 @@ void ui_debugger_show_main_window ( void ) {
 
         GtkTreeSelection *selection = gtk_tree_view_get_selection ( GTK_TREE_VIEW ( ui_get_object ( "dbg_history_treeview" ) ) );
         gtk_tree_selection_set_mode ( selection, GTK_SELECTION_NONE );
+
+        ui_debugger_create_toolbar_icons ( );
+
+        ui_debugger_initialize_mmap ( );
+
+        // flagreg
+        char checkbutton_name[] = "dbg_flagreg_bit0_checkbutton";
+        int i;
+        for ( i = 0; i < 8; i++ ) {
+            checkbutton_name [ 15 ] = '0' + i;
+            g_uidebugger.flagreg_checkbbutton[i] = ui_get_widget ( checkbutton_name );
+            g_uidebugger.last_flagreg[i] = FALSE;
+        };
+
+        // internals
+        g_uidebugger.im_comboboxtext = ui_get_widget ( "dbg_im_comboboxtext" );
+        g_uidebugger.iff1_checkbutton = ui_get_widget ( "dbg_regiff1_checkbutton" );
+        g_uidebugger.iff2_checkbutton = ui_get_widget ( "dbg_regiff2_checkbutton" );
+        g_uidebugger.last_im = -1;
+        g_uidebugger.last_iff1 = FALSE;
+        g_uidebugger.last_iff2 = FALSE;
+
+        // regDMD
+        g_uidebugger.dmd_comboboxtext = ui_get_widget ( "dbg_regdmd_comboboxtext" );
+        g_uidebugger.last_dmd = -1;
+
+        // i8255
+        g_uidebugger.i8255_cmt_in_label = ui_get_widget ( "dbg_8255_cmt_in_label" );
+        g_uidebugger.i8255_cmt_out_label = ui_get_widget ( "dbg_8255_cmt_out_label" );
+        g_uidebugger.i8255_cursor_timer_label = ui_get_widget ( "dbg_8255_cursor_label" );
+        g_uidebugger.i8255_ctc2_mask_checkbutton = ui_get_widget ( "dbg_8255_ctc2_mask_checkbutton" );
+        g_uidebugger.last_cmtin = -1;
+        g_uidebugger.last_cmtout = -1;
+        g_uidebugger.last_cursor_timer = -1;
+        g_uidebugger.last_i8255_ctc2_mask = FALSE;
+
+        // interrupts
+        g_uidebugger.int_pioz80_label = ui_get_widget ( "dbg_interrupt_pioz80_label" );
+        g_uidebugger.int_ctc2_label = ui_get_widget ( "dbg_interrupt_ctc2_label" );
+        g_uidebugger.int_fdc_label = ui_get_widget ( "dbg_interrupt_fdc_label" );
+        g_uidebugger.last_int_pioz80 = FALSE;
+        g_uidebugger.last_int_ctc2 = FALSE;
+        g_uidebugger.last_int_fdc = FALSE;
+
+        // pioz80 pa
+        g_uidebugger.pioz80_pa_icena_label = ui_get_widget ( "dbg_pioz80_pa_icena_label" );
+        g_uidebugger.pioz80_pa_io_mask_label = ui_get_widget ( "dbg_pioz80_pa_io_mask_label" );
+        g_uidebugger.pioz80_pa_icmask_label = ui_get_widget ( "dbg_pioz80_pa_icmask_label" );
+        g_uidebugger.pioz80_pa_icfnc_label = ui_get_widget ( "dbg_pioz80_pa_icfnc_label" );
+        g_uidebugger.pioz80_pa_iclvl_label = ui_get_widget ( "dbg_pioz80_pa_iclvl_label" );
+        g_uidebugger.pioz80_pa_vector_label = ui_get_widget ( "dbg_pioz80_pa_vector_label" );
+        g_uidebugger.last_pioz80_pa_icena = PIOZ80_ICENA_DISABLED;
+        g_uidebugger.last_pioz80_pa_io_mask = 0x00;
+        g_uidebugger.last_pioz80_pa_icmask = 0x00;
+        g_uidebugger.last_pioz80_pa_icfnc = PIOZ80_ICFNC_OR;
+        g_uidebugger.last_pioz80_pa_iclvl = PIOZ80_ICLVL_LOW;
+        g_uidebugger.last_pioz80_pa_vector = 0x0000;
+
+        // i8253
+        for ( i = 0; i < 3; i++ ) {
+            char buff[100];
+
+            snprintf ( buff, sizeof ( buff ), "dbg_8253_ctc%c_mode_label", ( '0' + i ) );
+            g_uidebugger.i8253_ctc[i].mode_label = ui_get_widget ( buff );
+
+            snprintf ( buff, sizeof ( buff ), "dbg_8253_ctc%c_input_label", ( '0' + i ) );
+            g_uidebugger.i8253_ctc[i].input_label = ui_get_widget ( buff );
+
+            snprintf ( buff, sizeof ( buff ), "dbg_8253_ctc%c_output_label", ( '0' + i ) );
+            g_uidebugger.i8253_ctc[i].output_label = ui_get_widget ( buff );
+
+            snprintf ( buff, sizeof ( buff ), "dbg_8253_ctc%c_preset_label", ( '0' + i ) );
+            g_uidebugger.i8253_ctc[i].preset_label = ui_get_widget ( buff );
+
+            snprintf ( buff, sizeof ( buff ), "dbg_8253_ctc%c_value_label", ( '0' + i ) );
+            g_uidebugger.i8253_ctc[i].value_label = ui_get_widget ( buff );
+
+            snprintf ( buff, sizeof ( buff ), "dbg_8253_ctc%c_gate_label", ( '0' + i ) );
+            g_uidebugger.i8253_ctc[i].gate_label = ui_get_widget ( buff );
+
+            g_uidebugger.i8253_ctc[i].last_mode = CTC_MODE0;
+            g_uidebugger.i8253_ctc[i].last_input = 0;
+            g_uidebugger.i8253_ctc[i].last_output = 0;
+            g_uidebugger.i8253_ctc[i].last_preset = 0x0000;
+            g_uidebugger.i8253_ctc[i].last_value = 0x0000;
+            g_uidebugger.i8253_ctc[i].last_gate = ( i == 0 ) ? 0 : 1;
+        };
+
+        // GDG color registry
+        g_uidebugger.gdg_reg_border_comboboxtext = ui_get_widget ( "dbg_gdg_reg_border_comboboxtext" );
+        g_uidebugger.last_gdg_reg_border = -1;
+        g_uidebugger.gdg_reg_palgrp_comboboxtext = ui_get_widget ( "dbg_gdg_reg_palgrp_comboboxtext" );
+        g_uidebugger.last_gdg_reg_palgrp = -1;
+        g_uidebugger.gdg_reg_pal0_comboboxtext = ui_get_widget ( "dbg_gdg_reg_pal0_comboboxtext" );
+        g_uidebugger.last_gdg_reg_pal0 = -1;
+        g_uidebugger.gdg_reg_pal1_comboboxtext = ui_get_widget ( "dbg_gdg_reg_pal1_comboboxtext" );
+        g_uidebugger.last_gdg_reg_pal1 = -1;
+        g_uidebugger.gdg_reg_pal2_comboboxtext = ui_get_widget ( "dbg_gdg_reg_pal2_comboboxtext" );
+        g_uidebugger.last_gdg_reg_pal2 = -1;
+        g_uidebugger.gdg_reg_pal3_comboboxtext = ui_get_widget ( "dbg_gdg_reg_pal3_comboboxtext" );
+        g_uidebugger.last_gdg_reg_pal3 = -1;
+
+        // GDG regRF
+        g_uidebugger.gdg_rfr_mode_comboboxtext = ui_get_widget ( "dbg_gdg_rfr_mode_comboboxtext" );
+        g_uidebugger.gdg_rfr_bank_comboboxtext = ui_get_widget ( "dbg_gdg_rfr_bank_comboboxtext" );
+        g_uidebugger.gdg_rfr_plane1_checkbutton = ui_get_widget ( "dbg_gdg_rfr_plane1_checkbutton" );
+        g_uidebugger.gdg_rfr_plane2_checkbutton = ui_get_widget ( "dbg_gdg_rfr_plane2_checkbutton" );
+        g_uidebugger.gdg_rfr_plane3_checkbutton = ui_get_widget ( "dbg_gdg_rfr_plane3_checkbutton" );
+        g_uidebugger.gdg_rfr_plane4_checkbutton = ui_get_widget ( "dbg_gdg_rfr_plane4_checkbutton" );
+        g_uidebugger.last_gdg_rfr_mode = -1;
+        g_uidebugger.last_gdg_rfr_bank = -1;
+        g_uidebugger.last_gdg_rfr_plane1 = FALSE;
+        g_uidebugger.last_gdg_rfr_plane2 = FALSE;
+        g_uidebugger.last_gdg_rfr_plane3 = FALSE;
+        g_uidebugger.last_gdg_rfr_plane4 = FALSE;
+
+        // GDG regRF
+        g_uidebugger.gdg_wfr_mode_comboboxtext = ui_get_widget ( "dbg_gdg_wfr_mode_comboboxtext" );
+        g_uidebugger.gdg_wfr_bank_comboboxtext = ui_get_widget ( "dbg_gdg_wfr_bank_comboboxtext" );
+        g_uidebugger.gdg_wfr_plane1_checkbutton = ui_get_widget ( "dbg_gdg_wfr_plane1_checkbutton" );
+        g_uidebugger.gdg_wfr_plane2_checkbutton = ui_get_widget ( "dbg_gdg_wfr_plane2_checkbutton" );
+        g_uidebugger.gdg_wfr_plane3_checkbutton = ui_get_widget ( "dbg_gdg_wfr_plane3_checkbutton" );
+        g_uidebugger.gdg_wfr_plane4_checkbutton = ui_get_widget ( "dbg_gdg_wfr_plane4_checkbutton" );
+        g_uidebugger.last_gdg_wfr_mode = -1;
+        g_uidebugger.last_gdg_wfr_bank = -1;
+        g_uidebugger.last_gdg_wfr_plane1 = FALSE;
+        g_uidebugger.last_gdg_wfr_plane2 = FALSE;
+        g_uidebugger.last_gdg_wfr_plane3 = FALSE;
+        g_uidebugger.last_gdg_wfr_plane4 = FALSE;
+
+        // GDG signaly
+        g_uidebugger.gdg_hbln_label = ui_get_widget ( "dbg_gdg_hbln_label" );
+        g_uidebugger.gdg_vbln_label = ui_get_widget ( "dbg_gdg_vbln_label" );
+        g_uidebugger.gdg_hsync_label = ui_get_widget ( "dbg_gdg_hsync_label" );
+        g_uidebugger.gdg_vsync_label = ui_get_widget ( "dbg_gdg_vsync_label" );
+        g_uidebugger.gdg_xpos_label = ui_get_widget ( "dbg_gdg_xpos_label" );
+        g_uidebugger.gdg_ypos_label = ui_get_widget ( "dbg_gdg_ypos_label" );
+        g_uidebugger.gdg_tempo_label = ui_get_widget ( "dbg_gdg_tempo_label" );
+        g_uidebugger.gdg_cnt_label = ui_get_widget ( "dbg_gdg_cnt_label" );
+        g_uidebugger.gdg_beam_label = ui_get_widget ( "dbg_gdg_beam_label" );
+        g_uidebugger.last_gdg_hbln = 0;
+        g_uidebugger.last_gdg_vbln = 0;
+        g_uidebugger.last_gdg_hsync = 0;
+        g_uidebugger.last_gdg_vsync = 0;
+        g_uidebugger.last_gdg_ypos = 0;
+        g_uidebugger.last_gdg_tempo = 0;
+        g_uidebugger.last_gdg_beam_state = NULL;
+
+        // CPU ticks
+        g_uidebugger.cpu_ticks_entry = ui_get_widget ( "dbg_cpu_ticks_entry" );
+        ui_debugger_cpu_tick_counter_reset ( );
     };
 
     g_uidebugger.accelerators_locked = 1;
@@ -760,7 +1412,6 @@ void ui_debugger_show_main_window ( void ) {
 
     g_uidebugger.accelerators_locked = 0;
 
-    ui_debugger_initialize_mmap ( );
 
     ui_debugger_update_all ( );
 }

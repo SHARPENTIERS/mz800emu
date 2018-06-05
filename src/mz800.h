@@ -73,7 +73,7 @@ extern "C" {
         EVENT_BREAK, /* pouze hranicni hodnota - neni skutecny event */
 
         // V prubehu zpracovani instrukce vznikl MZ800 interrupt.
-        // Tento event slouzi k tomu, aby jsme vybehli z instrukcni smycky a pokusili se jeuj prevzit.
+        // Tento event slouzi k tomu, aby jsme vybehli z instrukcni smycky a pokusili se jej prevzit.
         EVENT_BREAK_MZ800_INTERRUPT,
 
         EVENT_BREAK_EMULATION_PAUSED,

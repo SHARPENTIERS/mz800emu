@@ -280,6 +280,8 @@ Z80EX_BYTE pio8255_read ( int addr ) {
             //DBGPRINTF ( "PIO8255_PORTC read - retval = 0x%02x\n", retval );
             //printf ( "PIO8255_PORTC read - retval = 0x%02x, PC = 0x%04x\n", retval & 0x10, z80ex_get_reg ( g_mz800.cpu, regPC ) );
 
+            //printf ( "8255 PortB_5: %d, %lu\n", ( retval >> 5 ) & 1, gdg_get_total_ticks ( ) );
+
             return retval;
             break;
 
@@ -289,4 +291,19 @@ Z80EX_BYTE pio8255_read ( int addr ) {
     };
     return 0x00;
 }
+
+
+void pio8255_pc2_set ( int value ) {
+    g_pio8255.signal_pc02 = value & 1;
+}
+
+
+int pio8255_pc1_get ( void ) {
+    return g_pio8255.signal_pc01;
+}
+
+int pio8255_pc2_get ( void ) {
+    return g_pio8255.signal_pc02;
+}
+
 

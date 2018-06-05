@@ -145,6 +145,8 @@ PACKAGE_DIRS="
 	${PACKAGE_TOP_DIR}/ui_resources/vkbd/row3 \
 	${PACKAGE_TOP_DIR}/ui_resources/vkbd/row4 \
 	${PACKAGE_TOP_DIR}/ui_resources/vkbd/row5 \
+	${PACKAGE_TOP_DIR}/ui_resources/icons \
+	${PACKAGE_TOP_DIR}/ui_resources/icons/debugger \
 	${PACKAGE_TOP_DIR}/Documentation \
 	${PACKAGE_TOP_DIR}/runtime/sdl-2 \
 	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/glib-2.0/schemas \
@@ -217,6 +219,12 @@ done
 for filename in space.bmp
 do
 	copyFileToTmpDir "ui_resources/vkbd/row5/${filename}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}/ui_resources/vkbd/row5/${filename}" 0644
+done
+
+# icons/debugger
+for filename in Breakpoints24.png Continue24.gif dissassembler24.png memory_dump24.png Pause24.gif Run_To_Cursor.gif run_to_cursor_instruction24.png step_into_instruction24.png StepInto24.gif step_out_instruction24.png StepOut24.gif step_over_instruction24.png StepOver24.gif
+do
+	copyFileToTmpDir "ui_resources/icons/debugger/${filename}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}/ui_resources/icons/debugger/${filename}" 0644
 done
 
 
