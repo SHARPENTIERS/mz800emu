@@ -547,10 +547,13 @@ static inline void mz800_sync_ctc0_and_cmt ( unsigned instruction_ticks ) {
 
         ctc8253_clkfall ( CTC_CS0, g_gdg.total_elapsed.ticks );
 
+// uz neexistuje
+#if 0
         /* TODO: prozatim si sem povesime i pomaly cmt_step() */
         if ( TEST_CMT_PLAYING ) {
             cmt_step ( );
         };
+#endif
     };
 
     g_gdg.ctc0clk = instruction_ticks;
