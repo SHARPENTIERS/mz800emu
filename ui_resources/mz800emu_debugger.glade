@@ -481,6 +481,26 @@
     <signal name="row-changed" handler="on_dbg_breakpoints_treestore_row_changed" swapped="no"/>
     <signal name="row-inserted" handler="on_dbg_breakpoints_treestore_row_inserted" swapped="no"/>
   </object>
+  <object class="GtkListStore" id="dbg_disassembled_liststore">
+    <columns>
+      <!-- column-name addr -->
+      <column type="guint"/>
+      <!-- column-name bytes -->
+      <column type="guint"/>
+      <!-- column-name addr_txt -->
+      <column type="gchararray"/>
+      <!-- column-name byte0 -->
+      <column type="gchararray"/>
+      <!-- column-name byte1 -->
+      <column type="gchararray"/>
+      <!-- column-name byte2 -->
+      <column type="gchararray"/>
+      <!-- column-name byte3 -->
+      <column type="gchararray"/>
+      <!-- column-name mnemonic -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkWindow" id="dbg_breakpoints_window">
     <property name="width_request">200</property>
     <property name="height_request">400</property>
@@ -766,26 +786,6 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkListStore" id="dbg_disassembled_liststore">
-    <columns>
-      <!-- column-name addr -->
-      <column type="guint"/>
-      <!-- column-name bytes -->
-      <column type="guint"/>
-      <!-- column-name addr_txt -->
-      <column type="gchararray"/>
-      <!-- column-name byte0 -->
-      <column type="gchararray"/>
-      <!-- column-name byte1 -->
-      <column type="gchararray"/>
-      <!-- column-name byte2 -->
-      <column type="gchararray"/>
-      <!-- column-name byte3 -->
-      <column type="gchararray"/>
-      <!-- column-name mnemonic -->
-      <column type="gchararray"/>
-    </columns>
   </object>
   <object class="GtkMenu" id="dbg_disassembled_menu">
     <property name="visible">True</property>
@@ -3672,9 +3672,9 @@ or click on reg. value, if you want change it</property>
                         <property name="can_focus">True</property>
                         <property name="has_tooltip">True</property>
                         <property name="tooltip_markup" translatable="yes">Double-click on value for edit,
-or click on addr to focus to his value</property>
+or double-click on addr to focus to his value</property>
                         <property name="tooltip_text" translatable="yes">Double-click on value for edit,
-or click on addr to focus to his value</property>
+or double-click on addr to focus to his value</property>
                         <property name="vexpand">True</property>
                         <property name="model">dbg_stack_liststore</property>
                         <property name="headers_visible">False</property>
@@ -6476,16 +6476,21 @@ or click on addr to focus to his value</property>
               <object class="GtkHBox" id="dbg_disassembled_hbox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
                 <child>
                   <object class="GtkPaned" id="dbg_disassembler_paned">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
                     <property name="orientation">vertical</property>
                     <property name="position">50</property>
                     <child>
                       <object class="GtkScrolledWindow" id="dbg_history_scrolledwindow">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="hexpand">True</property>
                         <property name="hscrollbar_policy">never</property>
                         <property name="shadow_type">in</property>
                         <child>
@@ -6494,6 +6499,7 @@ or click on addr to focus to his value</property>
                             <property name="can_focus">False</property>
                             <property name="tooltip_markup" translatable="yes">History of the last executed instructions</property>
                             <property name="tooltip_text" translatable="yes">History of the last executed instructions</property>
+                            <property name="hexpand">True</property>
                             <property name="model">dbg_history_liststore</property>
                             <property name="headers_visible">False</property>
                             <property name="headers_clickable">False</property>
@@ -6592,6 +6598,8 @@ or click on addr to focus to his value</property>
                       <object class="GtkScrolledWindow" id="dbg_disassembled_scrolledwindow">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="hexpand">True</property>
+                        <property name="vexpand">True</property>
                         <property name="hscrollbar_policy">never</property>
                         <child>
                           <object class="GtkTreeView" id="dbg_disassembled_treeview">
@@ -6602,6 +6610,8 @@ or click on addr to focus to his value</property>
 instruction to open inline assembler, or right click for menu</property>
                             <property name="tooltip_text" translatable="yes">Double click on row to edit, or write the Z80 
 instruction to open inline assembler, or right click for menu</property>
+                            <property name="hexpand">True</property>
+                            <property name="vexpand">True</property>
                             <property name="model">dbg_disassembled_liststore</property>
                             <property name="headers_visible">False</property>
                             <property name="headers_clickable">False</property>

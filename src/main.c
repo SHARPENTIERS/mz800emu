@@ -29,6 +29,7 @@
 #include "main.h"
 
 #include "cfgmain.h"
+#include "build_time.h"
 #include "display.h"
 #include "iface_sdl/iface_sdl.h"
 #include "mz800.h"
@@ -94,7 +95,9 @@ int main ( int argc, char** argv ) {
     return 0;
 #endif
 
-    IFACE_DBG ( "Application start!" );
+    SDL_Log ( "Application start!" );
+    SDL_Log ( "Version: %s (%s)", EMULATOR_VERSION, build_time_get_revision_txt ( ) );
+    SDL_Log ( "Build time: %s", build_time_get ( ) );
 
     /* cfgmain musi byt prvni init funkce !!! */
     cfgmain_init ( );

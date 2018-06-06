@@ -875,14 +875,15 @@ G_MODULE_EXPORT void on_about_menuitem_activate ( GtkMenuItem *menuitem, gpointe
     if ( initialised == 0 ) {
 
         unsigned version_length = 0;
-        char *version_format = "version: %s\nbuild: %s (%s)"; /* verze, build time, platform */
+        char *version_format = "version: %s (%s)\nbuild: %s (%s)"; /* verze, build time, platform */
 
         version_length += strlen ( CFGMAIN_EMULATOR_VERSION_TEXT );
         version_length += strlen ( build_time_get ( ) );
+        version_length += strlen ( build_time_get_revision_txt ( ) );
         version_length += strlen ( version_format ) + 1;
 
         gchar *version_txt = malloc ( version_length );
-        sprintf ( version_txt, version_format, CFGMAIN_EMULATOR_VERSION_TEXT, build_time_get ( ), CFGMAIN_PLATFORM );
+        sprintf ( version_txt, version_format, CFGMAIN_EMULATOR_VERSION_TEXT, build_time_get_revision_txt ( ), build_time_get ( ), CFGMAIN_PLATFORM );
 
         gtk_about_dialog_set_version ( GTK_ABOUT_DIALOG ( window ), version_txt );
 
