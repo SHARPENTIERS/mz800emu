@@ -86,6 +86,7 @@ extern "C" {
     extern void debugger_update_all ( void );
     extern void debugger_animation ( void );
     extern Z80EX_BYTE debugger_dasm_read_cb ( Z80EX_WORD addr, void *user_data );
+    extern Z80EX_BYTE debugger_dasm_pure_ram_read_cb ( Z80EX_WORD addr, void *user_data );
     extern Z80EX_BYTE debugger_dasm_history_read_cb ( Z80EX_WORD addr, void *user_data );
     extern void debugger_memory_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value );
     extern void debugger_mmap_mount ( unsigned value );

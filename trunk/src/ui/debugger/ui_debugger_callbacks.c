@@ -44,6 +44,7 @@
 #include "ui/ui_hexeditable.h"
 #include "pio8255/pio8255.h"
 #include "z80ex/include/z80ex_dasm.h"
+#include "ui_dissassembler.h"
 
 
 static Z80EX_WORD ui_debugger_dissassembled_get_selected_addr ( void ) {
@@ -720,23 +721,17 @@ G_MODULE_EXPORT void on_dbg_run_to_cursor_toolbutton_clicked ( GtkToolButton *to
 
 
 G_MODULE_EXPORT void on_dbg_breakpoints_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
-
-
     ui_breakpoints_show_hide_window ( );
 }
 
 
 G_MODULE_EXPORT void on_dbg_memdump_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
-
-
     ui_memdump_show_hide_window ( );
 }
 
 
 G_MODULE_EXPORT void on_dbg_dissassembler_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
-
-
-    printf ( "%s() - not implemented\n", __func__ );
+    ui_dissassembler_show_window ( );
 }
 
 
