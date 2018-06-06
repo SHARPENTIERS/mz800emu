@@ -1000,12 +1000,18 @@ void mz800_pause_emulation ( unsigned value ) {
             iface_sdl_set_main_window_focus ( );
         };
     };
+    if ( !value ) {
+        g_debugger.run_to_temporary_breakpoint = 0;
+    };
 #endif
 }
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 
 
+/**
+ *  Pri Run to Cursor a Step Over nechceme, aby se nam prepinal focus na main window
+ */
 void mz800_run_to_temporary_breakpoint ( void ) {
 
     g_mz800.emulation_paused = 0;
@@ -1013,6 +1019,7 @@ void mz800_run_to_temporary_breakpoint ( void ) {
     ui_main_update_emulation_state ( g_mz800.emulation_paused );
 
     // zkusime to bez spinner window
+    g_debugger.run_to_temporary_breakpoint = 1;
 #if 0
     if ( TEST_DEBUGGER_ACTIVE ) { // tady je to zrejme zbytecna podminka
         ui_debugger_show_spinner_window ( );

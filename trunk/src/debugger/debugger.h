@@ -44,6 +44,7 @@ extern "C" {
         unsigned step_call;
         unsigned memop_call;
         en_DEBUGGER_ANIMATED_UPDATES animated_updates;
+        unsigned run_to_temporary_breakpoint;
         unsigned auto_save_breakpoints;
     } st_DEBUGGER;
 
