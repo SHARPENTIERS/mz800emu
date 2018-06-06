@@ -24,33 +24,42 @@
  */
 
 #ifndef BREAKPOINTS_H
-#define	BREAKPOINTS_H
+#define BREAKPOINTS_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
-    #include "z80ex/include/z80ex.h"
+#include "z80ex/include/z80ex.h"
+
+
+    typedef enum en_BREAKPOINT_TYPE {
+        BREAKPOINT_TYPE_NONE = -1, // na adrese neni zadny breakpoint
+        BREAKPOINT_TYPE_TEMPORARY = -2, // na adrese se nachazi docasny breakpoint (run to cursor)
+    } en_BREAKPOINT_TYPE;
+
 
     typedef struct st_BREAPOINTS {
-        int bpmap [ 0x10000 ];
+        int temporary_bpt_addr; // hodnota 0x0000 - 0xffff odkazuje na adresu docasneho breakpointu (smi byt jen jeden)
+        int bpmap [ 0x10000 ]; // hodnota >= 0 odkazuje na ID nastaveneho breakpointu
     } st_BREAPOINTS;
 
     extern st_BREAPOINTS g_breakpoints;
 
     extern void breakpoints_init ( void );
     extern void breakpoints_clear_all ( void );
-    extern int breakpoints_event_add ( Z80EX_WORD addr, unsigned id );
+    extern int breakpoints_event_add ( Z80EX_WORD addr, int id );
     extern int breakpoints_event_clear ( Z80EX_WORD addr, int id );
     extern void breakpoints_event_clear_addr ( Z80EX_WORD addr );
     extern void breakpoints_event_clear_id ( int id );
     extern int breakpoints_event_get_addr_by_id ( int id );
     extern int breakpoints_event_get_id_by_addr ( Z80EX_WORD addr );
-
-
-#ifdef	__cplusplus
+    extern void breakpoints_reset_temporary_event ( void );
+    extern void breakpoints_set_temporary_event ( Z80EX_WORD addr );
+    extern void breakpoints_activate_event ( void );
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* BREAKPOINTS_H */
+#endif /* BREAKPOINTS_H */
 

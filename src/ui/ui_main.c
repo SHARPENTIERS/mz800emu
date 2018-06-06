@@ -875,7 +875,7 @@ G_MODULE_EXPORT void on_about_menuitem_activate ( GtkMenuItem *menuitem, gpointe
     if ( initialised == 0 ) {
 
         unsigned version_length = 0;
-        char *version_format = "version: %s (%s)\nbuild: %s (%s)"; /* verze, build time, platform */
+        char *version_format = "Version: %s\n%s\nBuild: %s (%s)"; /* verze, build time, platform */
 
         version_length += strlen ( CFGMAIN_EMULATOR_VERSION_TEXT );
         version_length += strlen ( build_time_get ( ) );

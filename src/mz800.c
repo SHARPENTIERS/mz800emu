@@ -547,7 +547,7 @@ static inline void mz800_sync_ctc0_and_cmt ( unsigned instruction_ticks ) {
 
         ctc8253_clkfall ( CTC_CS0, g_gdg.total_elapsed.ticks );
 
-// uz neexistuje
+        // uz neexistuje
 #if 0
         /* TODO: prozatim si sem povesime i pomaly cmt_step() */
         if ( TEST_CMT_PLAYING ) {
@@ -856,13 +856,9 @@ void mz800_main ( void ) {
          * Implementace zakladnich breakpointu
          * 
          */
-        int breakpoint_id = g_breakpoints.bpmap [ g_mz800.instruction_addr ];
-        if ( breakpoint_id != -1 ) {
-            printf ( "INFO - activated breakpoint on addr: 0x%04x\n", g_mz800.instruction_addr );
-            mz800_pause_emulation ( 1 );
-            debugger_show_main_window ( );
-            ui_breakpoints_show_window ( );
-            ui_breakpoints_select_id ( breakpoint_id );
+
+        if ( g_breakpoints.bpmap [ g_mz800.instruction_addr ] != BREAKPOINT_TYPE_NONE ) {
+            breakpoints_activate_event ( );
 
             /* jsme v pauze? */
             if ( TEST_EMULATION_PAUSED ) {
@@ -996,7 +992,9 @@ void mz800_pause_emulation ( unsigned value ) {
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     if ( TEST_DEBUGGER_ACTIVE ) {
         if ( value ) {
+            // zastavili jsme
             ui_debugger_hide_spinner_window ( );
+            breakpoints_reset_temporary_event ( );
         } else {
             ui_debugger_show_spinner_window ( );
             iface_sdl_set_main_window_focus ( );

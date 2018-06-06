@@ -38,9 +38,22 @@
 #include "ui_debugger_iasm.h"
 #include "memory/memory.h"
 #include "ui_breakpoints.h"
+#include "debugger/breakpoints.h"
 #include "ui_memdump.h"
 #include "ui/ui_hexeditable.h"
 #include "pio8255/pio8255.h"
+
+
+static Z80EX_WORD ui_debugger_dissassembled_get_selected_addr ( void ) {
+    GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_disassembled_liststore" ) );
+    GtkTreeSelection *selection = gtk_tree_view_get_selection ( ui_get_tree_view ( "dbg_disassembled_treeview" ) );
+    GtkTreeIter iter;
+    gtk_tree_selection_get_selected ( selection, &model, &iter );
+    GValue gv_addr = G_VALUE_INIT;
+    gtk_tree_model_get_value ( model, &iter, DBG_DIS_ADDR, &gv_addr );
+    Z80EX_WORD addr = (Z80EX_WORD) g_value_get_uint ( &gv_addr );
+    return addr;
+}
 
 
 G_MODULE_EXPORT void on_debugger_main_window_size_allocate ( GtkWidget *widget, GdkRectangle *allocation, gpointer user_data ) {
@@ -150,7 +163,7 @@ G_MODULE_EXPORT void on_dbg_reg_edited ( GtkCellRendererText *cell, const gchar 
 }
 
 
-void on_dbg_regX_treeview_row_activated ( GtkTreeView *tree_view, GtkTreePath *path, GtkTreeModel *model ) {
+static void on_dbg_regX_treeview_row_activated ( GtkTreeView *tree_view, GtkTreePath *path, GtkTreeModel *model ) {
 
     if ( !TEST_EMULATION_PAUSED ) {
         ui_debugger_pause_emulation ( );
@@ -488,7 +501,7 @@ G_MODULE_EXPORT void on_dbg_gdg_reg_pal3_comboboxtext_changed ( GtkComboBox *com
 }
 
 
-void ui_debugger_change_gdg_rfr ( void ) {
+static void ui_debugger_change_gdg_rfr ( void ) {
     Z80EX_BYTE reg_value = 0x00;
     reg_value |= gtk_combo_box_get_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_rfr_mode_comboboxtext ) ) << 7;
     reg_value |= gtk_combo_box_get_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_rfr_bank_comboboxtext ) ) << 4;
@@ -548,7 +561,7 @@ G_MODULE_EXPORT void on_dbg_gdg_rfr_plane4_checkbutton_toggled ( GtkToggleButton
 }
 
 
-void ui_debugger_change_gdg_wfr ( void ) {
+static void ui_debugger_change_gdg_wfr ( void ) {
     Z80EX_BYTE reg_value = 0x00;
     Z80EX_BYTE wf_mode = gtk_combo_box_get_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_wfr_mode_comboboxtext ) );
     if ( wf_mode == 5 ) {
@@ -653,7 +666,16 @@ G_MODULE_EXPORT void on_dbg_step_out_toolbutton_clicked ( GtkToolButton *toolbut
 
 
 G_MODULE_EXPORT void on_dbg_run_to_cursor_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
-    printf ( "%s() - not implemented\n", __func__ );
+    if ( !TEST_EMULATION_PAUSED ) {
+        ui_debugger_pause_emulation ( );
+        return;
+    };
+
+    Z80EX_WORD addr = ui_debugger_dissassembled_get_selected_addr ( );
+    if ( addr == z80ex_get_reg ( g_mz800.cpu, regPC ) ) return;
+    breakpoints_set_temporary_event ( addr );
+    debugger_step_call ( 0 );
+    mz800_pause_emulation ( 0 );
 }
 
 
@@ -842,14 +864,7 @@ G_MODULE_EXPORT void on_dbg_disassembled_treeview_row_activated ( GtkTreeView *t
 
 
 G_MODULE_EXPORT void on_dbg_set_as_breakpoint_menuitem_activate ( GtkMenuItem *menuitem, gpointer user_data ) {
-
-    GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_disassembled_liststore" ) );
-    GtkTreeSelection *selection = gtk_tree_view_get_selection ( ui_get_tree_view ( "dbg_disassembled_treeview" ) );
-    GtkTreeIter iter;
-    gtk_tree_selection_get_selected ( selection, &model, &iter );
-    GValue gv = G_VALUE_INIT;
-    gtk_tree_model_get_value ( model, &iter, DBG_DIS_ADDR, &gv );
-    Z80EX_WORD addr = (Z80EX_WORD) g_value_get_uint ( &gv );
+    Z80EX_WORD addr = ui_debugger_dissassembled_get_selected_addr ( );
     ui_breakpoints_show_window ( );
     int id = ui_breakpoints_simple_add_event ( addr );
     if ( id == -1 ) return;
@@ -858,13 +873,7 @@ G_MODULE_EXPORT void on_dbg_set_as_breakpoint_menuitem_activate ( GtkMenuItem *m
 
 
 G_MODULE_EXPORT void on_dbg_set_as_pc_menuitem_activate ( GtkMenuItem *menuitem, gpointer user_data ) {
-    GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_disassembled_liststore" ) );
-    GtkTreeSelection *selection = gtk_tree_view_get_selection ( ui_get_tree_view ( "dbg_disassembled_treeview" ) );
-    GtkTreeIter iter;
-    gtk_tree_selection_get_selected ( selection, &model, &iter );
-    GValue gv = G_VALUE_INIT;
-    gtk_tree_model_get_value ( model, &iter, DBG_DIS_ADDR, &gv );
-    Z80EX_WORD addr = (Z80EX_WORD) g_value_get_uint ( &gv );
+    Z80EX_WORD addr = ui_debugger_dissassembled_get_selected_addr ( );
     debugger_change_z80_register ( regPC, addr );
 }
 

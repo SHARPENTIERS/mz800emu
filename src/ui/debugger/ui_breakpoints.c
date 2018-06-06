@@ -903,7 +903,7 @@ G_MODULE_EXPORT void on_dbg_breakpoints_treestore_row_changed ( GtkTreeModel *tr
             if ( addr != g_value_get_uint ( &gv_addr ) ) {
                 /* aktualni ndni v btp - jdeme ho tam vlozit */
                 int id = breakpoints_event_get_id_by_addr ( (Z80EX_WORD) g_value_get_uint ( &gv_addr ) );
-                if ( -1 != id ) {
+                if ( id > BREAKPOINT_TYPE_NONE ) {
                     /* tohle misto v pameti uz obsadil jiny bpt */
                     printf ( "WARNING - duplicate breakpoint on addr: 0x%04x\n", (Z80EX_WORD) g_value_get_uint ( &gv_addr ) );
                     lock = 1;
