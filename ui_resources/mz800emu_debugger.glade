@@ -481,6 +481,26 @@
     <signal name="row-changed" handler="on_dbg_breakpoints_treestore_row_changed" swapped="no"/>
     <signal name="row-inserted" handler="on_dbg_breakpoints_treestore_row_inserted" swapped="no"/>
   </object>
+  <object class="GtkListStore" id="dbg_disassembled_liststore">
+    <columns>
+      <!-- column-name addr -->
+      <column type="guint"/>
+      <!-- column-name bytes -->
+      <column type="guint"/>
+      <!-- column-name addr_txt -->
+      <column type="gchararray"/>
+      <!-- column-name byte0 -->
+      <column type="gchararray"/>
+      <!-- column-name byte1 -->
+      <column type="gchararray"/>
+      <!-- column-name byte2 -->
+      <column type="gchararray"/>
+      <!-- column-name byte3 -->
+      <column type="gchararray"/>
+      <!-- column-name mnemonic -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
   <object class="GtkWindow" id="dbg_breakpoints_window">
     <property name="width_request">200</property>
     <property name="height_request">400</property>
@@ -766,26 +786,6 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkListStore" id="dbg_disassembled_liststore">
-    <columns>
-      <!-- column-name addr -->
-      <column type="guint"/>
-      <!-- column-name bytes -->
-      <column type="guint"/>
-      <!-- column-name addr_txt -->
-      <column type="gchararray"/>
-      <!-- column-name byte0 -->
-      <column type="gchararray"/>
-      <!-- column-name byte1 -->
-      <column type="gchararray"/>
-      <!-- column-name byte2 -->
-      <column type="gchararray"/>
-      <!-- column-name byte3 -->
-      <column type="gchararray"/>
-      <!-- column-name mnemonic -->
-      <column type="gchararray"/>
-    </columns>
   </object>
   <object class="GtkMenu" id="dbg_disassembled_menu">
     <property name="visible">True</property>
@@ -1807,6 +1807,7 @@
             </child>
             <child>
               <object class="GtkToolButton" id="dbg_step_over_toolbutton">
+                <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="has_tooltip">True</property>
                 <property name="tooltip_text" translatable="yes">Step Over (F8)</property>

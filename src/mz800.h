@@ -181,6 +181,10 @@ extern "C" {
     extern void mz800_switch_emulation_speed ( unsigned emulation_speed );
     extern void mz800_pause_emulation ( unsigned value );
 
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+    extern void mz800_run_to_temporary_breakpoint ( void );
+#endif
+
     extern void mz800_rear_dip_switch_mz800_mode ( unsigned value );
 
 #define mz800_get_instruction_start_ticks() ( g_gdg.total_elapsed.ticks - g_mz800.instruction_insideop_sync_ticks ) /* muze legalne vracet i zaporne cislo! */
