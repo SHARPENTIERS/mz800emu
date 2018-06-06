@@ -32,6 +32,7 @@ extern "C" {
 
 
     extern char* build_time_get ( void );
+    extern char* build_time_get_revision_txt ( void );
     
 
 #ifdef	__cplusplus
