@@ -91,7 +91,7 @@ void debugger_init ( void ) {
     CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "DEBUGGER" );
 
     CFGELM *elm;
-    elm = cfgmodule_register_new_element ( cmod, "animated_updates", CFGENTYPE_KEYWORD, 0,
+    elm = cfgmodule_register_new_element ( cmod, "animated_updates", CFGENTYPE_KEYWORD, 1,
                                            0, "DISABLED",
                                            1, "ENABLED",
                                            -1 );

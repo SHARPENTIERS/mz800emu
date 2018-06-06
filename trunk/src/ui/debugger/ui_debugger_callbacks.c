@@ -30,6 +30,7 @@
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 
 #include <string.h>
+#include <strings.h>
 
 #include "ui/ui_main.h"
 #include "debugger/debugger.h"
@@ -42,6 +43,7 @@
 #include "ui_memdump.h"
 #include "ui/ui_hexeditable.h"
 #include "pio8255/pio8255.h"
+#include "z80ex/include/z80ex_dasm.h"
 
 
 static Z80EX_WORD ui_debugger_dissassembled_get_selected_addr ( void ) {
@@ -656,11 +658,42 @@ G_MODULE_EXPORT void on_dbg_step_in_toolbutton_clicked ( GtkToolButton *toolbutt
 
 
 G_MODULE_EXPORT void on_dbg_step_over_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
-    printf ( "%s() - not implemented\n", __func__ );
+    if ( !TEST_EMULATION_PAUSED ) {
+        ui_debugger_pause_emulation ( );
+        return;
+    };
+
+    Z80EX_WORD addr = z80ex_get_reg ( g_mz800.cpu, regPC );
+
+    char mnemonic [ DEBUGGER_MNEMONIC_MAXLEN ];
+    int t_states, t_states2;
+    unsigned bytecode_length = z80ex_dasm ( mnemonic, DEBUGGER_MNEMONIC_MAXLEN - 1, 0, &t_states, &t_states2, debugger_dasm_read_cb, addr, NULL );
+
+
+    if (
+         ( 0 == strncasecmp ( mnemonic, "call", 4 ) ) ||
+         ( 0 == strncasecmp ( mnemonic, "rst", 3 ) ) ||
+         ( 0 == strncasecmp ( mnemonic, "ldir", 4 ) ) ||
+         ( 0 == strncasecmp ( mnemonic, "lddr", 4 ) ) ||
+         ( 0 == strncasecmp ( mnemonic, "otir", 4 ) ) ||
+         ( 0 == strncasecmp ( mnemonic, "otdr", 4 ) ) ||
+         ( 0 == strncasecmp ( mnemonic, "inir", 4 ) ) ||
+         ( 0 == strncasecmp ( mnemonic, "indr", 4 ) ) ||
+         ( 0 == strncasecmp ( mnemonic, "djnz", 4 ) )
+         ) {
+        breakpoints_set_temporary_event ( addr + bytecode_length );
+        debugger_step_call ( 0 );
+        //mz800_pause_emulation ( 0 );
+        mz800_run_to_temporary_breakpoint ( );
+    } else {
+        debugger_step_call ( 1 );
+    };
 }
 
 
 G_MODULE_EXPORT void on_dbg_step_out_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+
+
     printf ( "%s() - not implemented\n", __func__ );
 }
 
@@ -672,24 +705,34 @@ G_MODULE_EXPORT void on_dbg_run_to_cursor_toolbutton_clicked ( GtkToolButton *to
     };
 
     Z80EX_WORD addr = ui_debugger_dissassembled_get_selected_addr ( );
+
+
     if ( addr == z80ex_get_reg ( g_mz800.cpu, regPC ) ) return;
+
     breakpoints_set_temporary_event ( addr );
     debugger_step_call ( 0 );
-    mz800_pause_emulation ( 0 );
+    //mz800_pause_emulation ( 0 );
+    mz800_run_to_temporary_breakpoint ( );
 }
 
 
 G_MODULE_EXPORT void on_dbg_breakpoints_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+
+
     ui_breakpoints_show_hide_window ( );
 }
 
 
 G_MODULE_EXPORT void on_dbg_memdump_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+
+
     ui_memdump_show_hide_window ( );
 }
 
 
 G_MODULE_EXPORT void on_dbg_dissassembler_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+
+
     printf ( "%s() - not implemented\n", __func__ );
 }
 
@@ -734,6 +777,8 @@ G_MODULE_EXPORT gboolean on_dbg_disassembled_treeview_scroll_event ( GtkWidget *
             ui_debugger_update_disassembled ( addr, -1 );
             return TRUE;
         } else if ( ( row == ( DEBUGGER_DISASSEMBLED_ROWS - 1 ) ) && ( direction == GDK_SCROLL_DOWN ) ) {
+
+
             addr++;
             ui_debugger_update_disassembled ( addr, row );
             return TRUE;
@@ -800,6 +845,7 @@ G_MODULE_EXPORT gboolean on_dbg_disassembled_treeview_key_press_event ( GtkWidge
     char c = event->string[0];
     if ( ( ( c >= 'a' ) && ( c <= 'z' ) ) || ( ( c >= 'A' ) && ( c <= 'Z' ) ) ) {
 
+
         GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_disassembled_liststore" ) );
         GtkTreeSelection *selection = gtk_tree_view_get_selection ( ui_get_tree_view ( "dbg_disassembled_treeview" ) );
         GtkTreeIter iter;
@@ -825,6 +871,8 @@ G_MODULE_EXPORT gboolean on_dbg_disassembled_treeview_button_press_event ( GtkWi
             // win32 a win64 GTK ve stavajici verzi umi jen gtk_menu_popup, ktery je vsak v novych verzich deprecated
             gtk_menu_popup ( GTK_MENU ( ui_get_widget ( "dbg_disassembled_menu" ) ), NULL, NULL, NULL, NULL, 0, 0 );
 #else
+
+
             gtk_menu_popup_at_pointer ( GTK_MENU ( ui_get_widget ( "dbg_disassembled_menu" ) ), (GdkEvent*) event );
 #endif
         };
@@ -836,6 +884,8 @@ G_MODULE_EXPORT gboolean on_dbg_disassembled_treeview_button_press_event ( GtkWi
 G_MODULE_EXPORT gboolean on_dbg_history_treeview_button_press_event ( GtkWidget *widget, GdkEventButton *event, gpointer user_data ) {
 
     if ( !TEST_EMULATION_PAUSED ) {
+
+
         ui_debugger_pause_emulation ( );
     };
     return FALSE;
@@ -845,6 +895,8 @@ G_MODULE_EXPORT gboolean on_dbg_history_treeview_button_press_event ( GtkWidget 
 G_MODULE_EXPORT void on_dbg_disassembled_treeview_row_activated ( GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data ) {
 
     if ( !TEST_EMULATION_PAUSED ) {
+
+
         ui_debugger_pause_emulation ( );
         return;
     };
@@ -867,12 +919,16 @@ G_MODULE_EXPORT void on_dbg_set_as_breakpoint_menuitem_activate ( GtkMenuItem *m
     Z80EX_WORD addr = ui_debugger_dissassembled_get_selected_addr ( );
     ui_breakpoints_show_window ( );
     int id = ui_breakpoints_simple_add_event ( addr );
+
+
     if ( id == -1 ) return;
     ui_breakpoints_select_id ( id );
 }
 
 
 G_MODULE_EXPORT void on_dbg_set_as_pc_menuitem_activate ( GtkMenuItem *menuitem, gpointer user_data ) {
+
+
     Z80EX_WORD addr = ui_debugger_dissassembled_get_selected_addr ( );
     debugger_change_z80_register ( regPC, addr );
 }
@@ -882,6 +938,8 @@ static void fill_combo_entry ( GtkWidget *combo ) {
     gtk_combo_box_text_remove_all ( GTK_COMBO_BOX_TEXT ( combo ) );
     int i;
     for ( i = 0; i < g_uidebugger.focus_addr_hist_count; i++ ) {
+
+
         gchar addr_txt [ 5 ];
         sprintf ( addr_txt, "%04X", g_uidebugger.focus_addr_history[i] );
         gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( combo ), addr_txt );
@@ -897,6 +955,8 @@ G_MODULE_EXPORT void on_dbg_focus_to_menuitem_activate ( GtkMenuItem *menuitem, 
     static GtkWidget *combo = NULL;
 
     if ( combo == NULL ) {
+
+
         combo = gtk_combo_box_text_new_with_entry ( );
         gtk_widget_show ( combo );
         gtk_container_add ( GTK_CONTAINER ( ui_get_widget ( "dbg_focus_to_addr_box" ) ), combo );
@@ -920,11 +980,15 @@ G_MODULE_EXPORT void on_dbg_focus_to_menuitem_activate ( GtkMenuItem *menuitem, 
 
 
 G_MODULE_EXPORT void on_dbg_focus_to_pc_menuitem_activate ( GtkMenuItem *menuitem, gpointer user_data ) {
+
+
     ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
 }
 
 
 G_MODULE_EXPORT void on_dbg_edit_row_menuitem_activate ( GtkMenuItem *menuitem, gpointer user_data ) {
+
+
     GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_disassembled_liststore" ) );
     GtkTreeSelection *selection = gtk_tree_view_get_selection ( ui_get_tree_view ( "dbg_disassembled_treeview" ) );
     GtkTreeIter iter;
@@ -941,6 +1005,8 @@ G_MODULE_EXPORT void on_dbg_edit_row_menuitem_activate ( GtkMenuItem *menuitem, 
 
 
 G_MODULE_EXPORT gboolean on_dbg_focus_to_window_delete_event ( GtkWidget *widget, GdkEvent *event, gpointer user_data ) {
+
+
     GtkWidget *window = ui_get_widget ( "dbg_focus_to_window" );
     gtk_widget_hide ( window );
     return TRUE;
@@ -948,6 +1014,8 @@ G_MODULE_EXPORT gboolean on_dbg_focus_to_window_delete_event ( GtkWidget *widget
 
 
 G_MODULE_EXPORT void on_dbg_focus_to_cancel_button_clicked ( GtkButton *button, gpointer user_data ) {
+
+
     GtkWidget *window = ui_get_widget ( "dbg_focus_to_window" );
     gtk_widget_hide ( window );
 }
@@ -970,6 +1038,8 @@ G_MODULE_EXPORT void on_dbg_focus_to_ok_button_clicked ( GtkButton *button, gpoi
         for ( j = 0; j < DBG_FOCUS_ADDR_HIST_LENGTH; j++ ) {
             if ( j >= g_uidebugger.focus_addr_hist_count ) break;
             if ( history[j] != g_uidebugger.last_focus_addr ) {
+
+
                 g_uidebugger.focus_addr_history[i++] = history[j];
             };
         };

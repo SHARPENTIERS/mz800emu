@@ -1003,6 +1003,25 @@ void mz800_pause_emulation ( unsigned value ) {
 #endif
 }
 
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+
+
+void mz800_run_to_temporary_breakpoint ( void ) {
+
+    g_mz800.emulation_paused = 0;
+    iface_sdl_audio_pause_emulation ( 0 );
+    ui_main_update_emulation_state ( g_mz800.emulation_paused );
+
+    // zkusime to bez spinner window
+#if 0
+    if ( TEST_DEBUGGER_ACTIVE ) { // tady je to zrejme zbytecna podminka
+        ui_debugger_show_spinner_window ( );
+    };
+#endif
+}
+
+#endif
+
 
 void mz800_rear_dip_switch_mz800_mode ( unsigned value ) {
 
