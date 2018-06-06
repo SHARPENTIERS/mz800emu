@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 #ifdef MEMORY_MAKE_STATISTICS
-    
+
 #define MEMORY_STATISTIC_DAT_FILE   "memstats.dat"
 #define MEMORY_STATISTIC_TXT_FILE   "memstats.txt"
 
@@ -177,6 +177,11 @@ extern "C" {
 
     /* Zapis do aktualne mapovane pameti - bez synchronizace */
     extern void memory_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value );
+
+
+    static inline Z80EX_BYTE memory_pure_ram_read_byte ( Z80EX_WORD addr ) {
+        return g_memory.RAM [ addr ];
+    }
 
 #ifdef MEMORY_MAKE_STATISTICS
     void memory_write_memory_statistics ( void );

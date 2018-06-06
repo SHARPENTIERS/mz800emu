@@ -159,6 +159,11 @@ Z80EX_BYTE debugger_dasm_history_read_cb ( Z80EX_WORD addr, void *user_data ) {
 }
 
 
+Z80EX_BYTE debugger_dasm_pure_ram_read_cb ( Z80EX_WORD addr, void *user_data ) {
+    return memory_pure_ram_read_byte ( addr );
+}
+
+
 void debugger_memory_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
     g_debugger.memop_call = 1;
     memory_write_byte ( addr, value );
