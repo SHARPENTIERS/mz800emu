@@ -60,6 +60,7 @@ static Z80EX_WORD ui_debugger_dissassembled_get_selected_addr ( void ) {
 
 G_MODULE_EXPORT void on_debugger_main_window_size_allocate ( GtkWidget *widget, GdkRectangle *allocation, gpointer user_data ) {
     if ( g_debugger.animated_updates != DEBUGGER_ANIMATED_UPDATES_DISABLED ) return;
+    if ( g_debugger.run_to_temporary_breakpoint ) return;
     ui_debugger_show_spinner_window ( );
 }
 
@@ -659,6 +660,8 @@ G_MODULE_EXPORT void on_dbg_step_in_toolbutton_clicked ( GtkToolButton *toolbutt
 
 G_MODULE_EXPORT void on_dbg_step_over_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
     if ( !TEST_EMULATION_PAUSED ) {
+        // Pokud uzivatel drzi trvale F8, tak by to mohlo zpusobit nezadouci pauzu
+        if ( g_debugger.run_to_temporary_breakpoint ) return;
         ui_debugger_pause_emulation ( );
         return;
     };
