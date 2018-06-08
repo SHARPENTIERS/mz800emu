@@ -41,7 +41,7 @@
 #include "cmt_mzf.h"
 
 static st_DRIVER *g_driver = &g_ui_memory_driver_static;
-static st_DRIVER *g_driver_realloc = &g_ui_memory_driver_realloc;
+//static st_DRIVER *g_driver_realloc = &g_ui_memory_driver_realloc;
 
 char *g_cmt_mzf_fileext[] = {
                              "mzf",

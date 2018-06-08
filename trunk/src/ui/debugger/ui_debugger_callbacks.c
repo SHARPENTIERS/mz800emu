@@ -91,6 +91,14 @@ G_MODULE_EXPORT gboolean on_debugger_main_window_key_press_event ( GtkWidget *wi
 }
 
 
+G_MODULE_EXPORT void on_dbg_mem_load_save_menuitem_activate ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+    ui_memdump_show_window ( );
+    gtk_widget_grab_focus ( ui_get_widget ( "dbg_memdump_window" ) );
+}
+
+
 G_MODULE_EXPORT void on_dbg_hide_menuitem_activate ( GtkCheckMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;

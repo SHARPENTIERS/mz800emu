@@ -101,7 +101,9 @@ G_MODULE_EXPORT void on_dissassembler_save_imagemenuitem_activate ( GtkCheckMenu
             GtkTextIter end;
             gtk_text_buffer_get_iter_at_line ( buffer, &start, 0 );
             gtk_text_buffer_get_iter_at_line ( buffer, &end, gtk_text_buffer_get_line_count ( buffer ) );
-            fprintf ( file, "%s", gtk_text_buffer_get_text ( buffer, &start, &end, FALSE ) );
+            char *text = gtk_text_buffer_get_text ( buffer, &start, &end, FALSE );
+            fprintf ( file, "%s", text );
+            g_free ( text );
             fclose ( file );
         };
         g_free ( filename );
