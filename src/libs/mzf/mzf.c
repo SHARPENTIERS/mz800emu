@@ -67,7 +67,7 @@ int mzf_write_header_on_offset ( st_HANDLER *h, uint32_t offset, st_MZF_HEADER *
     mzfhdr->fname.terminator = MZF_FNAME_TERMINATOR;
 #endif
 
-    if ( EXIT_SUCCESS != generic_driver_read ( h, offset, mzfhdr, sizeof (mzfhdr->ftype ) + MZF_FNAME_FULL_LENGTH ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != generic_driver_write ( h, offset, mzfhdr, sizeof (mzfhdr->ftype ) + MZF_FNAME_FULL_LENGTH ) ) return EXIT_FAILURE;
     offset += sizeof (mzfhdr->ftype ) + MZF_FNAME_FULL_LENGTH;
 
     if ( EXIT_SUCCESS != mzf_write_word_on_offset ( h, offset, mzfhdr->fsize ) ) return EXIT_FAILURE;

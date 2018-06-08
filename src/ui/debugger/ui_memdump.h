@@ -31,6 +31,8 @@ extern "C" {
 #endif
 
     extern void ui_memdump_show_hide_window ( void );
+    extern void ui_memdump_show_window ( void );
+    extern void ui_memdump_memsave_window_show ( void );
 
 #ifdef	__cplusplus
 }
