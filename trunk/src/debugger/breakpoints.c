@@ -68,7 +68,7 @@ void breakpoints_set_temporary_event ( Z80EX_WORD addr ) {
 
 int breakpoints_event_add ( Z80EX_WORD addr, int id ) {
     if ( id <= BREAKPOINT_TYPE_NONE ) return 0;
-    if ( g_breakpoints.bpmap [ addr ] >= BREAKPOINT_TYPE_NONE ) return g_breakpoints.bpmap [ addr ];
+    if ( g_breakpoints.bpmap [ addr ] > BREAKPOINT_TYPE_NONE ) return g_breakpoints.bpmap [ addr ];
     g_breakpoints.bpmap [ addr ] = id;
     return 0;
 }
