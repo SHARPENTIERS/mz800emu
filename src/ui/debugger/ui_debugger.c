@@ -1486,4 +1486,15 @@ void ui_debugger_focus_to_addr_history_save_cb ( void *e, void *data ) {
     ui_utils_mem_free ( value_txt );
 }
 
+
+Z80EX_WORD ui_debugger_dissassembled_get_first_addr ( void ) {
+    GtkTreeModel *model = GTK_TREE_MODEL ( ui_get_object ( "dbg_disassembled_liststore" ) );
+    GtkTreeIter iter;
+    gtk_tree_model_get_iter_first ( model, &iter );
+    GValue gv_addr = G_VALUE_INIT;
+    gtk_tree_model_get_value ( model, &iter, DBG_DIS_ADDR, &gv_addr );
+    Z80EX_WORD addr = (Z80EX_WORD) g_value_get_uint ( &gv_addr );
+    return addr;
+}
+
 #endif

@@ -294,6 +294,8 @@ extern "C" {
     extern void ui_debugger_focus_to_addr_history_save_cb ( void *e, void *data );
 
     extern void ui_debugger_cpu_tick_counter_reset ( void );
+
+    extern Z80EX_WORD ui_debugger_dissassembled_get_first_addr ( void );
 #ifdef __cplusplus
 }
 #endif

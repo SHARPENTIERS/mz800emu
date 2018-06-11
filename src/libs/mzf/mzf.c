@@ -94,22 +94,22 @@ int mzf_write_header ( st_HANDLER *h, st_MZF_HEADER *mzfhdr ) {
 }
 
 
-int mzf_read_body_on_offset ( st_HANDLER *h, uint32_t offset, uint8_t *buffer, uint16_t buffer_size ) {
+int mzf_read_body_on_offset ( st_HANDLER *h, uint32_t offset, uint8_t *buffer, uint32_t buffer_size ) {
     return generic_driver_read ( h, offset, buffer, buffer_size );
 }
 
 
-int mzf_read_body ( st_HANDLER *h, uint8_t *buffer, uint16_t buffer_size ) {
+int mzf_read_body ( st_HANDLER *h, uint8_t *buffer, uint32_t buffer_size ) {
     return mzf_read_body_on_offset ( h, sizeof ( st_MZF_HEADER ), buffer, buffer_size );
 }
 
 
-int mzf_write_body_on_offset ( st_HANDLER *h, uint32_t offset, uint8_t *buffer, uint16_t buffer_size ) {
+int mzf_write_body_on_offset ( st_HANDLER *h, uint32_t offset, uint8_t *buffer, uint32_t buffer_size ) {
     return generic_driver_write ( h, offset, buffer, buffer_size );
 }
 
 
-int mzf_write_body ( st_HANDLER *h, uint8_t *buffer, uint16_t buffer_size ) {
+int mzf_write_body ( st_HANDLER *h, uint8_t *buffer, uint32_t buffer_size ) {
     return mzf_write_body_on_offset ( h, sizeof ( st_MZF_HEADER ), buffer, buffer_size );
 }
 

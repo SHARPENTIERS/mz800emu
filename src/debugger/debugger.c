@@ -175,7 +175,7 @@ void debugger_mmap_mount ( unsigned value ) {
     g_memory.map |= value;
 
     ui_debugger_update_mmap ( );
-    ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
+    ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
     ui_debugger_update_stack ( );
 }
 
@@ -184,7 +184,7 @@ void debugger_mmap_umount ( unsigned value ) {
     g_memory.map &= ( ~value ) & 0x0f;
 
     ui_debugger_update_mmap ( );
-    ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
+    ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
     ui_debugger_update_stack ( );
 }
 
@@ -248,7 +248,7 @@ void debugger_change_dmd ( Z80EX_BYTE value ) {
     gdg_write_byte ( 0xce, value );
 
     ui_debugger_update_mmap ( );
-    ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
+    ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
     ui_debugger_update_stack ( );
 }
 
@@ -299,7 +299,7 @@ void debugger_change_gdg_rfr ( Z80EX_BYTE value ) {
 
     gdg_write_byte ( 0xcd, value );
 
-    ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
+    ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
     ui_debugger_update_stack ( );
 }
 
@@ -316,7 +316,7 @@ void debugger_change_gdg_wfr ( Z80EX_BYTE value ) {
 
     // pokud se nahodou zmenila i banka A/B, tak ta je pro WF a RF spolecna, takze musime udelat aktualizaci kvili cteni z pameti
     // TODO: fakt? :)
-    ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
+    ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
     ui_debugger_update_stack ( );
 }
 
@@ -339,11 +339,11 @@ static Z80EX_WORD debugger_a2hex ( char c ) {
 }
 
 
-Z80EX_WORD debuger_text_to_z80_word ( const char *txt ) {
+uint32_t debuger_hextext_to_uint32 ( const char *txt ) {
 
     unsigned length;
     unsigned i;
-    Z80EX_WORD value = 0;
+    uint32_t value = 0;
 
     length = strlen ( txt );
 

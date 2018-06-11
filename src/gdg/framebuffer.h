@@ -24,24 +24,26 @@
  */
 
 #ifndef FRAMEBUFFER_H
-#define	FRAMEBUFFER_H
+#define FRAMEBUFFER_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 
-    extern void framebuffer_MZ800_screen_row_fill ( unsigned last_pixel );
-    extern void framebuffer_update_MZ700_screen_row ( void );
+    extern void framebuffer_MZ800_current_screen_row_fill ( unsigned last_pixel );
+    extern void framebuffer_MZ800_all_screen_rows_fill ( void );
+    extern void framebuffer_update_MZ700_current_screen_row ( void );
+    extern void framebuffer_update_MZ700_all_rows ( void );
     extern void framebuffer_MZ800_screen_changed ( void );
 
     extern void framebuffer_border_row_fill ( void );
     extern void framebuffer_border_changed ( void );
 
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* FRAMEBUFFER_H */
+#endif /* FRAMEBUFFER_H */
 

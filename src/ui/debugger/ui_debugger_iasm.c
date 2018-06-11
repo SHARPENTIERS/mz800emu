@@ -114,7 +114,7 @@ G_MODULE_EXPORT void dbg_inline_assembler_ok ( GtkButton *button, gpointer user_
         return;
     };
 
-    Z80EX_WORD addr = (Z80EX_WORD) debuger_text_to_z80_word ( addr_txt );
+    Z80EX_WORD addr = (Z80EX_WORD) debuger_hextext_to_uint32 ( addr_txt );
 
     GtkEntry *entry_instruction = ui_get_entry ( "dbg_inline_asm_instruction-entry" );
     const gchar *instruction = gtk_entry_get_text ( entry_instruction );

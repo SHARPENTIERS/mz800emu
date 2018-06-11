@@ -395,7 +395,7 @@ static inline void mz800_sync ( void ) {
                 /* V rezimu MZ-700 aktualizujeme screen framebuffer jakmile skonci HBLN. */
                 if ( ( DMD_TEST_MZ700 ) && ( ( g_gdg.beam_row >= VIDEO_BEAM_CANVAS_FIRST_ROW ) && ( g_gdg.beam_row <= VIDEO_BEAM_CANVAS_LAST_ROW ) ) ) {
                     if ( g_gdg.screen_changes ) {
-                        framebuffer_update_MZ700_screen_row ( );
+                        framebuffer_update_MZ700_current_screen_row ( );
                     };
 
                     /* Pokud jsme na poslednim pixelu screen area */
@@ -442,7 +442,7 @@ static inline void mz800_sync ( void ) {
                 /* V rezimu MZ-800 aktualizujeme screen framebuffer az po dokoncenem radku. */
                 if ( !DMD_TEST_MZ700 ) {
                     if ( g_gdg.screen_changes ) {
-                        framebuffer_MZ800_screen_row_fill ( VIDEO_CANVAS_WIDTH );
+                        framebuffer_MZ800_current_screen_row_fill ( VIDEO_CANVAS_WIDTH );
                     };
 
                     /* Pokud jsme na poslednim pixelu screen area */
@@ -915,9 +915,9 @@ void mz800_flush_full_screen ( void ) {
             if ( g_gdg.screen_changes ) {
                 if ( ( g_gdg.beam_row >= VIDEO_BEAM_CANVAS_FIRST_ROW ) && ( g_gdg.beam_row <= VIDEO_BEAM_CANVAS_LAST_ROW ) ) {
                     if ( !DMD_TEST_MZ700 ) {
-                        framebuffer_MZ800_screen_row_fill ( VIDEO_CANVAS_WIDTH );
+                        framebuffer_MZ800_current_screen_row_fill ( VIDEO_CANVAS_WIDTH );
                     } else {
-                        framebuffer_update_MZ700_screen_row ( );
+                        framebuffer_update_MZ700_current_screen_row ( );
                     };
                 };
                 g_gdg.screen_need_update_from = 0;

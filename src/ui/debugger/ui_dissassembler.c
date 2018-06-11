@@ -136,8 +136,8 @@ void ui_dissassembler_show_window ( void ) {
 static void ui_dissassembler_start ( void ) {
     ui_dissassembler_clear_textview ( );
 
-    Z80EX_WORD addr = debuger_text_to_z80_word ( gtk_entry_get_text ( ui_get_entry ( "dissassembler_from_entry" ) ) );
-    Z80EX_WORD addr_to = debuger_text_to_z80_word ( gtk_entry_get_text ( ui_get_entry ( "dissassembler_to_entry" ) ) );
+    Z80EX_WORD addr = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dissassembler_from_entry" ) ) );
+    Z80EX_WORD addr_to = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dissassembler_to_entry" ) ) );
     int dissassemble_size = (Z80EX_WORD) addr_to - addr;
 
     if ( !dissassemble_size ) return;

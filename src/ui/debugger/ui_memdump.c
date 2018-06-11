@@ -26,6 +26,8 @@
 #include "mz800emu_cfg.h"
 
 #include <gtk/gtk.h>
+#include <glib.h>
+#include <glib/gstdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -42,6 +44,9 @@
 #include "ui/ui_hexeditable.h"
 #include "libs/mzf/mzf.h"
 #include "libs/mzf/mzf_tools.h"
+#include "cmt/cmthack.h"
+#include "gdg/framebuffer.h"
+#include "iface_sdl//iface_sdl.h"
 
 #include "libs/generic_driver/generic_driver.h"
 #include "ui/generic_driver/ui_memory_driver.h"
@@ -70,6 +75,12 @@ typedef enum en_MEMCHARSET {
 } en_MEMCHARSET;
 
 
+typedef enum en_PEZIK_ADDR_ENDIANITY {
+    PEZIK_ADDR_ENDIANITY_BIG = 0,
+    PEZIK_ADDR_ENDIANITY_LITTLE
+} en_PEZIK_ADDR_ENDIANITY;
+
+
 typedef struct st_UIMEMDUMP {
     st_UIWINPOS main_pos;
 
@@ -78,7 +89,7 @@ typedef struct st_UIMEMDUMP {
     unsigned vram_plane;
     unsigned pezik_e8_bank;
     unsigned pezik_68_bank;
-    unsigned pezik_endianity;
+    en_PEZIK_ADDR_ENDIANITY pezik_addr_endianity;
     unsigned mr1z18_bank;
     gboolean comparative_mode;
     uint8_t dump_data[UI_MEMDUMP_MAXDUMP_LENGTH];
@@ -106,7 +117,7 @@ void ui_memdump_update ( void ) {
     GtkWidget *spinbutton = ui_get_widget ( "dbg_memdump_bank_spinbutton" );
     GtkWidget *endianness_combo = ui_get_widget ( "dbg_memdump_pezik_endianness_comboboxtext" );
 
-    gtk_combo_box_set_active ( (GtkComboBox*) endianness_combo, g_uimemdump.pezik_endianity );
+    gtk_combo_box_set_active ( (GtkComboBox*) endianness_combo, g_uimemdump.pezik_addr_endianity );
     gtk_widget_hide ( endianness_combo );
 
     if ( g_uimemdump.memsrc >= MEMSRC_VRAM ) {
@@ -253,8 +264,8 @@ void ui_memdump_load ( void ) {
             if ( g_uimemdump.memsrc == MEMSRC_MAPED ) {
                 value = debugger_memory_read_byte ( addr + i );
             } else {
-                if ( ( ( g_uimemdump.memsrc == MEMSRC_PEZIK_E8 ) || ( g_uimemdump.memsrc == MEMSRC_PEZIK_68 ) ) && ( g_uimemdump.pezik_endianity == 1 ) ) {
-                    /* pezik low endian */
+                if ( ( ( g_uimemdump.memsrc == MEMSRC_PEZIK_E8 ) || ( g_uimemdump.memsrc == MEMSRC_PEZIK_68 ) ) && ( g_uimemdump.pezik_addr_endianity == PEZIK_ADDR_ENDIANITY_LITTLE ) ) {
+                    /* pezik little endian */
                     unsigned le_addr = addr + i;
                     value = MEM [ ( ( le_addr & 0xff ) << 8 ) | ( le_addr >> 8 ) ];
                 } else {
@@ -334,7 +345,7 @@ void ui_memdump_show_window ( void ) {
         g_uimemdump.mr1z18_bank = 0;
         g_uimemdump.pezik_68_bank = 0;
         g_uimemdump.pezik_e8_bank = 0;
-        g_uimemdump.pezik_endianity = 0;
+        g_uimemdump.pezik_addr_endianity = PEZIK_ADDR_ENDIANITY_BIG;
         g_uimemdump.mr1z18_bank = 0;
         g_uimemdump.vram_plane = 0;
         g_uimemdump.comparative_mode = TRUE;
@@ -445,7 +456,7 @@ G_MODULE_EXPORT void on_dbg_memdump_bank_spinbutton_value_changed ( GtkSpinButto
 G_MODULE_EXPORT void on_dbg_memdump_pezik_endianness_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
     if ( TEST_UICALLBACKS_LOCKED ) return;
 
-    g_uimemdump.pezik_endianity = gtk_combo_box_get_active ( combobox );
+    g_uimemdump.pezik_addr_endianity = gtk_combo_box_get_active ( combobox );
     ui_memdump_load ( );
 }
 
@@ -462,23 +473,22 @@ G_MODULE_EXPORT void on_dbg_memdump_save_toolbutton_clicked ( GtkToolButton *too
 }
 
 
-G_MODULE_EXPORT void on_dbg_memdump_load_bin_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+G_MODULE_EXPORT void on_dbg_memdump_load_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
     (void) toolbutton;
     (void) user_data;
-    printf ( "%s() - not implemented\n", __func__ );
-}
-
-
-G_MODULE_EXPORT void on_dbg_memdump_load_mzf_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
-    (void) toolbutton;
-    (void) user_data;
-    printf ( "%s() - not implemented\n", __func__ );
+    ui_memdump_memload_select_file ( );
 }
 
 
 /*
  * 
+ * 
+ * 
+ * 
  * Memsave
+ * 
+ * 
+ * 
  * 
  */
 
@@ -491,7 +501,7 @@ static volatile gboolean g_ui_memdump_memsave_textbuffer_lock = FALSE;
 
 static void ui_memdump_memsave_save_button_sensitivity ( void ) {
     GtkWidget *button = ui_get_widget ( "dbg_memsave_save_button" );
-    Z80EX_WORD size = debuger_text_to_z80_word ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_size_hex_entry" ) ) );
+    Z80EX_WORD size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_size_hex_entry" ) ) );
     gboolean save_enabled = ( size ) ? TRUE : FALSE;
     gtk_widget_set_sensitive ( button, save_enabled );
 }
@@ -540,21 +550,21 @@ static int ui_memdump_memsave_save_file ( char *filename, gboolean add_mzfheader
         if ( !gtk_entry_get_text_length ( entry ) ) {
             gtk_entry_set_text ( entry, "01" );
         };
-        mzfhdr.ftype = (Z80EX_BYTE) debuger_text_to_z80_word ( gtk_entry_get_text ( entry ) );
+        mzfhdr.ftype = (Z80EX_BYTE) debuger_hextext_to_uint32 ( gtk_entry_get_text ( entry ) );
 
         entry = ui_get_entry ( "dbg_memsave_mzfhdr_fstrt_entry" );
         if ( !gtk_entry_get_text_length ( entry ) ) {
             gtk_entry_set_text ( entry, "0000" );
         };
-        mzfhdr.fstrt = debuger_text_to_z80_word ( gtk_entry_get_text ( entry ) );
+        mzfhdr.fstrt = debuger_hextext_to_uint32 ( gtk_entry_get_text ( entry ) );
 
         entry = ui_get_entry ( "dbg_memsave_mzfhdr_fexec_entry" );
         if ( !gtk_entry_get_text_length ( entry ) ) {
             gtk_entry_set_text ( entry, "0000" );
         };
-        mzfhdr.fexec = debuger_text_to_z80_word ( gtk_entry_get_text ( entry ) );
+        mzfhdr.fexec = debuger_hextext_to_uint32 ( gtk_entry_get_text ( entry ) );
 
-        mzfhdr.fsize = debuger_text_to_z80_word ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_mzfhdr_fsize_entry" ) ) );
+        mzfhdr.fsize = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_mzfhdr_fsize_entry" ) ) );
 
         entry = ui_get_entry ( "dbg_memsave_mzfhdr_fname_entry" );
         if ( !gtk_entry_get_text_length ( entry ) ) {
@@ -607,12 +617,11 @@ static int ui_memdump_memsave_save_file ( char *filename, gboolean add_mzfheader
 
     // save body
 
-    Z80EX_WORD addr = debuger_text_to_z80_word ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_from_entry" ) ) );
-    Z80EX_WORD size = debuger_text_to_z80_word ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_size_hex_entry" ) ) );
+    Z80EX_WORD addr = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_from_entry" ) ) );
+    Z80EX_WORD size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_size_hex_entry" ) ) );
 
     Z80EX_WORD mem_max = 0xffff;
-    en_MEMSRC memsrc = gtk_combo_box_get_active ( ui_get_combo_box ( "dbg_memdump_src_comboboxtext" ) );
-    if ( memsrc == MEMSRC_VRAM ) {
+    if ( g_uimemdump.memsrc == MEMSRC_VRAM ) {
         mem_max = 0x1fff;
     };
 
@@ -627,6 +636,7 @@ static int ui_memdump_memsave_save_file ( char *filename, gboolean add_mzfheader
 
         generic_driver_write ( h, offset, &g_uimemdump.dump_data[addr], save_size );
 
+        offset += save_size;
         size -= save_size;
         addr += save_size + 1;
         addr &= mem_max;
@@ -758,12 +768,11 @@ G_MODULE_EXPORT void on_dbg_memsave_from_entry_changed ( GtkEditable *ed, gpoint
         return;
     };
 
-    Z80EX_WORD addr_from = debuger_text_to_z80_word ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_from_entry" ) ) );
-    Z80EX_WORD addr_to = debuger_text_to_z80_word ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_to_entry" ) ) );
+    Z80EX_WORD addr_from = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_from_entry" ) ) );
+    Z80EX_WORD addr_to = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_to_entry" ) ) );
 
     Z80EX_WORD mask = 0xffff;
-    en_MEMSRC memsrc = gtk_combo_box_get_active ( ui_get_combo_box ( "dbg_memdump_src_comboboxtext" ) );
-    if ( memsrc == MEMSRC_VRAM ) {
+    if ( g_uimemdump.memsrc == MEMSRC_VRAM ) {
         mask = 0x1fff;
         if ( addr_from > 0x1fff ) {
             addr_from = 0x1fff;
@@ -784,7 +793,7 @@ static Z80EX_WORD ui_memdump_memsave_get_from ( void ) {
         g_ui_memdump_memsave_memaloc_lock = FALSE;
     };
 
-    return debuger_text_to_z80_word ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_from_entry" ) ) );
+    return debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_from_entry" ) ) );
 }
 
 
@@ -793,11 +802,10 @@ G_MODULE_EXPORT void on_dbg_memsave_to_entry_changed ( GtkEditable *ed, gpointer
     ui_hexeditable_changed ( ed, user_data );
 
     Z80EX_WORD addr_from = ui_memdump_memsave_get_from ( );
-    Z80EX_WORD addr_to = debuger_text_to_z80_word ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_to_entry" ) ) );
+    Z80EX_WORD addr_to = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_to_entry" ) ) );
 
     Z80EX_WORD mask = 0xffff;
-    en_MEMSRC memsrc = gtk_combo_box_get_active ( ui_get_combo_box ( "dbg_memdump_src_comboboxtext" ) );
-    if ( memsrc == MEMSRC_VRAM ) {
+    if ( g_uimemdump.memsrc == MEMSRC_VRAM ) {
         mask = 0x1fff;
         if ( addr_to > 0x1fff ) {
             addr_to = 0x1fff;
@@ -816,11 +824,10 @@ G_MODULE_EXPORT void on_dbg_memsave_size_hex_entry_changed ( GtkEditable *ed, gp
     ui_hexeditable_changed ( ed, user_data );
 
     Z80EX_WORD addr_from = ui_memdump_memsave_get_from ( );
-    Z80EX_WORD size = debuger_text_to_z80_word ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_size_hex_entry" ) ) );
+    Z80EX_WORD size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_size_hex_entry" ) ) );
 
     Z80EX_WORD mask = 0xffff;
-    en_MEMSRC memsrc = gtk_combo_box_get_active ( ui_get_combo_box ( "dbg_memdump_src_comboboxtext" ) );
-    if ( memsrc == MEMSRC_VRAM ) {
+    if ( g_uimemdump.memsrc == MEMSRC_VRAM ) {
         mask = 0x1fff;
         if ( size > 0x1fff ) {
             size = 0x1fff;
@@ -842,8 +849,7 @@ G_MODULE_EXPORT void on_dbg_memsave_size_dec_entry_changed ( GtkEditable *ed, gp
     int atoi_size = atoi ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_size_dec_entry" ) ) );
 
     Z80EX_WORD mask = 0xffff;
-    en_MEMSRC memsrc = gtk_combo_box_get_active ( ui_get_combo_box ( "dbg_memdump_src_comboboxtext" ) );
-    if ( memsrc == MEMSRC_VRAM ) {
+    if ( g_uimemdump.memsrc == MEMSRC_VRAM ) {
         mask = 0x1fff;
         if ( atoi_size > 0x1fff ) {
             atoi_size = 0x1fff;
@@ -915,15 +921,14 @@ void ui_memdump_memsave_window_show ( void ) {
         g_ui_memdump_memsave_initialized = TRUE;
     };
 
-    en_MEMSRC memsrc = gtk_combo_box_get_active ( ui_get_combo_box ( "dbg_memdump_src_comboboxtext" ) );
-    if ( memsrc == MEMSRC_VRAM ) {
+    if ( g_uimemdump.memsrc == MEMSRC_VRAM ) {
 
-        Z80EX_WORD addr_from = debuger_text_to_z80_word ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_from_entry" ) ) );
+        Z80EX_WORD addr_from = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_from_entry" ) ) );
         if ( addr_from > 0x1fff ) {
             gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_from_entry" ), "1FFF" );
         };
 
-        Z80EX_WORD addr_to = debuger_text_to_z80_word ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_to_entry" ) ) );
+        Z80EX_WORD addr_to = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_to_entry" ) ) );
         if ( addr_to > 0x1fff ) {
             gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_to_entry" ), "1FFF" );
         };
@@ -936,5 +941,457 @@ void ui_memdump_memsave_window_show ( void ) {
     ui_memdump_memsave_add_mzfheader_changed ( );
     gtk_widget_show ( window );
 }
+
+/*
+ * 
+ * 
+ * 
+ * Memload
+ * 
+ * 
+ */
+
+static FILE *g_memload_file;
+static long g_memload_fsize;
+static gboolean g_ui_memdump_meload_offset_lock = FALSE;
+static gboolean g_ui_memdump_memload_memaloc_lock = FALSE;
+
+
+static void ui_memdump_memload_ok_button_sensitivity ( void ) {
+    GtkWidget *button = ui_get_widget ( "dbg_memload_ok_button" );
+    Z80EX_WORD size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ) ) );
+    gboolean button_is_enabled = ( size ) ? TRUE : FALSE;
+    gtk_widget_set_sensitive ( button, button_is_enabled );
+}
+
+
+static void ui_memdump_memload_window_hide ( void ) {
+    GtkWidget *window = ui_get_widget ( "dbg_memload_window" );
+    gtk_widget_hide ( window );
+}
+
+
+G_MODULE_EXPORT gboolean on_dbg_memload_window_delete_event ( GtkWidget *widget, GdkEvent *event, gpointer user_data ) {
+    ui_memdump_memload_window_hide ( );
+    fclose ( g_memload_file );
+    return TRUE;
+}
+
+
+G_MODULE_EXPORT void on_dbg_memload_close_button_clicked ( GtkButton *button, gpointer data ) {
+    (void) button;
+    (void) data;
+    ui_memdump_memload_window_hide ( );
+    fclose ( g_memload_file );
+}
+
+
+static void ui_memdump_memload_check_size ( void ) {
+    uint32_t offset = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ) ) );
+    Z80EX_WORD size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ) ) );
+    if ( size > ( g_memload_fsize - offset ) ) {
+        char buff[5];
+        snprintf ( buff, sizeof ( buff ), "%04X", (Z80EX_WORD) ( g_memload_fsize - offset ) );
+        gtk_entry_set_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ), buff );
+    };
+}
+
+
+static uint32_t ui_memdump_memload_get_offset ( void ) {
+    if ( !gtk_entry_get_text_length ( ui_get_entry ( "dbg_memload_offset_hex_entry" ) ) ) {
+        g_ui_memdump_meload_offset_lock = TRUE;
+        gtk_entry_set_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ), "0" );
+        g_ui_memdump_meload_offset_lock = FALSE;
+    };
+
+    return debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ) ) );
+}
+
+
+G_MODULE_EXPORT void on_dbg_memload_offset_hex_entry_changed ( GtkEditable *ed, gpointer user_data ) {
+    if ( g_ui_memdump_meload_offset_lock ) return;
+    ui_hexeditable_changed ( ed, user_data );
+
+    uint32_t offset = ui_memdump_memload_get_offset ( );
+
+    char buff[11];
+
+    if ( offset >= g_memload_fsize ) {
+        offset = g_memload_fsize - 1;
+        snprintf ( buff, sizeof ( buff ), "%X", offset );
+        g_ui_memdump_meload_offset_lock = TRUE;
+        gtk_entry_set_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ), buff );
+        g_ui_memdump_meload_offset_lock = FALSE;
+    }
+
+    snprintf ( buff, sizeof ( buff ), "%u", offset );
+    g_ui_memdump_meload_offset_lock = TRUE;
+    gtk_entry_set_text ( ui_get_entry ( "dbg_memload_offset_dec_entry" ), buff );
+    g_ui_memdump_meload_offset_lock = FALSE;
+
+    ui_memdump_memload_check_size ( );
+}
+
+
+G_MODULE_EXPORT void on_dbg_memload_offset_dec_entry_changed ( GtkEditable *ed, gpointer user_data ) {
+    if ( g_ui_memdump_meload_offset_lock ) return;
+
+    if ( !gtk_entry_get_text_length ( ui_get_entry ( "dbg_memload_offset_dec_entry" ) ) ) {
+        g_ui_memdump_meload_offset_lock = TRUE;
+        gtk_entry_set_text ( ui_get_entry ( "dbg_memload_offset_dec_entry" ), "0" );
+        g_ui_memdump_meload_offset_lock = FALSE;
+    };
+
+    uint32_t offset = atoi ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_offset_dec_entry" ) ) );
+
+    char buff[11];
+
+    if ( offset >= g_memload_fsize ) {
+        offset = g_memload_fsize - 1;
+        snprintf ( buff, sizeof ( buff ), "%u", offset );
+        g_ui_memdump_meload_offset_lock = TRUE;
+        gtk_entry_set_text ( ui_get_entry ( "dbg_memload_offset_dec_entry" ), buff );
+        g_ui_memdump_meload_offset_lock = FALSE;
+    }
+    snprintf ( buff, sizeof ( buff ), "%X", offset );
+    g_ui_memdump_meload_offset_lock = TRUE;
+    gtk_entry_set_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ), buff );
+    g_ui_memdump_meload_offset_lock = FALSE;
+
+    ui_memdump_memload_check_size ( );
+}
+
+
+static void ui_memdump_memload_set_hex_size ( Z80EX_WORD size ) {
+    g_ui_memdump_memload_memaloc_lock = TRUE;
+    char buff[5];
+    snprintf ( buff, sizeof ( buff ), "%04X", size );
+    gtk_entry_set_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ), buff );
+    g_ui_memdump_memload_memaloc_lock = FALSE;
+    ui_memdump_memload_ok_button_sensitivity ( );
+}
+
+
+static void ui_memdump_memload_set_dec_size ( Z80EX_WORD size ) {
+    g_ui_memdump_memload_memaloc_lock = TRUE;
+    char buff[6];
+    snprintf ( buff, sizeof ( buff ), "%d", size );
+    gtk_entry_set_text ( ui_get_entry ( "dbg_memload_size_dec_entry" ), buff );
+    g_ui_memdump_memload_memaloc_lock = FALSE;
+    ui_memdump_memload_ok_button_sensitivity ( );
+}
+
+
+static void ui_memdump_memload_set_size ( Z80EX_WORD size ) {
+    ui_memdump_memload_set_hex_size ( size );
+    ui_memdump_memload_set_dec_size ( size );
+}
+
+
+static void ui_memdump_memload_set_to ( Z80EX_WORD to ) {
+    g_ui_memdump_memload_memaloc_lock = TRUE;
+    char buff[5];
+    snprintf ( buff, sizeof ( buff ), "%04X", to );
+    gtk_entry_set_text ( ui_get_entry ( "dbg_memload_to_entry" ), buff );
+    g_ui_memdump_memload_memaloc_lock = FALSE;
+}
+
+
+G_MODULE_EXPORT void on_dbg_memload_from_entry_changed ( GtkEditable *ed, gpointer user_data ) {
+    if ( g_ui_memdump_memload_memaloc_lock ) return;
+    ui_hexeditable_changed ( ed, user_data );
+
+    if ( !gtk_entry_get_text_length ( ui_get_entry ( "dbg_memload_to_entry" ) ) ) {
+        ui_memdump_memload_ok_button_sensitivity ( );
+        return;
+    };
+
+    Z80EX_WORD addr_from = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_from_entry" ) ) );
+    Z80EX_WORD addr_to = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_to_entry" ) ) );
+
+    Z80EX_WORD mask = 0xffff;
+    if ( g_uimemdump.memsrc == MEMSRC_VRAM ) {
+        mask = 0x1fff;
+        if ( addr_from > 0x1fff ) {
+            addr_from = 0x1fff;
+            g_ui_memdump_memload_memaloc_lock = TRUE;
+            gtk_entry_set_text ( ui_get_entry ( "dbg_memload_from_entry" ), "1FFF" );
+            g_ui_memdump_memload_memaloc_lock = FALSE;
+        };
+    };
+
+    ui_memdump_memload_set_size ( ( addr_to - addr_from ) & mask );
+    ui_memdump_memload_check_size ( );
+}
+
+
+static Z80EX_WORD ui_memdump_memload_get_from ( void ) {
+    if ( !gtk_entry_get_text_length ( ui_get_entry ( "dbg_memload_from_entry" ) ) ) {
+        g_ui_memdump_memload_memaloc_lock = TRUE;
+        gtk_entry_set_text ( ui_get_entry ( "dbg_memload_from_entry" ), "0000" );
+        g_ui_memdump_memload_memaloc_lock = FALSE;
+    };
+
+    return debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_from_entry" ) ) );
+}
+
+
+G_MODULE_EXPORT void on_dbg_memload_to_entry_changed ( GtkEditable *ed, gpointer user_data ) {
+    if ( g_ui_memdump_memload_memaloc_lock ) return;
+    ui_hexeditable_changed ( ed, user_data );
+
+    Z80EX_WORD addr_from = ui_memdump_memload_get_from ( );
+    Z80EX_WORD addr_to = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_to_entry" ) ) );
+
+    Z80EX_WORD mask = 0xffff;
+    if ( g_uimemdump.memsrc == MEMSRC_VRAM ) {
+        mask = 0x1fff;
+        if ( addr_to > 0x1fff ) {
+            addr_to = 0x1fff;
+            g_ui_memdump_memload_memaloc_lock = TRUE;
+            gtk_entry_set_text ( ui_get_entry ( "dbg_memload_to_entry" ), "1FFF" );
+            g_ui_memdump_memload_memaloc_lock = FALSE;
+        };
+    };
+
+    ui_memdump_memload_set_size ( ( addr_to - addr_from ) & mask );
+    ui_memdump_memload_check_size ( );
+}
+
+
+G_MODULE_EXPORT void on_dbg_memload_size_hex_entry_changed ( GtkEditable *ed, gpointer user_data ) {
+    if ( g_ui_memdump_memload_memaloc_lock ) return;
+    ui_hexeditable_changed ( ed, user_data );
+
+    Z80EX_WORD addr_from = ui_memdump_memload_get_from ( );
+    Z80EX_WORD size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ) ) );
+
+    Z80EX_WORD mask = 0xffff;
+    if ( g_uimemdump.memsrc == MEMSRC_VRAM ) {
+        mask = 0x1fff;
+        if ( size > 0x1fff ) {
+            size = 0x1fff;
+            g_ui_memdump_memload_memaloc_lock = TRUE;
+            gtk_entry_set_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ), "1FFF" );
+            g_ui_memdump_memload_memaloc_lock = FALSE;
+        };
+    };
+
+    ui_memdump_memload_set_to ( ( addr_from + size ) & mask );
+    ui_memdump_memload_set_dec_size ( size );
+    ui_memdump_memload_check_size ( );
+}
+
+
+G_MODULE_EXPORT void on_dbg_memload_size_dec_entry_changed ( GtkEditable *ed, gpointer user_data ) {
+    if ( g_ui_memdump_memload_memaloc_lock ) return;
+
+    Z80EX_WORD addr_from = ui_memdump_memload_get_from ( );
+    int atoi_size = atoi ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_dec_entry" ) ) );
+
+    Z80EX_WORD mask = 0xffff;
+    if ( g_uimemdump.memsrc == MEMSRC_VRAM ) {
+        mask = 0x1fff;
+        if ( atoi_size > 0x1fff ) {
+            atoi_size = 0x1fff;
+            g_ui_memdump_memload_memaloc_lock = TRUE;
+            gtk_entry_set_text ( ui_get_entry ( "dbg_memload_size_dec_entry" ), "8191" );
+            g_ui_memdump_memload_memaloc_lock = FALSE;
+        };
+    } else {
+        if ( atoi_size > 0xffff ) {
+            atoi_size = 0xffff;
+            g_ui_memdump_memload_memaloc_lock = TRUE;
+            gtk_entry_set_text ( ui_get_entry ( "dbg_memload_size_dec_entry" ), "65535" );
+            g_ui_memdump_memload_memaloc_lock = FALSE;
+        };
+    }
+
+    ui_memdump_memload_set_to ( ( addr_from + (Z80EX_WORD) atoi_size ) & mask );
+    ui_memdump_memload_set_hex_size ( (Z80EX_WORD) atoi_size );
+    ui_memdump_memload_check_size ( );
+}
+
+
+void ui_memdump_memload_window_show ( void ) {
+
+    fseek ( g_memload_file, 0, SEEK_END );
+    g_memload_fsize = ftell ( g_memload_file );
+    if ( g_memload_fsize > 0xffffffff ) {
+        ui_show_error ( "This file is too big for this operation.\n" );
+        return;
+    };
+
+    char buff[11];
+
+    snprintf ( buff, sizeof ( buff ), "0x%04x", (unsigned) g_memload_fsize );
+    gtk_label_set_text ( ui_get_label ( "dbg_memload_size_hex_label" ), buff );
+
+    snprintf ( buff, sizeof ( buff ), "%d", (unsigned) g_memload_fsize );
+    gtk_label_set_text ( ui_get_label ( "dbg_memload_size_dec_label" ), buff );
+
+    gtk_entry_set_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ), "0" );
+
+    Z80EX_WORD memmax = ( g_uimemdump.memsrc == MEMSRC_VRAM ) ? 0x1fff : 0xffff;
+
+    snprintf ( buff, sizeof ( buff ), "%04X", ( g_memload_fsize < memmax ) ? (unsigned) g_memload_fsize : memmax );
+    gtk_entry_set_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ), buff );
+
+    gtk_entry_set_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ), "0" );
+
+    ui_memdump_memload_ok_button_sensitivity ( );
+
+    GtkWidget *window = ui_get_widget ( "dbg_memload_window" );
+    gtk_widget_grab_focus ( ui_get_widget ( "dbg_memload_from_entry" ) );
+    gtk_widget_show ( window );
+}
+
+
+void ui_memdump_memload_select_file ( void ) {
+
+    GtkWidget *dialog;
+    GtkFileChooser *chooser;
+    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+    gint res;
+
+    dialog = gtk_file_chooser_dialog_new ( "Load file into memory",
+                                           ui_get_window ( "dbg_memdump_window" ),
+                                           action,
+                                           "_Cancel",
+                                           GTK_RESPONSE_CANCEL,
+                                           "_Save",
+                                           GTK_RESPONSE_ACCEPT,
+                                           NULL );
+    chooser = GTK_FILE_CHOOSER ( dialog );
+
+    char *filename = NULL;
+
+    res = gtk_dialog_run ( GTK_DIALOG ( dialog ) );
+    if ( res == GTK_RESPONSE_ACCEPT ) filename = gtk_file_chooser_get_filename ( chooser );
+
+    gtk_widget_destroy ( dialog );
+
+    if ( filename ) {
+        g_memload_file = g_fopen ( filename, "rb" );
+        if ( g_memload_file ) {
+            ui_memdump_memload_window_show ( );
+        } else {
+            ui_show_error ( "Can't open file '%s'\n", filename );
+        };
+        g_free ( filename );
+    };
+}
+
+
+G_MODULE_EXPORT void on_dbg_memload_ok_button_clicked ( GtkButton *button, gpointer user_data ) {
+    ui_memdump_memload_window_hide ( );
+
+    uint32_t offset = ui_memdump_memload_get_offset ( );
+    Z80EX_WORD size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ) ) );
+    Z80EX_WORD addr = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_from_entry" ) ) );
+
+    uint8_t data[0x10000];
+    fseek ( g_memload_file, offset, SEEK_SET );
+    uint32_t read_size = fread ( data, 1, size, g_memload_file );
+    fclose ( g_memload_file );
+    if ( read_size != size ) {
+        ui_show_error ( "Can't read data from file\n" );
+    };
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        mz800_pause_emulation ( 1 );
+    };
+
+    uint8_t *MEM = NULL;
+    Z80EX_WORD mem_max = 0xffff;
+
+    switch ( g_uimemdump.memsrc ) {
+
+        case MEMSRC_MAPED:
+            cmthack_load_data_into_actual_mapped_memory ( data, addr, size );
+            break;
+
+        case MEMSRC_RAM:
+            MEM = g_memory.RAM;
+            break;
+
+        case MEMSRC_VRAM:
+            mem_max = 0x1fff;
+            switch ( g_uimemdump.vram_plane ) {
+                case 0:
+                    MEM = g_memoryVRAM_I;
+                    break;
+                case 1:
+                    MEM = g_memoryVRAM_II;
+                    break;
+                case 2:
+                    MEM = g_memoryVRAM_III;
+                    break;
+                case 3:
+                    MEM = g_memoryVRAM_IV;
+                    break;
+            };
+            break;
+
+        case MEMSRC_PEZIK_E8:
+            MEM = &g_ramdisk.pezik [ RAMDISK_PEZIK_E8 ].memory [ g_uimemdump.pezik_e8_bank << 16 ];
+            break;
+
+        case MEMSRC_PEZIK_68:
+            MEM = &g_ramdisk.pezik [ RAMDISK_PEZIK_68 ].memory [ g_uimemdump.pezik_68_bank << 16 ];
+            break;
+
+        case MEMSRC_MZ1R18:
+            MEM = &g_ramdisk.std.memory [ g_uimemdump.mr1z18_bank << 16 ];
+            break;
+    };
+
+    if ( MEM != NULL ) {
+
+        Z80EX_WORD src_addr = 0;
+
+        if ( ( ( g_uimemdump.memsrc == MEMSRC_PEZIK_E8 ) || ( g_uimemdump.memsrc == MEMSRC_PEZIK_68 ) ) && ( g_uimemdump.pezik_addr_endianity == PEZIK_ADDR_ENDIANITY_LITTLE ) ) {
+            /* pezik little endian */
+            while ( size ) {
+                unsigned le_addr = addr + src_addr;
+                MEM [ ( ( le_addr & 0xff ) << 8 ) | ( le_addr >> 8 ) ] = data[src_addr++];
+                size--;
+            };
+        } else {
+            while ( size ) {
+                uint32_t i = addr + size;
+                uint32_t load_size = size;
+
+                if ( i > mem_max ) {
+                    load_size = mem_max - addr;
+                };
+
+                memcpy ( &MEM[addr], &data[src_addr], load_size );
+
+                size -= load_size;
+                src_addr += load_size;
+                addr += load_size + 1;
+                addr &= mem_max;
+            };
+        };
+
+        printf ( "\nLoad done.\n" );
+    };
+
+    // Pokud se psalo do VRAM pres "MAPED", tak by se mel provest update obrazu sam, 
+    // ale po primem zapisu do g_memoryVRAM_* je potreba udelat update framebufferu a prekreslit okno.
+    if ( mem_max == 0x1fff ) {
+        if ( DMD_TEST_MZ700 ) {
+            framebuffer_update_MZ700_all_rows ( );
+        } else {
+            framebuffer_MZ800_all_screen_rows_fill ( );
+        };
+        g_iface_sdl.redraw_full_screen_request = 1;
+        iface_sdl_update_window ( );
+    };
+
+    ui_memdump_load ( );
+}
+
 
 #endif

@@ -25,6 +25,7 @@
 
 #include "mz800emu_cfg.h"
 
+#include <stdio.h>
 #include <gtk/gtk.h>
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
@@ -45,6 +46,15 @@
 #include "pio8255/pio8255.h"
 #include "z80ex/include/z80ex_dasm.h"
 #include "ui_dissassembler.h"
+#include "ui/ui_utils.h"
+#include "libs/mzf/mzf.h"
+#include "libs/mzf/mzf_tools.h"
+#include "ui/ui_utils.h"
+#include "libs/generic_driver/generic_driver.h"
+#include "ui/generic_driver/ui_memory_driver.h"
+
+
+static st_DRIVER *g_driver = &g_ui_memory_driver_static;
 
 
 static Z80EX_WORD ui_debugger_dissassembled_get_selected_addr ( void ) {
@@ -88,6 +98,83 @@ G_MODULE_EXPORT gboolean on_debugger_main_window_key_press_event ( GtkWidget *wi
     };
 
     return FALSE;
+}
+
+
+G_MODULE_EXPORT void on_dbg_mem_load_mzf_menuitem_activate ( GtkCheckMenuItem *menuitem, gpointer user_data ) {
+    (void) menuitem;
+    (void) user_data;
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        mz800_pause_emulation ( 1 );
+    };
+
+    char window_title[] = "Select MZF to open";
+    char *filename = NULL;
+
+    if ( UIRET_OK != ui_open_file ( &filename, "", 0, FILETYPE_MZF, window_title, OPENMODE_READ ) ) return;
+
+    if ( filename == NULL ) {
+        filename = g_malloc0 ( 1 );
+    };
+
+    st_HANDLER *h = generic_driver_open_memory_from_file ( NULL, g_driver, filename );
+
+    if ( !h ) {
+        ui_show_error ( "Can't open MZF '%s'\n", filename );
+        g_free ( filename );
+        return;
+    };
+
+    g_free ( filename );
+
+    st_MZF_HEADER mzfhdr;
+
+    if ( EXIT_SUCCESS != mzf_read_header ( h, &mzfhdr ) ) {
+        ui_show_error ( "Can't read MZF header\n" );
+        generic_driver_close ( h );
+        return;
+    };
+
+    char ascii_filename[MZF_FNAME_FULL_LENGTH];
+    mzf_tools_get_fname ( &mzfhdr, ascii_filename );
+    printf ( "\nDebugger load MZF\n" );
+    printf ( "fname: %s\n", ascii_filename );
+    printf ( "ftype: 0x%02x\n", mzfhdr.ftype );
+    printf ( "fstrt: 0x%04x\n", mzfhdr.fstrt );
+    printf ( "fsize: 0x%04x\n", mzfhdr.fsize );
+    printf ( "fexec: 0x%04x\n", mzfhdr.fexec );
+
+    uint8_t data[0x10000];
+    if ( EXIT_SUCCESS != mzf_read_body ( h, data, mzfhdr.fsize ) ) {
+        ui_show_error ( "Can't read MZF body\n" );
+        generic_driver_close ( h );
+        return;
+    };
+
+    generic_driver_close ( h );
+
+    Z80EX_WORD src_addr = 0;
+    Z80EX_WORD addr = mzfhdr.fstrt;
+    Z80EX_WORD size = mzfhdr.fsize;
+
+    while ( size ) {
+        uint32_t i = addr + size;
+        uint32_t load_size = size;
+
+        if ( i > 0xffff ) {
+            load_size = 0xffff - addr;
+        };
+
+        memcpy ( &g_memory.RAM[addr], &data[src_addr], load_size );
+
+        size -= load_size;
+        src_addr += load_size;
+        addr += load_size + 1;
+    };
+
+    printf ( "\nDebugger load MZF - Done.\n" );
+    ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
 }
 
 
@@ -171,7 +258,7 @@ G_MODULE_EXPORT void on_dbg_reg_edited ( GtkCellRendererText *cell, const gchar 
     GValue reg_id = G_VALUE_INIT;
     gtk_tree_model_get_value ( model, &iter, DBG_REG_ID, &reg_id );
 
-    debugger_change_z80_register ( g_value_get_uint ( &reg_id ), (Z80EX_WORD) debuger_text_to_z80_word ( new_text ) );
+    debugger_change_z80_register ( g_value_get_uint ( &reg_id ), (Z80EX_WORD) debuger_hextext_to_uint32 ( new_text ) );
 }
 
 
@@ -249,7 +336,7 @@ G_MODULE_EXPORT void on_dbg_stack_edited ( GtkCellRendererText *cell, const gcha
 
     //    printf ( "addr: 0x%04x, value: 0x%s\n", g_value_get_uint ( &addr ), new_text );
 
-    Z80EX_WORD new_value = (Z80EX_WORD) debuger_text_to_z80_word ( new_text );
+    Z80EX_WORD new_value = (Z80EX_WORD) debuger_hextext_to_uint32 ( new_text );
     Z80EX_WORD addr = (Z80EX_WORD) g_value_get_uint ( &gv );
 
     debugger_memory_write_byte ( addr, (Z80EX_BYTE) ( new_value & 0xff ) );
@@ -259,8 +346,7 @@ G_MODULE_EXPORT void on_dbg_stack_edited ( GtkCellRendererText *cell, const gcha
     /* TODO: updatnout jen zmeneny radek a zachovat selection */
     ui_debugger_update_stack ( );
 
-    /* TODO: update disassembled volat jen pokud je to nutne a pokusit se zachovat selection */
-    ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
+    ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
 }
 
 
@@ -986,8 +1072,6 @@ G_MODULE_EXPORT void on_dbg_focus_to_menuitem_activate ( GtkMenuItem *menuitem, 
 
 
 G_MODULE_EXPORT void on_dbg_focus_to_pc_menuitem_activate ( GtkMenuItem *menuitem, gpointer user_data ) {
-
-
     ui_debugger_update_disassembled ( z80ex_get_reg ( g_mz800.cpu, regPC ), -1 );
 }
 
@@ -1030,7 +1114,7 @@ G_MODULE_EXPORT void on_dbg_focus_to_cancel_button_clicked ( GtkButton *button, 
 G_MODULE_EXPORT void on_dbg_focus_to_ok_button_clicked ( GtkButton *button, gpointer user_data ) {
     const gchar *addr_txt = gtk_entry_get_text ( GTK_ENTRY ( g_dbg_focus_to_addr_entry ) );
     if ( strlen ( addr_txt ) ) {
-        g_uidebugger.last_focus_addr = (Z80EX_WORD) debuger_text_to_z80_word ( addr_txt );
+        g_uidebugger.last_focus_addr = (Z80EX_WORD) debuger_hextext_to_uint32 ( addr_txt );
         ui_debugger_update_disassembled ( g_uidebugger.last_focus_addr, -1 );
         GtkWidget *window = ui_get_widget ( "dbg_focus_to_window" );
         gtk_widget_hide ( window );
