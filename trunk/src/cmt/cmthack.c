@@ -37,6 +37,7 @@
 #include "memory/memory.h"
 #include "memory/rom.h"
 #include "mz800.h"
+#include "gdg/vramctrl.h"
 
 #include "ui/ui_main.h"
 #include "ui/ui_cmt.h"
@@ -310,6 +311,95 @@ void cmthack_load_mzf_filename ( char *filename ) {
 }
 
 
+void cmthack_load_data_into_actual_mapped_memory ( uint8_t *data, Z80EX_WORD addr, Z80EX_WORD size ) {
+    //
+    Z80EX_WORD src_addr = 0;
+    while ( size ) {
+
+        uint32_t i = addr + size;
+        uint32_t load_size = size;
+        uint8_t *dst = NULL;
+
+        if ( i > 0xffff ) {
+            load_size = 0xffff - addr;
+        };
+
+        if ( ( addr < 0x1000 ) && ( MEMORY_MAP_TEST_ROM_0000 ) ) {
+
+            load_size = ( load_size > ( 0x1000 - addr ) ) ? ( 0x1000 - addr ) : load_size;
+
+        } else if ( ( addr >= 0x1000 ) && ( addr < 0x2000 ) && ( MEMORY_MAP_TEST_ROM_1000 ) ) {
+
+            load_size = ( load_size > ( 0x2000 - addr ) ) ? ( 0x2000 - addr ) : load_size;
+
+        } else if ( ( addr >= 0xe000 ) && ( MEMORY_MAP_TEST_ROM_E000 ) ) {
+
+            load_size = ( load_size > ( 0x10000 - addr ) ) ? ( 0x10000 - addr ) : load_size;
+
+        } else {
+
+            if ( addr < 0x8000 ) {
+
+                dst = &g_memory.RAM[addr];
+                if ( ( addr + load_size ) >= 0x8000 ) {
+                    load_size = 0x7fff - addr;
+                };
+
+            } else if ( ( addr >= 0x8000 ) && ( addr < 0xa000 ) && ( MEMORY_MAP_TEST_VRAM_8000 ) ) {
+
+                if ( ( addr + load_size ) >= 0xa000 ) {
+                    load_size = 0x9fff - addr;
+                };
+
+                int i;
+                for ( i = 0; i < load_size; i++ ) {
+                    vramctrl_mz800_memop_write_byte ( ( addr + i ) & 0x3fff, data[( src_addr + i )] );
+                };
+
+
+            } else if ( ( addr >= 0xa000 ) && ( addr < 0xc000 ) && ( MEMORY_MAP_TEST_VRAM_A000 ) ) {
+
+                if ( ( addr + load_size ) >= 0xc000 ) {
+                    load_size = 0xbfff - addr;
+                };
+
+                int i;
+                for ( i = 0; i < load_size; i++ ) {
+                    vramctrl_mz800_memop_write_byte ( ( addr + i ) & 0x3fff, data[( src_addr + i )] );
+                };
+
+            } else if ( ( addr >= 0xc000 ) && ( addr < 0xd000 ) && ( MEMORY_MAP_TEST_CGRAM ) ) {
+
+                dst = &g_memoryVRAM_I[( addr & 0x0fff )];
+                if ( ( addr + load_size ) >= 0xd000 ) {
+                    load_size = 0xcfff - addr;
+                };
+
+            } else if ( ( addr >= 0xd000 ) && ( addr < 0xe000 ) && ( MEMORY_MAP_TEST_VRAM_D000 ) ) {
+
+                dst = &g_memoryVRAM_II[( addr & 0x0fff )];
+                if ( ( addr + load_size ) >= 0xe000 ) {
+                    load_size = 0xdfff - addr;
+                };
+
+            } else {
+
+                dst = &g_memory.RAM[addr];
+            };
+
+            memcpy ( dst, &data[src_addr], load_size );
+
+            addr++;
+            src_addr++;
+        };
+
+        size -= load_size;
+        src_addr += load_size;
+        addr += load_size;
+    };
+}
+
+
 /* 
  * 
  * Pozadavek na precteni tela souboru
@@ -332,14 +422,16 @@ void cmthack_read_mzf_body ( void ) {
     reg_bc = z80ex_get_reg ( g_mz800.cpu, regBC );
 
     /* precteme prvnich regBC bajtu z MZF body a ulozime je do RAM na adresu z regHL */
-
-    if ( EXIT_SUCCESS != mzf_read_body ( &g_cmthack.mzf_handler, &g_memory.RAM [ reg_hl ], reg_bc ) ) {
+    uint8_t data[0x10000];
+    if ( EXIT_SUCCESS != mzf_read_body ( &g_cmthack.mzf_handler, data, reg_bc ) ) {
         /* Vadny soubor: nastavit Err + Checksum */
         ui_show_error ( "CMT HACK can't load MZF header '%s': %s, gdriver_err: %s\n", g_cmthack.last_filename, strerror ( errno ), mzf_error_message ( &g_cmthack.mzf_handler, g_cmthack.mzf_handler.driver ) );
         generic_driver_close ( &g_cmthack.mzf_handler );
         cmthack_result ( LOADRET_ERROR );
         return;
     };
+
+    cmthack_load_data_into_actual_mapped_memory ( data, reg_hl, reg_bc );
 
     printf ( "\nCMT hack: load 0x%04x bytes from MZF body to addr 0x%04x.\n", reg_bc, reg_hl );
 

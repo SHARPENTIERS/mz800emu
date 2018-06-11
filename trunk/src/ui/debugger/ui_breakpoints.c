@@ -799,7 +799,7 @@ void ui_breakpoints_parse_cfg ( st_CFGROOT *cfgroot, GtkTreeModel *model, GtkTre
                 addr_txt++;
             };
 
-            unsigned addr = debuger_text_to_z80_word ( addr_txt );
+            unsigned addr = debuger_hextext_to_uint32 ( addr_txt );
             ui_breakpoints_add_event ( model, &iter, parent, g_uibpoints.id++, cfgelement_get_text_value ( elm_name ), cfgelement_get_bool_value ( elm_enabled ), addr, fg_color, bg_color );
         };
 
@@ -1317,7 +1317,7 @@ G_MODULE_EXPORT void on_bpt_settings_ok_button_clicked ( GtkButton *button, gpoi
             return;
         };
 
-        unsigned addr = debuger_text_to_z80_word ( addr_entry_txt );
+        unsigned addr = debuger_hextext_to_uint32 ( addr_entry_txt );
         char addr_txt [ 7 ];
         g_sprintf ( addr_txt, "0x%04X", addr );
 
@@ -1399,7 +1399,7 @@ G_MODULE_EXPORT void on_bpt_add_event_button_clicked ( GtkButton *button, gpoint
         /* err */
         return;
     };
-    unsigned addr = debuger_text_to_z80_word ( addr_entry_txt );
+    unsigned addr = debuger_hextext_to_uint32 ( addr_entry_txt );
     ui_breakpoints_simple_add_event ( addr );
     gtk_entry_set_text ( ui_get_entry ( "bpt_add_event_entry" ), "" );
 }

@@ -99,7 +99,7 @@ extern "C" {
     extern void debugger_change_gdg_reg_pal ( Z80EX_BYTE pal, Z80EX_BYTE value );
     extern void debugger_change_gdg_wfr ( Z80EX_BYTE value );
     extern void debugger_change_gdg_rfr ( Z80EX_BYTE value );
-    extern Z80EX_WORD debuger_text_to_z80_word ( const char *txt );
+    extern uint32_t debuger_hextext_to_uint32 ( const char *txt );
 
 #define debugger_memory_read_byte(addr) debugger_dasm_read_cb ( addr, NULL )
 

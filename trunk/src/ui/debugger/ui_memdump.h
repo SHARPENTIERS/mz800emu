@@ -33,6 +33,7 @@ extern "C" {
     extern void ui_memdump_show_hide_window ( void );
     extern void ui_memdump_show_window ( void );
     extern void ui_memdump_memsave_window_show ( void );
+    extern void ui_memdump_memload_select_file ( void );
 
 #ifdef	__cplusplus
 }

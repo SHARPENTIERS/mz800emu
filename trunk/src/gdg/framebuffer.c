@@ -44,10 +44,7 @@
 const static int c_MZ700_COLORMAP [] = { 0, 9, 10, 11, 12, 13, 14, 15 };
 
 
-void framebuffer_update_MZ700_screen_row ( void ) {
-
-    unsigned beam_row = g_gdg.beam_row;
-
+static inline void framebuffer_update_MZ700_screen_row ( unsigned beam_row ) {
     unsigned mz700_mask = 0;
     unsigned mz700_attr_fgc = 0;
     unsigned mz700_attr_bgc = 0;
@@ -123,6 +120,19 @@ void framebuffer_update_MZ700_screen_row ( void ) {
         p[15] = p[14];
 
         p += 16;
+    };
+}
+
+
+void framebuffer_update_MZ700_current_screen_row ( void ) {
+    framebuffer_update_MZ700_screen_row ( g_gdg.beam_row );
+}
+
+
+void framebuffer_update_MZ700_all_rows ( void ) {
+    int i;
+    for ( i = VIDEO_BEAM_CANVAS_FIRST_ROW; i <= VIDEO_BEAM_CANVAS_LAST_ROW; i++ ) {
+        framebuffer_update_MZ700_screen_row ( i );
     };
 }
 
@@ -227,21 +237,16 @@ void framebuffer_MZ800_screen_changed ( void ) {
     g_gdg.screen_changes = SCRSTS_THIS_IS_CHANGED;
     unsigned column = VIDEO_GET_SCREEN_COL ( g_gdg.total_elapsed.ticks );
     if ( ( column < VIDEO_BEAM_CANVAS_FIRST_COLUMN + 3 ) || ( column > VIDEO_BEAM_CANVAS_LAST_COLUMN ) || ( g_gdg.beam_row < VIDEO_BEAM_CANVAS_FIRST_ROW ) || ( g_gdg.beam_row > VIDEO_BEAM_CANVAS_LAST_ROW ) ) return;
-    framebuffer_MZ800_screen_row_fill ( column - VIDEO_BEAM_CANVAS_FIRST_COLUMN );
+    framebuffer_MZ800_current_screen_row_fill ( column - VIDEO_BEAM_CANVAS_FIRST_COLUMN );
 }
 
 
-void framebuffer_MZ800_screen_row_fill ( unsigned last_pixel ) {
-
-    last_pixel -= last_pixel % 2;
-    if ( g_gdg.screen_need_update_from >= last_pixel ) return;
-
+static inline unsigned framebuffer_MZ800_screen_row_fill ( unsigned beam_row, unsigned last_pixel ) {
     static unsigned vram_data1 = 0;
     static unsigned vram_data2 = 0;
     static unsigned vram_data3 = 0;
     static unsigned vram_data4 = 0;
 
-    unsigned beam_row = g_gdg.beam_row;
     unsigned pos_Y = beam_row - VIDEO_BEAM_CANVAS_FIRST_ROW;
     unsigned pos_X = g_gdg.screen_need_update_from;
 
@@ -588,5 +593,22 @@ void framebuffer_MZ800_screen_row_fill ( unsigned last_pixel ) {
             };
             break;
     };
-    g_gdg.screen_need_update_from = pos_X;
+    return pos_X;
+}
+
+
+void framebuffer_MZ800_current_screen_row_fill ( unsigned last_pixel ) {
+    last_pixel -= last_pixel % 2;
+    if ( g_gdg.screen_need_update_from >= last_pixel ) return;
+    unsigned beam_row = g_gdg.beam_row;
+    g_gdg.screen_need_update_from = framebuffer_MZ800_screen_row_fill ( beam_row, last_pixel );
+}
+
+
+void framebuffer_MZ800_all_screen_rows_fill ( void ) {
+    int i;
+    g_gdg.screen_need_update_from = 0;
+    for ( i = VIDEO_BEAM_CANVAS_FIRST_ROW; i <= VIDEO_BEAM_CANVAS_LAST_ROW; i++ ) {
+        framebuffer_MZ800_screen_row_fill ( i, 0 );
+    };
 }

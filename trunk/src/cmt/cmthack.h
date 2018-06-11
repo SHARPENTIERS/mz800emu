@@ -32,6 +32,7 @@ extern "C" {
 
 #include <stdio.h>
 #include "libs/generic_driver/generic_driver.h"
+#include "z80ex_common.h"
 
 
     typedef struct st_CMTHACK {
@@ -52,6 +53,7 @@ extern "C" {
     extern void cmthack_load_file ( void );
     extern void cmthack_load_mzf_filename ( char *filename );
     extern void cmthack_read_mzf_body ( void );
+    extern void cmthack_load_data_into_actual_mapped_memory ( uint8_t *data, Z80EX_WORD addr, Z80EX_WORD size );
 
 
 #ifdef __cplusplus

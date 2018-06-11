@@ -26,10 +26,10 @@
 #include "ui_hexeditable.h"
 
 
-void ui_hexeditable_changed ( GtkEditable *ed, gpointer user_data ) {
+G_MODULE_EXPORT void ui_hexeditable_changed ( GtkEditable *ed, gpointer user_data ) {
 
     gchar *text;
-    gchar output[5];
+    gchar output[9];
     gint position;
     gint changed = 0;
     gint i, j = 0;
