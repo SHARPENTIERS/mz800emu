@@ -71,7 +71,8 @@
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 #include "debugger/debugger.h"
 #include "ui/debugger/ui_breakpoints.h"
-#include "ui/debugger/ui_memdump.h"
+#include "debugger/ui_membrowser.h"
+#include "debugger/ui_dissassembler.h"
 #endif
 
 #include "generic_driver/ui_file_driver.h"
@@ -80,6 +81,7 @@
 #include "dsk_tool/ui_dsk_tool.h"
 #include "ui_joy.h"
 #include "cmt/cmt.h"
+
 
 st_UI g_ui;
 static int g_ui_is_initialised = 0;
@@ -819,13 +821,23 @@ G_MODULE_EXPORT void on_menuitem_open_breakpoints_activate ( GtkMenuItem *menuit
 }
 
 
-G_MODULE_EXPORT void on_menuitem_open_memdump_activate ( GtkMenuItem *menuitem, gpointer data ) {
+G_MODULE_EXPORT void on_menuitem_open_membrowser_activate ( GtkMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
 #ifdef UI_TOPMENU_IS_WINDOW
     ui_hide_main_menu ( );
 #endif
-    ui_memdump_show_hide_window ( );
+    ui_membrowser_show_hide ( );
+}
+
+
+G_MODULE_EXPORT void on_menuitem_open_dissassembler_activate ( GtkMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+    ui_dissassembler_show_window ( );
 }
 
 #else
@@ -845,7 +857,13 @@ G_MODULE_EXPORT void on_menuitem_open_breakpoints_activate ( GtkMenuItem *menuit
 }
 
 
-G_MODULE_EXPORT void on_menuitem_open_memdump_activate ( GtkMenuItem *menuitem, gpointer data ) {
+G_MODULE_EXPORT void on_menuitem_open_membrowser_activate ( GtkMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+}
+
+
+G_MODULE_EXPORT void on_menuitem_open_dissassembler_activate ( GtkMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
 }

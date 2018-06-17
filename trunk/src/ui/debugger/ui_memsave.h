@@ -1,8 +1,8 @@
 /* 
- * File:   ui_memdump.h
+ * File:   ui_memsave.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 26. října 2015, 9:46
+ * Created on 12. června 2018, 12:38
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -23,21 +23,23 @@
  * ---------------------------------------------------------------------------
  */
 
-#ifndef UI_MEMDUMP_H
-#define	UI_MEMDUMP_H
 
-#ifdef	__cplusplus
+#ifndef UI_MEMSAVE_H
+#define UI_MEMSAVE_H
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
-    extern void ui_memdump_show_hide_window ( void );
-    extern void ui_memdump_show_window ( void );
-    extern void ui_memdump_memsave_window_show ( void );
-    extern void ui_memdump_memload_select_file ( void );
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 
-#ifdef	__cplusplus
+    extern void ui_memsave_window_show ( void );
+
+#endif
+
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* UI_MEMDUMP_H */
+#endif /* UI_MEMSAVE_H */
 

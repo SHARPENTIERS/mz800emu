@@ -1188,7 +1188,7 @@ static void ui_debugger_create_toolbar_icons ( void ) {
 #endif
 
     ui_debugger_create_tbutton_icon ( "dbg_breakpoints_toolbutton", "ui_resources/icons/debugger/Breakpoints24.png" );
-    ui_debugger_create_tbutton_icon ( "dbg_memdump_toolbutton", "ui_resources/icons/debugger/memory_dump24.png" );
+    ui_debugger_create_tbutton_icon ( "dbg_membrowser_toolbutton", "ui_resources/icons/debugger/memory_browser24.png" );
     ui_debugger_create_tbutton_icon ( "dbg_dissassembler_toolbutton", "ui_resources/icons/debugger/dissassembler24.png" );
 }
 
@@ -1226,7 +1226,7 @@ void ui_debugger_show_main_window ( void ) {
         g_object_set ( ui_get_object ( "dbg_stack_value_cellrenderertext" ), "editable", TRUE, "xalign", 1.0, NULL );
 
         /* scale vyrobeny pres glade nefunguje spravne */
-        dbg_disassembled_addr_vscale = gtk_scale_new ( GTK_ORIENTATION_VERTICAL, GTK_ADJUSTMENT ( gtk_adjustment_new ( 994.389, 0, 65535, 1, 256, 0 ) ) );
+        dbg_disassembled_addr_vscale = gtk_scale_new ( GTK_ORIENTATION_VERTICAL, GTK_ADJUSTMENT ( gtk_adjustment_new ( 0, 0, 65535, 1, 256, 0 ) ) );
         gtk_widget_set_name ( dbg_disassembled_addr_vscale, "dbg_disassembled_addr_vscale" );
         gtk_widget_show ( dbg_disassembled_addr_vscale );
         gtk_box_pack_start ( GTK_BOX ( ui_get_object ( "dbg_disassembled_hbox" ) ), dbg_disassembled_addr_vscale, FALSE, TRUE, 2 );
