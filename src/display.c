@@ -30,32 +30,28 @@
 
 
 uint32_t display_predef_colors [ DISPLAY_MZCOLORS ] = {
-    0x000000, 0x4040ac, 0xd03400, 0xb40c8c,
-    0x406c00, 0x24ccff, 0xe8d430, 0xd0d0d0,
-    0x848484, 0x008ce8, 0xff0000, 0xf054cc,
-    0x54ff54, 0x80ffff, 0xffff28, 0xffffff
+                                                       0x000000, 0x4040ac, 0xd03400, 0xb40c8c,
+                                                       0x406c00, 0x24ccff, 0xe8d430, 0xd0d0d0,
+                                                       0x848484, 0x008ce8, 0xff0000, 0xf054cc,
+                                                       0x54ff54, 0x80ffff, 0xffff28, 0xffffff
 };
 
 
 uint32_t display_predef_grays [ DISPLAY_MZCOLORS ] = {
-    0x000000, 0x545454, 0x606060, 0x6c6c6c,
-    0x909090, 0x9c9c9c, 0xc0c0c0, 0xcccccc,
-    0x787878, 0x848484, 0xa8a8a8, 0xb4b4b4,
-    0xd8d8d8, 0xe4e4e4, 0xf0f0f0, 0xffffff
+                                                      0x000000, 0x545454, 0x606060, 0x6c6c6c,
+                                                      0x909090, 0x9c9c9c, 0xc0c0c0, 0xcccccc,
+                                                      0x787878, 0x848484, 0xa8a8a8, 0xb4b4b4,
+                                                      0xd8d8d8, 0xe4e4e4, 0xf0f0f0, 0xffffff
 };
 
 
 uint32_t display_predef_greens [ DISPLAY_MZCOLORS ] = {
-    0x000000, 0x005400, 0x006000, 0x006c00,
-    0x009000, 0x009c00, 0x00c000, 0x00cc00,
-    0x007800, 0x008400, 0x00a800, 0x00b400,
-    0x00d800, 0x00e400, 0x00f000, 0x00ff00
+                                                       0x000000, 0x005400, 0x006000, 0x006c00,
+                                                       0x009000, 0x009c00, 0x00c000, 0x00cc00,
+                                                       0x007800, 0x008400, 0x00a800, 0x00b400,
+                                                       0x00d800, 0x00e400, 0x00f000, 0x00ff00
 };
 
-typedef struct st_DISPLAY {
-    en_DISPLAY_COLOR_SCHEMA color_schema;
-    uint32_t *color_predef [ DISPLAY_COLORS_COUNT ];
-} st_DISPLAY;
 
 st_DISPLAY g_display;
 
@@ -87,12 +83,14 @@ void display_init ( void ) {
 
     CFGELM *elm;
     elm = cfgmodule_register_new_element ( cmod, "color_schema", CFGENTYPE_KEYWORD, DEFAULT_COLOR_SCHEMA,
-            DISPLAY_NORMAL, "NORMAL",
-            DISPLAY_GRAYSCALE, "GRAYSCALE",
-            DISPLAY_GREEN, "GREEN",
-            -1 );
+                                           DISPLAY_NORMAL, "NORMAL",
+                                           DISPLAY_GRAYSCALE, "GRAYSCALE",
+                                           DISPLAY_GREEN, "GREEN",
+                                           -1 );
     cfgelement_set_handlers ( elm, (void*) &g_display.color_schema, (void*) &g_display.color_schema );
 
+    elm = cfgmodule_register_new_element ( cmod, "forced_full_screen_redrawing", CFGENTYPE_BOOL, 0 );
+    cfgelement_set_handlers ( elm, (void*) &g_display.forced_full_screen_redrawing, (void*) &g_display.forced_full_screen_redrawing );
 
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );

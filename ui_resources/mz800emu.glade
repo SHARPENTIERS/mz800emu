@@ -1307,6 +1307,16 @@ From time when data were real zeros and ones and computers were
                             </child>
                           </object>
                         </child>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="checkmenuitem_display_forced_redrawing">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="tooltip_text" translatable="yes">Use this option only if you are experiencing with screen drawing problems</property>
+                            <property name="label" translatable="yes">Forced full screen redrawing enabled</property>
+                            <property name="use_underline">True</property>
+                            <signal name="toggled" handler="on_checkmenuitem_display_forced_redrawing_toggled" swapped="no"/>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>

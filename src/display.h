@@ -24,9 +24,9 @@
  */
 
 #ifndef DISPLAY_H
-#define	DISPLAY_H
+#define DISPLAY_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -34,22 +34,32 @@ extern "C" {
 
     /* celkovy pocet emulovanych barev */
 #define DISPLAY_MZCOLORS   16
-    
+
+
     typedef enum en_DISPLAY_COLOR_SCHEMA {
         DISPLAY_NORMAL = 0,
         DISPLAY_GRAYSCALE,
         DISPLAY_GREEN,
         DISPLAY_COLORS_COUNT
     } en_DISPLAY_COLOR_SCHEMA;
-    
+
+
+    typedef struct st_DISPLAY {
+        en_DISPLAY_COLOR_SCHEMA color_schema;
+        uint32_t *color_predef [ DISPLAY_COLORS_COUNT ];
+        int forced_full_screen_redrawing;
+    } st_DISPLAY;
+
+    extern st_DISPLAY g_display;
+
     extern void display_init ( void );
     extern uint32_t* display_get_default_color_schema ( void );
     extern void display_set_colors ( en_DISPLAY_COLOR_SCHEMA color_schema );
     extern unsigned display_get_window_color_schema ( void );
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* DISPLAY_H */
+#endif /* DISPLAY_H */
 
