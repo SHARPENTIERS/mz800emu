@@ -1707,11 +1707,11 @@ static void ui_membrowser_goto_addr_action ( void ) {
         gtk_entry_set_text ( ui_get_entry ( "dbg_mebrowser_goto_addr_hex_entry" ), buff );
     };
 
-    g_membrowser.selected_addr = addr;
     int page = ui_membrowser_get_page_by_addr ( addr );
     GtkWidget *view = ui_get_widget ( "dbg_membrowser_textview" );
 
     if ( page != g_membrowser.page ) {
+        g_membrowser.selected_addr = addr;
         ui_membrowser_show_page ( page );
     } else {
         uint32_t offset;
@@ -1725,6 +1725,7 @@ static void ui_membrowser_goto_addr_action ( void ) {
         GtkTextIter iter;
         gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
         gtk_text_buffer_place_cursor ( buffer, &iter );
+        ui_membrowser_update_selected_addr ( );
     };
     gtk_widget_grab_focus ( view );
 }
