@@ -841,8 +841,7 @@ void iface_sdl_update_window ( void ) {
     SDL_RenderPresent ( g_iface_sdl.renderer );
 
 
-    if ( ( g_iface_sdl.redraw_full_screen_request ) || ( g_gdg.framebuffer_state == ( FB_STATE_BORDER_CHANGED | FB_STATE_SCREEN_CHANGED ) ) ) {
-        //if ( 1 ) {
+    if ( ( g_display.forced_full_screen_redrawing ) || ( g_iface_sdl.redraw_full_screen_request ) || ( g_gdg.framebuffer_state == ( FB_STATE_BORDER_CHANGED | FB_STATE_SCREEN_CHANGED ) ) ) {
 
         /* Rendrujeme cely framebuffer */
         if ( SDL_RenderCopy ( g_iface_sdl.renderer, texture, &mzdisplay_rect, &mzdisplay_rect ) ) {
