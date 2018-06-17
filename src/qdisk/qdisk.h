@@ -24,9 +24,9 @@
  */
 
 #ifndef QDISK_H
-#define	QDISK_H
+#define QDISK_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -46,9 +46,12 @@ extern "C" {
 
 #include "z80ex/include/z80ex.h"
 
+    // tuto hodnotu jseme kdysi v konferenci namerili jako max
+    //#define QDISK_FORMAT_SIZE            61454
 
-#define QDISK_FORMAT_SIZE            61454
-    
+    // v teto velikosti se ke mne dostal udajne "lehce nafoukly" image od Mikese
+#define QDISK_FORMAT_SIZE           82958
+
     /*
      *  Podle provedenych mereni se povedlo na QD zapsat nad ramec formatu
      * jeste jeden MZF o velikosti 0x1a80
@@ -82,12 +85,14 @@ extern "C" {
 
 #define QDISK_MZF_FILENAME_LENGTH   17
 
+
     typedef enum en_QDSIO_ADDR {
         QDSIO_ADDR_DATA_A = 0,
         QDSIO_ADDR_DATA_B,
         QDSIO_ADDR_CTRL_A,
         QDSIO_ADDR_CTRL_B
     } en_QDSIO_ADDR;
+
 
     typedef enum en_QDSIO_REGADRR {
         QDSIO_REGADDR_0 = 0, /* zakladni prikazy */
@@ -100,6 +105,7 @@ extern "C" {
         QDSIO_REGADDR_7 /* sync2 */
     } en_QDSIO_REGADRR;
 
+
     typedef enum en_QDSIO_WR0CMD {
         QDSIO_WR0CMD_NONE = 0,
         QDSIO_WR0CMD_SDLC_STOP, /* ukoncit vysilani (pouze v rezimu SDLC) */
@@ -111,12 +117,14 @@ extern "C" {
         QDSIO_WR0CMD_RETI /* navrat z preruseni */
     } en_QDSIO_WR0CMD;
 
+
     typedef struct st_QDSIO_CHANNEL {
         char name;
         en_QDSIO_REGADRR REG_addr;
         Z80EX_BYTE Wreg [ 8 ];
         Z80EX_BYTE Rreg [ 3 ];
     } st_QDSIO_CHANNEL;
+
 
     typedef enum st_QDISK_VRTSTS {
         QDISK_VRTSTS_QDHEADER,
@@ -128,12 +136,14 @@ extern "C" {
         QDISK_VRTSTS_FORMATING,
     } st_QDISK_VRTSTS;
 
+
     /* 0x0000 - 0x0007 ( 8 bajtu ) */
     typedef struct st_QDISK_HEADER {
         Z80EX_BYTE start_sign [ 4 ]; /* 0x00, 0x16, 0x16, 0xa5 */
         Z80EX_BYTE file_blocks_count; /* pocet pouzitych bloku (resp. pocet souboru * 2) */
         Z80EX_BYTE crc [ 3 ]; /* C, R, C */
     } st_QDSTRT_BLOCK;
+
 
     /* 0x0008 - 0x00051 ( 10 + 64 = 74 bajtu ) */
     typedef struct st_QDISK_MZF_HEADER {
@@ -151,6 +161,7 @@ extern "C" {
         Z80EX_BYTE crc [ 3 ]; /* C, R, C */
     } st_QDISK_MZF_HEADER;
 
+
     /* 0x0052 - 0x???? ( 10 + body_size bajtu ) */
     typedef struct st_QDISK_MZF_BODY {
         Z80EX_BYTE start_sign [ 4 ]; /* 0x00, 0x16, 0x16, 0xa5 */
@@ -159,6 +170,7 @@ extern "C" {
         Z80EX_BYTE mzf_body [ 65535 ]; /* body [ body_size ] */
         Z80EX_BYTE crc [ 3 ]; /* C, R, C */
     } st_QDISK_MZF_BODY;
+
 
     typedef struct st_QDISK {
         unsigned connected;
@@ -192,8 +204,8 @@ extern "C" {
     extern void qdisk_create_image ( char *filename );
 
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* QDISK_H */
+#endif /* QDISK_H */
