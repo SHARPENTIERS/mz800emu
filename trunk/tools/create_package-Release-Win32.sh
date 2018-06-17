@@ -222,7 +222,7 @@ do
 done
 
 # icons/debugger
-for filename in Breakpoints24.png Continue24.gif dissassembler24.png memory_dump24.png Pause24.gif Run_To_Cursor.gif run_to_cursor_instruction24.png step_into_instruction24.png StepInto24.gif step_out_instruction24.png StepOut24.gif step_over_instruction24.png StepOver24.gif
+for filename in Breakpoints24.png Continue24.gif dissassembler24.png memory_browser24.png Pause24.gif Run_To_Cursor.gif run_to_cursor_instruction24.png step_into_instruction24.png StepInto24.gif step_out_instruction24.png StepOut24.gif step_over_instruction24.png StepOver24.gif
 do
 	copyFileToTmpDir "ui_resources/icons/debugger/${filename}" "${NBTMPDIR}/${PACKAGE_TOP_DIR}/ui_resources/icons/debugger/${filename}" 0644
 done
