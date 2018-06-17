@@ -121,7 +121,9 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger_callbacks.o \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger_iasm.o \
 	${OBJECTDIR}/src/ui/debugger/ui_dissassembler.o \
-	${OBJECTDIR}/src/ui/debugger/ui_memdump.o \
+	${OBJECTDIR}/src/ui/debugger/ui_membrowser.o \
+	${OBJECTDIR}/src/ui/debugger/ui_memload.o \
+	${OBJECTDIR}/src/ui/debugger/ui_memsave.o \
 	${OBJECTDIR}/src/ui/dsk_tool/ui_dsk_tool.o \
 	${OBJECTDIR}/src/ui/generic_driver/ui_file_driver.o \
 	${OBJECTDIR}/src/ui/generic_driver/ui_memory_driver.o \
@@ -600,10 +602,20 @@ ${OBJECTDIR}/src/ui/debugger/ui_dissassembler.o: src/ui/debugger/ui_dissassemble
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_dissassembler.o src/ui/debugger/ui_dissassembler.c
 
-${OBJECTDIR}/src/ui/debugger/ui_memdump.o: src/ui/debugger/ui_memdump.c 
+${OBJECTDIR}/src/ui/debugger/ui_membrowser.o: src/ui/debugger/ui_membrowser.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_memdump.o src/ui/debugger/ui_memdump.c
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_membrowser.o src/ui/debugger/ui_membrowser.c
+
+${OBJECTDIR}/src/ui/debugger/ui_memload.o: src/ui/debugger/ui_memload.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_memload.o src/ui/debugger/ui_memload.c
+
+${OBJECTDIR}/src/ui/debugger/ui_memsave.o: src/ui/debugger/ui_memsave.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_memsave.o src/ui/debugger/ui_memsave.c
 
 ${OBJECTDIR}/src/ui/dsk_tool/ui_dsk_tool.o: src/ui/dsk_tool/ui_dsk_tool.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui/dsk_tool

@@ -41,6 +41,8 @@
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 #include "debugger/debugger.h"
 #include "ui/debugger/ui_breakpoints.h"
+#include "ui/debugger/ui_membrowser.h"
+#include "ui/debugger/ui_dissassembler.h"
 #endif
 
 static int g_iface_alt_key = 0;
@@ -486,6 +488,18 @@ static inline void iface_sdl_keydown_hotkeys ( SDL_Event *event ) {
              * Breakpoints window: Alt + B
              */
             ui_breakpoints_show_hide_window ( );
+
+        } else if ( event->key.keysym.scancode == SDL_SCANCODE_E ) {
+            /*
+             * Memory browser window: Alt + E
+             */
+            ui_membrowser_show_hide ( );
+
+        } else if ( event->key.keysym.scancode == SDL_SCANCODE_I ) {
+            /*
+             * Dissassembler window: Alt + I
+             */
+            ui_dissassembler_show_window ( );
 #endif
         };
     };

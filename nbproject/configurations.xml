@@ -129,7 +129,9 @@
           <itemPath>src/ui/debugger/ui_debugger.h</itemPath>
           <itemPath>src/ui/debugger/ui_debugger_iasm.h</itemPath>
           <itemPath>src/ui/debugger/ui_dissassembler.h</itemPath>
-          <itemPath>src/ui/debugger/ui_memdump.h</itemPath>
+          <itemPath>src/ui/debugger/ui_membrowser.h</itemPath>
+          <itemPath>src/ui/debugger/ui_memload.h</itemPath>
+          <itemPath>src/ui/debugger/ui_memsave.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f3" displayName="Tools" projectFiles="true">
           <itemPath>src/ui/tools/ui_tool_pixbuf.h</itemPath>
@@ -324,7 +326,9 @@
           <itemPath>src/ui/debugger/ui_debugger_callbacks.c</itemPath>
           <itemPath>src/ui/debugger/ui_debugger_iasm.c</itemPath>
           <itemPath>src/ui/debugger/ui_dissassembler.c</itemPath>
-          <itemPath>src/ui/debugger/ui_memdump.c</itemPath>
+          <itemPath>src/ui/debugger/ui_membrowser.c</itemPath>
+          <itemPath>src/ui/debugger/ui_memload.c</itemPath>
+          <itemPath>src/ui/debugger/ui_memsave.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f4" displayName="Tools" projectFiles="true">
           <itemPath>src/ui/tools/ui_tool_pixbuf.c</itemPath>
@@ -808,9 +812,17 @@
       </item>
       <item path="src/ui/debugger/ui_dissassembler.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
+      <item path="src/ui/debugger/ui_membrowser.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      <item path="src/ui/debugger/ui_membrowser.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memload.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memload.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memsave.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memsave.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/dsk_tool/ui_dsk_tool.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1360,9 +1372,17 @@
       </item>
       <item path="src/ui/debugger/ui_dissassembler.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
+      <item path="src/ui/debugger/ui_membrowser.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      <item path="src/ui/debugger/ui_membrowser.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memload.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memload.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memsave.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memsave.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/dsk_tool/ui_dsk_tool.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1903,9 +1923,17 @@
       </item>
       <item path="src/ui/debugger/ui_dissassembler.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
+      <item path="src/ui/debugger/ui_membrowser.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      <item path="src/ui/debugger/ui_membrowser.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memload.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memload.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memsave.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memsave.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/dsk_tool/ui_dsk_tool.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2461,9 +2489,17 @@
       </item>
       <item path="src/ui/debugger/ui_dissassembler.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="10">
+      <item path="src/ui/debugger/ui_membrowser.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      <item path="src/ui/debugger/ui_membrowser.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memload.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memload.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memsave.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memsave.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/dsk_tool/ui_dsk_tool.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -3021,9 +3057,17 @@
       </item>
       <item path="src/ui/debugger/ui_dissassembler.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="10">
+      <item path="src/ui/debugger/ui_membrowser.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      <item path="src/ui/debugger/ui_membrowser.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memload.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memload.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memsave.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memsave.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/dsk_tool/ui_dsk_tool.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -3578,9 +3622,17 @@
       </item>
       <item path="src/ui/debugger/ui_dissassembler.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
+      <item path="src/ui/debugger/ui_membrowser.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      <item path="src/ui/debugger/ui_membrowser.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memload.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memload.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memsave.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memsave.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/dsk_tool/ui_dsk_tool.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -4136,9 +4188,17 @@
       </item>
       <item path="src/ui/debugger/ui_dissassembler.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ui/debugger/ui_memdump.c" ex="false" tool="0" flavor2="0">
+      <item path="src/ui/debugger/ui_membrowser.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/ui/debugger/ui_memdump.h" ex="false" tool="3" flavor2="0">
+      <item path="src/ui/debugger/ui_membrowser.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memload.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memload.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memsave.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_memsave.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/dsk_tool/ui_dsk_tool.c" ex="false" tool="0" flavor2="0">
       </item>

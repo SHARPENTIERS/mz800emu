@@ -41,7 +41,7 @@
 #include "memory/memory.h"
 #include "ui_breakpoints.h"
 #include "debugger/breakpoints.h"
-#include "ui_memdump.h"
+#include "ui_membrowser.h"
 #include "ui/ui_hexeditable.h"
 #include "pio8255/pio8255.h"
 #include "z80ex/include/z80ex_dasm.h"
@@ -175,14 +175,7 @@ G_MODULE_EXPORT void on_dbg_mem_load_mzf_menuitem_activate ( GtkCheckMenuItem *m
 
     printf ( "\nDebugger load MZF - Done.\n" );
     ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
-}
-
-
-G_MODULE_EXPORT void on_dbg_mem_load_save_menuitem_activate ( GtkCheckMenuItem *menuitem, gpointer data ) {
-    (void) menuitem;
-    (void) data;
-    ui_memdump_show_window ( );
-    gtk_widget_grab_focus ( ui_get_widget ( "dbg_memdump_window" ) );
+    ui_debugger_update_stack ( );
 }
 
 
@@ -819,8 +812,8 @@ G_MODULE_EXPORT void on_dbg_breakpoints_toolbutton_clicked ( GtkToolButton *tool
 }
 
 
-G_MODULE_EXPORT void on_dbg_memdump_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
-    ui_memdump_show_hide_window ( );
+G_MODULE_EXPORT void on_dbg_membrowser_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+    ui_membrowser_show_hide ( );
 }
 
 
