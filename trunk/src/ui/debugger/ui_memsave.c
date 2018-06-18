@@ -324,15 +324,14 @@ G_MODULE_EXPORT void on_dbg_memsave_from_entry_changed ( GtkEditable *ed, gpoint
     Z80EX_WORD addr_from = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_from_entry" ) ) );
     Z80EX_WORD addr_to = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_to_entry" ) ) );
 
-    Z80EX_WORD mask = 0xffff;
-    if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) {
-        mask = 0x1fff;
-        if ( addr_from > 0x1fff ) {
-            addr_from = 0x1fff;
-            g_ui_memsave_memaloc_lock = TRUE;
-            gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_from_entry" ), "1FFF" );
-            g_ui_memsave_memaloc_lock = FALSE;
-        };
+    Z80EX_WORD mask = g_membrowser.mem_size - 1;
+    if ( addr_from > ( g_membrowser.mem_size - 1 ) ) {
+        addr_from = ( g_membrowser.mem_size - 1 );
+        char buff[5];
+        snprintf ( buff, sizeof ( buff ), "%04X", addr_from );
+        g_ui_memsave_memaloc_lock = TRUE;
+        gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_from_entry" ), buff );
+        g_ui_memsave_memaloc_lock = FALSE;
     };
 
     ui_memsave_set_size ( ( addr_to - addr_from ) & mask );
@@ -357,15 +356,14 @@ G_MODULE_EXPORT void on_dbg_memsave_to_entry_changed ( GtkEditable *ed, gpointer
     Z80EX_WORD addr_from = ui_memsave_get_from ( );
     Z80EX_WORD addr_to = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_to_entry" ) ) );
 
-    Z80EX_WORD mask = 0xffff;
-    if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) {
-        mask = 0x1fff;
-        if ( addr_to > 0x1fff ) {
-            addr_to = 0x1fff;
-            g_ui_memsave_memaloc_lock = TRUE;
-            gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_to_entry" ), "1FFF" );
-            g_ui_memsave_memaloc_lock = FALSE;
-        };
+    Z80EX_WORD mask = g_membrowser.mem_size - 1;
+    if ( addr_to > ( g_membrowser.mem_size - 1 ) ) {
+        addr_to = ( g_membrowser.mem_size - 1 );
+        char buff[5];
+        snprintf ( buff, sizeof ( buff ), "%04X", addr_to );
+        g_ui_memsave_memaloc_lock = TRUE;
+        gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_to_entry" ), buff );
+        g_ui_memsave_memaloc_lock = FALSE;
     };
 
     ui_memsave_set_size ( ( addr_to - addr_from ) & mask );
@@ -379,15 +377,14 @@ G_MODULE_EXPORT void on_dbg_memsave_size_hex_entry_changed ( GtkEditable *ed, gp
     Z80EX_WORD addr_from = ui_memsave_get_from ( );
     Z80EX_WORD size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_size_hex_entry" ) ) );
 
-    Z80EX_WORD mask = 0xffff;
-    if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) {
-        mask = 0x1fff;
-        if ( size > 0x1fff ) {
-            size = 0x1fff;
-            g_ui_memsave_memaloc_lock = TRUE;
-            gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_size_hex_entry" ), "1FFF" );
-            g_ui_memsave_memaloc_lock = FALSE;
-        };
+    Z80EX_WORD mask = g_membrowser.mem_size - 1;
+    if ( size > ( g_membrowser.mem_size - 1 ) ) {
+        size = ( g_membrowser.mem_size - 1 );
+        char buff[5];
+        snprintf ( buff, sizeof ( buff ), "%04X", size );
+        g_ui_memsave_memaloc_lock = TRUE;
+        gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_size_hex_entry" ), buff );
+        g_ui_memsave_memaloc_lock = FALSE;
     };
 
     ui_memsave_set_to ( ( addr_from + size ) & mask );
@@ -401,23 +398,15 @@ G_MODULE_EXPORT void on_dbg_memsave_size_dec_entry_changed ( GtkEditable *ed, gp
     Z80EX_WORD addr_from = ui_memsave_get_from ( );
     int atoi_size = atoi ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_size_dec_entry" ) ) );
 
-    Z80EX_WORD mask = 0xffff;
-    if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) {
-        mask = 0x1fff;
-        if ( atoi_size > 0x1fff ) {
-            atoi_size = 0x1fff;
-            g_ui_memsave_memaloc_lock = TRUE;
-            gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_size_dec_entry" ), "8191" );
-            g_ui_memsave_memaloc_lock = FALSE;
-        };
-    } else {
-        if ( atoi_size > 0xffff ) {
-            atoi_size = 0xffff;
-            g_ui_memsave_memaloc_lock = TRUE;
-            gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_size_dec_entry" ), "65535" );
-            g_ui_memsave_memaloc_lock = FALSE;
-        };
-    }
+    Z80EX_WORD mask = g_membrowser.mem_size - 1;
+    if ( atoi_size > ( g_membrowser.mem_size - 1 ) ) {
+        atoi_size = ( g_membrowser.mem_size - 1 );
+        char buff[6];
+        snprintf ( buff, sizeof ( buff ), "%d", atoi_size );
+        g_ui_memsave_memaloc_lock = TRUE;
+        gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_size_dec_entry" ), buff );
+        g_ui_memsave_memaloc_lock = FALSE;
+    };
 
     ui_memsave_set_to ( ( addr_from + (Z80EX_WORD) atoi_size ) & mask );
     ui_memsave_set_hex_size ( (Z80EX_WORD) atoi_size );
@@ -473,18 +462,25 @@ void ui_memsave_window_show ( void ) {
         g_ui_memsave_initialized = TRUE;
     };
 
-    if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) {
+    Z80EX_WORD mem_max = g_membrowser.mem_size - 1;
 
-        Z80EX_WORD addr_from = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_from_entry" ) ) );
-        if ( addr_from > 0x1fff ) {
-            gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_from_entry" ), "1FFF" );
-        };
+    Z80EX_WORD addr_from = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_from_entry" ) ) );
 
-        Z80EX_WORD addr_to = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_to_entry" ) ) );
-        if ( addr_to > 0x1fff ) {
-            gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_to_entry" ), "1FFF" );
-        };
-    }
+    if ( addr_from > mem_max ) {
+        addr_from = mem_max;
+        char buff[5];
+        snprintf ( buff, sizeof ( buff ), "%04X", addr_from );
+        gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_from_entry" ), buff );
+    };
+
+    Z80EX_WORD addr_to = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_to_entry" ) ) );
+
+    if ( addr_to > mem_max ) {
+        addr_to = mem_max;
+        char buff[5];
+        snprintf ( buff, sizeof ( buff ), "%04X", addr_to );
+        gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_to_entry" ), buff );
+    };
 
     ui_memsave_save_button_sensitivity ( );
 
