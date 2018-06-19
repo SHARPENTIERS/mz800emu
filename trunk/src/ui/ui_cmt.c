@@ -427,9 +427,11 @@ void ui_cmt_window_update ( void ) {
 
     int total_blocks = 0;
     int play_block = 0;
+    st_CMTEXT_CONTAINER *container;
 
     if ( TEST_CMT_FILLED ) {
-        total_blocks = cmtext_container_get_count_blocks ( g_cmt.ext->container );
+        container = cmtext_get_container ( g_cmt.ext );
+        total_blocks = cmtext_container_get_count_blocks ( container );
         play_block = cmtext_block_get_block_id ( g_cmt.ext->block ) + 1;
     };
 
@@ -580,7 +582,7 @@ void ui_cmt_window_update ( void ) {
 
     } else {
 
-        if ( play_block <= total_blocks ) {
+        if ( CMTEXT_CONTAINER_TYPE_SIMPLE_TAPE == cmtext_container_get_type ( container ) ) {
             gtk_widget_set_sensitive ( ui_get_widget ( "cmt_filelist_button" ), TRUE );
         } else {
             gtk_widget_set_sensitive ( ui_get_widget ( "cmt_filelist_button" ), FALSE );
