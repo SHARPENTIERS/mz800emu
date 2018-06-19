@@ -631,30 +631,33 @@ static void ui_membrowser_close ( ) {
 
 
 static int ui_membrowser_check_ramdisk ( void ) {
-    gboolean connected = FALSE;
     if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_PEZIK_68 ) {
         if ( RAMDISK_CONNECTED == g_ramdisk.pezik[RAMDISK_PEZIK_68].connected ) {
             int portbank = 1 << g_membrowser.pezik_bank[RAMDISK_PEZIK_68];
             if ( g_ramdisk.pezik[RAMDISK_PEZIK_68].portmask & portbank ) {
-                connected = TRUE;
+                return EXIT_SUCCESS;
             };
         };
     } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_PEZIK_E8 ) {
         if ( RAMDISK_CONNECTED == g_ramdisk.pezik[RAMDISK_PEZIK_E8].connected ) {
             int portbank = 1 << g_membrowser.pezik_bank[RAMDISK_PEZIK_E8];
             if ( g_ramdisk.pezik[RAMDISK_PEZIK_E8].portmask & portbank ) {
-                connected = TRUE;
+                return EXIT_SUCCESS;
             };
         };
     } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MZ1R18 ) {
         if ( g_ramdisk.std.connected == RAMDISK_CONNECTED ) {
             if ( g_membrowser.mr1z18_bank <= g_ramdisk.std.size ) {
-                connected = TRUE;
+                return EXIT_SUCCESS;
             };
         };
     };
+    return EXIT_FAILURE;
+}
 
-    if ( !connected ) {
+
+static int ui_membrowser_check_ramdisk_noisily ( void ) {
+    if ( EXIT_SUCCESS != ui_membrowser_check_ramdisk ( ) ) {
         ui_show_error ( "Selected memory disc device or his bank is not connected!" );
         g_membrowser.MEM = NULL;
         memset ( g_membrowser.data_current, 0x00, MEMBROWSER_MEM_MAX );
@@ -709,7 +712,7 @@ static void on_dbg_membrowser_textbuffer_changed ( GtkTextBuffer *textbuffer, gp
     // ulozeni g_membrowser.data_current[addr] do skutecne pameti
 
     if ( g_membrowser.memsrc >= MEMBROWSER_SOURCE_PEZIK_68 ) {
-        ui_membrowser_check_ramdisk ( );
+        ui_membrowser_check_ramdisk_noisily ( );
     };
 
     if ( g_membrowser.MEM != NULL ) {
@@ -999,7 +1002,7 @@ static void ui_membrowser_load_data_from_memsrc ( void ) {
             break;
 
         case MEMBROWSER_SOURCE_PEZIK_E8:
-            if ( EXIT_SUCCESS == ui_membrowser_check_ramdisk ( ) ) {
+            if ( EXIT_SUCCESS == ui_membrowser_check_ramdisk_noisily ( ) ) {
                 g_membrowser.MEM = &g_ramdisk.pezik[RAMDISK_PEZIK_E8].memory[( g_membrowser.pezik_bank[RAMDISK_PEZIK_E8] << 16 )];
                 if ( g_membrowser.pezik_addressing == MEMBROWSER_PEZIK_ADDRESSING_LE ) {
                     pezik_LE = TRUE;
@@ -1008,7 +1011,7 @@ static void ui_membrowser_load_data_from_memsrc ( void ) {
             break;
 
         case MEMBROWSER_SOURCE_PEZIK_68:
-            if ( EXIT_SUCCESS == ui_membrowser_check_ramdisk ( ) ) {
+            if ( EXIT_SUCCESS == ui_membrowser_check_ramdisk_noisily ( ) ) {
                 g_membrowser.MEM = &g_ramdisk.pezik[RAMDISK_PEZIK_E8].memory[( g_membrowser.pezik_bank[RAMDISK_PEZIK_68] << 16 )];
                 if ( g_membrowser.pezik_addressing == MEMBROWSER_PEZIK_ADDRESSING_LE ) {
                     pezik_LE = TRUE;
@@ -1017,7 +1020,7 @@ static void ui_membrowser_load_data_from_memsrc ( void ) {
             break;
 
         case MEMBROWSER_SOURCE_MZ1R18:
-            if ( EXIT_SUCCESS == ui_membrowser_check_ramdisk ( ) ) {
+            if ( EXIT_SUCCESS == ui_membrowser_check_ramdisk_noisily ( ) ) {
                 g_membrowser.MEM = &g_ramdisk.std.memory[( g_membrowser.mr1z18_bank << 16 )];
             };
             break;
@@ -1052,6 +1055,12 @@ static void ui_membrowser_show ( void ) {
     if ( gtk_widget_is_visible ( window ) ) return;
     ui_membrowser_init ( );
 
+    if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_PEZIK_68 ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_PEZIK_E8 ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MZ1R18 ) ) {
+        if ( EXIT_SUCCESS != ui_membrowser_check_ramdisk ( ) ) {
+            g_membrowser.memsrc = MEMBROWSER_SOURCE_MAPED;
+        };
+    };
+
     gtk_combo_box_set_active ( ui_get_combo_box ( "dbg_membrowser_source_comboboxtext" ), g_membrowser.memsrc );
 
     ui_main_win_move_to_pos ( GTK_WINDOW ( window ), &g_membrowser.main_pos );
@@ -1072,6 +1081,18 @@ void ui_membrowser_show_hide ( void ) {
 G_MODULE_EXPORT gboolean on_dbg_membrowser_window_delete_event ( GtkWidget *widget, GdkEvent *event, gpointer user_data ) {
     ui_membrowser_close ( );
     return TRUE; // zastavime dalsi propagaci eventu
+}
+
+
+G_MODULE_EXPORT gboolean on_dbg_membrowser_window_key_press_event ( GtkWidget *widget, GdkEventKey *event, gpointer user_data ) {
+    if ( g_membrowser.mode != MEMBROWSER_MODE_VIEW ) return FALSE;
+
+    if ( event->keyval == GDK_KEY_Escape ) {
+        ui_membrowser_close ( );
+        return TRUE;
+    };
+
+    return FALSE;
 }
 
 
@@ -1179,6 +1200,7 @@ G_MODULE_EXPORT gboolean on_dbg_membrowser_textview_key_press_event ( GtkWidget 
 
     //printf ( "kv: 0x%04x\n", event->keyval );
 
+
     // sledovane
     if ( event->keyval == GDK_KEY_Shift_L ) {
         g_membrowser.key_shift_l = TRUE;
@@ -1271,6 +1293,13 @@ G_MODULE_EXPORT gboolean on_dbg_membrowser_textview_key_press_event ( GtkWidget 
     };
 
     if ( g_membrowser.mode != MEMBROWSER_MODE_VIEW ) {
+
+        if ( event->keyval == GDK_KEY_Escape ) {
+            gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( ui_get_widget ( "dbg_membrowser_switch_mode_togglebutton" ) ), FALSE );
+            return TRUE;
+        };
+
+
         if ( event->keyval == GDK_KEY_Tab ) {
 
             uint32_t offset;
