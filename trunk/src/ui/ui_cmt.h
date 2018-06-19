@@ -36,6 +36,8 @@ extern "C" {
     extern void ui_cmt_window_update ( void );
     extern void ui_cmt_update_player ( void );
     extern void ui_cmt_set_filename ( char *filename );
+    extern void ui_cmt_tape_index_hide ( void );
+    extern void ui_cmt_tape_index_update_filelist ( void );
 
 #ifdef	__cplusplus
 }

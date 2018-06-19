@@ -56,7 +56,7 @@ extern "C" {
 
 
     typedef struct st_CMTEXT_TAPE_ITEM_TAPHDR {
-        uint16_t size; // skuitecna delka bloku (flag + data + checksum)
+        uint16_t size; // skutecna delka bloku (flag + data + checksum)
         char *fname;
         uint8_t code;
         uint16_t data_size;
@@ -67,7 +67,7 @@ extern "C" {
 
 
     typedef struct st_CMTEXT_TAPE_ITEM_TAPDATA {
-        uint16_t size; // skuitecna delka bloku (flag + data + checksum)
+        uint16_t size; // skutecna delka bloku (flag + data + checksum)
         en_CMTSPEED cmtspeed;
     } st_CMTEXT_TAPE_ITEM_TAPDATA;
 
@@ -133,6 +133,17 @@ extern "C" {
     extern const char* cmtext_container_get_name ( st_CMTEXT_CONTAINER *container );
     extern en_CMTEXT_CONTAINER_TYPE cmtext_container_get_type ( st_CMTEXT_CONTAINER *container );
     extern int cmtext_container_get_count_blocks ( st_CMTEXT_CONTAINER *container );
+
+    extern en_CMTEXT_BLOCK_TYPE cmtext_container_get_block_type ( st_CMTEXT_CONTAINER *container, int block_id );
+    extern en_CMTEXT_BLOCK_SPEED cmtext_container_get_block_speed ( st_CMTEXT_CONTAINER *container, int block_id );
+    extern void cmtext_container_set_block_speed ( st_CMTEXT_CONTAINER *container, int block_id, en_CMTEXT_BLOCK_SPEED blspeed );
+    extern const char* cmtext_container_get_block_fname ( st_CMTEXT_CONTAINER *container, int block_id );
+    extern int cmtext_container_get_block_ftype ( st_CMTEXT_CONTAINER *container, int block_id );
+    extern int cmtext_container_get_block_fsize ( st_CMTEXT_CONTAINER *container, int block_id );
+    extern int cmtext_container_get_block_fstrt ( st_CMTEXT_CONTAINER *container, int block_id );
+    extern int cmtext_container_get_block_fexec ( st_CMTEXT_CONTAINER *container, int block_id );
+    extern en_CMTSPEED cmtext_container_get_block_cmt_speed ( st_CMTEXT_CONTAINER *container, int block_id );
+    extern void cmtext_container_set_block_cmt_speed ( st_CMTEXT_CONTAINER *container, int block_id, en_CMTSPEED cmtspeed );
 
 #ifdef __cplusplus
 }

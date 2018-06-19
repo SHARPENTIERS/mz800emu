@@ -68,8 +68,10 @@ extern "C" {
     extern st_CMTEXT* cmtext_get_extension ( const char *filename );
     extern const char* cmtext_get_description ( st_CMTEXT *ext );
     extern const char* cmtext_get_name ( st_CMTEXT *ext );
+    extern st_CMTEXT_CONTAINER* cmtext_get_container ( st_CMTEXT *ext );
 
     extern int cmtext_container_open ( const char *filename );
+    
 
 
 

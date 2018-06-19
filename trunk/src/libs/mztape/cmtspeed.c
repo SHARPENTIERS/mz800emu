@@ -40,7 +40,7 @@ const double g_cmtspeed_divisor[] = {
 
 // nazev pomeru rychlosti podle en_CMTSPEED
 const char *g_cmtspeed_ratio[] = {
-                                  "?:?"
+                                  "?:?",
                                   "1:1",
                                   "2:1",
                                   "3:1",

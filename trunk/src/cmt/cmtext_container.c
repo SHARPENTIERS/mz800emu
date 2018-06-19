@@ -146,3 +146,191 @@ int cmtext_container_get_count_blocks ( st_CMTEXT_CONTAINER *container ) {
     assert ( container );
     return container->count_blocks;
 }
+
+
+en_CMTEXT_BLOCK_TYPE cmtext_container_get_block_type ( st_CMTEXT_CONTAINER *container, int block_id ) {
+    assert ( container );
+    assert ( block_id < container->count_blocks );
+    return container->tape->index[block_id].bltype;
+}
+
+
+en_CMTEXT_BLOCK_SPEED cmtext_container_get_block_speed ( st_CMTEXT_CONTAINER *container, int block_id ) {
+    assert ( container );
+    assert ( block_id < container->count_blocks );
+    return container->tape->index[block_id].blspeed;
+}
+
+void cmtext_container_set_block_speed ( st_CMTEXT_CONTAINER *container, int block_id, en_CMTEXT_BLOCK_SPEED blspeed ) {
+    assert ( container );
+    assert ( block_id < container->count_blocks );
+    container->tape->index[block_id].blspeed = blspeed;
+}
+
+
+const char* cmtext_container_get_block_fname ( st_CMTEXT_CONTAINER *container, int block_id ) {
+    assert ( container );
+    assert ( block_id < container->count_blocks );
+    char *fname;
+    switch ( container->tape->index[block_id].bltype ) {
+        case CMTEXT_BLOCK_TYPE_WAV:
+            fname = "WAV";
+            break;
+
+        case CMTEXT_BLOCK_TYPE_MZF:
+            fname = container->tape->index[block_id].item.mzf.fname;
+            break;
+
+        case CMTEXT_BLOCK_TYPE_TAPHEADER:
+            fname = container->tape->index[block_id].item.taphdr.fname;
+            break;
+
+        case CMTEXT_BLOCK_TYPE_TAPDATA:
+            fname = "";
+            break;
+
+        default:
+            fname = "UNKNOWN BLOCK NAME";
+    };
+    return fname;
+}
+
+
+int cmtext_container_get_block_ftype ( st_CMTEXT_CONTAINER *container, int block_id ) {
+    assert ( container );
+    assert ( block_id < container->count_blocks );
+    int ftype;
+    switch ( container->tape->index[block_id].bltype ) {
+
+        case CMTEXT_BLOCK_TYPE_MZF:
+            ftype = container->tape->index[block_id].item.mzf.ftype;
+            break;
+
+        case CMTEXT_BLOCK_TYPE_TAPHEADER:
+            ftype = container->tape->index[block_id].item.taphdr.code;
+            break;
+
+        case CMTEXT_BLOCK_TYPE_TAPDATA:
+        case CMTEXT_BLOCK_TYPE_WAV:
+        default:
+            ftype = -1;
+    };
+    return ftype;
+}
+
+
+int cmtext_container_get_block_fsize ( st_CMTEXT_CONTAINER *container, int block_id ) {
+    assert ( container );
+    assert ( block_id < container->count_blocks );
+    int fsize;
+    switch ( container->tape->index[block_id].bltype ) {
+
+        case CMTEXT_BLOCK_TYPE_MZF:
+            fsize = container->tape->index[block_id].item.mzf.fsize;
+            break;
+
+        case CMTEXT_BLOCK_TYPE_TAPHEADER:
+            fsize = container->tape->index[block_id].item.taphdr.size - 2; // odecist flag a checksum
+            break;
+
+        case CMTEXT_BLOCK_TYPE_TAPDATA:
+            fsize = container->tape->index[block_id].item.tapdata.size - 2; // odecist flag a checksum
+            break;
+
+        case CMTEXT_BLOCK_TYPE_WAV:
+        default:
+            fsize = -1;
+    };
+    return fsize;
+}
+
+
+int cmtext_container_get_block_fstrt ( st_CMTEXT_CONTAINER *container, int block_id ) {
+    assert ( container );
+    assert ( block_id < container->count_blocks );
+    int fstrt;
+    switch ( container->tape->index[block_id].bltype ) {
+
+        case CMTEXT_BLOCK_TYPE_MZF:
+            fstrt = container->tape->index[block_id].item.mzf.fstrt;
+            break;
+
+        case CMTEXT_BLOCK_TYPE_TAPHEADER:
+        case CMTEXT_BLOCK_TYPE_WAV:
+        case CMTEXT_BLOCK_TYPE_TAPDATA:
+        default:
+            fstrt = -1;
+    };
+    return fstrt;
+}
+
+
+int cmtext_container_get_block_fexec ( st_CMTEXT_CONTAINER *container, int block_id ) {
+    assert ( container );
+    assert ( block_id < container->count_blocks );
+    int fexec;
+    switch ( container->tape->index[block_id].bltype ) {
+
+        case CMTEXT_BLOCK_TYPE_MZF:
+            fexec = container->tape->index[block_id].item.mzf.fexec;
+            break;
+
+        case CMTEXT_BLOCK_TYPE_TAPHEADER:
+        case CMTEXT_BLOCK_TYPE_WAV:
+        case CMTEXT_BLOCK_TYPE_TAPDATA:
+        default:
+            fexec = -1;
+    };
+    return fexec;
+}
+
+
+en_CMTSPEED cmtext_container_get_block_cmt_speed ( st_CMTEXT_CONTAINER *container, int block_id ) {
+    assert ( container );
+    assert ( block_id < container->count_blocks );
+    en_CMTSPEED cmtspeed;
+    switch ( container->tape->index[block_id].bltype ) {
+
+        case CMTEXT_BLOCK_TYPE_MZF:
+            cmtspeed = container->tape->index[block_id].item.mzf.cmtspeed;
+            break;
+
+        case CMTEXT_BLOCK_TYPE_TAPHEADER:
+            cmtspeed = container->tape->index[block_id].item.taphdr.cmtspeed;
+            break;
+
+        case CMTEXT_BLOCK_TYPE_TAPDATA:
+            cmtspeed = container->tape->index[block_id].item.tapdata.cmtspeed;
+            break;
+
+        case CMTEXT_BLOCK_TYPE_WAV:
+        default:
+            cmtspeed = CMTSPEED_NONE;
+    };
+    return cmtspeed;
+}
+
+
+void cmtext_container_set_block_cmt_speed ( st_CMTEXT_CONTAINER *container, int block_id, en_CMTSPEED cmtspeed ) {
+    assert ( container );
+    assert ( block_id < container->count_blocks );
+
+    switch ( container->tape->index[block_id].bltype ) {
+
+        case CMTEXT_BLOCK_TYPE_MZF:
+            container->tape->index[block_id].item.mzf.cmtspeed = cmtspeed;
+            break;
+
+        case CMTEXT_BLOCK_TYPE_TAPHEADER:
+            container->tape->index[block_id].item.taphdr.cmtspeed = cmtspeed;
+            break;
+
+        case CMTEXT_BLOCK_TYPE_TAPDATA:
+            container->tape->index[block_id].item.tapdata.cmtspeed = cmtspeed;
+            break;
+
+        case CMTEXT_BLOCK_TYPE_WAV:
+        default:
+            break;
+    };
+}

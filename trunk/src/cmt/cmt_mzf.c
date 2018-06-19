@@ -188,8 +188,8 @@ static uint16_t cmtmzf_get_bdspeed ( void *cmtext ) {
 }
 
 
-#define CMTMZF_DEFAULT_STREAM_BITSTREAM
-//#define CMTMZF_DEFAULT_STREAM_VSTREAM
+//#define CMTMZF_DEFAULT_STREAM_BITSTREAM
+#define CMTMZF_DEFAULT_STREAM_VSTREAM
 
 
 st_CMTEXT_BLOCK* cmtmzf_block_open ( st_HANDLER *h, uint32_t offset, int block_id, int pause_after, en_CMTEXT_BLOCK_SPEED block_speed, en_CMTSPEED cmtspeed ) {
