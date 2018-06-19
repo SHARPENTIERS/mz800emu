@@ -82,6 +82,8 @@ extern "C" {
     extern st_CMTEXT_TAPE_ITEM_TAPHDR* cmttap_block_get_spec_tapheader ( st_CMTEXT_BLOCK *block );
     extern st_CMTEXT_TAPE_ITEM_TAPDATA* cmttap_block_get_spec_tapdata ( st_CMTEXT_BLOCK *block );
 
+    extern const char* cmttap_get_block_code_txt ( en_CMTTAP_HEADER_CODE code );
+
 #define CMTTAP_DEFAULT_PAUSE_AFTER_HEADER (uint16_t) 350 // pocet milisekund
 #define CMTTAP_DEFAULT_PAUSE_AFTER_DATA (uint16_t) 1000 // pocet milisekund
 

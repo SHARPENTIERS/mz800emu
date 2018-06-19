@@ -584,3 +584,30 @@ st_CMTEXT g_cmt_tap_extension = {
 };
 
 st_CMTEXT *g_cmt_tap = &g_cmt_tap_extension;
+
+
+const char* cmttap_get_block_code_txt ( en_CMTTAP_HEADER_CODE code ) {
+    char *txt;
+    switch ( code ) {
+        case CMTTAP_HEADER_CODE_PROGRAM:
+            txt = "Program Header";
+            break;
+
+        case CMTTAP_HEADER_CODE_NUMARRAY:
+            txt = "Num Array Header";
+            break;
+
+        case CMTTAP_HEADER_CODE_CHARARRAY:
+            txt = "Char Array Header";
+            break;
+
+        case CMTTAP_HEADER_CODE_FILE:
+            txt = "File Header";
+            break;
+
+        default:
+            txt = "Data";
+
+    };
+    return txt;
+}

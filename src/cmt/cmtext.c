@@ -108,3 +108,8 @@ const char* cmtext_get_name ( st_CMTEXT *ext ) {
     };
     return "CMT_UNKNOWN";
 }
+
+
+st_CMTEXT_CONTAINER* cmtext_get_container ( st_CMTEXT *ext ) {
+    return ext->container;
+}
