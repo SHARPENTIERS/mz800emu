@@ -314,7 +314,7 @@ static st_CMTEXT_TAPE_INDEX* cmttap_container_index_new ( st_HANDLER *h, uint32_
 
 st_CMT_STREAM* cmttap_generate_stream ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t *data, uint16_t data_size, en_CMTSPEED cmtspeed, en_CMT_STREAM_TYPE type ) {
 
-    st_CMT_STREAM *stream = zxtape_create_stream_from_tapblock ( flag, data, data_size, cmtspeed, CMTTAP_DEFAULT_BITSTREAM_RATE, type );
+    st_CMT_STREAM *stream = zxtape_create_stream_from_tapblock ( flag, data, data_size, cmtspeed, CMTSTREAM_DEFAULT_RATE, type );
     if ( !stream ) {
         return NULL;
     };

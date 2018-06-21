@@ -41,7 +41,6 @@
     <property name="height_request">250</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Tape Filelist</property>
-    <property name="modal">True</property>
     <property name="transient_for">cmt_window</property>
     <signal name="key-press-event" handler="on_cmt_tape_index_window_key_press_event" swapped="no"/>
     <signal name="delete-event" handler="on_cmt_tape_index_window_delete_event" swapped="no"/>
@@ -203,7 +202,7 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
-          <object class="GtkVBox" id="vbox7">
+          <object class="GtkVBox" id="cmt_display_vbox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
@@ -861,7 +860,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkVBox" id="vbox6">
+          <object class="GtkVBox" id="cmt_buttons_vbox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="halign">start</property>

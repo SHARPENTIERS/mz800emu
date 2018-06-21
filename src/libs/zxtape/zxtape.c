@@ -115,7 +115,7 @@ st_CMT_BITSTREAM* zxtape_create_cmt_bitstream_from_tapblock ( en_ZXTAPE_BLOCK_FL
 
     /* prozatim natvrdo 44100, protoze tak mame pripravene delky pulzu */
     rate = 44100;
-    
+
     uint32_t count_pilot_pulses = 0;
     uint32_t count_long_pulses = 0;
     uint32_t count_short_pulses = 0;
@@ -246,27 +246,29 @@ static inline int zxtape_add_cmt_vstream_data_block ( st_CMT_VSTREAM* cmt_vstrea
 }
 
 
-st_CMT_VSTREAM* zxtape_create_17MHz_cmt_vstream_from_tapblock ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t *data, uint16_t data_size, en_CMTSPEED cmtspeed ) {
+st_CMT_VSTREAM* zxtape_create_cmt_vstream_from_tapblock ( en_ZXTAPE_BLOCK_FLAG flag, uint8_t *data, uint16_t data_size, en_CMTSPEED cmtspeed, uint32_t rate ) {
 
-    st_CMT_VSTREAM *vstream = cmt_vstream_new ( GDGCLK_BASE, CMT_VSTREAM_BYTELENGTH16, 1, CMT_STREAM_POLARITY_NORMAL );
+    st_CMT_VSTREAM *vstream = cmt_vstream_new ( rate, CMT_VSTREAM_BYTELENGTH16, 1, CMT_STREAM_POLARITY_NORMAL );
     if ( !vstream ) {
         fprintf ( stderr, "%s():%d - Could create cmt vstream\n", __func__, __LINE__ );
         return NULL;
     };
 
+    double gdg_ticks_by_sample = (double) GDGCLK_BASE / rate;
+
     st_MZTAPE_PULSE_GDGTICS gpilot;
-    gpilot.high = round ( (double) g_zxtape_pilot_gdgticks.high / g_cmtspeed_divisor[cmtspeed] );
-    gpilot.low = round ( (double) g_zxtape_pilot_gdgticks.low / g_cmtspeed_divisor[cmtspeed] );
+    gpilot.high = round ( ( (double) g_zxtape_pilot_gdgticks.high / gdg_ticks_by_sample ) / g_cmtspeed_divisor[cmtspeed] );
+    gpilot.low = round ( ( (double) g_zxtape_pilot_gdgticks.low / gdg_ticks_by_sample ) / g_cmtspeed_divisor[cmtspeed] );
 
     st_MZTAPE_PULSE_GDGTICS gsync;
-    gsync.high = round ( (double) g_zxtape_sync_gdgticks.high / g_cmtspeed_divisor[cmtspeed] );
-    gsync.low = round ( (double) g_zxtape_sync_gdgticks.low / g_cmtspeed_divisor[cmtspeed] );
+    gsync.high = round ( ( (double) g_zxtape_sync_gdgticks.high / gdg_ticks_by_sample ) / g_cmtspeed_divisor[cmtspeed] );
+    gsync.low = round ( ( (double) g_zxtape_sync_gdgticks.low / gdg_ticks_by_sample ) / g_cmtspeed_divisor[cmtspeed] );
 
     st_MZTAPE_PULSES_GDGTICS gpulses;
-    gpulses.long_pulse.high = round ( (double) g_zxtape_pulses_gdgticks.long_pulse.high / g_cmtspeed_divisor[cmtspeed] );
-    gpulses.long_pulse.low = round ( (double) g_zxtape_pulses_gdgticks.long_pulse.low / g_cmtspeed_divisor[cmtspeed] );
-    gpulses.short_pulse.high = round ( (double) g_zxtape_pulses_gdgticks.short_pulse.high / g_cmtspeed_divisor[cmtspeed] );
-    gpulses.short_pulse.low = round ( (double) g_zxtape_pulses_gdgticks.short_pulse.low / g_cmtspeed_divisor[cmtspeed] );
+    gpulses.long_pulse.high = round ( ( (double) g_zxtape_pulses_gdgticks.long_pulse.high / gdg_ticks_by_sample ) / g_cmtspeed_divisor[cmtspeed] );
+    gpulses.long_pulse.low = round ( ( (double) g_zxtape_pulses_gdgticks.long_pulse.low / gdg_ticks_by_sample ) / g_cmtspeed_divisor[cmtspeed] );
+    gpulses.short_pulse.high = round ( ( (double) g_zxtape_pulses_gdgticks.short_pulse.high / gdg_ticks_by_sample ) / g_cmtspeed_divisor[cmtspeed] );
+    gpulses.short_pulse.low = round ( ( (double) g_zxtape_pulses_gdgticks.short_pulse.low / gdg_ticks_by_sample ) / g_cmtspeed_divisor[cmtspeed] );
 
     int pilot_length = 0;
 
@@ -321,20 +323,42 @@ st_CMT_STREAM* zxtape_create_stream_from_tapblock ( en_ZXTAPE_BLOCK_FLAG flag, u
     switch ( stream->stream_type ) {
         case CMT_STREAM_TYPE_BITSTREAM:
         {
+#if 0
+            /*
+             * Ve funkci bitstream_from_tapblock mame natvrdo nastaven rate 44100,
+             * narozdil od toho vstream_from_tapblock se umi prispusobit libovolne hodnote rate.
+             * 
+             */
             st_CMT_BITSTREAM *bitstream = zxtape_create_cmt_bitstream_from_tapblock ( flag, data, data_size, cmtspeed, rate );
-            ;
             if ( !bitstream ) {
                 fprintf ( stderr, "%s():%d - Can't create bitstream\n", __func__, __LINE__ );
                 cmt_stream_destroy ( stream );
                 return NULL;
             };
+#else
+            st_CMT_VSTREAM *vstream = zxtape_create_cmt_vstream_from_tapblock ( flag, data, data_size, cmtspeed, rate );
+            if ( !vstream ) {
+                fprintf ( stderr, "%s() - %d: Can't create vstream\n", __func__, __LINE__ );
+                cmt_stream_destroy ( stream );
+                return NULL;
+            };
+
+            st_CMT_BITSTREAM *bitstream = cmt_bitstream_new_from_vstream ( vstream );
+            cmt_vstream_destroy ( vstream );
+
+            if ( !bitstream ) {
+                fprintf ( stderr, "%s():%d - Can't create bitstream\n", __func__, __LINE__ );
+                cmt_stream_destroy ( stream );
+                return NULL;
+            };
+#endif
             stream->str.bitstream = bitstream;
             break;
         }
 
         case CMT_STREAM_TYPE_VSTREAM:
         {
-            st_CMT_VSTREAM *vstream = zxtape_create_17MHz_cmt_vstream_from_tapblock ( flag, data, data_size, cmtspeed );
+            st_CMT_VSTREAM *vstream = zxtape_create_cmt_vstream_from_tapblock ( flag, data, data_size, cmtspeed, rate );
             if ( !vstream ) {
                 fprintf ( stderr, "%s() - %d: Can't create vstream\n", __func__, __LINE__ );
                 cmt_stream_destroy ( stream );

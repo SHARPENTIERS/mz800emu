@@ -87,9 +87,6 @@ extern "C" {
 #define CMTTAP_DEFAULT_PAUSE_AFTER_HEADER (uint16_t) 350 // pocet milisekund
 #define CMTTAP_DEFAULT_PAUSE_AFTER_DATA (uint16_t) 1000 // pocet milisekund
 
-#define CMTTAP_DEFAULT_BITSTREAM_RATE 44100
-    //#define CMTTAP_DEFAULT_BITSTREAM_RATE 192000
-
 #ifdef __cplusplus
 }
 #endif

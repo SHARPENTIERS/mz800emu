@@ -86,6 +86,7 @@ extern "C" {
     extern double cmt_vstream_get_length ( st_CMT_VSTREAM *vstream );
     extern uint64_t cmt_vstream_get_count_scans ( st_CMT_VSTREAM *vstream );
     double cmt_vstream_get_scantime ( st_CMT_VSTREAM *vstream );
+    extern en_CMT_STREAM_POLARITY cmt_vstream_get_polarity ( st_CMT_VSTREAM *vstream );
 
     extern st_CMT_VSTREAM* cmt_vstream_new_from_wav ( st_HANDLER *h, en_CMT_STREAM_POLARITY polarity );
 
@@ -115,6 +116,20 @@ extern "C" {
     }
 
 
+    static inline int cmt_vstream_read_pulse ( st_CMT_VSTREAM *cmt_vstream, uint64_t *samples, int *value ) {
+        if ( cmt_vstream->last_read_position >= cmt_vstream->size ) return EXIT_FAILURE;
+        int event_byte_length = 0;
+        uint64_t event_samples = cmt_vstream_get_last_read_event ( cmt_vstream, &event_byte_length );
+        uint64_t read_samples = event_samples + cmt_vstream->last_read_position_sample;
+        *value = cmt_vstream->last_read_value;
+        *samples = event_samples;
+        cmt_vstream->last_read_value = ~cmt_vstream->last_read_value & 1;
+        cmt_vstream->last_read_position += event_byte_length;
+        cmt_vstream->last_read_position_sample = read_samples;
+        return EXIT_SUCCESS;
+    }
+
+
     static inline int cmt_vstream_get_value ( st_CMT_VSTREAM *cmt_vstream, uint64_t samples, int *value ) {
         int event_byte_length = 0;
         while ( cmt_vstream->last_read_position < cmt_vstream->size ) {
@@ -123,7 +138,6 @@ extern "C" {
             if ( samples < read_samples ) {
                 *value = cmt_vstream->last_read_value;
                 return EXIT_SUCCESS;
-                return cmt_vstream->last_read_value;
             }
             cmt_vstream->last_read_value = ~cmt_vstream->last_read_value & 1;
             cmt_vstream->last_read_position += event_byte_length;

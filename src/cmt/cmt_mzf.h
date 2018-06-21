@@ -50,10 +50,6 @@ extern "C" {
 
     extern st_MZF_HEADER* cmtmzf_block_get_spec_mzfheader ( st_CMTEXT_BLOCK *block );
 
-#define CMTMZF_DEFAULT_BITSTREAM_RATE 44100
-    //#define CMTMZF_DEFAULT_BITSTREAM_RATE 192000
-
-
 #ifdef __cplusplus
 }
 #endif
