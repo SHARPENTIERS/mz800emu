@@ -432,8 +432,9 @@ st_MZTAPE_MZF* mztape_create_mztapemzf ( st_HANDLER *mzf_handler, uint32_t offse
 
 /**
  * 
- * Sample rate 44.1 kHz je dostacujici pro rychlosti do 2400 Bd.
- * Pro vyssi rychlosti je podle mych testu lepsi pouzit 192 kHz.
+ * CMT stream vytvoreny pres bitstream_from_mztmzf asi neni uplne nejpresnejsi,
+ * protoze kdyz v nem vytvorim interkatate screen v rychlosti 3600 Bd, tak se nenacte.
+ * Stejny soubor vytvoreny jako vstream_from_mztmzf a prevedeny na bitstream se v pohode nacita
  * 
  */
 st_CMT_BITSTREAM* mztape_create_cmt_bitstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_CMTSPEED mztape_speed, uint32_t sample_rate ) {
@@ -618,23 +619,21 @@ static inline int mztape_add_cmt_vstream_data_block ( st_CMT_VSTREAM* vstream, s
 }
 
 
-/**
- * Jako sample rate pouzijeme konstantni hodnotu 17MHz z GDG
- *  
- */
-st_CMT_VSTREAM* mztape_create_17MHz_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_CMTSPEED mztape_speed ) {
+st_CMT_VSTREAM* mztape_create_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, en_MZTAPE_FORMATSET mztape_format, en_CMTSPEED mztape_speed, uint32_t rate ) {
 
-    st_CMT_VSTREAM* vstream = cmt_vstream_new ( GDGCLK_BASE, CMT_VSTREAM_BYTELENGTH16, 1, CMT_STREAM_POLARITY_NORMAL );
+    st_CMT_VSTREAM* vstream = cmt_vstream_new ( rate, CMT_VSTREAM_BYTELENGTH8, 1, CMT_STREAM_POLARITY_NORMAL );
     if ( !vstream ) {
         fprintf ( stderr, "%s():%d - Could create cmt vstream\n", __func__, __LINE__ );
         return NULL;
     };
 
+    double gdg_ticks_by_sample = (double) GDGCLK_BASE / rate;
+
     st_MZTAPE_PULSES_GDGTICS gpulses;
-    gpulses.long_pulse.high = round ( (double) g_mztape_pulses_gdgticks_800.long_pulse.high / g_cmtspeed_divisor[mztape_speed] );
-    gpulses.long_pulse.low = round ( (double) g_mztape_pulses_gdgticks_800.long_pulse.low / g_cmtspeed_divisor[mztape_speed] );
-    gpulses.short_pulse.high = round ( (double) g_mztape_pulses_gdgticks_800.short_pulse.high / g_cmtspeed_divisor[mztape_speed] );
-    gpulses.short_pulse.low = round ( (double) g_mztape_pulses_gdgticks_800.short_pulse.low / g_cmtspeed_divisor[mztape_speed] );
+    gpulses.long_pulse.high = round ( ( (double) g_mztape_pulses_gdgticks_800.long_pulse.high / gdg_ticks_by_sample ) / g_cmtspeed_divisor[mztape_speed] );
+    gpulses.long_pulse.low = round ( ( (double) g_mztape_pulses_gdgticks_800.long_pulse.low / gdg_ticks_by_sample ) / g_cmtspeed_divisor[mztape_speed] );
+    gpulses.short_pulse.high = round ( ( (double) g_mztape_pulses_gdgticks_800.short_pulse.high / gdg_ticks_by_sample ) / g_cmtspeed_divisor[mztape_speed] );
+    gpulses.short_pulse.low = round ( ( (double) g_mztape_pulses_gdgticks_800.short_pulse.low / gdg_ticks_by_sample ) / g_cmtspeed_divisor[mztape_speed] );
 
     const en_MZTAPE_BLOCK *format = g_formats[mztape_format]->blocks;
 
@@ -712,6 +711,7 @@ st_CMT_VSTREAM* mztape_create_17MHz_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mzt
     return vstream;
 }
 
+
 st_CMT_STREAM* mztape_create_stream_from_mztapemzf ( st_MZTAPE_MZF *mztmzf, en_CMTSPEED cmtspeed, en_CMT_STREAM_TYPE type, en_MZTAPE_FORMATSET mztape_fset, uint32_t rate ) {
 
     st_CMT_STREAM *stream = cmt_stream_new ( type );
@@ -722,19 +722,43 @@ st_CMT_STREAM* mztape_create_stream_from_mztapemzf ( st_MZTAPE_MZF *mztmzf, en_C
     switch ( stream->stream_type ) {
         case CMT_STREAM_TYPE_BITSTREAM:
         {
+#if 0
+            /*
+             * CMT stream vytvoreny pres bitstream_from_mztmzf asi neni uplne nejpresnejsi,
+             * protoze kdyz v nem vytvorim interkatate screen v rychlosti 3600 Bd, tak se nenacte.
+             * Stejny soubor vytvoreny jako vstream_from_mztmzf a prevedeny na bitstream se v pohode nacita
+             * 
+             */
             st_CMT_BITSTREAM *bitstream = mztape_create_cmt_bitstream_from_mztmzf ( mztmzf, mztape_fset, cmtspeed, rate );
             if ( !bitstream ) {
                 fprintf ( stderr, "%s():%d - Can't create bitstream\n", __func__, __LINE__ );
                 cmt_stream_destroy ( stream );
                 return NULL;
             };
+#else
+            st_CMT_VSTREAM *vstream = mztape_create_cmt_vstream_from_mztmzf ( mztmzf, mztape_fset, cmtspeed, rate );
+            if ( !vstream ) {
+                fprintf ( stderr, "%s() - %d: Can't create vstream\n", __func__, __LINE__ );
+                cmt_stream_destroy ( stream );
+                return NULL;
+            };
+
+            st_CMT_BITSTREAM *bitstream = cmt_bitstream_new_from_vstream ( vstream );
+            cmt_vstream_destroy ( vstream );
+
+            if ( !bitstream ) {
+                fprintf ( stderr, "%s():%d - Can't create bitstream\n", __func__, __LINE__ );
+                cmt_stream_destroy ( stream );
+                return NULL;
+            };
+#endif
             stream->str.bitstream = bitstream;
             break;
         }
 
         case CMT_STREAM_TYPE_VSTREAM:
         {
-            st_CMT_VSTREAM *vstream = mztape_create_17MHz_cmt_vstream_from_mztmzf ( mztmzf, mztape_fset, cmtspeed );
+            st_CMT_VSTREAM *vstream = mztape_create_cmt_vstream_from_mztmzf ( mztmzf, mztape_fset, cmtspeed, rate );
             if ( !vstream ) {
                 fprintf ( stderr, "%s() - %d: Can't create vstream\n", __func__, __LINE__ );
                 cmt_stream_destroy ( stream );

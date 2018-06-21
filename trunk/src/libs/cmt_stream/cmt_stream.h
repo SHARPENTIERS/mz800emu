@@ -35,6 +35,8 @@ extern "C" {
 
 #include "cmt_stream_all.h"
 
+#define CMTSTREAM_DEFAULT_RATE 44100
+
 
     typedef enum en_CMT_STREAM_TYPE {
         CMT_STREAM_TYPE_BITSTREAM = 0,

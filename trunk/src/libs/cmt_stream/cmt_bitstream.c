@@ -37,6 +37,7 @@
 #include "libs/mztape/mztape.h"
 
 #include "cmt_bitstream.h"
+#include "cmt_vstream.h"
 
 
 void cmt_bitstream_destroy ( st_CMT_BITSTREAM *stream ) {
@@ -68,6 +69,28 @@ st_CMT_BITSTREAM* cmt_bitstream_new ( uint32_t rate, uint32_t blocks, en_CMT_STR
             return NULL;
         };
         stream->blocks = blocks;
+    };
+
+    return stream;
+}
+
+
+st_CMT_BITSTREAM* cmt_bitstream_new_from_vstream ( st_CMT_VSTREAM *vstream ) {
+    uint32_t rate = cmt_vstream_get_rate ( vstream );
+    en_CMT_STREAM_POLARITY polarity = cmt_vstream_get_polarity ( vstream );
+    uint64_t blocks = cmt_vstream_get_count_scans ( vstream );
+    st_CMT_BITSTREAM *stream = cmt_bitstream_new ( rate, blocks, polarity );
+    if ( !stream ) return NULL;
+
+    uint64_t samples = 0;
+    int value = 0;
+
+    uint32_t position = 0;
+    while ( EXIT_SUCCESS == cmt_vstream_read_pulse ( vstream, &samples, &value ) ) {
+        uint64_t i;
+        for ( i = 0; i < samples; i++ ) {
+            cmt_bitstream_set_value_on_position ( stream, position++, value );
+        };
     };
 
     return stream;

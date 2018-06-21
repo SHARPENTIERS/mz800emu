@@ -224,6 +224,12 @@ double cmt_vstream_get_scantime ( st_CMT_VSTREAM *vstream ) {
 }
 
 
+en_CMT_STREAM_POLARITY cmt_vstream_get_polarity ( st_CMT_VSTREAM *vstream ) {
+    assert ( vstream != NULL );
+    return vstream->polarity;
+}
+
+
 st_CMT_VSTREAM* cmt_vstream_new_from_wav ( st_HANDLER *h, en_CMT_STREAM_POLARITY polarity ) {
 
     st_WAV_SIMPLE_HEADER *sh = wav_simple_header_new_from_handler ( h );

@@ -778,7 +778,14 @@ typedef struct st_UI_CMT_FILELIST {
 static st_UI_CMT_FILELIST g_cmt_filelist;
 
 
+static void ui_cmt_tape_main_window_sensitive ( gboolean sensitive ) {
+    gtk_widget_set_sensitive ( ui_get_widget ( "cmt_display_vbox" ), sensitive );
+    gtk_widget_set_sensitive ( ui_get_widget ( "cmt_buttons_vbox" ), sensitive );
+}
+
+
 void ui_cmt_tape_index_hide ( void ) {
+    ui_cmt_tape_main_window_sensitive ( TRUE );
     GtkWidget *window = ui_get_widget ( "cmt_tape_index_window" );
     if ( !gtk_widget_is_visible ( window ) ) return;
     ui_main_win_get_pos ( GTK_WINDOW ( window ), &g_cmt_filelist.main_pos );
@@ -861,11 +868,22 @@ void ui_cmt_tape_index_update_filelist ( void ) {
     GtkWidget *window = ui_get_widget ( "cmt_tape_index_window" );
     if ( !gtk_widget_is_visible ( window ) ) return;
 
+    if ( !TEST_CMT_FILLED ) {
+        ui_cmt_tape_index_hide ( );
+        return;
+    };
+
+    st_CMTEXT_CONTAINER *container = cmtext_get_container ( g_cmt.ext );
+
+    if ( cmtext_container_get_type ( container ) != CMTEXT_CONTAINER_TYPE_SIMPLE_TAPE ) {
+        ui_cmt_tape_index_hide ( );
+        return;
+    };
+
     GtkWidget *treeview = ui_get_widget ( "cmt_tape_index_treeview" );
     GtkListStore *store = GTK_LIST_STORE ( gtk_tree_view_get_model ( GTK_TREE_VIEW ( treeview ) ) );
     gtk_list_store_clear ( store );
 
-    st_CMTEXT_CONTAINER *container = cmtext_get_container ( g_cmt.ext );
     int count_blocks = cmtext_container_get_count_blocks ( container );
 
     int play_block = cmtext_block_get_block_id ( g_cmt.ext->block ) + 1;
@@ -948,6 +966,7 @@ void ui_cmt_tape_index_update_filelist ( void ) {
 
 
 static void ui_cmt_tape_index_show ( void ) {
+    ui_cmt_tape_main_window_sensitive ( FALSE );
     static gboolean initialised = FALSE;
     if ( !initialised ) {
         ui_main_setpos ( &g_cmt_filelist.main_pos, -1, -1 );
@@ -993,10 +1012,19 @@ G_MODULE_EXPORT gboolean on_cmt_tape_index_window_delete_event ( GtkWidget *widg
 
 G_MODULE_EXPORT void on_cmt_tape_index_treeview_row_activated ( GtkTreeView *tree_view, GtkTreePath *path, GtkTreeViewColumn *column, gpointer user_data ) {
     gint *indices = gtk_tree_path_get_indices ( path );
+    int new_block = indices[0];
+    int old_block = cmtext_block_get_block_id ( g_cmt.ext->block );
+
     gboolean fl_play = TEST_CMT_PLAY;
     if ( fl_play ) cmt_stop ( );
-    g_cmt.ext->container->cb_open_block ( indices[0] );
-    cmt_play ( );
+
+    if ( old_block != new_block ) {
+        g_cmt.ext->container->cb_open_block ( new_block );
+        cmt_play ( );
+    } else if ( !fl_play ) {
+        cmt_play ( );
+    };
+
     ui_cmt_window_update ( );
 }
 
@@ -1028,22 +1056,27 @@ G_MODULE_EXPORT void on_cmtspeed_mz_cellrenderercombo_changed ( GtkCellRendererC
 
     GtkTreePath *path = gtk_tree_path_new_from_string ( path_string );
     gint *indices = gtk_tree_path_get_indices ( path );
+    int block_id = indices[0];
 
-    printf ( "changed row: %d, value: %d, %s\n", indices[0], value, cmtspeed_txt );
-
-    if ( indices[0] != cmtext_block_get_block_id ( g_cmt.ext->block ) ) {
+    if ( ( block_id == cmtext_block_get_block_id ( g_cmt.ext->block ) ) && ( TEST_CMT_PLAY ) ) {
+        ui_cmt_tape_index_update_filelist ( );
+    } else {
         st_CMTEXT_CONTAINER *container = cmtext_get_container ( g_cmt.ext );
-        cmtext_container_set_block_speed ( container, indices[0], blspeed );
-        cmtext_container_set_block_cmt_speed ( container, indices[0], cmtspeed );
+        cmtext_container_set_block_speed ( container, block_id, blspeed );
+        cmtext_container_set_block_cmt_speed ( container, block_id, cmtspeed );
 
         gtk_list_store_set ( store, &iter,
                              CMT_FILELIST_BLOCK_SPEED, blspeed,
                              CMT_FILELIST_CMTSPEED, cmtspeed,
                              CMT_FILELIST_CMTSPEED_TXT, cmtspeed_txt,
                              -1 );
-        ui_cmt_window_update ( );
-    } else {
-        ui_cmt_tape_index_update_filelist ( );
+
+        if ( block_id == cmtext_block_get_block_id ( g_cmt.ext->block ) ) {
+            g_cmt.ext->container->cb_open_block ( block_id );
+            ui_cmt_window_update ( );
+        } else {
+            ui_cmt_tape_index_update_filelist ( );
+        };
     };
     gtk_tree_path_free ( path );
 
@@ -1068,34 +1101,32 @@ G_MODULE_EXPORT void on_cmtspeed_zx_cellrenderercombo_changed ( GtkCellRendererC
 
     GtkTreePath *path = gtk_tree_path_new_from_string ( path_string );
     gint *indices = gtk_tree_path_get_indices ( path );
+    int block_id = indices[0];
 
-    printf ( "changed row: %d, value: %d, %s\n", indices[0], value, cmtspeed_txt );
-
-    if ( indices[0] != cmtext_block_get_block_id ( g_cmt.ext->block ) ) {
+    if ( ( block_id == cmtext_block_get_block_id ( g_cmt.ext->block ) ) && ( TEST_CMT_PLAY ) ) {
+        ui_cmt_tape_index_update_filelist ( );
+    } else {
         st_CMTEXT_CONTAINER *container = cmtext_get_container ( g_cmt.ext );
-        cmtext_container_set_block_cmt_speed ( container, indices[0], cmtspeed );
+        cmtext_container_set_block_cmt_speed ( container, block_id, cmtspeed );
 
         gtk_list_store_set ( store, &iter,
                              CMT_FILELIST_CMTSPEED, cmtspeed,
                              CMT_FILELIST_CMTSPEED_TXT, cmtspeed_txt,
                              -1 );
-        ui_cmt_window_update ( );
-    } else {
-        ui_cmt_tape_index_update_filelist ( );
+
+        if ( block_id == cmtext_block_get_block_id ( g_cmt.ext->block ) ) {
+            g_cmt.ext->container->cb_open_block ( block_id );
+            ui_cmt_window_update ( );
+        } else {
+            ui_cmt_tape_index_update_filelist ( );
+        };
     };
     gtk_tree_path_free ( path );
-
 }
 
 
 G_MODULE_EXPORT void on_cmt_filelist_button_clicked ( GtkButton *button, gpointer data ) {
     (void) button;
     (void) data;
-
-    GtkWidget *window = ui_get_widget ( "cmt_tape_index_window" );
-    if ( gtk_widget_is_visible ( window ) ) {
-        ui_cmt_tape_index_hide ( );
-    } else {
-        ui_cmt_tape_index_show ( );
-    };
+    ui_cmt_tape_index_show ( );
 }

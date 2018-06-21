@@ -141,7 +141,7 @@ static void cmtmzf_eject ( void ) {
 
 st_CMT_STREAM* cmtmzf_generate_stream_from_mztapemzf ( st_MZTAPE_MZF *mztapemzf, en_CMTSPEED cmtspeed, en_CMT_STREAM_TYPE type ) {
 
-    st_CMT_STREAM *stream = mztape_create_stream_from_mztapemzf ( mztapemzf, cmtspeed, type, MZTAPE_FORMATSET_MZ800_SANE, CMTMZF_DEFAULT_BITSTREAM_RATE );
+    st_CMT_STREAM *stream = mztape_create_stream_from_mztapemzf ( mztapemzf, cmtspeed, type, MZTAPE_FORMATSET_MZ800_SANE, CMTSTREAM_DEFAULT_RATE );
     if ( !stream ) {
         return NULL;
     };
@@ -188,8 +188,8 @@ static uint16_t cmtmzf_get_bdspeed ( void *cmtext ) {
 }
 
 
-//#define CMTMZF_DEFAULT_STREAM_BITSTREAM
-#define CMTMZF_DEFAULT_STREAM_VSTREAM
+#define CMTMZF_DEFAULT_STREAM_BITSTREAM
+//#define CMTMZF_DEFAULT_STREAM_VSTREAM
 
 
 st_CMTEXT_BLOCK* cmtmzf_block_open ( st_HANDLER *h, uint32_t offset, int block_id, int pause_after, en_CMTEXT_BLOCK_SPEED block_speed, en_CMTSPEED cmtspeed ) {

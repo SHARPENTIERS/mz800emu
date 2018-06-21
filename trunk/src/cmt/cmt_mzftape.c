@@ -197,7 +197,13 @@ static int cmtmzftape_container_previous_block ( void ) {
 
 
 static int cmtmzftape_container_open_block ( int block_id ) {
-    return EXIT_FAILURE;
+    assert ( g_cmt_mzftape->container != NULL );
+    assert ( g_cmt_mzftape->block != NULL );
+    st_CMTEXT_BLOCK *block = cmtmzftape_block_open ( block_id );
+    if ( !block ) return EXIT_FAILURE;
+    cmtmzf_block_close ( g_cmt_mzftape->block );
+    g_cmt_mzftape->block = block;
+    return EXIT_SUCCESS;
 }
 
 
@@ -269,13 +275,13 @@ static void cmtmzftape_exit ( void ) {
 
 
 st_CMTEXT g_cmt_mzftape_extension = {
-                                         &g_cmt_mzftape_info,
-                                         (st_CMTEXT_CONTAINER*) NULL,
-                                         (st_CMTEXT_BLOCK*) NULL,
-                                         cmtmzftape_init,
-                                         cmtmzftape_exit,
-                                         cmtmzftape_container_open,
-                                         cmtmzftape_eject,
+                                     &g_cmt_mzftape_info,
+                                     (st_CMTEXT_CONTAINER*) NULL,
+                                     (st_CMTEXT_BLOCK*) NULL,
+                                     cmtmzftape_init,
+                                     cmtmzftape_exit,
+                                     cmtmzftape_container_open,
+                                     cmtmzftape_eject,
 };
 
 st_CMTEXT *g_cmt_mzftape = &g_cmt_mzftape_extension;
