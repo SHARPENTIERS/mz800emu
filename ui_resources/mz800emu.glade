@@ -477,6 +477,41 @@ From time when data were real zeros and ones and computers were
       </row>
     </data>
   </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_cmt_speed">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
+  </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_dispcolors">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
+  </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_fdc">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
+  </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_qdisk">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
+  </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_ramdisk_size">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
+  </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_ramdisk_type">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
+  </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_rom">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
+  </object>
   <object class="GtkWindow" id="main_window">
     <property name="can_focus">False</property>
     <property name="resizable">False</property>
@@ -1138,6 +1173,18 @@ From time when data were real zeros and ones and computers were
                           </object>
                         </child>
                         <child>
+                          <object class="GtkRadioMenuItem" id="menuitem_qdisk_unicard">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="tooltip_text" translatable="yes">Press RESET (F12) + Q to load Unicard Manager</property>
+                            <property name="label" translatable="yes">Unicard Boot Loader</property>
+                            <property name="use_underline">True</property>
+                            <property name="draw_as_radio">True</property>
+                            <property name="group">radiogrp_qdisk</property>
+                            <signal name="toggled" handler="on_qdisk_changed" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
                           <object class="GtkSeparatorMenuItem" id="separatormenuitem_qdisk">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
@@ -1211,6 +1258,46 @@ From time when data were real zeros and ones and computers were
                             <property name="label" translatable="yes">Create a new QD image...</property>
                             <property name="use_underline">True</property>
                             <signal name="activate" handler="on_menuitem_qdisk_create_new" swapped="no"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="menuitem2">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">_Unicard</property>
+                    <property name="use_underline">True</property>
+                    <child type="submenu">
+                      <object class="GtkMenu" id="menu22">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="menuitem_unicard_connected">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_Connected</property>
+                            <property name="use_underline">True</property>
+                            <signal name="toggled" handler="on_menuitem_unicard_connected_toggled" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem25">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_unicard_settings">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="tooltip_text" translatable="yes">This option may be changed only on disconnected device.
+Directory will be initialised when Unicard is connected.</property>
+                            <property name="label" translatable="yes">Set _SD Root Directory...</property>
+                            <property name="use_underline">True</property>
+                            <signal name="activate" handler="on_menuitem_unicard_settings_activate" swapped="no"/>
                           </object>
                         </child>
                       </object>
@@ -1716,41 +1803,6 @@ From time when data were real zeros and ones and computers were
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkRadioMenuItem" id="radiogrp_cmt_speed">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="draw_as_radio">True</property>
-  </object>
-  <object class="GtkRadioMenuItem" id="radiogrp_dispcolors">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="draw_as_radio">True</property>
-  </object>
-  <object class="GtkRadioMenuItem" id="radiogrp_fdc">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="draw_as_radio">True</property>
-  </object>
-  <object class="GtkRadioMenuItem" id="radiogrp_qdisk">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="draw_as_radio">True</property>
-  </object>
-  <object class="GtkRadioMenuItem" id="radiogrp_ramdisk_size">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="draw_as_radio">True</property>
-  </object>
-  <object class="GtkRadioMenuItem" id="radiogrp_ramdisk_type">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="draw_as_radio">True</property>
-  </object>
-  <object class="GtkRadioMenuItem" id="radiogrp_rom">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="draw_as_radio">True</property>
   </object>
   <object class="GtkWindow" id="window_joystick">
     <property name="can_focus">False</property>

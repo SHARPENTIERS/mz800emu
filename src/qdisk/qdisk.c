@@ -68,6 +68,7 @@
 #include "ui/ui_utils.h"
 #include "ui/ui_qdisk.h"
 #include "cfgmain.h"
+#include "unicard/unicard.h"
 #endif
 
 
@@ -259,7 +260,7 @@ void qdisk_close ( void ) {
     if ( g_qdisk.connected == QDISK_CONNECTED ) {
         if ( g_qdisk.status & QDSTS_IMG_READY ) {
 
-            if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+            if ( ( g_qdisk.type == QDISK_TYPE_IMAGE ) || ( g_qdisk.type == QDISK_TYPE_UNICARD ) ) {
                 /* standard image */
 
                 if ( FS_LAYER_FR_OK != FS_LAYER_FSYNC ( g_qdisk.image_fp ) ) {
@@ -288,7 +289,7 @@ void qdisk_create_image ( char *filename ) {
     FILE *fp;
 
     printf ( "\nQuick Disk: create new QD image '%s'\n", filename );
-    
+
     if ( FS_LAYER_FR_OK != FS_LAYER_FOPEN ( fp, filename, FS_LAYER_FMODE_W ) ) {
         DBGPRINTF ( DBGERR, "fopen()\n" );
 #ifdef COMPILE_FOR_EMULATOR
@@ -424,6 +425,12 @@ void qdisk_open ( void ) {
 #ifdef COMPILE_FOR_EMULATOR
         filepath = cfgelement_get_text_value ( g_elm_std_fp );
         ui_qdisk_set_path ( filepath );
+    } else if ( g_qdisk.type == QDISK_TYPE_UNICARD ) {
+        if ( TEST_UNICARD_CONNECTED ) {
+            filepath = unicard_get_mzfloader_image_filepath ( );
+            qdisk_open_image ( filepath );
+            ui_utils_mem_free ( filepath );
+        };
 #endif
     } else {
         /* TODO: */
@@ -503,7 +510,7 @@ void qdisk_mount ( void ) {
 
 void qdisk_umount ( void ) {
     qdisk_close ( );
-    if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+    if ( ( g_qdisk.type == QDISK_TYPE_IMAGE ) || ( g_qdisk.type == QDISK_TYPE_UNICARD ) ) {
         cfgelement_set_text_value ( g_elm_std_fp, "" );
     } else {
         cfgelement_set_text_value ( g_elm_virt_fp, "" );
@@ -543,9 +550,10 @@ void qdisk_init ( void ) {
     cfgelement_set_handlers ( elm, (void*) &g_qdisk.connected, (void*) &g_qdisk.connected );
 
     elm = cfgmodule_register_new_element ( cmod, "mz1f11_type", CFGENTYPE_KEYWORD, QDISK_TYPE_IMAGE,
-            QDISK_TYPE_IMAGE, "STANDARD",
-            QDISK_TYPE_VIRTUAL, "VIRTUAL",
-            -1 );
+                                           QDISK_TYPE_IMAGE, "STANDARD",
+                                           QDISK_TYPE_VIRTUAL, "VIRTUAL",
+                                           QDISK_TYPE_UNICARD, "UNICARD",
+                                           -1 );
     cfgelement_set_handlers ( elm, (void*) &g_qdisk.type, (void*) &g_qdisk.type );
 
     g_elm_std_fp = cfgmodule_register_new_element ( cmod, "mz1f11_std_filepath", CFGENTYPE_TEXT, "" );
@@ -582,7 +590,7 @@ Z80EX_BYTE qdisk_read_byte_from_drive ( void ) {
     };
 
 
-    if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+    if ( ( g_qdisk.type == QDISK_TYPE_IMAGE ) || ( g_qdisk.type == QDISK_TYPE_UNICARD ) ) {
 
         FS_LAYER_FREAD ( g_qdisk.image_fp, &retval, 1, &readlen );
 
@@ -753,7 +761,7 @@ void qdisk_write_byte_into_drive ( Z80EX_BYTE value ) {
 
     if ( 0 == qdisk_test_disk_is_writeable ( ) ) return;
 
-    if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+    if ( ( g_qdisk.type == QDISK_TYPE_IMAGE ) || ( g_qdisk.type == QDISK_TYPE_UNICARD ) ) {
 
         if ( QDISK_IMAGE_MAX_SIZE <= g_qdisk.image_position ) {
             if ( QDISK_IMAGE_MAX_SIZE == g_qdisk.image_position ) g_qdisk.image_position++;
@@ -876,7 +884,7 @@ Z80EX_BYTE qdisk_read_byte ( en_QDSIO_ADDR SIO_addr ) {
                 channel->Rreg [ QDSIO_REGADDR_0 ] |= 0x10;
                 g_qdisk.status &= ~QDSTS_IMG_SYNC;
 
-                if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+                if ( ( g_qdisk.type == QDISK_TYPE_IMAGE ) || ( g_qdisk.type == QDISK_TYPE_UNICARD ) ) {
 
                     Z80EX_BYTE sync1, sync2;
 
@@ -1095,12 +1103,12 @@ void qdisk_write_byte ( en_QDSIO_ADDR SIO_addr, Z80EX_BYTE value ) {
 
                             if ( g_qdisk.status & QDSTS_IMG_READY ) {
 
-                                if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+                                if ( ( g_qdisk.type == QDISK_TYPE_IMAGE ) || ( g_qdisk.type == QDISK_TYPE_UNICARD ) ) {
 
                                     if ( FS_LAYER_FR_OK != FS_LAYER_FSEEK ( g_qdisk.image_fp, 0 ) ) {
                                         DBGPRINTF ( DBGERR, "fseek() error\n" );
                                     };
-                                    
+
                                     FS_LAYER_FSYNC ( g_qdisk.image_fp );
                                 };
                             };
@@ -1115,7 +1123,7 @@ void qdisk_write_byte ( en_QDSIO_ADDR SIO_addr, Z80EX_BYTE value ) {
 
                             /* signal preruseni vysilani + povoleno odesilani dat */
 
-                            if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+                            if ( ( g_qdisk.type == QDISK_TYPE_IMAGE ) || ( g_qdisk.type == QDISK_TYPE_UNICARD ) ) {
                                 qdisk_write_byte_into_drive ( 0x00 );
                             };
 
@@ -1123,7 +1131,7 @@ void qdisk_write_byte ( en_QDSIO_ADDR SIO_addr, Z80EX_BYTE value ) {
                             /* signal preruseni vysilani + povoleno odesilani dat + signal RTS */
                             /* zapis synchronizacni znacky */
 
-                            if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+                            if ( ( g_qdisk.type == QDISK_TYPE_IMAGE ) || ( g_qdisk.type == QDISK_TYPE_UNICARD ) ) {
                                 qdisk_write_byte_into_drive ( channel->Wreg[ QDSIO_REGADDR_6 ] );
                                 qdisk_write_byte_into_drive ( channel->Wreg[ QDSIO_REGADDR_7 ] );
                             } else {
@@ -1195,4 +1203,28 @@ void qdisk_write_byte ( en_QDSIO_ADDR SIO_addr, Z80EX_BYTE value ) {
         };
     };
 
+}
+
+
+void qdisk_deactivate_unicard_boot_loader ( void ) {
+    if ( ( g_qdisk.connected == QDISK_CONNECTED ) && ( g_qdisk.type == QDISK_TYPE_UNICARD ) ) {
+        qdisk_set_write_protected ( 0 );
+        qdisk_close ( );
+        g_qdisk.type = QDISK_TYPE_IMAGE;
+        qdisk_open_image ( "" );
+        qdisk_open ( );
+        ui_qdisk_menu_update ( );
+    };
+}
+
+
+void qdisk_activate_unicard_boot_loader ( void ) {
+    if ( g_qdisk.connected == QDISK_CONNECTED ) {
+        qdisk_close ( );
+    };
+    g_qdisk.connected = QDISK_CONNECTED;
+    g_qdisk.type = QDISK_TYPE_UNICARD;
+    qdisk_set_write_protected ( 1 );
+    qdisk_open ( );
+    ui_qdisk_menu_update ( );
 }

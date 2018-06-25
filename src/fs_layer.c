@@ -37,8 +37,9 @@
 
 #include "ui/ui_utils.h"
 
+
 int fs_layer_fopen ( FILE **fh, char *path, char *mode ) {
-    
+
     int retval;
     //    *fh = fopen ( path, mode );
     *fh = ui_utils_file_open ( path, mode );
@@ -51,8 +52,11 @@ int fs_layer_fopen ( FILE **fh, char *path, char *mode ) {
     return retval;
 }
 
+
 int fs_layer_fread ( FILE **fh, void *buffer, int count_bytes, unsigned int *readlen ) {
     char retval;
+
+    clearerr ( *fh );
 
     *readlen = ui_utils_file_read ( buffer, 1, count_bytes, *fh );
     if ( *readlen == count_bytes ) {
@@ -67,6 +71,8 @@ int fs_layer_fread ( FILE **fh, void *buffer, int count_bytes, unsigned int *rea
 int fs_layer_fwrite ( FILE **fh, void *buffer, int count_bytes, unsigned int *writelen ) {
     char retval;
 
+    clearerr ( *fh );
+
     *writelen = ui_utils_file_write ( buffer, 1, count_bytes, *fh );
     if ( *writelen == count_bytes ) {
         retval = FS_LAYER_FR_OK;
@@ -79,6 +85,7 @@ int fs_layer_fwrite ( FILE **fh, void *buffer, int count_bytes, unsigned int *wr
 
 #ifdef WINDOWS
 #include <windows.h>
+
 
 int fs_layer_win32_truncate ( FILE **fh ) {
     int retval = SetEndOfFile ( *fh );

@@ -138,10 +138,15 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/ui_qdisk.o \
 	${OBJECTDIR}/src/ui/ui_ramdisk.o \
 	${OBJECTDIR}/src/ui/ui_rom.o \
+	${OBJECTDIR}/src/ui/ui_unicard.o \
 	${OBJECTDIR}/src/ui/ui_utils.o \
 	${OBJECTDIR}/src/ui/vkbd/ui_vkbd.o \
 	${OBJECTDIR}/src/ui/vkbd/ui_vkbd_linux_x11.o \
 	${OBJECTDIR}/src/ui/vkbd/ui_vkbd_windows.o \
+	${OBJECTDIR}/src/unicard/MGR_MZF.o \
+	${OBJECTDIR}/src/unicard/MZFLOADER_MZQ.o \
+	${OBJECTDIR}/src/unicard/unicard.o \
+	${OBJECTDIR}/src/unicard/unimgr.o \
 	${OBJECTDIR}/src/z80ex/z80ex.o \
 	${OBJECTDIR}/src/z80ex/z80ex_dasm.o
 
@@ -687,6 +692,11 @@ ${OBJECTDIR}/src/ui/ui_rom.o: src/ui/ui_rom.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_rom.o src/ui/ui_rom.c
 
+${OBJECTDIR}/src/ui/ui_unicard.o: src/ui/ui_unicard.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_unicard.o src/ui/ui_unicard.c
+
 ${OBJECTDIR}/src/ui/ui_utils.o: src/ui/ui_utils.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
@@ -706,6 +716,26 @@ ${OBJECTDIR}/src/ui/vkbd/ui_vkbd_windows.o: src/ui/vkbd/ui_vkbd_windows.c
 	${MKDIR} -p ${OBJECTDIR}/src/ui/vkbd
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/vkbd/ui_vkbd_windows.o src/ui/vkbd/ui_vkbd_windows.c
+
+${OBJECTDIR}/src/unicard/MGR_MZF.o: src/unicard/MGR_MZF.c 
+	${MKDIR} -p ${OBJECTDIR}/src/unicard
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/unicard/MGR_MZF.o src/unicard/MGR_MZF.c
+
+${OBJECTDIR}/src/unicard/MZFLOADER_MZQ.o: src/unicard/MZFLOADER_MZQ.c 
+	${MKDIR} -p ${OBJECTDIR}/src/unicard
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/unicard/MZFLOADER_MZQ.o src/unicard/MZFLOADER_MZQ.c
+
+${OBJECTDIR}/src/unicard/unicard.o: src/unicard/unicard.c 
+	${MKDIR} -p ${OBJECTDIR}/src/unicard
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/unicard/unicard.o src/unicard/unicard.c
+
+${OBJECTDIR}/src/unicard/unimgr.o: src/unicard/unimgr.c 
+	${MKDIR} -p ${OBJECTDIR}/src/unicard
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/unicard/unimgr.o src/unicard/unimgr.c
 
 ${OBJECTDIR}/src/z80ex/z80ex.o: src/z80ex/z80ex.c 
 	${MKDIR} -p ${OBJECTDIR}/src/z80ex

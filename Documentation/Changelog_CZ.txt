@@ -1,0 +1,102 @@
+
+
+Debugger:
+
+	- pridana historie vykonanych instrukci
+
+	- po dvojkliku na jmeno registru se nastavi dissassembled focus na 
+	  adresu z hodnoty registru
+
+	- po dvojkliku na adresu v zasobniku se nastavi dissassembled focus 
+	  na adresu z hodnoty ulozene v zasobniku
+
+	- byly pridany informace o stavu PIO8255, CTC8253, PIOZ80 a info
+	  o stavu interrupt signalu
+
+	- pridana moznost zmenit stav maskovani interruptu z CTC2 
+	  (Vystupem z PIO8255)
+
+	- pridana informace o GDG signalech a moznost nastavovat regBorder, 
+	  regPal, regWF a regWF
+
+	- pridan 32 bitovy uzivatelsky citac vykonanych CPU taktu
+
+	- v dissassembled window je nyni mozne scrollovat v rozsahu cele 
+	  pameti pomoci Up, Down, PgUp a PgDown a koleckem mysi
+
+	- krom puvodniho "step into" byly pridany take funkce "step over" a 
+	  "run to cursor"
+
+	- v debuggeru lze nyni nahravat MZF soubory do RAM
+
+	- mame nove ikony v toolbaru :)
+
+	- vytvoren nastroj pro dissassemblovani libovolneho bloku z RAM, 
+	  nebo z aktualne mapovane pameti (Alt + I)
+
+	- vytvoren novy Memory Browser (Alt + E), ktery umoznuje prohlizeni,
+	  nebo editaci libovolneho bloku z RAM, VRAM a vsech ramdisku.
+	  Komparativni mod umoznuje vizualizovat zmeny v pameti oproti 
+	  posledni refreshi. Dale take nabizi moznost ulozit, libovolnou 
+	  cast kterekoliv pameti do souboru, nebo ji naopak z jakehokoliv
+	  binarniho souboru nahrat
+
+
+Novinky a zmeny v emulaci:
+
+	- CMT: kliknutim na "hodiny" se prepina zobrazeni mezi "play time" a 
+	  "remaining time"
+
+	- CMT: nyni lze prehravat krom MZF, ci M12 souboru take WAV
+
+	- CMT: nyni lze prehravat paskove archivy MZT a TAP (TAP sice neni pro MZ-800 nativni
+	  format zaznamu, nicmene existuje tu male mnozstvi her a programu, ktere
+	  pracuji s nativnim ZX CMT formatem)
+	  Soubory MZT lze jednoduse vytvaret spojenim nekolika MZF za sebe,
+	  napr. http://ordoz.com/mz800emu/files/interkarate/
+	  Vypnete CMT->CMT hack do virtual CMT nahrajte interkarate.mzt,
+	  otevrte tape filelist a nastavte u prvniho souboru rychlost 
+	  1200 Bd a u dalsich napr. 3600 Bd, nasledne v emulatoru F12 + C a
+	  ve virtual CMT play, nebo dvojklik na prvnim souboru ve
+	  filelistu...
+
+	- moznost nastavit "zadni switch" pro prepinani MZ-800 / MZ-700 rezimu
+	  a pro zmenu polarity CMT signalu
+
+	- novy nastroj Virtual keyboard (Alt + K)
+
+	- moznost vypnout hotkeys v main window
+
+	- pridana podpora joysticku, je mozno pripojit bud nativni JOY, nebo
+	  emulovany pres numericky keybord
+
+	- PEZIK: pridana moznost zalohovani ramdisku a moznost volby obsazenych bank
+
+	- implementovany dalsi nedokumentovane vlastnosti okolo PIOZ80, PSG a GDG
+
+	- velke mnozstvi drobnych bugfixu
+
+	- optimalizace vykonu
+
+	- Linux: lepsi casova synchronizace
+
+	- QDISC: novy nastroj na tvorbu QD image
+
+	- QDISC: zvyseni max limitu pro velikost media
+
+	- Display: pridana moznost Forced full screen redrawing (melo by to
+	  pomoci pokud mate potize s prekreslovanim hlavniho okna, napr. v
+	  Linuxu :)
+
+	- novy nastroj pro vytvoreni DSK souboru
+
+	- pridana zjednodusena emulace Unicard. Implicitni adresar pro SD
+	  root je "./SD". Zmenu adresare SD root lze provest pouze tehdy,
+	  pokud je zarizeni odpojeno. S pripojenim Unicard, provede emulator
+	  inicializaci SD root adresare na ulozi do nej soubory, ktere jsou potrebne
+	  pro spusteni SD managera. Pokud je pripojen Quickdisk a je zapnuty
+	  do rezimu "Unicard Boot Loader", tak staci stisknout RESET (F12) + Q
+	  a nabootuje se Unicard Manager.
+	  Prozatim je implementovano jen cteni RTC, nastaveni pracovniho
+	  adresare, cteni adresare v rezimu FILELIST, otevreni a cteni
+	  souboru, cteni statusu.
