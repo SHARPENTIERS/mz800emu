@@ -34,6 +34,7 @@
 #include "ui_utils.h"
 
 #include "qdisk/qdisk.h"
+#include "unicard/unicard.h"
 
 
 void ui_qdisk_set_path ( char *path ) {
@@ -72,24 +73,41 @@ void ui_qdisk_menu_update ( void ) {
         if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_qdisk_std" ), TRUE );
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_qdisk_virtual" ), FALSE );
-        } else {
+            gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_qdisk_unicard" ), FALSE );
+        } else if ( g_qdisk.type == QDISK_TYPE_VIRTUAL ) {
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_qdisk_std" ), FALSE );
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_qdisk_virtual" ), TRUE );
+            gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_qdisk_unicard" ), FALSE );
+        } else {
+            gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_qdisk_std" ), FALSE );
+            gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_qdisk_virtual" ), FALSE );
+            gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_qdisk_unicard" ), TRUE );
         }
 
-        gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_qdisk_drive" ), TRUE );
-        gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_qdisk_write_protected" ), TRUE );
+        if ( g_qdisk.type == QDISK_TYPE_UNICARD ) {
+            gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_qdisk_drive" ), FALSE );
+            gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_qdisk_write_protected" ), FALSE );
+        } else {
+            gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_qdisk_drive" ), TRUE );
+            gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_qdisk_write_protected" ), TRUE );
+
+            if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
+                gtk_menu_item_set_label ( ui_get_menu_item ( "menuitem_qdisk_mount" ), "_Mount Image..." );
+            } else {
+                gtk_menu_item_set_label ( ui_get_menu_item ( "menuitem_qdisk_mount" ), "_Mount Directory..." );
+            };
+        };
+
+        if ( TEST_UNICARD_CONNECTED ) {
+            gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_qdisk_unicard" ), TRUE );
+        } else {
+            gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_qdisk_unicard" ), FALSE );
+        };
 
         if ( g_qdisk.status & QDSTS_IMG_READONLY ) {
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_qdisk_write_protected" ), TRUE );
         } else {
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_qdisk_write_protected" ), FALSE );
-        };
-
-        if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
-            gtk_menu_item_set_label ( ui_get_menu_item ( "menuitem_qdisk_mount" ), "_Mount Image..." );
-        } else {
-            gtk_menu_item_set_label ( ui_get_menu_item ( "menuitem_qdisk_mount" ), "_Mount Directory..." );
         };
 
     };
@@ -116,10 +134,16 @@ G_MODULE_EXPORT void on_qdisk_changed ( GtkCheckMenuItem *menuitem, gpointer dat
 
         g_qdisk.connected = QDISK_CONNECTED;
 
+
         if ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_qdisk_std" ) ) ) {
+            qdisk_deactivate_unicard_boot_loader ( );
             g_qdisk.type = QDISK_TYPE_IMAGE;
-        } else {
+        } else if ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_qdisk_virtual" ) ) ) {
+            qdisk_deactivate_unicard_boot_loader ( );
             g_qdisk.type = QDISK_TYPE_VIRTUAL;
+        } else {
+            qdisk_activate_unicard_boot_loader ( );
+            g_qdisk.type = QDISK_TYPE_UNICARD;
         };
 
         qdisk_open ( );

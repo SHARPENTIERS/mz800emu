@@ -40,6 +40,8 @@
 #include "ramdisk/ramdisk.h"
 #include "qdisk/qdisk.h"
 #include "joy/joy.h"
+#include "unicard/unicard.h"
+
 
 
 
@@ -57,6 +59,16 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
     Z80EX_BYTE retval;
 
     switch ( port_lsb ) {
+
+        case 0x50:
+        case 0x51:
+            /* cteme Unicard */
+            if ( TEST_UNICARD_CONNECTED ) {
+                retval = unicard_read_byte ( port );
+            } else {
+                retval = g_mz800.regDBUS_latch;
+            };
+            break;
 
         case 0x68:
         case 0x69:
@@ -179,7 +191,7 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
                 retval = g_mz800.regDBUS_latch;
             };
             break;
-            
+
         case 0xf1:
             /* cteme JOY2 */
             if ( g_pio8255.signal_PA_joy2_enabled ) {
@@ -226,6 +238,14 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
 
         case 0x02:
             cmthack_read_mzf_body ( );
+            break;
+
+        case 0x50:
+        case 0x51:
+            /* zapisujeme do Unicard */
+            if ( TEST_UNICARD_CONNECTED ) {
+                unicard_write_byte ( port, value );
+            };
             break;
 
         case 0x68:

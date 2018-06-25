@@ -53,6 +53,7 @@
 #include "cmt/cmthack.h"
 #include "qdisk/qdisk.h"
 #include "joy/joy.h"
+#include "unicard/unicard.h"
 
 #include "src/iface_sdl/iface_sdl.h"
 #include "iface_sdl/iface_sdl_audio.h"
@@ -169,6 +170,7 @@ void mz800_reset ( void ) {
     z80ex_reset ( g_mz800.cpu );
     pioz80_reset ( );
     fdc_reset ( );
+    unicard_reset ( );
 
     cmthack_reset ( );
 
@@ -183,6 +185,7 @@ void mz800_exit ( void ) {
     qdisk_exit ( );
     ramdisc_exit ( );
     cmt_exit ( );
+    unicard_exit ( );
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     debugger_exit ( );
 #endif
@@ -1128,6 +1131,7 @@ void mz800_init ( void ) {
     cmt_init ( );
     qdisk_init ( );
     joy_init ( );
+    unicard_init ( );
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     debugger_init ( );

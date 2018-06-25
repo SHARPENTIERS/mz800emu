@@ -75,6 +75,7 @@ extern "C" {
 
 #define QDISK_TYPE_IMAGE    0
 #define QDISK_TYPE_VIRTUAL  1
+#define QDISK_TYPE_UNICARD  2
 
 #ifndef FS_LAYER_FATFS
 #define QDISKK_FILENAME_LENGTH 1024
@@ -202,6 +203,8 @@ extern "C" {
     extern void qdisk_umount ( void );
     extern void qdisk_set_write_protected ( int value );
     extern void qdisk_create_image ( char *filename );
+    extern void qdisk_activate_unicard_boot_loader ( void );
+    extern void qdisk_deactivate_unicard_boot_loader ( void );
 
 
 #ifdef __cplusplus
