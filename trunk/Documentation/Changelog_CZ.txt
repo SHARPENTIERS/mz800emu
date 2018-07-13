@@ -104,3 +104,5 @@ Novinky a zmeny v emulaci:
 	- filechooser: u MZF souboru je v nahledu zobrazeno info z MZF
 	  headeru
 
+	- pridana podpora numericke klavesnice
+
