@@ -132,6 +132,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/ui_display.o \
 	${OBJECTDIR}/src/ui/ui_fcbutton.o \
 	${OBJECTDIR}/src/ui/ui_fdc.o \
+	${OBJECTDIR}/src/ui/ui_file_chooser.o \
 	${OBJECTDIR}/src/ui/ui_hexeditable.o \
 	${OBJECTDIR}/src/ui/ui_joy.o \
 	${OBJECTDIR}/src/ui/ui_main.o \
@@ -659,6 +660,11 @@ ${OBJECTDIR}/src/ui/ui_fdc.o: src/ui/ui_fdc.c
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_fdc.o src/ui/ui_fdc.c
+
+${OBJECTDIR}/src/ui/ui_file_chooser.o: src/ui/ui_file_chooser.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_file_chooser.o src/ui/ui_file_chooser.c
 
 ${OBJECTDIR}/src/ui/ui_hexeditable.o: src/ui/ui_hexeditable.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui

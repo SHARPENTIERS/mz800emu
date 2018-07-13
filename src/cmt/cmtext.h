@@ -72,6 +72,8 @@ extern "C" {
 
     extern int cmtext_container_open ( const char *filename );
     
+    extern const char* cmtext_get_filename_extension ( const char *filename );
+    
 
 
 

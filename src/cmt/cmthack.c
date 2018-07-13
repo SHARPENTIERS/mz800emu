@@ -32,6 +32,7 @@
 #include <strings.h>
 
 #include "cmthack.h"
+#include "cmtext.h"
 
 #include "z80ex/include/z80ex.h"
 #include "memory/memory.h"
@@ -40,6 +41,7 @@
 #include "gdg/vramctrl.h"
 
 #include "ui/ui_main.h"
+#include "ui/ui_file_chooser.h"
 #include "ui/ui_cmt.h"
 
 #include "cfgmain.h"
@@ -224,33 +226,21 @@ void cmthack_load_file ( void ) {
 
     mz800_flush_full_screen ( );
 
-    char *filename = NULL;
+    char *filename = ui_file_chooser_open_cmthack_file ( g_cmthack.last_filename );
 
-    char window_title[] = "Select MZF file to open";
-
-    if ( UIRET_OK != ui_open_file ( &filename, g_cmthack.last_filename, 0, FILETYPE_ALLCMTFILES, window_title, OPENMODE_READ ) ) {
+    if ( filename == NULL ) {
         /* Zruseno: nastavit Err + Break */
         cmthack_result ( LOADRET_BREAK );
         return;
     };
 
-    if ( filename == NULL ) {
-        filename = ui_utils_mem_alloc0 ( 1 );
-    };
+    const char *file_ext = cmtext_get_filename_extension ( filename );
 
-    int filename_length = strlen ( filename );
-
-    if ( filename_length < 5 ) {
-        fprintf ( stderr, "%s():%d - Can't resolve file extension - '%s'\n", __func__, __LINE__, filename );
-        cmthack_result ( LOADRET_BREAK );
+    if ( ( 0 == strcasecmp ( file_ext, "mzf" ) ) || ( 0 == strcasecmp ( file_ext, "m12" ) ) ) {
+        cmthack_load_mzf_filename ( filename );
     } else {
-        const char *file_ext = &filename[( filename_length - 3 )];
-        if ( ( 0 == strncasecmp ( file_ext, "mzf", 3 ) ) || ( 0 == strncasecmp ( file_ext, "m12", 3 ) ) ) {
-            cmthack_load_mzf_filename ( filename );
-        } else {
-            ui_show_error ( "This file can't be open in CMTHACK.\nPlease, play this file by virtual CMT." );
-            cmthack_result ( LOADRET_BREAK );
-        };
+        ui_show_error ( "This file can't be open in CMTHACK.\nPlease, load this file by virtual CMT." );
+        cmthack_result ( LOADRET_BREAK );
     };
 
     ui_utils_mem_free ( filename );
@@ -272,7 +262,7 @@ void cmthack_load_mzf_filename ( char *filename ) {
     };
 
     g_cmthack.last_filename = ui_utils_mem_realloc ( g_cmthack.last_filename, strlen ( filename ) + 1 );
-    strncpy ( g_cmthack.last_filename, filename, strlen ( filename ) );
+    strncpy ( g_cmthack.last_filename, filename, strlen ( filename ) + 1 );
 
     /* precteme prvnich 128 bajtu z MZF souboru a ulozime je do RAM na adresu z regHL */
 

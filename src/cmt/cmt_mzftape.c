@@ -255,6 +255,7 @@ static int cmtmzftape_container_open ( char *filename ) {
     if ( !block ) {
         ui_show_error ( "%s: Can't create cmt block\n", cmtext_get_description ( g_cmt_mzftape ) );
         cmtmzftape_container_close ( container );
+        g_cmt_mzftape->container = NULL;
         return EXIT_FAILURE;
     };
 

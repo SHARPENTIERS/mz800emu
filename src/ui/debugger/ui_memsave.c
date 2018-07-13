@@ -29,6 +29,7 @@
 #include <glib/gstdio.h>
 #include <string.h>
 #include <stdio.h>
+#include <strings.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <assert.h>
@@ -46,6 +47,8 @@
 #include "libs/mzf/mzf_tools.h"
 #include "sharpmz_ascii.h"
 #include "ui_memsave.h"
+#include "ui/ui_file_chooser.h"
+#include "ui/ui_utils.h"
 
 static st_DRIVER *g_driver_realloc = &g_ui_memory_driver_realloc;
 
@@ -216,46 +219,64 @@ G_MODULE_EXPORT void on_dbg_memsave_save_button_clicked ( GtkButton *button, gpo
 
     gboolean add_mzfheader = gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON ( ui_get_widget ( "dbg_memsave_add_mzfheader_checkbutton" ) ) );
 
-    char *dialog_title = NULL;
-    char *predefined_filename = NULL;
-    if ( add_mzfheader ) {
-        dialog_title = "Save MZF from current memory dump";
-        predefined_filename = "newfile.mzf";
-    } else {
-        dialog_title = "Save binary file from current memory dump";
-        predefined_filename = "newfile.bin";
-    };
-
-    GtkWidget *dialog;
-    GtkFileChooser *chooser;
-    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SAVE;
-    gint res;
-
-    dialog = gtk_file_chooser_dialog_new ( dialog_title,
-                                           ui_get_window ( "dbg_membrowser_window" ),
-                                           action,
-                                           "_Cancel",
-                                           GTK_RESPONSE_CANCEL,
-                                           "_Save",
-                                           GTK_RESPONSE_ACCEPT,
-                                           NULL );
-    chooser = GTK_FILE_CHOOSER ( dialog );
-
-    gtk_file_chooser_set_do_overwrite_confirmation ( chooser, TRUE );
-
-    gtk_file_chooser_set_current_name ( chooser, predefined_filename );
-
     int ret = EXIT_FAILURE;
 
-    res = gtk_dialog_run ( GTK_DIALOG ( dialog ) );
-    if ( res == GTK_RESPONSE_ACCEPT ) {
-        char *filename;
-        filename = gtk_file_chooser_get_filename ( chooser );
-        ret = ui_memsave_save_file ( filename, add_mzfheader );
-        g_free ( filename );
+    char *filepath = NULL;
+
+    if ( add_mzfheader ) {
+        char *title = "Save MZF from current memory dump";
+        static char *last_filepath = NULL; //TODO: bylo by slusne to pak pri exitu po sobe uklidit
+        const char *dirpath = ui_filechooser_get_last_mzf_dir ( );
+        st_UI_FCS_FILTERS *filters = ui_file_chooser_filters_new ( );
+        ui_file_chooser_filters_add_filter ( filters, ui_file_chooser_create_filter_mzf ( ) );
+        filepath = ui_file_chooser_open_file ( last_filepath, dirpath, title, ui_get_window ( "dbg_membrowser_window" ), FC_MODE_SAVE, filters );
+        if ( filepath ) {
+            char *extension = ui_file_chooser_get_filename_extension ( filepath );
+            if ( ( !extension ) || ( !( ( 0 == strcasecmp ( extension, "MZF" ) ) || ( 0 == strcasecmp ( extension, "M12" ) ) ) ) ) {
+                int len = strlen ( filepath ) + 4;
+                filepath = (char*) ui_utils_mem_realloc ( filepath, len );
+                strncat ( filepath, ".mzf", len );
+            };
+            char *dpath = g_path_get_dirname ( filepath );
+            ui_filechooser_set_last_mzf_dir ( dpath );
+            ui_utils_mem_free ( dpath );
+            int len = strlen ( filepath ) + 1;
+            if ( last_filepath ) {
+                last_filepath = (char*) ui_utils_mem_realloc ( last_filepath, len );
+            } else {
+                last_filepath = (char*) ui_utils_mem_alloc0 ( len );
+            };
+            strncpy ( last_filepath, filepath, len );
+        };
+    } else {
+        char *title = "Save binary file from current memory dump";
+        static char *last_filepath = NULL; //TODO: bylo by slusne to pak pri exitu po sobe uklidit
+        const char *dirpath = ui_filechooser_get_last_generic_dir ( );
+        filepath = ui_file_chooser_open_file ( last_filepath, dirpath, title, ui_get_window ( "dbg_membrowser_window" ), FC_MODE_SAVE, NULL );
+        if ( filepath ) {
+            char *extension = ui_file_chooser_get_filename_extension ( filepath );
+            if ( !extension ) {
+                int len = strlen ( filepath ) + 4;
+                filepath = (char*) ui_utils_mem_realloc ( filepath, len );
+                strncat ( filepath, ".bin", len );
+            };
+            char *dpath = g_path_get_dirname ( filepath );
+            ui_filechooser_set_last_generic_dir ( dpath );
+            ui_utils_mem_free ( dpath );
+            int len = strlen ( filepath ) + 1;
+            if ( last_filepath ) {
+                last_filepath = (char*) ui_utils_mem_realloc ( last_filepath, len );
+            } else {
+                last_filepath = (char*) ui_utils_mem_alloc0 ( len );
+            };
+            strncpy ( last_filepath, filepath, len );
+        };
     };
 
-    gtk_widget_destroy ( dialog );
+    if ( filepath ) {
+        ret = ui_memsave_save_file ( filepath, add_mzfheader );
+        ui_utils_mem_free ( filepath );
+    };
 
     if ( ret == EXIT_FAILURE ) {
         ui_memsave_window_show ( );

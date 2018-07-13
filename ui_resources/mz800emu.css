@@ -38,6 +38,10 @@ GtkMenu GtkLabel {
 	color: #bec7c9
 }
 
+.class_file_chooser_preview_label {
+	font-family: Monospace;
+	font-size: 14px;
+}
 
 * {
 	/* Arial, etc... */

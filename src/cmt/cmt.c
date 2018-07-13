@@ -38,6 +38,7 @@
 
 #include "ui/ui_utils.h"
 #include "ui/ui_main.h"
+#include "ui/ui_file_chooser.h"
 #include "ui/ui_cmt.h"
 
 #include "cfgmain.h"
@@ -204,16 +205,9 @@ int cmt_open_file_by_extension ( char *filename ) {
 
 int cmt_open ( void ) {
 
-    char window_title[] = "Select any CMT file to open";
-    char *filename = NULL;
+    char *filename = ui_file_chooser_open_cmt_file ( g_cmt.last_filename );
 
-    if ( UIRET_OK != ui_open_file ( &filename, g_cmt.last_filename, 0, FILETYPE_ALLCMTFILES, window_title, OPENMODE_READ ) ) {
-        return EXIT_FAILURE;
-    };
-
-    if ( filename == NULL ) {
-        filename = ui_utils_mem_alloc0 ( 1 );
-    };
+    if ( filename == NULL ) return EXIT_FAILURE;
 
     cmt_open_file_by_extension ( filename );
 

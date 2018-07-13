@@ -37,7 +37,8 @@
 
 #include "z80ex/include/z80ex.h"
 #include "ui_membrowser.h"
-#include "../ui_main.h"
+#include "ui/ui_main.h"
+#include "ui/ui_file_chooser.h"
 #include "ui/ui_hexeditable.h"
 #include "debugger/debugger.h"
 #include "ramdisk/ramdisk.h"
@@ -48,6 +49,7 @@
 #include "iface_sdl//iface_sdl.h"
 #include "ui_debugger.h"
 #include "ui_memload.h"
+#include "ui/ui_utils.h"
 
 
 
@@ -339,37 +341,25 @@ void ui_memload_window_show ( void ) {
 
 void ui_memload_select_file ( void ) {
 
-    GtkWidget *dialog;
-    GtkFileChooser *chooser;
-    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
-    gint res;
+    static char *last_filepath = NULL; //TODO: bylo by slusne to pak pri exitu po sobe uklidit
+    char *filepath = ui_file_chooser_open_file ( last_filepath, NULL, "Load file into memory", ui_get_window ( "dbg_membrowser_window" ), FC_MODE_OPEN, NULL );
+    if ( !filepath ) return;
 
-    dialog = gtk_file_chooser_dialog_new ( "Load file into memory",
-                                           ui_get_window ( "dbg_membrowser_window" ),
-                                           action,
-                                           "_Cancel",
-                                           GTK_RESPONSE_CANCEL,
-                                           "_Save",
-                                           GTK_RESPONSE_ACCEPT,
-                                           NULL );
-    chooser = GTK_FILE_CHOOSER ( dialog );
-
-    char *filename = NULL;
-
-    res = gtk_dialog_run ( GTK_DIALOG ( dialog ) );
-    if ( res == GTK_RESPONSE_ACCEPT ) filename = gtk_file_chooser_get_filename ( chooser );
-
-    gtk_widget_destroy ( dialog );
-
-    if ( filename ) {
-        g_memload_file = g_fopen ( filename, "rb" );
-        if ( g_memload_file ) {
-            ui_memload_window_show ( );
-        } else {
-            ui_show_error ( "Can't open file '%s'\n", filename );
-        };
-        g_free ( filename );
+    int len = strlen ( filepath ) + 1;
+    if ( !last_filepath ) {
+        last_filepath = (char*) ui_utils_mem_alloc0 ( len );
+    } else {
+        last_filepath = (char*) ui_utils_mem_realloc ( last_filepath, len );
     };
+    strncpy ( last_filepath, filepath, len );
+
+    g_memload_file = g_fopen ( filepath, "rb" );
+    if ( g_memload_file ) {
+        ui_memload_window_show ( );
+    } else {
+        ui_show_error ( "Can't open file '%s'\n", filepath );
+    };
+    ui_utils_mem_free ( filepath );
 }
 
 

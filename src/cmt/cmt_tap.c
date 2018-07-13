@@ -548,10 +548,9 @@ static int cmttap_container_open ( char *filename ) {
 
     st_CMTEXT_BLOCK *block = cmttap_block_open ( g_cmt_tap, 0 );
     if ( !block ) {
-
-
         ui_show_error ( "%s: Can't create cmt block\n", cmtext_get_description ( g_cmt_tap ) );
         cmttap_container_close ( container );
+        g_cmt_tap->container = NULL;
         return EXIT_FAILURE;
     };
 

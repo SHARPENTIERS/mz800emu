@@ -28,10 +28,12 @@
 #include <stdlib.h>
 
 #include "ui_main.h"
+#include "ui_file_chooser.h"
 #include "ui_ramdisk.h"
 #include "ui_fcbutton.h"
 
 #include "ramdisk/ramdisk.h"
+#include "ui_utils.h"
 
 
 static st_UI_FCBUTTON *fcb_e8 = NULL;
@@ -190,19 +192,11 @@ gint ui_ramdisk_pezik_settings_get_portmap ( gint pezik_type ) {
 
 
 void on_fcbutton_pezik_settings_clicked ( GtkButton *button, st_UI_FCBUTTON *fcb ) {
-
-    char filename [ RAMDISK_FILENAME_LENGTH ];
-
-    filename[0] = 0x00;
-
-    char window_title[] = "Select Backup File for Pezik";
-    char *filename_p = filename; // TODO: fixni mne
-    ui_open_file ( &filename_p, fcb->filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_SAVE );
-
-    if ( filename[0] != 0x00 ) {
-        ui_fcbutton_set_filepath ( fcb, filename );
-    };
-
+    char title[] = "Select Backup File for Pezik";
+    char *filename = ui_file_chooser_open_dat ( fcb->filepath, title, (void*) ui_get_window ( "window_pezik_settings" ), FC_MODE_SAVE );
+    if ( !filename ) return;
+    ui_fcbutton_set_filepath ( fcb, filename );
+    ui_utils_mem_free ( filename );
 }
 
 
@@ -305,6 +299,7 @@ void ui_ramdisk_pezik_settings_combobox_changed ( gint combo_state, gint pezik_t
     ui_ramdisk_pezik_settings_update_size ( pezik_type, portmask );
     ui_ramdisk_pezik_settings_update_banks ( pezik_type, portmask );
 }
+
 
 typedef struct st_UIRAMPEZSET {
     gboolean connected;

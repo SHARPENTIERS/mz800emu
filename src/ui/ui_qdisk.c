@@ -30,6 +30,7 @@
 
 
 #include "ui_main.h"
+#include "ui_file_chooser.h"
 #include "ui_qdisk.h"
 #include "ui_utils.h"
 
@@ -201,17 +202,8 @@ void ui_qdisk_create_show_window ( void ) {
     gtk_editable_set_position ( GTK_EDITABLE ( entry ), len );
     gtk_editable_select_region ( GTK_EDITABLE ( entry ), 0, -1 );
 
-
     GtkWidget *fcdialog = ui_get_widget ( "filechooserbutton_qdisk_new" );
-
-    if ( g_ui.last_folder[FILETYPE_MZQ][0] != 0x00 ) {
-        gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER ( fcdialog ), g_ui.last_folder[FILETYPE_MZQ] );
-    } else if ( g_ui.last_folder[g_ui.last_filetype][0] != 0x00 ) {
-        gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER ( fcdialog ), g_ui.last_folder[g_ui.last_filetype] );
-    } else {
-        gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER ( fcdialog ), "./" );
-    };
-
+    gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER ( fcdialog ), ui_filechooser_get_last_mzq_dir ( ) );
 
     gtk_widget_show ( window );
 }
@@ -290,7 +282,7 @@ G_MODULE_EXPORT void on_button_qdisk_new_ok_clicked ( GtkButton *button, gpointe
         path = g_malloc ( 3 );
         memcpy ( path, "./", 3 );
     };
-    ui_update_last_folder_value ( FILETYPE_MZQ, path );
+    ui_filechooser_set_last_mzq_dir ( path );
 
     gchar *full_name_mzq = g_build_filename ( path, fname_mzq, (gchar*) NULL );
 

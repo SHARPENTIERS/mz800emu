@@ -100,3 +100,7 @@ Novinky a zmeny v emulaci:
 	  Prozatim je implementovano jen cteni RTC, nastaveni pracovniho
 	  adresare, cteni adresare v rezimu FILELIST, otevreni a cteni
 	  souboru, cteni statusu.
+
+	- filechooser: u MZF souboru je v nahledu zobrazeno info z MZF
+	  headeru
+

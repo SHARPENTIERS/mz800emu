@@ -81,6 +81,8 @@
 #include "dsk_tool/ui_dsk_tool.h"
 #include "ui_joy.h"
 #include "cmt/cmt.h"
+#include "ui_file_chooser.h"
+
 
 
 st_UI g_ui;
@@ -117,27 +119,6 @@ void ui_main_win_move_to_pos ( GtkWindow *w, st_UIWINPOS *wpos ) {
 
 void ui_main_win_get_pos ( GtkWindow *w, st_UIWINPOS *wpos ) {
     gtk_window_get_position ( w, &wpos->x, &wpos->y );
-}
-
-
-void ui_update_last_folder_value ( en_FILETYPE file_type, char *value ) {
-    unsigned new_length = strlen ( value ) + 1;
-    g_ui.last_folder[file_type] = realloc ( g_ui.last_folder[file_type], new_length );
-    if ( g_ui.last_folder[file_type] == NULL ) {
-        fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __func__, __LINE__, strerror ( errno ) );
-        main_app_quit ( EXIT_FAILURE );
-    };
-    strcpy ( g_ui.last_folder[file_type], (char*) value );
-}
-
-
-void ui_propagatecfg_folder ( void *e, void *data ) {
-    ui_update_last_folder_value ( (en_FILETYPE) data, cfgelement_get_text_value ( (CFGELM *) e ) );
-}
-
-
-void ui_savecfg_folder ( void *e, void *data ) {
-    cfgelement_set_text_value ( (CFGELM *) e, g_ui.last_folder [ (en_FILETYPE) data ] );
 }
 
 
@@ -184,19 +165,6 @@ void ui_init ( void ) {
 
     /* prozatim nepotrebujeme */
     /* add_pixmap_directory (PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps");*/
-
-
-    int i;
-    for ( i = 0; i < FILETYPES_COUNT; i++ ) {
-        g_ui.last_folder[i] = malloc ( 1 );
-        if ( g_ui.last_folder[i] == NULL ) {
-            fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __func__, __LINE__, strerror ( errno ) );
-            main_app_quit ( EXIT_FAILURE );
-        };
-        strcpy ( g_ui.last_folder[i], "" );
-    };
-
-    g_ui.last_filetype = 0;
 
 
     UNLOCK_UICALLBACKS ( );
@@ -284,40 +252,6 @@ void ui_init ( void ) {
     CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "UI" );
 
     CFGELM *elm;
-    elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_folder_mzf", CFGENTYPE_TEXT, "" );
-    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_MZF );
-    cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_MZF );
-
-    elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_folder_dsk", CFGENTYPE_TEXT, "" );
-    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_DSK );
-    cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_DSK );
-
-    elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_folder_dat", CFGENTYPE_TEXT, "" );
-    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_DAT );
-    cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_DAT );
-
-    elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_folder_mzq", CFGENTYPE_TEXT, "" );
-    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_MZQ );
-    cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_MZQ );
-
-    elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_folder_dir", CFGENTYPE_TEXT, "" );
-    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_DIR );
-    cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_DIR );
-
-    elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_cmt_file", CFGENTYPE_TEXT, "" );
-    cfgelement_set_propagate_cb ( elm, ui_propagatecfg_folder, (void*) FILETYPE_ALLCMTFILES );
-    cfgelement_set_save_cb ( elm, ui_savecfg_folder, (void*) FILETYPE_ALLCMTFILES );
-
-    elm = cfgmodule_register_new_element ( cmod, "filebrowser_last_filetype", CFGENTYPE_KEYWORD, FILETYPE_MZF,
-                                           FILETYPE_MZF, "MZF",
-                                           FILETYPE_DSK, "DSK",
-                                           FILETYPE_DAT, "DAT",
-                                           FILETYPE_MZQ, "MZQ",
-                                           FILETYPE_DIR, "DIR",
-                                           FILETYPE_ALLCMTFILES, "CMT_FILE",
-                                           -1 );
-    cfgelement_set_handlers ( elm, (void*) &g_ui.last_filetype, (void*) &g_ui.last_filetype );
-
     elm = cfgmodule_register_new_element ( cmod, "disable_hot_keys", CFGENTYPE_BOOL, 0 );
 
     cfgelement_set_propagate_cb ( elm, ui_propagatecfg_disable_hotkeys, NULL );
@@ -336,17 +270,13 @@ void ui_init ( void ) {
     /* inicializace generickych driveru */
     ui_file_driver_init ( );
     ui_memory_driver_init ( );
+    ui_file_chooser_init ( );
 }
 
 
 void ui_exit ( void ) {
 
-    int i;
-    for ( i = 0; i < FILETYPES_COUNT; i++ ) {
-        if ( g_ui.last_folder[i] != NULL ) {
-            free ( g_ui.last_folder[i] );
-        };
-    };
+    ui_file_chooser_exit ( );
 
     g_ui_is_initialised = 0;
     /* TODO: je potreba nejak specialne ukoncit i gtk?*/
@@ -541,141 +471,6 @@ void ui_show_warning ( char *format, ... ) {
     };
 }
 
-
-/**
- * 
- * Pokud filename != NULL, tak se do nej nakopiruje max_filename_size znaku.
- * Pokud filename == NULL, tak vratime nove naalokovany filename, ktery je potom potreba uvolnit.
- * 
- * @param filename
- * @param predefined_filename
- * @param max_filename_size
- * @param filetype
- * @param window_title
- * @param openmode
- * @return 
- */
-unsigned ui_open_file ( char **filename, char *predefined_filename, unsigned max_filename_size, en_FILETYPE filetype, char *window_title, en_OPENMODE openmode ) {
-
-    GtkWidget *filechooserdialog;
-    GtkFileFilter *filter = NULL;
-
-    GtkFileChooserAction fcaction = 0;
-
-    if ( openmode & OPENMODE_DIRECTORY ) {
-        fcaction = GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER | GTK_FILE_CHOOSER_ACTION_CREATE_FOLDER;
-    } else {
-        if ( openmode & OPENMODE_READ ) {
-            fcaction |= GTK_FILE_CHOOSER_ACTION_OPEN;
-        };
-
-        if ( openmode & OPENMODE_SAVE ) {
-            fcaction |= GTK_FILE_CHOOSER_ACTION_SAVE;
-        };
-    };
-
-    filechooserdialog = gtk_file_chooser_dialog_new ( window_title, NULL,
-                                                      fcaction,
-                                                      "_Cancel", GTK_RESPONSE_CANCEL,
-                                                      "_Open", GTK_RESPONSE_ACCEPT,
-                                                      NULL );
-
-    gtk_container_set_border_width ( GTK_CONTAINER ( filechooserdialog ), 5 );
-    g_object_set ( filechooserdialog, "local-only", FALSE, NULL );
-    gtk_window_set_modal ( GTK_WINDOW ( filechooserdialog ), TRUE );
-    gtk_window_set_skip_taskbar_hint ( GTK_WINDOW ( filechooserdialog ), TRUE );
-    gtk_window_set_skip_pager_hint ( GTK_WINDOW ( filechooserdialog ), TRUE );
-    gtk_window_set_type_hint ( GTK_WINDOW ( filechooserdialog ), GDK_WINDOW_TYPE_HINT_DIALOG );
-    gtk_window_set_urgency_hint ( GTK_WINDOW ( filechooserdialog ), TRUE );
-
-
-    filter = gtk_file_filter_new ( );
-
-    if ( filetype == FILETYPE_MZF ) {
-        gtk_file_filter_add_pattern ( filter, "*.mzf" );
-        gtk_file_filter_add_pattern ( filter, "*.MZF" );
-        gtk_file_filter_set_name ( filter, "MZ-800 Tape File (MZF)" );
-    } else if ( filetype == FILETYPE_DSK ) {
-        gtk_file_filter_add_pattern ( filter, "*.dsk" );
-        gtk_file_filter_add_pattern ( filter, "*.DSK" );
-        gtk_file_filter_set_name ( filter, "MZ-800 Disc File" );
-    } else if ( filetype == FILETYPE_DAT ) {
-        gtk_file_filter_add_pattern ( filter, "*.dat" );
-        gtk_file_filter_add_pattern ( filter, "*.DAT" );
-        gtk_file_filter_set_name ( filter, "Ramdisk DAT File" );
-    } else if ( filetype == FILETYPE_MZQ ) {
-        gtk_file_filter_add_pattern ( filter, "*.mzq" );
-        gtk_file_filter_add_pattern ( filter, "*.MZQ" );
-        gtk_file_filter_set_name ( filter, "MZ - Quick Disk Image File" );
-    } else if ( filetype == FILETYPE_DIR ) {
-        gtk_file_filter_add_pattern ( filter, "*" );
-        gtk_file_filter_set_name ( filter, "Directory" );
-    } else if ( filetype == FILETYPE_ALLCMTFILES ) {
-        gtk_file_filter_add_pattern ( filter, "*.mzf" );
-        gtk_file_filter_add_pattern ( filter, "*.MZF" );
-        gtk_file_filter_add_pattern ( filter, "*.m12" );
-        gtk_file_filter_add_pattern ( filter, "*.M12" );
-        gtk_file_filter_add_pattern ( filter, "*.wav" );
-        gtk_file_filter_add_pattern ( filter, "*.WAV" );
-        gtk_file_filter_add_pattern ( filter, "*.mzt" );
-        gtk_file_filter_add_pattern ( filter, "*.MZT" );
-        gtk_file_filter_add_pattern ( filter, "*.tap" );
-        gtk_file_filter_add_pattern ( filter, "*.TAP" );
-        gtk_file_filter_set_name ( filter, "CMT File: .mzf, .mzt, .wav" );
-    };
-
-    gtk_file_chooser_add_filter ( (GtkFileChooser*) filechooserdialog, filter );
-
-    if ( predefined_filename[0] != 0x00 ) {
-        gtk_file_chooser_set_filename ( GTK_FILE_CHOOSER ( filechooserdialog ), predefined_filename );
-    } else if ( g_ui.last_folder[filetype][0] != 0x00 ) {
-        gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER ( filechooserdialog ), g_ui.last_folder[filetype] );
-    } else if ( g_ui.last_folder[g_ui.last_filetype][0] != 0x00 ) {
-        gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER ( filechooserdialog ), g_ui.last_folder[g_ui.last_filetype] );
-    } else {
-        gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER ( filechooserdialog ), "./" );
-    };
-
-    gtk_widget_show ( filechooserdialog );
-    ui_main_win_move_to_pos ( GTK_WINDOW ( filechooserdialog ), &g_ui.filebrowser_pos );
-
-    unsigned uiret = UIRET_FAILED;
-
-    while ( gtk_dialog_run ( GTK_DIALOG ( filechooserdialog ) ) == GTK_RESPONSE_ACCEPT ) {
-
-        char* current_folder = gtk_file_chooser_get_current_folder ( GTK_FILE_CHOOSER ( filechooserdialog ) );
-        ui_update_last_folder_value ( filetype, current_folder );
-        g_ui.last_filetype = filetype;
-
-        int filename_length = strlen ( (char*) gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) ) );
-
-        if ( *filename != NULL ) {
-            if ( filename_length < max_filename_size ) {
-                gchar *fname = gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) );
-                char *filename_cp = *filename;
-                strncpy ( filename_cp, (char*) fname, max_filename_size );
-                g_free ( fname );
-                filename_cp [ max_filename_size - 1 ] = 0x00;
-                uiret = UIRET_OK;
-                break;
-            } else {
-                ui_show_error ( "Sorry, filepath is too big!" );
-            };
-        } else {
-            *filename = gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( filechooserdialog ) );
-            uiret = UIRET_OK;
-            break;
-        };
-    };
-
-    ui_main_win_get_pos ( GTK_WINDOW ( filechooserdialog ), &g_ui.filebrowser_pos );
-
-    gtk_widget_destroy ( filechooserdialog );
-
-    //    ui_iteration ( );
-
-    return uiret;
-}
 
 #ifdef UI_TOPMENU_IS_WINDOW
 

@@ -30,6 +30,7 @@
 #include <unistd.h>
 
 #include "ui/ui_main.h"
+#include "ui/ui_file_chooser.h"
 
 #include "libs/dsk/dsk.h"
 #include "libs/dsk/dsk_tools.h"
@@ -845,16 +846,8 @@ void ui_dsk_tool_show_window ( void ) {
     gtk_editable_set_position ( GTK_EDITABLE ( entry ), len );
     gtk_editable_select_region ( GTK_EDITABLE ( entry ), 0, -1 );
 
-
     GtkWidget *fcdialog = ui_get_widget ( "filechooserbutton_dsk_new" );
-
-    if ( g_ui.last_folder[FILETYPE_DSK][0] != 0x00 ) {
-        gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER ( fcdialog ), g_ui.last_folder[FILETYPE_DSK] );
-    } else if ( g_ui.last_folder[g_ui.last_filetype][0] != 0x00 ) {
-        gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER ( fcdialog ), g_ui.last_folder[g_ui.last_filetype] );
-    } else {
-        gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER ( fcdialog ), "./" );
-    };
+    gtk_file_chooser_set_current_folder ( GTK_FILE_CHOOSER ( fcdialog ), ui_filechooser_get_last_dsk_dir ( ) );
 
     g_dsk_tool.lock_predef = TRUE;
 
@@ -991,6 +984,8 @@ G_MODULE_EXPORT void on_button_dsk_new_ok_clicked ( GtkButton *button, gpointer 
     };
 
     char *path = gtk_file_chooser_get_filename ( GTK_FILE_CHOOSER ( ui_get_widget ( "filechooserbutton_dsk_new" ) ) );
+
+    ui_filechooser_set_last_mzq_dir ( path );
 
     st_DSK_DESCRIPTION *dskdesc = ui_dsk_tool_create_dsk_description ( );
 

@@ -73,6 +73,7 @@
 #include "ramdisk.h"
 
 #include "ui/ui_main.h"
+#include "ui/ui_file_chooser.h"
 #include "ui/ui_ramdisk.h"
 
 #include "cfgmain.h"
@@ -84,7 +85,7 @@
 //#define DBGLEVEL        ( DBGNON | DBGERR | DBGWAR | DBGINF )
 #include "debug.h"
 
-#define DEF_BANK_SIZE		0x10000
+#define DEF_BANK_SIZE  0x10000
 
 st_RAMDISK g_ramdisk;
 
@@ -196,11 +197,14 @@ void ramdisk_std_init ( int connect, en_RAMDISK_TYPE type, en_RAMDISK_BANKMASK s
 
         if ( g_ramdisk.std.type & RAMDISK_IS_IN_FILE ) {
             if ( filepath[0] != 0x00 ) {
-                strncpy ( g_ramdisk.std.filepath, filepath, sizeof ( g_ramdisk.std.filepath ) );
+                int len = strlen ( filepath ) + 1;
+                g_ramdisk.std.filepath = (char*) ui_utils_mem_realloc ( g_ramdisk.std.filepath, len );
+                strncpy ( g_ramdisk.std.filepath, filepath, len );
             } else {
-                strncpy ( g_ramdisk.std.filepath, RAMDISK_DEFAULT_FILENAME, sizeof ( g_ramdisk.std.filepath ) );
+                int len = strlen ( RAMDISK_DEFAULT_FILENAME ) + 1;
+                g_ramdisk.std.filepath = (char*) ui_utils_mem_realloc ( g_ramdisk.std.filepath, len );
+                strncpy ( g_ramdisk.std.filepath, RAMDISK_DEFAULT_FILENAME, len );
             };
-            g_ramdisk.std.filepath [ sizeof ( g_ramdisk.std.filepath ) - 1 ] = 0x00;
 
             unsigned ramdisk_size = ( g_ramdisk.std.size + 1 ) * DEF_BANK_SIZE;
             ramdisk_load_backup_file ( g_ramdisk.std.memory, g_ramdisk.std.filepath, ramdisk_size );
@@ -210,8 +214,9 @@ void ramdisk_std_init ( int connect, en_RAMDISK_TYPE type, en_RAMDISK_BANKMASK s
         ramdisk_std_disconnect ( );
         g_ramdisk.std.size = size;
         g_ramdisk.std.type = type;
-        strncpy ( g_ramdisk.std.filepath, filepath, sizeof ( g_ramdisk.std.filepath ) );
-        g_ramdisk.std.filepath [ sizeof ( g_ramdisk.std.filepath ) - 1 ] = 0x00;
+        int len = strlen ( filepath ) + 1;
+        g_ramdisk.std.filepath = (char*) ui_utils_mem_realloc ( g_ramdisk.std.filepath, len );
+        strncpy ( g_ramdisk.std.filepath, filepath, len );
     };
     g_ramdisk.std.connected = connect;
 }
@@ -219,21 +224,20 @@ void ramdisk_std_init ( int connect, en_RAMDISK_TYPE type, en_RAMDISK_BANKMASK s
 
 void ramdisk_std_open_file ( void ) {
 
-    char filename [ RAMDISK_FILENAME_LENGTH ];
+    char *title;
+    en_FC_MODE fcmode;
 
-    filename[0] = 0x00;
-    char *filename_p = filename; // TODO: fix me
     if ( g_ramdisk.std.type == RAMDISK_TYPE_SRAM ) {
-        char window_title[] = "Select SRAM disk DAT file to open";
-        ui_open_file ( &filename_p, g_ramdisk.std.filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_SAVE );
+        title = "Select SRAM disk DAT file to open";
+        fcmode = FC_MODE_OPEN_OR_NEW;
     } else {
-        char window_title[] = "Select ROM disk DAT file to open";
-        ui_open_file ( &filename_p, g_ramdisk.std.filepath, sizeof ( filename ), FILETYPE_DAT, window_title, OPENMODE_READ );
+        title = "Select ROM disk DAT file to open";
+        fcmode = FC_MODE_OPEN;
     };
-
-    if ( filename[0] != 0x00 ) {
-        ramdisk_std_init ( RAMDISK_CONNECTED, g_ramdisk.std.type, g_ramdisk.std.size, filename );
-    };
+    char *filename = ui_file_chooser_open_dat ( g_ramdisk.std.filepath, title, NULL, fcmode );
+    if ( !filename ) return;
+    ramdisk_std_init ( RAMDISK_CONNECTED, g_ramdisk.std.type, g_ramdisk.std.size, filename );
+    ui_utils_mem_free ( filename );
 }
 
 
@@ -303,24 +307,11 @@ void ramdisk_pezik_init ( int pezik_type, int connect, int portmask, int backupe
         g_ramdisk.pezik [ pezik_type ].backuped = PEZIK_BACKUPED_NO;
     };
 
-#if 0
     len++;
 
-    if ( NULL == g_ramdisk.pezik [ pezik_type ].filepath ) {
-        g_ramdisk.pezik [ pezik_type ].filepath = (char*) malloc ( len );
-    } else {
-        g_ramdisk.pezik [ pezik_type ].filepath = (char*) realloc ( g_ramdisk.pezik [ pezik_type ].filepath, len );
-    };
+    g_ramdisk.pezik[pezik_type].filepath = (char*) ui_utils_mem_realloc ( g_ramdisk.pezik[pezik_type].filepath, len );
 
-    if ( NULL == g_ramdisk.pezik [ pezik_type ].filepath ) {
-        fprintf ( stderr, "%s():%d - Could not allocate memory: %s\n", __func__, __LINE__, strerror ( errno ) );
-        main_app_quit ( EXIT_FAILURE );
-    };
-    strcpy ( g_ramdisk.pezik [ pezik_type ].filepath, filepath );
-#else
-    strncpy ( g_ramdisk.pezik [ pezik_type ].filepath, filepath, RAMDISK_FILENAME_LENGTH );
-    g_ramdisk.pezik [ pezik_type ].filepath[ RAMDISK_FILENAME_LENGTH - 1 ] = 0x00;
-#endif
+    strncpy ( g_ramdisk.pezik[pezik_type].filepath, filepath, len );
 
     if ( connect ) {
         ramdisk_pezik_connect ( pezik_type );
@@ -365,6 +356,9 @@ void ramdisk_init ( void ) {
     memset ( &g_ramdisk, 0x00, sizeof ( g_ramdisk ) );
     g_ramdisk.pezik[RAMDISK_PEZIK_E8].portmask = 0xff;
     g_ramdisk.pezik[RAMDISK_PEZIK_68].portmask = 0xff;
+    g_ramdisk.std.filepath = ui_utils_mem_alloc0 ( 1 );
+    g_ramdisk.pezik[RAMDISK_PEZIK_E8].filepath = (char*) ui_utils_mem_alloc0 ( 1 );
+    g_ramdisk.pezik[RAMDISK_PEZIK_68].filepath = (char*) ui_utils_mem_alloc0 ( 1 );
 
     CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "RAMDISK" );
 
@@ -375,24 +369,24 @@ void ramdisk_init ( void ) {
     cfgelement_set_handlers ( elm, NULL, (void*) &g_ramdisk.std.connected );
 
     elm = cfgmodule_register_new_element ( cmod, "mr1r18_type", CFGENTYPE_KEYWORD, RAMDISK_TYPE_SRAM,
-            RAMDISK_TYPE_STD, "STANDARD",
-            RAMDISK_TYPE_SRAM, "SRAM",
-            RAMDISK_TYPE_ROM, "ROM",
-            -1 );
+                                           RAMDISK_TYPE_STD, "STANDARD",
+                                           RAMDISK_TYPE_SRAM, "SRAM",
+                                           RAMDISK_TYPE_ROM, "ROM",
+                                           -1 );
     cfgelement_set_handlers ( elm, NULL, (void*) &g_ramdisk.std.type );
 
 
     elm = cfgmodule_register_new_element ( cmod, "mr1r18_size", CFGENTYPE_KEYWORD, RAMDISK_SIZE_1M,
-            RAMDISK_SIZE_64, "64K",
-            RAMDISK_SIZE_256, "256K",
-            RAMDISK_SIZE_512, "512K",
-            RAMDISK_SIZE_1M, "1M",
-            RAMDISK_SIZE_16M, "16M",
-            -1 );
+                                           RAMDISK_SIZE_64, "64K",
+                                           RAMDISK_SIZE_256, "256K",
+                                           RAMDISK_SIZE_512, "512K",
+                                           RAMDISK_SIZE_1M, "1M",
+                                           RAMDISK_SIZE_16M, "16M",
+                                           -1 );
     cfgelement_set_handlers ( elm, NULL, (void*) &g_ramdisk.std.size );
 
     elm = cfgmodule_register_new_element ( cmod, "mr1r18_filepath", CFGENTYPE_TEXT, RAMDISK_DEFAULT_FILENAME );
-    cfgelement_set_handlers ( elm, NULL, (void*) &g_ramdisk.std.filepath );
+    cfgelement_set_pointers ( elm, NULL, (void*) &g_ramdisk.std.filepath );
 
     /* pezik e8 */
     elm = cfgmodule_register_new_element ( cmod, "pezik_e8_pluged", CFGENTYPE_BOOL, RAMDISK_DISCONNECTED );
@@ -405,7 +399,7 @@ void ramdisk_init ( void ) {
     cfgelement_set_handlers ( elm, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_E8].backuped, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_E8].backuped );
 
     elm = cfgmodule_register_new_element ( cmod, "pezik_e8_filepath", CFGENTYPE_TEXT, RAMDISK_PEZIK_E8_DEFAULT_FILENAME );
-    cfgelement_set_handlers ( elm, NULL, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_E8].filepath );
+    cfgelement_set_pointers ( elm, NULL, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_E8].filepath );
 
     /* pezik 68 */
     elm = cfgmodule_register_new_element ( cmod, "pezik_68_pluged", CFGENTYPE_BOOL, RAMDISK_DISCONNECTED );
@@ -418,7 +412,7 @@ void ramdisk_init ( void ) {
     cfgelement_set_handlers ( elm, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_68].backuped, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_68].backuped );
 
     elm = cfgmodule_register_new_element ( cmod, "pezik_68_filepath", CFGENTYPE_TEXT, RAMDISK_PEZIK_68_DEFAULT_FILENAME );
-    cfgelement_set_handlers ( elm, NULL, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_68].filepath );
+    cfgelement_set_pointers ( elm, NULL, (void*) &g_ramdisk.pezik[RAMDISK_PEZIK_68].filepath );
 
     cfgmodule_set_propagate_cb ( cmod, ramdisk_propagatecfg, NULL );
 
@@ -437,10 +431,12 @@ void ramdisc_exit ( void ) {
     if ( ( g_ramdisk.std.connected ) && ( g_ramdisk.std.memory != NULL ) ) {
         free ( g_ramdisk.std.memory );
     };
+    ui_utils_mem_free ( g_ramdisk.std.filepath );
 
     for ( i = 0; i < 2; i++ ) {
-        if ( ( g_ramdisk.pezik [ i ]. connected ) && ( g_ramdisk.pezik [ i ]. memory != NULL ) ) {
-            free ( g_ramdisk.pezik [ i ]. memory );
+        if ( ( g_ramdisk.pezik[i].connected ) && ( g_ramdisk.pezik[i].memory != NULL ) ) {
+            free ( g_ramdisk.pezik[i].memory );
+            ui_utils_mem_free ( g_ramdisk.pezik[i].filepath );
         };
     };
 }

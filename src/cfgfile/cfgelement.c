@@ -485,6 +485,14 @@ void cfgelement_set_handlers ( st_CFGELEMENT *e, void *propagate_handler, void *
 }
 
 
+void cfgelement_set_pointers ( st_CFGELEMENT *e, void *propagate_pointer, void *save_pointer ) {
+    assert ( e != NULL );
+    assert ( e->type == CFGENTYPE_TEXT );
+    e->propagate_value_pointer = propagate_pointer;
+    e->save_value_pointer = save_pointer;
+}
+
+
 void cfgelement_propagate ( st_CFGELEMENT *e ) {
     assert ( e != NULL );
 
@@ -493,9 +501,31 @@ void cfgelement_propagate ( st_CFGELEMENT *e ) {
     };
 
     if ( NULL != e->propagate_value_handler ) {
+        void **value_pointer = cfgelement_get_variable_pointer ( e, CFGELVAR_VALUE );
         if ( ( e->type == CFGENTYPE_KEYWORD ) || ( e->type == CFGENTYPE_BOOL ) || ( e->type == CFGENTYPE_UNSIGNED ) ) {
-            void **value_pointer = cfgelement_get_variable_pointer ( e, CFGELVAR_VALUE );
             memcpy ( e->propagate_value_handler, *value_pointer, sizeof ( int ) );
+        } else if ( e->type == CFGENTYPE_TEXT ) {
+            // museli by jsme nekde ukladat i jeho max delku
+            fprintf ( stderr, "%s():%d - Can't propagate TEXT type element by handler\n", __func__, __LINE__ );
+        } else {
+            fprintf ( stderr, "%s():%d - Unknown element type: %d\n", __func__, __LINE__, e->type );
+        };
+    };
+
+    if ( NULL != e->propagate_value_pointer ) {
+        void **value_pointer = cfgelement_get_variable_pointer ( e, CFGELVAR_VALUE );
+        if ( e->type == CFGENTYPE_TEXT ) {
+            unsigned length = strlen ( (char*) *value_pointer ) + 1;
+            char **dst = e->propagate_value_pointer;
+            *dst = malloc ( length );
+            CFGCOMMON_MALLOC_ERROR ( *dst == NULL );
+            if ( length > 1 ) {
+                strncpy ( *dst, (char*) *value_pointer, length );
+            } else {
+                *dst[0] = 0x00;
+            };
+        } else {
+            fprintf ( stderr, "%s():%d - Unknown element type: %d\n", __func__, __LINE__, e->type );
         };
     };
 }
@@ -516,20 +546,31 @@ void cfgelement_save ( st_CFGELEMENT *e ) {
 
         if ( ( e->type == CFGENTYPE_KEYWORD ) || ( e->type == CFGENTYPE_BOOL ) || ( e->type == CFGENTYPE_UNSIGNED ) ) {
             int *dst = *value_pointer;
-            int src = * (int *) e->save_value_handler;
+            int src = *(int *) e->save_value_handler;
             *dst = src;
 
         } else if ( e->type == CFGENTYPE_TEXT ) {
             cfgcommon_set_text ( (char**) value_pointer, (char*) e->save_value_handler );
 
         } else {
-
+            fprintf ( stderr, "%s():%d - Unknown element type: %d\n", __func__, __LINE__, e->type );
             int save_unknown_element_type = 1;
             assert ( save_unknown_element_type == 0 );
         };
     };
 
+    if ( NULL != e->save_value_pointer ) {
+        void **value_pointer = cfgelement_get_variable_pointer ( e, CFGELVAR_VALUE );
+        if ( e->type == CFGENTYPE_TEXT ) {
+            char **src = e->save_value_pointer;
+            cfgcommon_set_text ( (char**) value_pointer, *src );
 
+        } else {
+            fprintf ( stderr, "%s():%d - Unknown element type: %d\n", __func__, __LINE__, e->type );
+            int save_unknown_element_type = 1;
+            assert ( save_unknown_element_type == 0 );
+        };
+    };
     /*
      * Tady zacina samotny save
      */
@@ -555,6 +596,7 @@ void cfgelement_save ( st_CFGELEMENT *e ) {
 
     } else {
 
+        fprintf ( stderr, "%s():%d - Unknown element type: %d\n", __func__, __LINE__, e->type );
         int save_unknown_element_type = 1;
         assert ( save_unknown_element_type == 0 );
     };

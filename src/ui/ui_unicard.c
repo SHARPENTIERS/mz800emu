@@ -29,6 +29,7 @@
 #include "unicard/unicard.h"
 
 #include "ui_main.h"
+#include "ui_file_chooser.h"
 #include "ui_utils.h"
 
 
@@ -62,14 +63,8 @@ G_MODULE_EXPORT void on_menuitem_unicard_settings_activate ( GtkMenuItem *menuit
 #endif
 
     char window_title[] = "Select directory for Unicard SD root";
-    char *dirpath = NULL;
-    ui_open_file ( &dirpath, unicard_get_sd_root_dirpath ( ), 0, FILETYPE_DIR, window_title, OPENMODE_DIRECTORY );
-
+    char *dirpath = ui_file_chooser_open_dir ( unicard_get_sd_root_dirpath ( ), window_title );
     if ( !dirpath ) return;
-
-    if ( dirpath[0] != 0x00 ) {
-        unicard_set_sd_root_dirpath ( dirpath );
-    };
-
+    unicard_set_sd_root_dirpath ( dirpath );
     ui_utils_mem_free ( dirpath );
 }
