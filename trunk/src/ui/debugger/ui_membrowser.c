@@ -947,6 +947,9 @@ static void ui_membrowser_init ( void ) {
 
     ui_membrowser_initialise_bank256_combobox ( );
 
+    // nefunguje pras nastaveni z glade
+    gtk_entry_set_input_purpose ( ui_get_entry ( "dbg_mebrowser_goto_addr_dec_entry" ), GTK_INPUT_PURPOSE_DIGITS );
+
     g_membrowser_initialised = TRUE;
 }
 
@@ -1053,6 +1056,7 @@ static void ui_membrowser_load_data_from_memsrc ( void ) {
 static void ui_membrowser_show ( void ) {
     GtkWidget *window = ui_get_widget ( "dbg_membrowser_window" );
     if ( gtk_widget_is_visible ( window ) ) return;
+
     ui_membrowser_init ( );
 
     if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_PEZIK_68 ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_PEZIK_E8 ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MZ1R18 ) ) {
@@ -1062,6 +1066,7 @@ static void ui_membrowser_show ( void ) {
     };
 
     gtk_combo_box_set_active ( ui_get_combo_box ( "dbg_membrowser_source_comboboxtext" ), g_membrowser.memsrc );
+    ui_membrowser_refresh ( );
 
     ui_main_win_move_to_pos ( GTK_WINDOW ( window ), &g_membrowser.main_pos );
     gtk_widget_show ( window );
@@ -1682,19 +1687,16 @@ G_MODULE_EXPORT void on_dbg_membrowser_refresh_button_clicked ( GtkButton *butto
 
 G_MODULE_EXPORT void on_dbg_mebrowser_goto_addr_hex_entry_changed ( GtkEditable *ed, gpointer user_data ) {
     if ( g_membrowser.lock_goto_entry ) return;
+    g_membrowser.lock_goto_entry = TRUE;
     ui_hexeditable_changed ( ed, user_data );
-
-    if ( !gtk_entry_get_text_length ( ui_get_entry ( "dbg_mebrowser_goto_addr_hex_entry" ) ) ) {
-        g_membrowser.lock_goto_entry = TRUE;
-        gtk_entry_set_text ( ui_get_entry ( "dbg_mebrowser_goto_addr_hex_entry" ), "0000" );
-        g_membrowser.lock_goto_entry = FALSE;
-    };
 
     Z80EX_WORD addr = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_mebrowser_goto_addr_hex_entry" ) ) );
 
     char buff[6];
-    snprintf ( buff, sizeof ( buff ), "%d", addr );
-    g_membrowser.lock_goto_entry = TRUE;
+    buff[0] = 0x00;
+    if ( gtk_entry_get_text_length ( ui_get_entry ( "dbg_mebrowser_goto_addr_hex_entry" ) ) ) {
+        snprintf ( buff, sizeof ( buff ), "%d", addr );
+    };
     gtk_entry_set_text ( ui_get_entry ( "dbg_mebrowser_goto_addr_dec_entry" ), buff );
     g_membrowser.lock_goto_entry = FALSE;
 }
@@ -1702,17 +1704,16 @@ G_MODULE_EXPORT void on_dbg_mebrowser_goto_addr_hex_entry_changed ( GtkEditable 
 
 G_MODULE_EXPORT void on_dbg_mebrowser_goto_addr_dec_entry_changed ( GtkEditable *ed, gpointer user_data ) {
     if ( g_membrowser.lock_goto_entry ) return;
-
-    if ( !gtk_entry_get_text_length ( ui_get_entry ( "dbg_mebrowser_goto_addr_dec_entry" ) ) ) {
-        g_membrowser.lock_goto_entry = TRUE;
-        gtk_entry_set_text ( ui_get_entry ( "dbg_mebrowser_goto_addr_dec_entry" ), "0" );
-        g_membrowser.lock_goto_entry = FALSE;
-    };
+    g_membrowser.lock_goto_entry = TRUE;
+    ui_digiteditable_changed ( ed, user_data );
 
     Z80EX_WORD addr = (Z80EX_WORD) atoi ( gtk_entry_get_text ( ui_get_entry ( "dbg_mebrowser_goto_addr_dec_entry" ) ) );
 
     char buff[5];
-    snprintf ( buff, sizeof ( buff ), "%04X", addr );
+    buff[0] = 0x00;
+    if ( gtk_entry_get_text_length ( ui_get_entry ( "dbg_mebrowser_goto_addr_dec_entry" ) ) ) {
+        snprintf ( buff, sizeof ( buff ), "%04X", addr );
+    };
     g_membrowser.lock_goto_entry = TRUE;
     gtk_entry_set_text ( ui_get_entry ( "dbg_mebrowser_goto_addr_hex_entry" ), buff );
     g_membrowser.lock_goto_entry = FALSE;

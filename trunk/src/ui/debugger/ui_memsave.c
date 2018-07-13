@@ -415,7 +415,10 @@ G_MODULE_EXPORT void on_dbg_memsave_size_hex_entry_changed ( GtkEditable *ed, gp
 
 G_MODULE_EXPORT void on_dbg_memsave_size_dec_entry_changed ( GtkEditable *ed, gpointer user_data ) {
     if ( g_ui_memsave_memaloc_lock ) return;
+    g_ui_memsave_memaloc_lock = TRUE;
 
+    ui_digiteditable_changed ( ed, user_data );
+    
     Z80EX_WORD addr_from = ui_memsave_get_from ( );
     int atoi_size = atoi ( gtk_entry_get_text ( ui_get_entry ( "dbg_memsave_size_dec_entry" ) ) );
 
@@ -424,10 +427,9 @@ G_MODULE_EXPORT void on_dbg_memsave_size_dec_entry_changed ( GtkEditable *ed, gp
         atoi_size = ( g_membrowser.mem_size - 1 );
         char buff[6];
         snprintf ( buff, sizeof ( buff ), "%d", atoi_size );
-        g_ui_memsave_memaloc_lock = TRUE;
         gtk_entry_set_text ( ui_get_entry ( "dbg_memsave_size_dec_entry" ), buff );
-        g_ui_memsave_memaloc_lock = FALSE;
     };
+    g_ui_memsave_memaloc_lock = FALSE;
 
     ui_memsave_set_to ( ( addr_from + (Z80EX_WORD) atoi_size ) & mask );
     ui_memsave_set_hex_size ( (Z80EX_WORD) atoi_size );
