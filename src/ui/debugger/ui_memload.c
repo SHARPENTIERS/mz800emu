@@ -99,35 +99,24 @@ static void ui_memload_check_size ( void ) {
 }
 
 
-static uint32_t ui_memload_get_offset ( void ) {
-    if ( !gtk_entry_get_text_length ( ui_get_entry ( "dbg_memload_offset_hex_entry" ) ) ) {
-        g_ui_memload_offset_lock = TRUE;
-        gtk_entry_set_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ), "0" );
-        g_ui_memload_offset_lock = FALSE;
-    };
-
-    return debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ) ) );
-}
-
-
 G_MODULE_EXPORT void on_dbg_memload_offset_hex_entry_changed ( GtkEditable *ed, gpointer user_data ) {
     if ( g_ui_memload_offset_lock ) return;
+    g_ui_memload_offset_lock = TRUE;
+
     ui_hexeditable_changed ( ed, user_data );
 
-    uint32_t offset = ui_memload_get_offset ( );
+    uint32_t offset = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ) ) );
 
     char buff[11];
 
     if ( offset >= g_memload_fsize ) {
         offset = g_memload_fsize - 1;
         snprintf ( buff, sizeof ( buff ), "%X", offset );
-        g_ui_memload_offset_lock = TRUE;
         gtk_entry_set_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ), buff );
-        g_ui_memload_offset_lock = FALSE;
     }
 
     snprintf ( buff, sizeof ( buff ), "%u", offset );
-    g_ui_memload_offset_lock = TRUE;
+
     gtk_entry_set_text ( ui_get_entry ( "dbg_memload_offset_dec_entry" ), buff );
     g_ui_memload_offset_lock = FALSE;
 
@@ -137,12 +126,9 @@ G_MODULE_EXPORT void on_dbg_memload_offset_hex_entry_changed ( GtkEditable *ed, 
 
 G_MODULE_EXPORT void on_dbg_memload_offset_dec_entry_changed ( GtkEditable *ed, gpointer user_data ) {
     if ( g_ui_memload_offset_lock ) return;
+    g_ui_memload_offset_lock = TRUE;
 
-    if ( !gtk_entry_get_text_length ( ui_get_entry ( "dbg_memload_offset_dec_entry" ) ) ) {
-        g_ui_memload_offset_lock = TRUE;
-        gtk_entry_set_text ( ui_get_entry ( "dbg_memload_offset_dec_entry" ), "0" );
-        g_ui_memload_offset_lock = FALSE;
-    };
+    ui_digiteditable_changed ( ed, user_data );
 
     uint32_t offset = atoi ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_offset_dec_entry" ) ) );
 
@@ -151,12 +137,9 @@ G_MODULE_EXPORT void on_dbg_memload_offset_dec_entry_changed ( GtkEditable *ed, 
     if ( offset >= g_memload_fsize ) {
         offset = g_memload_fsize - 1;
         snprintf ( buff, sizeof ( buff ), "%u", offset );
-        g_ui_memload_offset_lock = TRUE;
         gtk_entry_set_text ( ui_get_entry ( "dbg_memload_offset_dec_entry" ), buff );
-        g_ui_memload_offset_lock = FALSE;
     }
     snprintf ( buff, sizeof ( buff ), "%X", offset );
-    g_ui_memload_offset_lock = TRUE;
     gtk_entry_set_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ), buff );
     g_ui_memload_offset_lock = FALSE;
 
@@ -285,7 +268,10 @@ G_MODULE_EXPORT void on_dbg_memload_size_hex_entry_changed ( GtkEditable *ed, gp
 
 G_MODULE_EXPORT void on_dbg_memload_size_dec_entry_changed ( GtkEditable *ed, gpointer user_data ) {
     if ( g_ui_memload_memaloc_lock ) return;
+    g_ui_memload_memaloc_lock = TRUE;
 
+    ui_digiteditable_changed ( ed, user_data );
+    
     Z80EX_WORD addr_from = ui_memload_get_from ( );
     int atoi_size = atoi ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_dec_entry" ) ) );
 
@@ -294,10 +280,10 @@ G_MODULE_EXPORT void on_dbg_memload_size_dec_entry_changed ( GtkEditable *ed, gp
         atoi_size = ( g_membrowser.mem_size - 1 );
         char buff[6];
         snprintf ( buff, sizeof ( buff ), "%d", atoi_size );
-        g_ui_memload_memaloc_lock = TRUE;
+
         gtk_entry_set_text ( ui_get_entry ( "dbg_memload_size_dec_entry" ), buff );
-        g_ui_memload_memaloc_lock = FALSE;
     };
+    g_ui_memload_memaloc_lock = FALSE;
 
     ui_memload_set_to ( ( addr_from + (Z80EX_WORD) atoi_size ) & mask );
     ui_memload_set_hex_size ( (Z80EX_WORD) atoi_size );
@@ -316,7 +302,7 @@ void ui_memload_window_show ( void ) {
 
     char buff[11];
 
-    snprintf ( buff, sizeof ( buff ), "0x%04x", (unsigned) g_memload_fsize );
+    snprintf ( buff, sizeof ( buff ), "0x%04X", (unsigned) g_memload_fsize );
     gtk_label_set_text ( ui_get_label ( "dbg_memload_size_hex_label" ), buff );
 
     snprintf ( buff, sizeof ( buff ), "%d", (unsigned) g_memload_fsize );
@@ -366,7 +352,7 @@ void ui_memload_select_file ( void ) {
 G_MODULE_EXPORT void on_dbg_memload_ok_button_clicked ( GtkButton *button, gpointer user_data ) {
     ui_memload_window_hide ( );
 
-    uint32_t offset = ui_memload_get_offset ( );
+    uint32_t offset = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ) ) );
     Z80EX_WORD size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ) ) );
     Z80EX_WORD addr = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_from_entry" ) ) );
 

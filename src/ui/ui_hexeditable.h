@@ -34,6 +34,7 @@ extern "C" {
 #include "ui_main.h"
 
     extern void ui_hexeditable_changed ( GtkEditable *ed, gpointer user_data );
+    extern void ui_digiteditable_changed ( GtkEditable *ed, gpointer user_data );
 
 #ifdef __cplusplus
 }
