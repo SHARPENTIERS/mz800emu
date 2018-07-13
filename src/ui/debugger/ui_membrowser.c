@@ -56,6 +56,8 @@ static gboolean g_membrowser_initialised = FALSE;
 
 st_UI_MEMBROWSER g_membrowser;
 
+extern void ui_membrowser_show_page ( int page );
+
 
 static int ui_membrowser_get_page_by_addr ( Z80EX_WORD addr ) {
     return ( addr / MEMBROWSER_ADDRESSES_PER_PAGE );
@@ -376,7 +378,11 @@ static void ui_membrowser_edit_hex_fix_cursor_position_left ( void ) {
 }
 
 
-static void ui_membrowser_edit_hex_fix_cursor_position_right ( void ) {
+/**
+ * 
+ * @return TRUE - pokud vzniknul pozadavek k prechodu na novou stranku
+ */
+static gboolean ui_membrowser_edit_hex_fix_cursor_position_right ( void ) {
     GtkWidget *view = ui_get_widget ( "dbg_membrowser_textview" );
     GtkTextBuffer *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( view ) );
     GtkTextIter iter;
@@ -387,7 +393,7 @@ static void ui_membrowser_edit_hex_fix_cursor_position_right ( void ) {
         uint32_t offset = 5 + ( row * MEMBROWSER_ROW_LENGTH );
         gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
         gtk_text_buffer_place_cursor ( buffer, &iter );
-        return;
+        return FALSE;
     };
 
     col -= 5;
@@ -396,15 +402,26 @@ static void ui_membrowser_edit_hex_fix_cursor_position_right ( void ) {
         uint32_t offset = 5 + 52 + ( ( ( MEMBROWSER_MEM_MAX / 0x10 ) - 1 ) * MEMBROWSER_ROW_LENGTH );
         gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
         gtk_text_buffer_place_cursor ( buffer, &iter );
-        return;
+        return FALSE;
     };
 
     if ( col > 52 ) {
-        row++;
-        uint32_t offset = 5 + ( row * MEMBROWSER_ROW_LENGTH );
-        gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
-        gtk_text_buffer_place_cursor ( buffer, &iter );
-        return;
+        if ( row < MEMBROWSER_LINES_PER_PAGE - 1 ) {
+            row++;
+            uint32_t offset = 5 + ( row * MEMBROWSER_ROW_LENGTH );
+            gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
+            gtk_text_buffer_place_cursor ( buffer, &iter );
+        } else {
+            if ( g_membrowser.selected_addr != ( g_membrowser.mem_size - 1 ) ) {
+                return TRUE;
+            } else {
+                uint32_t offset;
+                offset = ( 5 + 12 + 2 + 12 + 2 + 12 + 2 + 10 ) + ( row * MEMBROWSER_ROW_LENGTH );
+                gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
+                gtk_text_buffer_place_cursor ( buffer, &iter );
+            };
+        };
+        return FALSE;
     };
 
     gint new_col = col;
@@ -450,6 +467,7 @@ static void ui_membrowser_edit_hex_fix_cursor_position_right ( void ) {
         gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
         gtk_text_buffer_place_cursor ( buffer, &iter );
     };
+    return FALSE;
 }
 
 
@@ -475,7 +493,11 @@ static void ui_membrowser_edit_ascii_fix_cursor_position_left ( void ) {
 }
 
 
-static void ui_membrowser_edit_ascii_fix_cursor_position_right ( void ) {
+/**
+ * 
+ * @return TRUE - pokud vzniknul pozadavek k prechodu na dalsi stranku
+ */
+static gboolean ui_membrowser_edit_ascii_fix_cursor_position_right ( void ) {
     GtkWidget *view = ui_get_widget ( "dbg_membrowser_textview" );
     GtkTextBuffer *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( view ) );
     GtkTextIter iter;
@@ -485,28 +507,47 @@ static void ui_membrowser_edit_ascii_fix_cursor_position_right ( void ) {
     col -= 5;
 
     if ( col > ( MEMBROWSER_ROW_LENGTH - 2 - 5 ) ) {
-        uint32_t offset;
-        offset = ( MEMBROWSER_ROW_LENGTH - 2 ) + ( row * MEMBROWSER_ROW_LENGTH );
-        gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
-        gtk_text_buffer_place_cursor ( buffer, &iter );
+        if ( row < MEMBROWSER_LINES_PER_PAGE - 1 ) {
+            row++;
+            uint32_t offset;
+            offset = ( MEMBROWSER_ROW_LENGTH - 17 ) + ( row * MEMBROWSER_ROW_LENGTH );
+            gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
+            gtk_text_buffer_place_cursor ( buffer, &iter );
+        } else {
+            if ( g_membrowser.selected_addr != ( g_membrowser.mem_size - 1 ) ) {
+                return TRUE;
+            } else {
+                uint32_t offset;
+                offset = ( MEMBROWSER_ROW_LENGTH - 2 ) + ( row * MEMBROWSER_ROW_LENGTH );
+                gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
+                gtk_text_buffer_place_cursor ( buffer, &iter );
+            };
+        };
     };
+    return FALSE;
 }
 
 
 static gboolean ui_membrowser_update_textbuffer_set_selected ( gpointer user_data ) {
-    Z80EX_WORD old_addr = g_membrowser.selected_addr;
-    g_membrowser.selected_addr = ui_membrowser_get_addr_by_cursor_position ( );
-    gint row, col;
-    ui_membrowser_get_cursor_position ( &row, &col );
-    ui_membrowser_update_addr_in_textview ( old_addr );
-    ui_membrowser_update_addr_in_textview ( g_membrowser.selected_addr );
-    uint32_t offset = col + ( row * MEMBROWSER_ROW_LENGTH );
-    GtkWidget *view = ui_get_widget ( "dbg_membrowser_textview" );
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( view ) );
-    GtkTextIter iter;
-    gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
-    gtk_text_buffer_place_cursor ( buffer, &iter );
-    ui_membrowser_update_selected_addr_label ( );
+    gboolean *next_page = (gboolean*) user_data;
+    if ( ( user_data == NULL ) || ( *next_page == FALSE ) ) {
+        Z80EX_WORD old_addr = g_membrowser.selected_addr;
+        g_membrowser.selected_addr = ui_membrowser_get_addr_by_cursor_position ( );
+        gint row, col;
+        ui_membrowser_get_cursor_position ( &row, &col );
+        ui_membrowser_update_addr_in_textview ( old_addr );
+        ui_membrowser_update_addr_in_textview ( g_membrowser.selected_addr );
+        uint32_t offset = col + ( row * MEMBROWSER_ROW_LENGTH );
+        GtkWidget *view = ui_get_widget ( "dbg_membrowser_textview" );
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( view ) );
+        GtkTextIter iter;
+        gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
+        gtk_text_buffer_place_cursor ( buffer, &iter );
+        ui_membrowser_update_selected_addr_label ( );
+    } else {
+        g_membrowser.selected_addr = ui_membrowser_get_first_addr_on_page ( g_membrowser.page );
+        ui_membrowser_show_page ( g_membrowser.page + 1 );
+    }
     return G_SOURCE_REMOVE;
 }
 
@@ -518,7 +559,7 @@ static void ui_membrowser_update_selected_addr ( void ) {
 }
 
 
-static void ui_membrowser_show_page ( int page ) {
+void ui_membrowser_show_page ( int page ) {
 
     g_membrowser.page = page;
     ui_membrowser_update_selected_page_label ( );
@@ -697,14 +738,12 @@ static void on_dbg_membrowser_textbuffer_changed ( GtkTextBuffer *textbuffer, gp
         } else {
             g_membrowser.data_current[addr] = halfbyte | ( g_membrowser.data_current[addr] &0xf0 );
         };
-        ui_membrowser_edit_hex_fix_cursor_position_right ( );
     } else {
         if ( g_membrowser.sh_ascii_conversion ) {
             g_membrowser.data_current[addr] = sharpmz_cnv_to ( c[0] );
         } else {
             g_membrowser.data_current[addr] = c[0];
         };
-        ui_membrowser_edit_ascii_fix_cursor_position_right ( );
     };
 
     g_free ( c );
@@ -730,7 +769,14 @@ static void on_dbg_membrowser_textbuffer_changed ( GtkTextBuffer *textbuffer, gp
         };
     };
 
-    gdk_threads_add_idle ( ui_membrowser_update_textbuffer_set_selected, NULL );
+    static gboolean next_page;
+    if ( g_membrowser.mode == MEMBROWSER_MODE_EDIT_HEX ) {
+        next_page = ui_membrowser_edit_hex_fix_cursor_position_right ( );
+    } else {
+        next_page = ui_membrowser_edit_ascii_fix_cursor_position_right ( );
+    };
+
+    gdk_threads_add_idle ( ui_membrowser_update_textbuffer_set_selected, &next_page );
 }
 
 
