@@ -34,6 +34,7 @@
 #include <strings.h>
 
 #include "ui/ui_main.h"
+#include "ui/ui_file_chooser.h"
 #include "debugger/debugger.h"
 #include "mz800.h"
 #include "ui_debugger.h"
@@ -105,18 +106,14 @@ G_MODULE_EXPORT void on_dbg_mem_load_mzf_menuitem_activate ( GtkCheckMenuItem *m
     (void) menuitem;
     (void) user_data;
 
+/*
     if ( !TEST_EMULATION_PAUSED ) {
         mz800_pause_emulation ( 1 );
     };
+*/
 
-    char window_title[] = "Select MZF to open";
-    char *filename = NULL;
-
-    if ( UIRET_OK != ui_open_file ( &filename, "", 0, FILETYPE_MZF, window_title, OPENMODE_READ ) ) return;
-
-    if ( filename == NULL ) {
-        filename = g_malloc0 ( 1 );
-    };
+    char *filename = ui_file_chooser_open_mzf("", (void*) ui_get_window("debugger_main_window"));
+    if ( filename == NULL ) return;
 
     st_HANDLER *h = generic_driver_open_memory_from_file ( NULL, g_driver, filename );
 

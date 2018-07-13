@@ -65,6 +65,7 @@
 #include <strings.h>
 #include <unistd.h>
 #include "ui/ui_main.h"
+#include "ui/ui_file_chooser.h"
 #include "ui/ui_utils.h"
 #include "ui/ui_qdisk.h"
 #include "cfgmain.h"
@@ -448,40 +449,9 @@ void qdisk_open ( void ) {
 void qdisk_mount ( void ) {
 
     if ( g_qdisk.type == QDISK_TYPE_IMAGE ) {
-        char window_title[] = "Select existing MZQ file to open or type new .mzq filename to create new image";
-        char filename [ QDISKK_FILENAME_LENGTH ];
 
-        unsigned err;
-
-        do {
-
-            err = 0;
-
-            filename[0] = 0x00;
-            char *filename_p = filename; // TODO: fixni mne
-            ui_open_file ( &filename_p, cfgelement_get_text_value ( g_elm_std_fp ), sizeof ( filename ), FILETYPE_MZQ, window_title, OPENMODE_READ_OR_NEW );
-
-            unsigned len = strlen ( filename );
-
-            if ( len == 0 ) {
-                return;
-            };
-
-            if ( len < 5 ) {
-                err = 1;
-            } else {
-                char *surfix = &filename [ len - 4 ];
-
-                if ( 0 != strcasecmp ( surfix, ".mzq" ) ) {
-                    err = 1;
-                };
-            };
-
-            if ( err ) {
-                ui_show_error ( "%s() - Bad MZQ image file name '%s'\nFilename width the \".mzq\" extension is required for creating new a QD image.", __func__, filename );
-            };
-
-        } while ( err );
+        char *filename = ui_file_chooser_open_mzq ( cfgelement_get_text_value ( g_elm_std_fp ) );
+        if ( !filename ) return;
 
         if ( ui_utils_file_access ( filename, F_OK ) == -1 ) {
             /* soubor neexistuje - vyrobime novy */
@@ -491,19 +461,16 @@ void qdisk_mount ( void ) {
 
         //printf ( "open MZQ: '%s'\n", filename );
         qdisk_open_image ( filename );
+        ui_utils_mem_free ( filename );
         ui_qdisk_set_path ( cfgelement_get_text_value ( g_elm_std_fp ) );
 
     } else {
         /* virtual QDISK */
-        char window_title[] = "Select directory for virtual Quick Disk";
-        char dirpath [ QDISKK_FILENAME_LENGTH ];
-        dirpath[0] = 0x00;
-        char *dirpath_p = dirpath; // TODO: fixni mne
-        ui_open_file ( &dirpath_p, cfgelement_get_text_value ( g_elm_virt_fp ), sizeof ( dirpath ), FILETYPE_DIR, window_title, OPENMODE_DIRECTORY );
-        if ( dirpath[0] != 0x00 ) {
-            qdisk_virt_open_directory ( dirpath );
-            ui_qdisk_set_path ( cfgelement_get_text_value ( g_elm_virt_fp ) );
-        };
+        char *dirpath = ui_file_chooser_open_qddir ( cfgelement_get_text_value ( g_elm_virt_fp ) );
+        if ( !dirpath ) return;
+        qdisk_virt_open_directory ( dirpath );
+        ui_utils_mem_free ( dirpath );
+        ui_qdisk_set_path ( cfgelement_get_text_value ( g_elm_virt_fp ) );
     };
 }
 

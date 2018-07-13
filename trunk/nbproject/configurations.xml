@@ -156,6 +156,7 @@
         <itemPath>src/ui/ui_display.h</itemPath>
         <itemPath>src/ui/ui_fcbutton.h</itemPath>
         <itemPath>src/ui/ui_fdc.h</itemPath>
+        <itemPath>src/ui/ui_file_chooser.h</itemPath>
         <itemPath>src/ui/ui_hexeditable.h</itemPath>
         <itemPath>src/ui/ui_joy.h</itemPath>
         <itemPath>src/ui/ui_main.h</itemPath>
@@ -358,6 +359,7 @@
         <itemPath>src/ui/ui_display.c</itemPath>
         <itemPath>src/ui/ui_fcbutton.c</itemPath>
         <itemPath>src/ui/ui_fdc.c</itemPath>
+        <itemPath>src/ui/ui_file_chooser.c</itemPath>
         <itemPath>src/ui/ui_hexeditable.c</itemPath>
         <itemPath>src/ui/ui_joy.c</itemPath>
         <itemPath>src/ui/ui_main.c</itemPath>
@@ -884,6 +886,10 @@
       <item path="src/ui/ui_fdc.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/ui_fdc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_file_chooser.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_file_chooser.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1471,6 +1477,10 @@
       </item>
       <item path="src/ui/ui_fdc.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/ui/ui_file_chooser.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_file_chooser.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
@@ -2047,6 +2057,10 @@
       <item path="src/ui/ui_fdc.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_fdc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_file_chooser.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_file_chooser.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2639,6 +2653,10 @@
       <item path="src/ui/ui_fdc.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/ui_fdc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_file_chooser.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_file_chooser.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -3234,6 +3252,10 @@
       </item>
       <item path="src/ui/ui_fdc.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/ui/ui_file_chooser.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_file_chooser.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
@@ -3824,6 +3846,10 @@
       <item path="src/ui/ui_fdc.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/ui_fdc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_file_chooser.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_file_chooser.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -4416,6 +4442,10 @@
       <item path="src/ui/ui_fdc.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/ui_fdc.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_file_chooser.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_file_chooser.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>

@@ -24,24 +24,25 @@
  */
 
 #ifndef RAMDISK_H
-#define	RAMDISK_H
+#define RAMDISK_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "z80ex/include/z80ex.h"
 
 #define RAMDISK_DEFAULT_FILENAME                "rd.dat"
-#define RAMDISK_PEZIK_E8_DEFAULT_FILENAME	"pezik_e8.dat"
-#define RAMDISK_PEZIK_68_DEFAULT_FILENAME	"pezik_68.dat"
+#define RAMDISK_PEZIK_E8_DEFAULT_FILENAME "pezik_e8.dat"
+#define RAMDISK_PEZIK_68_DEFAULT_FILENAME "pezik_68.dat"
 
 
-#define RAMDISK_IS_READONLY	( 1 << 1 )
-#define RAMDISK_IS_IN_FILE	( 1 << 0 )
+#define RAMDISK_IS_READONLY ( 1 << 1 )
+#define RAMDISK_IS_IN_FILE ( 1 << 0 )
 
 #define PEZIK_BACKUPED_NO       0
 #define PEZIK_BACKUPED_YES      1
+
 
     typedef enum en_RAMDISK_TYPE {
         RAMDISK_TYPE_STD = 0,
@@ -49,8 +50,9 @@ extern "C" {
         RAMDISK_TYPE_ROM = ( RAMDISK_IS_IN_FILE | RAMDISK_IS_READONLY )
     } en_RAMDISK_TYPE;
 
-#define RAMDISK_PEZIK_E8	0x01
-#define RAMDISK_PEZIK_68	0x00
+#define RAMDISK_PEZIK_E8 0x01
+#define RAMDISK_PEZIK_68 0x00
+
 
     typedef enum en_RAMDISK_BANKMASK {
         RAMDISK_SIZE_64 = 0x00,
@@ -64,7 +66,6 @@ extern "C" {
 #define RAMDISK_CONNECTED        1
 #define RAMDISK_DISCONNECTED     0
 
-#define RAMDISK_FILENAME_LENGTH 1024
 
     typedef struct st_RAMDISKPEZIK {
         unsigned connected;
@@ -72,19 +73,20 @@ extern "C" {
         unsigned portmask; /* 0x01 - 0xff */
         Z80EX_BYTE *memory;
         unsigned backuped;
-        //char *filepath;
-        char filepath [ RAMDISK_FILENAME_LENGTH ];
+        char *filepath;
     } st_RAMDISKPEZIK;
+
 
     typedef struct st_RAMDISKSTD {
         unsigned connected;
         en_RAMDISK_TYPE type;
         en_RAMDISK_BANKMASK size;
-        char filepath [ RAMDISK_FILENAME_LENGTH ];
+        char *filepath;
         Z80EX_WORD offset;
         Z80EX_BYTE bank;
         Z80EX_BYTE *memory;
     } st_RAMDISKSTD;
+
 
     typedef struct st_RAMDISK {
         st_RAMDISKSTD std;
@@ -102,10 +104,10 @@ extern "C" {
     extern void ramdisk_std_save ( void );
     extern void ramdisk_std_open_file ( void );
 
-    extern void ramdisk_pezik_init (int pezik_type, int connect, int portmask, int backuped, char *filepath );
+    extern void ramdisk_pezik_init ( int pezik_type, int connect, int portmask, int backuped, char *filepath );
     extern void ramdisk_pezik_connect ( int pezik_type );
     extern void ramdisk_pezik_disconnect ( int pezik_type );
-    
+
     extern Z80EX_BYTE ramdisk_std_read_byte ( unsigned addr );
     extern void ramdisk_std_write_byte ( unsigned addr, Z80EX_BYTE value );
 
@@ -114,9 +116,9 @@ extern "C" {
 
 
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* RAMDISK_H */
+#endif /* RAMDISK_H */
 

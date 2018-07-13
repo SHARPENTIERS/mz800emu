@@ -40,6 +40,7 @@ static st_DRIVER *g_driver = &g_ui_memory_driver_static;
 
 char *g_cmt_wav_fileext[] = {
                              "wav",
+                             "wave",
                              NULL
 };
 

@@ -24,9 +24,9 @@
  */
 
 #ifndef CFGELEMENT_H
-#define	CFGELEMENT_H
+#define CFGELEMENT_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -34,11 +34,13 @@ extern "C" {
     typedef void ( *cfgelement_propagate_cb_t ) (void *e, void *data );
     typedef void ( *cfgelement_save_cb_t ) (void *e, void *data );
 
+
     typedef enum en_CFGELVAR {
         CFGELVAR_VALUE,
         CFGELVAR_DEFAULT_VALUE,
         CFGELVAR_COUNT
     } en_CFGELVAR;
+
 
     typedef enum en_CFGELEMENTTYPE {
         CFGENTYPE_KEYWORD = 0,
@@ -48,10 +50,12 @@ extern "C" {
         CFGENTYPE_COUNT
     } en_CFGELEMENTTYPE;
 
+
     typedef union un_CFGELVALUE {
         int int_val;
         char *text_val;
     } un_CFGELVALUE;
+
 
     typedef struct st_CFGELPROPKEYWORD {
         char **keywords;
@@ -59,20 +63,24 @@ extern "C" {
         int words_count;
     } st_CFGELPROPKEYWORD;
 
+
     typedef struct st_CFGELPROPUNSIGNED {
         unsigned min;
         unsigned max;
     } st_CFGELPROPUNSIGNED;
+
 
     typedef struct st_CFGELPROPCB {
         cfgelement_propagate_cb_t exec;
         void *data;
     } st_CFGELPROPCB;
 
+
     typedef struct st_CFGELSAVECB {
         cfgelement_save_cb_t exec;
         void *data;
     } st_CFGELSAVECB;
+
 
     typedef struct st_CFGELEMENT {
         char *name;
@@ -89,9 +97,11 @@ extern "C" {
 
         st_CFGELPROPCB propagate_cb; /* pokud neni NULL, tak se provede pri propagate */
         void *propagate_value_handler; /* pokud neni NULL, tak se sem ulozi propagovana hodnota pri propagate (neplati pro CFGENTYPE_TEXT) */
+        void *propagate_value_pointer; /* pokud neni NULL, tak se sem ilozi adresa nove naalokovane pameti (plati pouze pro CFGENTYPE_TEXT)*/
 
         st_CFGELSAVECB save_cb; /* pokud neni NULL, tak se provede pred save */
         void *save_value_handler; /* podud neni NULL, tak se z nej precte a nastavi hodnota pro ulozeni */
+        void *save_value_pointer; /* podud neni NULL, tak se z nej precte adresa naalokovane pameti s obsahem CFGENTYPE_TEXT */
 
     } st_CFGELEMENT;
 
@@ -102,6 +112,7 @@ extern "C" {
     extern void cfgelement_set_save_cb ( st_CFGELEMENT *e, cfgelement_save_cb_t cbexec, void *cbdata );
 
     extern void cfgelement_set_handlers ( st_CFGELEMENT *e, void *propagate_handler, void *save_handler );
+    extern void cfgelement_set_pointers ( st_CFGELEMENT *e, void *propagate_pointer, void *save_pointer );
 
     extern void cfgelement_reset ( st_CFGELEMENT *e );
 
@@ -127,9 +138,9 @@ extern "C" {
 
     extern char* cfgelement_get_keyword_by_value ( st_CFGELEMENT *e );
     extern char* cfgelement_get_keyword_by_default_value ( st_CFGELEMENT *e );
-    
+
     extern int cfgelement_property_get_value_by_keyword ( st_CFGELPROPKEYWORD *pkw, char *key_word );
-    
+
     extern int cfgelement_property_test_unsigned_value ( st_CFGELPROPUNSIGNED *ppu, unsigned value );
 
     extern void cfgelement_propagate ( st_CFGELEMENT *e );
@@ -142,9 +153,9 @@ extern "C" {
     extern void cfgcommon_destroy_element ( st_CFGELEMENT *e );
 
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* CFGELEMENT_H */
+#endif /* CFGELEMENT_H */
 

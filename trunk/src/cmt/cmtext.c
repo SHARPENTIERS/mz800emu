@@ -69,16 +69,27 @@ void cmtext_exit ( void ) {
 }
 
 
+const char* cmtext_get_filename_extension ( const char *filename ) {
+    int end_pos = strlen ( filename ) - 1;
+    int pos = end_pos;
+    while ( pos ) {
+        if ( ( filename[pos] == '/' ) || ( filename[pos] == '\\' ) ) return NULL;
+        if ( filename[pos] == '.' ) {
+            break;
+        };
+        pos--;
+    };
+    if ( !pos ) return NULL;
+    pos++;
+    if ( pos == end_pos ) return NULL;
+    return &filename[pos];
+}
+
+
 st_CMTEXT* cmtext_get_extension ( const char *filename ) {
 
-    int filename_length = strlen ( filename );
-
-    if ( filename_length < 5 ) {
-        fprintf ( stderr, "%s():%d - Can't resolve file extension - '%s'\n", __func__, __LINE__, filename );
-        return NULL;
-    };
-
-    const char *file_ext = &filename[( filename_length - 3 )];
+    const char *file_ext = cmtext_get_filename_extension ( filename );
+    if ( !file_ext ) return NULL;
 
     int i;
     for ( i = 0; i < g_count_extensions; i++ ) {

@@ -26,12 +26,14 @@
 #include <stdio.h>
 #include <string.h>
 #include "ui/ui_main.h"
+#include "ui/ui_file_chooser.h"
 #include "ui/ui_hexeditable.h"
 #include "ui_dissassembler.h"
 #include "z80ex/include/z80ex_dasm.h"
 #include "debugger/debugger.h"
 #include "ui_debugger.h"
 #include "z80ex_common.h"
+#include "ui/ui_utils.h"
 
 
 static void ui_dissassembler_hide_window ( void ) {
@@ -66,51 +68,31 @@ G_MODULE_EXPORT void on_dissassembler_save_imagemenuitem_activate ( GtkCheckMenu
     (void) menuitem;
     (void) data;
 
-    GtkWidget *dialog;
-    GtkFileChooser *chooser;
-    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SAVE;
-    gint res;
+    char *filepath = ui_file_chooser_open_file ( "dissassembled.s", ui_filechooser_get_last_generic_dir ( ), "Save File", ui_get_window ( "dissassembler_window" ), FC_MODE_SAVE, NULL );
+    if ( !filepath ) return;
 
-    dialog = gtk_file_chooser_dialog_new ( "Save File",
-                                           ui_get_window ( "dissassembler_window" ),
-                                           action,
-                                           "_Cancel",
-                                           GTK_RESPONSE_CANCEL,
-                                           "_Save",
-                                           GTK_RESPONSE_ACCEPT,
-                                           NULL );
-    chooser = GTK_FILE_CHOOSER ( dialog );
-
-    gtk_file_chooser_set_do_overwrite_confirmation ( chooser, TRUE );
-
-    gtk_file_chooser_set_current_name ( chooser, "dissassembled.s" );
-
-    res = gtk_dialog_run ( GTK_DIALOG ( dialog ) );
-    if ( res == GTK_RESPONSE_ACCEPT ) {
-        char *filename;
-
-        filename = gtk_file_chooser_get_filename ( chooser );
-        printf ( "Save: %s\n", filename );
-        FILE *file = fopen ( filename, "w+b" );
-        if ( !file ) {
-            fprintf ( stderr, "%s():%d - Can't open file '%s'\n", __func__, __LINE__, filename );
-        } else {
-            GtkWidget *view = ui_get_widget ( "dissassembler_textview" );
-            GtkTextBuffer *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( view ) );
-            GtkTextIter start;
-            GtkTextIter end;
-            gtk_text_buffer_get_start_iter ( buffer, &start );
-            gtk_text_buffer_get_end_iter ( buffer, &end );
-            char *text = gtk_text_buffer_get_text ( buffer, &start, &end, FALSE );
-            fprintf ( file, "%s", text );
-            g_free ( text );
-            fclose ( file );
-        };
-        g_free ( filename );
-
+    printf ( "Save: %s\n", filepath );
+    FILE *file = fopen ( filepath, "w+b" );
+    if ( !file ) {
+        fprintf ( stderr, "%s():%d - Can't open file '%s'\n", __func__, __LINE__, filepath );
+    } else {
+        GtkWidget *view = ui_get_widget ( "dissassembler_textview" );
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( view ) );
+        GtkTextIter start;
+        GtkTextIter end;
+        gtk_text_buffer_get_start_iter ( buffer, &start );
+        gtk_text_buffer_get_end_iter ( buffer, &end );
+        char *text = gtk_text_buffer_get_text ( buffer, &start, &end, FALSE );
+        fprintf ( file, "%s", text );
+        g_free ( text );
+        fclose ( file );
     };
 
-    gtk_widget_destroy ( dialog );
+    char *dirpath = g_path_get_dirname ( filepath );
+    ui_filechooser_set_last_generic_dir ( dirpath );
+
+    ui_utils_mem_free ( dirpath );
+    ui_utils_mem_free ( filepath );
 }
 
 

@@ -427,7 +427,7 @@ void ui_cmt_window_update ( void ) {
 
     int total_blocks = 0;
     int play_block = 0;
-    st_CMTEXT_CONTAINER *container;
+    st_CMTEXT_CONTAINER *container = NULL;
 
     if ( TEST_CMT_FILLED ) {
         container = cmtext_get_container ( g_cmt.ext );
@@ -706,7 +706,7 @@ void ui_cmt_update_player ( void ) {
 
     char buff [ 100 ];
 
-    sprintf ( buff, "<b><span font='50'>%s%02d:%02d</span></b>", minus, ( print_time / 60 ), ( print_time % 60 ) );
+    snprintf ( buff, sizeof ( buff ), "<b><span font='50'>%s%02d:%02d</span></b>", minus, ( print_time / 60 ), ( print_time % 60 ) );
     gtk_label_set_markup ( ui_get_label ( "cmt_time_label" ), buff );
 
     gtk_progress_bar_set_fraction ( ui_get_progress_bar ( "cmt_progressbar" ), fraction );

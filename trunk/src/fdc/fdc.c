@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 
 #include "wd279x.h"
 #include "mz800.h"
@@ -31,7 +32,9 @@
 #include "fdc.h"
 
 #include "ui/ui_main.h"
+#include "ui/ui_file_chooser.h"
 #include "ui/ui_fdc.h"
+#include "ui/ui_utils.h"
 
 #include "cfgmain.h"
 
@@ -123,13 +126,17 @@ void fdc_mount ( unsigned drive_id ) {
         return;
     };
 
-    char window_title[] = "Select DSK file to open";
-    char filename [ DSK_FILENAME_LENGTH ];
-
-    filename[0] = 0x00;
-    char *filename_p = filename; // TODO: fixni mne
-    ui_open_file ( &filename_p, g_fdc.wd279x.drive[drive_id].filename, sizeof ( filename ), FILETYPE_DSK, window_title, OPENMODE_READ );
-    fdc_mount_dskfile ( drive_id, filename );
+    char *filename = ui_file_chooser_open_dsk ( g_fdc.wd279x.drive[drive_id].filename );
+    if ( filename ) {
+        if ( strlen ( filename ) < DSK_FILENAME_LENGTH ) {
+            fdc_mount_dskfile ( drive_id, filename );
+        } else {
+            ui_show_warning ( "Sorry, filepath is too big (%d).", strlen ( filename ) );
+        };
+        ui_utils_mem_free ( filename );
+    } else {
+        fdc_mount_dskfile ( drive_id, "" );
+    };
 }
 
 

@@ -36,10 +36,6 @@ extern "C" {
 #define UI_TOPMENU_IS_WINDOW
 #endif
 
-
-#define UIRET_OK        0
-#define UIRET_FAILED    1
-
 #define UI_USE_ERRORLOG 
 
 #ifdef UI_USE_ERRORLOG
@@ -73,30 +69,9 @@ extern "C" {
     } st_UIWINPOS;
 
 
-    typedef enum en_FILETYPE {
-        FILETYPE_MZF,
-        FILETYPE_DSK,
-        FILETYPE_DAT,
-        FILETYPE_MZQ,
-        FILETYPE_DIR,
-        FILETYPE_ALLCMTFILES,
-        FILETYPES_COUNT
-    } en_FILETYPE;
-
-
-    typedef enum en_OPENMODE {
-        OPENMODE_READ = 1,
-        OPENMODE_SAVE = 2,
-        OPENMODE_READ_OR_NEW = 3, /* OPENMODE_READ | OPENMODE_SAVE */
-        OPENMODE_DIRECTORY = 4,
-    } en_OPENMODE;
-
-
     typedef struct st_UI {
         GtkBuilder *builder;
         unsigned calback_lock;
-        char *last_folder [ FILETYPES_COUNT ];
-        en_FILETYPE last_filetype;
         st_UIWINPOS filebrowser_pos;
         unsigned disable_hotkeys;
     } st_UI;
@@ -114,8 +89,6 @@ extern "C" {
     extern void ui_main_win_move_to_pos ( GtkWindow *w, st_UIWINPOS *wpos );
     extern void ui_main_win_get_pos ( GtkWindow *w, st_UIWINPOS *wpos );
 
-    extern unsigned ui_open_file ( char **filename, char *predefined_filename, unsigned filename_size, en_FILETYPE filetype, char *window_title, en_OPENMODE mode );
-
     extern void ui_iteration ( void );
     extern void ui_show_hide_main_menu ( void );
 
@@ -125,8 +98,6 @@ extern "C" {
 
     extern void ui_main_update_cpu_speed_menu ( unsigned state );
     extern void ui_main_update_emulation_state ( unsigned state );
-
-    extern void ui_update_last_folder_value ( en_FILETYPE file_type, char *value );
 
     extern void ui_main_update_rear_dip_switch_mz800_mode ( unsigned state );
     extern void ui_main_update_rear_dip_switch_cmt_inverted_polarity ( unsigned state );
