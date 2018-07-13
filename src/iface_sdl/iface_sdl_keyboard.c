@@ -66,10 +66,10 @@ static inline void iface_sdl_keyboard_scan_col0 ( const Uint8 *state ) {
     if ( state [ SDL_SCANCODE_TAB ] ) {
         PIO8255_MZKEYBIT_RESET ( 0, 3 ); /* TAB */
     };
-    if ( state [ SDL_SCANCODE_SEMICOLON ] ) {
+    if ( ( state [ SDL_SCANCODE_SEMICOLON ] ) || ( state [ SDL_SCANCODE_KP_PLUS ] ) ) {
         PIO8255_MZKEYBIT_RESET ( 0, 2 ); /* ; */
     };
-    if ( state [ SDL_SCANCODE_APOSTROPHE ] ) {
+    if ( ( state [ SDL_SCANCODE_APOSTROPHE ] ) || ( state [ SDL_SCANCODE_KP_MULTIPLY ] ) ) {
         PIO8255_MZKEYBIT_RESET ( 0, 1 ); /* : */
     };
     /* samotny RETURN udajne zlobi na nejakem notebooku s winXP pri aktivnim NumLock */
@@ -192,37 +192,37 @@ static inline void iface_sdl_keyboard_scan_col4 ( const Uint8 *state ) {
 }
 
 
-static inline void iface_sdl_keyboard_scan_col5 ( const Uint8 *state ) {
+static inline void iface_sdl_keyboard_scan_col5 ( const Uint8 *state, SDL_Keymod kmod ) {
     /* 1 2 3 4 5 6 7 8 */
 
-    if ( state [ SDL_SCANCODE_1 ] ) {
+    if ( ( state [ SDL_SCANCODE_1 ] ) || ( ( kmod & KMOD_NUM ) && ( state[SDL_SCANCODE_KP_1] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 5, 7 ); /* 1 */
     };
-    if ( state [ SDL_SCANCODE_2 ] ) {
+    if ( ( state [ SDL_SCANCODE_2 ] ) || ( ( kmod & KMOD_NUM ) && ( state[SDL_SCANCODE_KP_2] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 5, 6 ); /* 2 */
     };
-    if ( state [ SDL_SCANCODE_3 ] ) {
+    if ( ( state [ SDL_SCANCODE_3 ] ) || ( ( kmod & KMOD_NUM ) && ( state[SDL_SCANCODE_KP_3] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 5, 5 ); /* 3 */
     };
-    if ( state [ SDL_SCANCODE_4 ] ) {
+    if ( ( state [ SDL_SCANCODE_4 ] ) || ( ( kmod & KMOD_NUM ) && ( state[SDL_SCANCODE_KP_4] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 5, 4 ); /* 4 */
     };
-    if ( state [ SDL_SCANCODE_5 ] ) {
+    if ( ( state [ SDL_SCANCODE_5 ] ) || ( ( kmod & KMOD_NUM ) && ( state[SDL_SCANCODE_KP_5] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 5, 3 ); /* 5 */
     };
-    if ( state [ SDL_SCANCODE_6 ] ) {
+    if ( ( state [ SDL_SCANCODE_6 ] ) || ( ( kmod & KMOD_NUM ) && ( state[SDL_SCANCODE_KP_6] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 5, 2 ); /* 6 */
     };
-    if ( state [ SDL_SCANCODE_7 ] ) {
+    if ( ( state [ SDL_SCANCODE_7 ] ) || ( ( kmod & KMOD_NUM ) && ( state[SDL_SCANCODE_KP_7] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 5, 1 ); /* 7 */
     };
-    if ( state [ SDL_SCANCODE_8 ] ) {
+    if ( ( state [ SDL_SCANCODE_8 ] ) || ( ( kmod & KMOD_NUM ) && ( state[SDL_SCANCODE_KP_8] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 5, 0 ); /* 8 */
     };
 }
 
 
-static inline void iface_sdl_keyboard_scan_col6 ( const Uint8 *state ) {
+static inline void iface_sdl_keyboard_scan_col6 ( const Uint8 *state, SDL_Keymod kmod ) {
     /* \ ~ - SPACE 0 9 , . */
 
     if ( state [ SDL_SCANCODE_F7 ] ) {
@@ -231,55 +231,55 @@ static inline void iface_sdl_keyboard_scan_col6 ( const Uint8 *state ) {
     if ( state [ SDL_SCANCODE_EQUALS ] ) {
         PIO8255_MZKEYBIT_RESET ( 6, 6 ); /* ~ */
     };
-    if ( state [ SDL_SCANCODE_MINUS ] ) {
+    if ( ( state [ SDL_SCANCODE_MINUS ] ) || ( state[SDL_SCANCODE_KP_MINUS] ) ) {
         PIO8255_MZKEYBIT_RESET ( 6, 5 ); /* - */
     };
     if ( state [ SDL_SCANCODE_SPACE ] ) {
         PIO8255_MZKEYBIT_RESET ( 6, 4 ); /* SPACE */
     };
-    if ( state [ SDL_SCANCODE_0 ] ) {
+    if ( ( state [ SDL_SCANCODE_0 ] ) || ( ( kmod & KMOD_NUM ) && ( state[SDL_SCANCODE_KP_0] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 6, 3 ); /* 0 */
     };
-    if ( state [ SDL_SCANCODE_9 ] ) {
+    if ( ( state [ SDL_SCANCODE_9 ] ) || ( ( kmod & KMOD_NUM ) && ( state[SDL_SCANCODE_KP_9] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 6, 2 ); /* 9 */
     };
     if ( state [ SDL_SCANCODE_COMMA ] ) {
         PIO8255_MZKEYBIT_RESET ( 6, 1 ); /* , */
     };
-    if ( state [ SDL_SCANCODE_PERIOD ] ) {
+    if ( ( state [ SDL_SCANCODE_PERIOD ] ) || ( ( kmod & KMOD_NUM ) && ( state[SDL_SCANCODE_KP_PERIOD] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 6, 0 ); /* . */
     };
 }
 
 
-static inline void iface_sdl_keyboard_scan_col7 ( const Uint8 *state ) {
+static inline void iface_sdl_keyboard_scan_col7 ( const Uint8 *state, SDL_Keymod kmod ) {
     /* INST DEL UP DOWN RIGHT LEFT ? / */
 
-    if ( state [ SDL_SCANCODE_INSERT ] ) {
+    if ( ( state [ SDL_SCANCODE_INSERT ] ) || ( ( !( kmod & KMOD_NUM ) ) && ( state[SDL_SCANCODE_KP_0] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 7, 7 ); /* INSERT */
     };
-    if ( state [ SDL_SCANCODE_DELETE ] ) {
+    if ( ( state [ SDL_SCANCODE_DELETE ] ) || ( ( !( kmod & KMOD_NUM ) ) && ( state[SDL_SCANCODE_KP_PERIOD] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 7, 6 ); /* DELETE */
     };
     if ( state [ SDL_SCANCODE_BACKSPACE ] ) {
         PIO8255_MZKEYBIT_RESET ( 7, 6 ); /* DELETE */
     };
-    if ( state [ SDL_SCANCODE_UP ] ) {
+    if ( ( state [ SDL_SCANCODE_UP ] ) || ( ( !( kmod & KMOD_NUM ) ) && ( state[SDL_SCANCODE_KP_8] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 7, 5 ); /* UP */
     };
-    if ( state [ SDL_SCANCODE_DOWN ] ) {
+    if ( ( state [ SDL_SCANCODE_DOWN ] ) || ( ( !( kmod & KMOD_NUM ) ) && ( state[SDL_SCANCODE_KP_2] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 7, 4 ); /* DOWN */
     };
-    if ( state [ SDL_SCANCODE_RIGHT ] ) {
+    if ( ( state [ SDL_SCANCODE_RIGHT ] ) || ( ( !( kmod & KMOD_NUM ) ) && ( state[SDL_SCANCODE_KP_6] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 7, 3 ); /* RIGHT */
     };
-    if ( state [ SDL_SCANCODE_LEFT ] ) {
+    if ( ( state [ SDL_SCANCODE_LEFT ] ) || ( ( !( kmod & KMOD_NUM ) ) && ( state[SDL_SCANCODE_KP_4] ) ) ) {
         PIO8255_MZKEYBIT_RESET ( 7, 2 ); /* LEFT */
     };
     if ( state [ SDL_SCANCODE_F8 ] ) {
         PIO8255_MZKEYBIT_RESET ( 7, 1 ); /* ? */
     };
-    if ( state [ SDL_SCANCODE_SLASH ] ) {
+    if ( ( state [ SDL_SCANCODE_SLASH ] ) || ( state[SDL_SCANCODE_KP_DIVIDE] ) ) {
         PIO8255_MZKEYBIT_RESET ( 7, 0 ); /* / */
     };
 }
@@ -302,6 +302,12 @@ static inline void iface_sdl_keyboard_scan_col8 ( const Uint8 *state ) {
     };
     if ( state [ SDL_SCANCODE_RSHIFT ] ) {
         PIO8255_MZKEYBIT_RESET ( 8, 0 ); /* SHIFT */
+    };
+    if ( state [ SDL_SCANCODE_KP_PLUS ] ) {
+        PIO8255_MZKEYBIT_RESET ( 8, 0 ); /* SHIFT + ; = PLUS */
+    };
+    if ( state [ SDL_SCANCODE_KP_MULTIPLY ] ) {
+        PIO8255_MZKEYBIT_RESET ( 8, 0 ); /* SHIFT + : = * */
     };
 }
 
@@ -367,6 +373,7 @@ static inline void iface_sdl_joy_num_keypad_scan ( const Uint8 *state, Z80EX_BYT
 
 void iface_sdl_full_keyboard_scan ( void ) {
     const Uint8 *state = SDL_GetKeyboardState ( NULL );
+    SDL_Keymod kmod = SDL_GetModState ( );
     if ( state[SDL_SCANCODE_LALT] ) return;
     pio8255_keyboard_matrix_reset ( );
     iface_sdl_keyboard_scan_col0 ( state );
@@ -374,9 +381,9 @@ void iface_sdl_full_keyboard_scan ( void ) {
     iface_sdl_keyboard_scan_col2 ( state );
     iface_sdl_keyboard_scan_col3 ( state );
     iface_sdl_keyboard_scan_col4 ( state );
-    iface_sdl_keyboard_scan_col5 ( state );
-    iface_sdl_keyboard_scan_col6 ( state );
-    iface_sdl_keyboard_scan_col7 ( state );
+    iface_sdl_keyboard_scan_col5 ( state, kmod );
+    iface_sdl_keyboard_scan_col6 ( state, kmod );
+    iface_sdl_keyboard_scan_col7 ( state, kmod );
     iface_sdl_keyboard_scan_col8 ( state );
     iface_sdl_keyboard_scan_col9 ( state );
 
