@@ -1,6 +1,5 @@
 #!/bin/sh
 
-
 PROJECT_NAME="mz800emu"
 
 if [ "${1}" != "Release-Win32" ]; then
@@ -151,6 +150,15 @@ PACKAGE_DIRS="
 	${PACKAGE_TOP_DIR}/runtime/sdl-2 \
 	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/glib-2.0/schemas \
 	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/locale/pt_BR/LC_MESSAGES \
+	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/icons/gnome/8x8/mimetypes \
+	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/icons/gnome/8x8/mimetypes \
+	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/icons/gnome/32x32/mimetypes \
+	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/icons/gnome/scalable/mimetypes \
+	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/icons/gnome/24x24/mimetypes \
+	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/icons/gnome/22x22/mimetypes \
+	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/icons/gnome/48x48/mimetypes \
+	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/icons/gnome/16x16/mimetypes \
+	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/icons/hicolor \
 "
 
 

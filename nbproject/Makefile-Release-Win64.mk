@@ -63,6 +63,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/gdg/gdg.o \
 	${OBJECTDIR}/src/gdg/hwscroll.o \
 	${OBJECTDIR}/src/gdg/vramctrl.o \
+	${OBJECTDIR}/src/ide8/ide8.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_audio.o \
 	${OBJECTDIR}/src/iface_sdl/iface_sdl_joy.o \
@@ -134,6 +135,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/ui_fdc.o \
 	${OBJECTDIR}/src/ui/ui_file_chooser.o \
 	${OBJECTDIR}/src/ui/ui_hexeditable.o \
+	${OBJECTDIR}/src/ui/ui_ide8.o \
 	${OBJECTDIR}/src/ui/ui_joy.o \
 	${OBJECTDIR}/src/ui/ui_main.o \
 	${OBJECTDIR}/src/ui/ui_qdisk.o \
@@ -317,6 +319,11 @@ ${OBJECTDIR}/src/gdg/vramctrl.o: src/gdg/vramctrl.c
 	${MKDIR} -p ${OBJECTDIR}/src/gdg
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/gdg/vramctrl.o src/gdg/vramctrl.c
+
+${OBJECTDIR}/src/ide8/ide8.o: src/ide8/ide8.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ide8
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ide8/ide8.o src/ide8/ide8.c
 
 ${OBJECTDIR}/src/iface_sdl/iface_sdl.o: src/iface_sdl/iface_sdl.c 
 	${MKDIR} -p ${OBJECTDIR}/src/iface_sdl
@@ -672,6 +679,11 @@ ${OBJECTDIR}/src/ui/ui_hexeditable.o: src/ui/ui_hexeditable.c
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_hexeditable.o src/ui/ui_hexeditable.c
+
+${OBJECTDIR}/src/ui/ui_ide8.o: src/ui/ui_ide8.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_ide8.o src/ui/ui_ide8.c
 
 ${OBJECTDIR}/src/ui/ui_joy.o: src/ui/ui_joy.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui
