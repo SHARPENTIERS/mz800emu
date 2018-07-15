@@ -106,3 +106,9 @@ Novinky a zmeny v emulaci:
 
 	- pridana podpora numericke klavesnice
 
+	- pridana zjednodusena implementace IDE8 
+	  (podporovano systemem NIPOS - https://www.ordoz.com/mz800emu/files/nipos/ )
+
+Obecne:
+
+	- prizpusobeni interface pro SDL-2.0.5

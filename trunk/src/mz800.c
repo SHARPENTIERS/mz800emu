@@ -54,6 +54,7 @@
 #include "qdisk/qdisk.h"
 #include "joy/joy.h"
 #include "unicard/unicard.h"
+#include "ide8/ide8.h"
 
 #include "src/iface_sdl/iface_sdl.h"
 #include "iface_sdl/iface_sdl_audio.h"
@@ -171,6 +172,7 @@ void mz800_reset ( void ) {
     pioz80_reset ( );
     fdc_reset ( );
     unicard_reset ( );
+    ide8_reset ( );
 
     cmthack_reset ( );
 
@@ -186,6 +188,7 @@ void mz800_exit ( void ) {
     ramdisc_exit ( );
     cmt_exit ( );
     unicard_exit ( );
+    ide8_exit ( );
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     debugger_exit ( );
 #endif
@@ -1132,6 +1135,7 @@ void mz800_init ( void ) {
     qdisk_init ( );
     joy_init ( );
     unicard_init ( );
+    ide8_init ( );
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     debugger_init ( );

@@ -1305,6 +1305,63 @@ Directory will be initialised when Unicard is connected.</property>
                   </object>
                 </child>
                 <child>
+                  <object class="GtkMenuItem" id="menuitem3">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">IDE8</property>
+                    <property name="use_underline">True</property>
+                    <child type="submenu">
+                      <object class="GtkMenu" id="menu23">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="menuitem_ide8_hdd0_connected">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="tooltip_text" translatable="yes">IDE8 HDD0 Master is supported by NIPOS operating system</property>
+                            <property name="label" translatable="yes">HDD0 Master - Connected</property>
+                            <property name="use_underline">True</property>
+                            <signal name="toggled" handler="on_menuitem_ide8_hdd0_connected_toggled" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_ide8_hdd0_image">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Set HDD0 Master Image...</property>
+                            <property name="use_underline">True</property>
+                            <signal name="activate" handler="on_menuitem_ide8_hdd0_image_activate" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem26">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="menuitem_ide8_hdd1_connected">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">HDD1 Slave - Connected</property>
+                            <property name="use_underline">True</property>
+                            <signal name="toggled" handler="on_menuitem_ide8_hdd1_connected_toggled" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_ide8_hdd1_image">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Set HDD1 Slave Image...</property>
+                            <property name="use_underline">True</property>
+                            <signal name="activate" handler="on_menuitem_ide8_hdd1_image_activate" swapped="no"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
                   <object class="GtkMenuItem" id="menuitem_display">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>

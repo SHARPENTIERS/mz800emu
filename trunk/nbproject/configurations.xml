@@ -84,6 +84,9 @@
           <itemPath>src/gdg/video.h</itemPath>
           <itemPath>src/gdg/vramctrl.h</itemPath>
         </logicalFolder>
+        <logicalFolder name="f15" displayName="IDE8" projectFiles="true">
+          <itemPath>src/ide8/ide8.h</itemPath>
+        </logicalFolder>
         <logicalFolder name="f13" displayName="JOY" projectFiles="true">
           <itemPath>src/joy/joy.h</itemPath>
         </logicalFolder>
@@ -158,6 +161,7 @@
         <itemPath>src/ui/ui_fdc.h</itemPath>
         <itemPath>src/ui/ui_file_chooser.h</itemPath>
         <itemPath>src/ui/ui_hexeditable.h</itemPath>
+        <itemPath>src/ui/ui_ide8.h</itemPath>
         <itemPath>src/ui/ui_joy.h</itemPath>
         <itemPath>src/ui/ui_main.h</itemPath>
         <itemPath>src/ui/ui_qdisk.h</itemPath>
@@ -257,6 +261,9 @@
           <itemPath>src/gdg/gdg.c</itemPath>
           <itemPath>src/gdg/hwscroll.c</itemPath>
           <itemPath>src/gdg/vramctrl.c</itemPath>
+        </logicalFolder>
+        <logicalFolder name="f15" displayName="IDE8" projectFiles="true">
+          <itemPath>src/ide8/ide8.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f13" displayName="JOY" projectFiles="true">
           <itemPath>src/joy/joy.c</itemPath>
@@ -361,6 +368,7 @@
         <itemPath>src/ui/ui_fdc.c</itemPath>
         <itemPath>src/ui/ui_file_chooser.c</itemPath>
         <itemPath>src/ui/ui_hexeditable.c</itemPath>
+        <itemPath>src/ui/ui_ide8.c</itemPath>
         <itemPath>src/ui/ui_joy.c</itemPath>
         <itemPath>src/ui/ui_main.c</itemPath>
         <itemPath>src/ui/ui_qdisk.c</itemPath>
@@ -562,6 +570,10 @@
       <item path="src/gdg/vramctrl.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ide8/ide8.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ide8/ide8.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/iface_sdl/iface_sdl.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -895,6 +907,10 @@
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/ui/ui_ide8.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_ide8.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ui/ui_joy.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_joy.h" ex="false" tool="3" flavor2="0">
@@ -1156,6 +1172,10 @@
       </item>
       <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/ide8/ide8.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ide8/ide8.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/iface_sdl/iface_sdl.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/iface_sdl/iface_sdl.h" ex="false" tool="3" flavor2="0">
@@ -1484,6 +1504,10 @@
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_ide8.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_ide8.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_joy.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1737,6 +1761,10 @@
       </item>
       <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/ide8/ide8.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ide8/ide8.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/iface_sdl/iface_sdl.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/iface_sdl/iface_sdl.h" ex="false" tool="3" flavor2="0">
@@ -2065,6 +2093,10 @@
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_ide8.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_ide8.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_joy.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2326,6 +2358,10 @@
       <item path="src/gdg/vramctrl.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ide8/ide8.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ide8/ide8.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/iface_sdl/iface_sdl.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -2661,6 +2697,10 @@
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_ide8.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_ide8.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_joy.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2925,6 +2965,10 @@
       </item>
       <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/ide8/ide8.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ide8/ide8.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/iface_sdl/iface_sdl.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/iface_sdl/iface_sdl.h" ex="false" tool="3" flavor2="0">
@@ -3260,6 +3304,10 @@
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/ui/ui_ide8.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_ide8.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ui/ui_joy.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_joy.h" ex="false" tool="3" flavor2="0">
@@ -3522,6 +3570,10 @@
       <item path="src/gdg/vramctrl.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ide8/ide8.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ide8/ide8.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/iface_sdl/iface_sdl.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -3854,6 +3906,10 @@
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_ide8.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_ide8.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_joy.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -4119,6 +4175,10 @@
       </item>
       <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/ide8/ide8.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ide8/ide8.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/iface_sdl/iface_sdl.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/iface_sdl/iface_sdl.h" ex="false" tool="3" flavor2="0">
@@ -4450,6 +4510,10 @@
       <item path="src/ui/ui_hexeditable.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/ui_hexeditable.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/ui_ide8.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/ui_ide8.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/ui_joy.c" ex="false" tool="0" flavor2="0">
       </item>

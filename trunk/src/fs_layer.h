@@ -72,6 +72,7 @@ extern "C" {
 #define FS_LAYER_FCLOSE(fh) fclose ( fh )
 
 #define FS_LAYER_FSEEK(fh,offset)   fseek ( fh, offset, SEEK_SET )
+#define FS_LAYER_FSEEK_END(fh,offset)   fseek ( fh, offset, SEEK_END )
 
 #define FS_LAYER_FREAD(fh,buffer,count_bytes,readlen) fs_layer_fread( &fh, buffer, count_bytes, readlen )
 #define FS_LAYER_FWRITE(fh,buffer,count_bytes,writelen) fs_layer_fwrite( &fh, buffer, count_bytes, writelen )

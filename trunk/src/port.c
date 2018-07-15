@@ -41,6 +41,7 @@
 #include "qdisk/qdisk.h"
 #include "joy/joy.h"
 #include "unicard/unicard.h"
+#include "ide8/ide8.h"
 
 
 
@@ -81,6 +82,22 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
             /* cteme posunuty Pezik: 0x68 - 0x6f */
             if ( g_ramdisk.pezik [ RAMDISK_PEZIK_68 ].connected ) {
                 retval = ramdisk_pezik_read_byte ( port );
+            } else {
+                retval = g_mz800.regDBUS_latch;
+            };
+            break;
+
+        case 0x78:
+        case 0x79:
+        case 0x7a:
+        case 0x7b:
+        case 0x7c:
+        case 0x7d:
+        case 0x7e:
+        case 0x7f:
+            /* cteme IDE8: 0x78 - 0x7f */
+            if ( TEST_IDE8_CONNECTED ) {
+                retval = ide8_read_byte ( port_lsb & 0x07 );
             } else {
                 retval = g_mz800.regDBUS_latch;
             };
@@ -259,6 +276,20 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
             /* zapisujeme na posunuty Pezik: 0x68 - 0x6f */
             if ( g_ramdisk.pezik [ RAMDISK_PEZIK_68 ].connected ) {
                 ramdisk_pezik_write_byte ( port, value );
+            };
+            break;
+
+        case 0x78:
+        case 0x79:
+        case 0x7a:
+        case 0x7b:
+        case 0x7c:
+        case 0x7d:
+        case 0x7e:
+        case 0x7f:
+            /* zapisujeme na IDE8: 0x78 - 0x7f */
+            if ( TEST_IDE8_CONNECTED ) {
+                ide8_write_byte ( port_lsb & 0x07, value );
             };
             break;
 
