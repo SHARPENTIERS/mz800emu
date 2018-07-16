@@ -170,7 +170,7 @@ G_MODULE_EXPORT void on_dissassembler_start_button_clicked ( GtkButton *button, 
 
 
 G_MODULE_EXPORT gboolean on_dissassembler_from_entry_key_press_event ( GtkWidget *widget, GdkEventKey *event, gpointer user_data ) {
-    if ( event->keyval == GDK_KEY_Return ) {
+    if ( ( event->keyval == GDK_KEY_Return ) || ( event->keyval == GDK_KEY_KP_Enter ) ) {
         if ( gtk_entry_get_text_length ( GTK_ENTRY ( widget ) ) ) {
             gtk_widget_grab_focus ( ui_get_widget ( "dissassembler_to_entry" ) );
             return TRUE;
@@ -181,7 +181,7 @@ G_MODULE_EXPORT gboolean on_dissassembler_from_entry_key_press_event ( GtkWidget
 
 
 G_MODULE_EXPORT gboolean on_dissassembler_to_entry_key_press_event ( GtkWidget *widget, GdkEventKey *event, gpointer user_data ) {
-    if ( event->keyval == GDK_KEY_Return ) {
+    if ( ( event->keyval == GDK_KEY_Return ) || ( event->keyval == GDK_KEY_KP_Enter ) ) {
         if ( gtk_entry_get_text_length ( GTK_ENTRY ( widget ) ) ) {
             ui_dissassembler_start ( );
             return TRUE;

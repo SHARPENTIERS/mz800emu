@@ -985,7 +985,7 @@ G_MODULE_EXPORT gboolean on_dbg_breakpoints_window_key_press_event ( GtkWidget *
         ui_breakpoints_hide_window ( );
         return TRUE;
     } else if ( g_uibpoints.add_event_focus == 1 ) {
-        if ( event->keyval == GDK_KEY_Return ) {
+        if ( ( event->keyval == GDK_KEY_Return ) || ( event->keyval == GDK_KEY_KP_Enter ) ) {
             gtk_button_clicked ( GTK_BUTTON ( ui_get_widget ( "bpt_add_event_button" ) ) );
         };
     };
