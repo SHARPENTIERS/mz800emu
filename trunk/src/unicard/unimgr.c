@@ -467,6 +467,32 @@ void do_cmdOPEN ( en_UNIMGR_CMDSTATE cmd_phase ) {
 }
 
 
+/* do_cmdFDDMOUNT()
+ *
+ * Provede remount FDD a ulozi konfiguraci.
+ */
+static void do_cmdFDDMOUNT ( en_UNIMGR_CMDSTATE cmd_phase ) {
+
+    if ( UNIMGR_CMDSTATE_START == cmd_phase ) {
+        g_unimgr.param_format = "BS";
+        unimgr_input_params ( cmd_phase, 0 );
+    } else {
+        // zpracovani prikazu
+        if ( 3 < g_unimgr.buf_byte[0] ) {
+            // DBGPRINTF ( DBGERR, "do_cmdFDDMOUNT() - invalid FDD id '0x%02lx'!\n", MZFrepo.buf_byte[0] );
+            // TODO: unicard err code: INVALID_PARAMETER
+            return;
+        };
+#ifdef UNICARD_EMULATED
+        unicard_fdc_mount ( g_unimgr.buf_byte[0], (char*) &g_unimgr.buf_byte[1] );
+#else
+#error "Not implemented command cmdFDDMOUNT!"
+#endif
+        g_unimgr.cmd_phase = UNIMGR_CMDSTATE_DONE;
+        g_unimgr.sts_err = UNIMGR_STS_OK;
+    };
+}
+
 #ifdef UNICARD_EMULATED
 
 
@@ -559,6 +585,10 @@ static void unimgr_write_CMD ( uint8_t data ) {
             g_unimgr.cmd_phase = UNIMGR_CMDSTATE_DOUTRQ;
             break;
 
+        case cmdFDDMOUNT:
+            do_cmdFDDMOUNT ( UNIMGR_CMDSTATE_START );
+            break;
+
         case cmdCHDIR:
             do_cmdCHDIR ( UNIMGR_CMDSTATE_START );
             break;
@@ -631,6 +661,10 @@ static void unimgr_write_param ( uint8_t data ) {
             do_cmdOPEN ( UNIMGR_CMDSTATE_PARAMOK );
             break;
 
+        case cmdFDDMOUNT:
+            do_cmdFDDMOUNT ( UNIMGR_CMDSTATE_PARAMOK );
+            break;
+
         default:
             fprintf ( stderr, "%s():%d - Not implemented UNIMGR command 0x%02x!\n", __func__, __LINE__, g_unimgr.cmd );
     };
@@ -641,8 +675,8 @@ static void unimgr_write_DATA ( uint8_t data ) {
     g_unimgr.sts_err = UNIMGR_STS_ERROR;
     if ( UNIMGR_CMDSTATE_PARAMRQ == g_unimgr.cmd_phase ) {
         unimgr_write_param ( data );
-    } else {
-        fprintf ( stderr, "%s():%d - Write to file is not implemented\n", __func__, __LINE__ );
+    } else if ( EXIT_SUCCESS == unicard_file_is_open ( &g_unimgr.file ) ) {
+        fprintf ( stderr, "%s():%d - Write to file is not implemented (0x%02x)\n", __func__, __LINE__, data );
     };
 }
 

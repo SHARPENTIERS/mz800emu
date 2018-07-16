@@ -111,12 +111,17 @@ extern "C" {
     extern int unicard_file_is_open ( st_UNICARD_FILE *file );
     extern int unicard_file_is_eof ( st_UNICARD_FILE *file );
 
+    extern void unicard_fdc_mount ( uint8_t drive_id, char *filepath );
+
 #define TEST_UNICARD_CONNECTED ( g_unicard.connected == UNICARD_CONNECTION_CONNECTED )
 
 #define UNICARD_DEFAULT_SD_ROOT     "SD"
 #define UNICARD_DEFAULT_DIR_MODE     0775
 
 #define UNICARD_UNIMGR_DIR                  "unicard"
+    // /unicard/fd0.cfg
+#define UNICARD_FDCFG_FILE1                 "/unicard/fd"
+#define UNICARD_FDCFG_FILE2                 ".cfg"
 
 #define UNICARD_UNIMGR_MZFLOADER_MZQ        "mzfloader.mzq"
 #define UNICARD_UNIMGR_MZFLOADER_CFG        "mzfloader.cfg"
