@@ -46,6 +46,7 @@
 #include "unimgr.h"
 #include "MGR_MZF.h"
 #include "MZFLOADER_MZQ.h"
+#include "fdc/fdc.h"
 
 st_UNICARD g_unicard;
 
@@ -558,6 +559,30 @@ FRESULT unicard_file_open ( st_UNICARD_FILE *file, char *filepath, uint8_t fa_mo
     char *naked_filepath = unicard_create_naked_filepath ( filepath );
     char *full_filepath = g_build_filename ( unicard_get_sd_root_dirpath ( ), naked_filepath, NULL );
 
+    // fdc hack
+    int fdcfg1_len = strlen ( UNICARD_FDCFG_FILE1 );
+    if ( ( 0 == strncmp ( naked_filepath, UNICARD_FDCFG_FILE1, fdcfg1_len ) ) &&
+         ( 0 == strcmp ( &naked_filepath[( fdcfg1_len + 1 )], UNICARD_FDCFG_FILE2 ) ) &&
+         ( fa_mode == FA_READ ) ) {
+
+        int drive_id = naked_filepath[fdcfg1_len] - '0';
+        if ( ( drive_id >= 0 ) && ( drive_id <= 3 ) ) {
+            const char *dsk_filepath = fdc_get_dsk_filepath ( drive_id );
+            FILE *fh = g_fopen ( full_filepath, "wb" );
+            if ( ( dsk_filepath ) && dsk_filepath[0] != 0x00 ) {
+                int len = strlen ( unicard_get_sd_root_dirpath ( ) );
+                if ( 0 == strncmp ( dsk_filepath, unicard_get_sd_root_dirpath ( ), len ) ) {
+                    fprintf ( fh, "%s\n", &dsk_filepath[len] );
+                } else {
+                    char *basename = g_path_get_basename ( dsk_filepath );
+                    fprintf ( fh, "***mz800emu path*** '%s'\n", basename );
+                    ui_utils_mem_free ( basename );
+                };
+            };
+            fclose ( fh );
+        };
+    };
+
     if ( !g_file_test ( full_filepath, G_FILE_TEST_EXISTS ) ) {
         fprintf ( stderr, "%s():%d - File not exists '%s'\n", __func__, __LINE__, full_filepath );
         ui_utils_mem_free ( full_filepath );
@@ -568,6 +593,8 @@ FRESULT unicard_file_open ( st_UNICARD_FILE *file, char *filepath, uint8_t fa_mo
     file->fh = g_fopen ( full_filepath, mode );
 
     if ( !file->fh ) {
+
+
         fprintf ( stderr, "%s():%d - Cant open: %s, in mode '%s'\n", __func__, __LINE__, full_filepath, mode );
         ui_utils_mem_free ( full_filepath );
         ui_utils_mem_free ( naked_filepath );
@@ -598,4 +625,24 @@ int unicard_file_is_eof ( st_UNICARD_FILE *file ) {
     if ( file->fh == NULL ) return EXIT_FAILURE;
     if ( feof ( file->fh ) == 0 ) return EXIT_FAILURE;
     return EXIT_SUCCESS;
+}
+
+
+void unicard_fdc_mount ( uint8_t drive_id, char *filepath ) {
+    //printf ( "unicard_fdc_mount (FD%d): '%s'\n", drive_id, filepath );
+
+    if ( filepath[0] != 0x00 ) {
+        char *naked_filepath = unicard_create_naked_filepath ( filepath );
+        char *full_filepath = g_build_filename ( unicard_get_sd_root_dirpath ( ), naked_filepath, NULL );
+
+        if ( !g_file_test ( full_filepath, G_FILE_TEST_EXISTS ) ) {
+            fprintf ( stderr, "%s():%d - File not exists '%s'\n", __func__, __LINE__, full_filepath );
+        } else {
+            fdc_mount_dskfile ( drive_id, full_filepath );
+        };
+        ui_utils_mem_free ( full_filepath );
+        ui_utils_mem_free ( naked_filepath );
+    } else {
+        fdc_umount ( drive_id );
+    };
 }

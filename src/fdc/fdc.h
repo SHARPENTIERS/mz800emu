@@ -24,9 +24,9 @@
  */
 
 #ifndef FDC_H
-#define	FDC_H
+#define FDC_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -35,6 +35,7 @@ extern "C" {
 
 #define FDC_CONNECTED        1
 #define FDC_DISCONNECTED     0
+
 
     typedef struct st_FDC {
         unsigned connected;
@@ -54,12 +55,15 @@ extern "C" {
 
     extern void fdc_mount ( unsigned drive_id );
     extern void fdc_umount ( unsigned drive_id );
-    
+
     extern void ui_fdc_set_dsk ( unsigned drive_id, char *dsk_filename );
-    
-#ifdef	__cplusplus
+
+    extern void fdc_mount_dskfile ( unsigned drive_id, char *filename );
+    extern const char* fdc_get_dsk_filepath ( unsigned drive_id );
+
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* FDC_H */
+#endif /* FDC_H */
 

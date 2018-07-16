@@ -70,6 +70,12 @@ void fdc_propagatecfg_fdd ( void *e, void *data ) {
 }
 
 
+const char* fdc_get_dsk_filepath ( unsigned drive_id ) {
+    if ( drive_id <= 3 ) return g_fdc.wd279x.drive[drive_id].filename;
+    return NULL;
+}
+
+
 void fdc_init ( void ) {
 
     wd279x_init ( &g_fdc.wd279x, "Master FDC" );
