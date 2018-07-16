@@ -231,7 +231,7 @@ G_MODULE_EXPORT gboolean on_window_qdisk_new_key_press_event ( GtkWidget *widget
         GtkWidget *window = ui_get_widget ( "window_qdisk_new" );
         gtk_widget_hide ( window );
         return TRUE;
-    } else if ( event->keyval == GDK_KEY_Return ) {
+    } else if ( ( event->keyval == GDK_KEY_Return ) || ( event->keyval == GDK_KEY_KP_Enter ) ) {
         gtk_button_clicked ( GTK_BUTTON ( ui_get_widget ( "button_qdisk_new_ok" ) ) );
 
     };

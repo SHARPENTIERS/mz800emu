@@ -1813,7 +1813,7 @@ G_MODULE_EXPORT void on_dbg_membrowser_goto_addr_button_clicked ( GtkButton *but
 
 
 G_MODULE_EXPORT gboolean on_dbg_mebrowser_goto_addr_hex_entry_key_press_event ( GtkWidget *widget, GdkEventKey *event, gpointer user_data ) {
-    if ( event->keyval == GDK_KEY_Return ) {
+    if ( ( event->keyval == GDK_KEY_Return ) || ( event->keyval == GDK_KEY_KP_Enter ) ) {
         ui_membrowser_goto_addr_action ( );
     };
     return FALSE;
@@ -1821,7 +1821,8 @@ G_MODULE_EXPORT gboolean on_dbg_mebrowser_goto_addr_hex_entry_key_press_event ( 
 
 
 G_MODULE_EXPORT gboolean on_dbg_mebrowser_goto_addr_dec_entry_key_press_event ( GtkWidget *widget, GdkEventKey *event, gpointer user_data ) {
-    if ( event->keyval == GDK_KEY_Return ) {
+    printf ( "k: 0x%04x\n", event->keyval );
+    if ( ( event->keyval == GDK_KEY_Return ) || ( event->keyval == GDK_KEY_KP_Enter ) ) {
         ui_membrowser_goto_addr_action ( );
     };
     return FALSE;
