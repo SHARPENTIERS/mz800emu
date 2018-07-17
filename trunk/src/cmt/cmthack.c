@@ -137,21 +137,29 @@ void cmthack_install_rom_patch ( void ) {
 
 
 void cmthack_reinstall_rom_patch ( void ) {
-    if ( g_cmthack.load_patch_installed ) {
-        cmthack_install_rom_patch ( );
+    if ( ( g_rom.type != ROMTYPE_USER_DEFINED ) || ( g_rom.user_defined_cmthack_type == ROM_CMTHACK_DEFAULT ) ) {
+        if ( g_cmthack.load_patch_installed ) {
+            cmthack_install_rom_patch ( );
+        };
     };
+    ui_cmt_hack_menu_update ( );
 }
 
 
 void cmthack_load_rom_patch ( unsigned enabled ) {
 
-    if ( enabled ) {
-        cmthack_install_rom_patch ( );
-    } else {
-        memcpy ( &g_memory.ROM [ 0x04d8 ], &g_rom.mz700rom [ 0x04d8 ], 8 );
-        memcpy ( &g_memory.ROM [ 0x04f8 ], &g_rom.mz700rom [ 0x04f8 ], 15 );
+    if ( ( g_rom.type != ROMTYPE_USER_DEFINED ) || ( g_rom.user_defined_cmthack_type == ROM_CMTHACK_DEFAULT ) ) {
+        if ( enabled ) {
+            cmthack_install_rom_patch ( );
+        } else {
+            memcpy ( &g_memory.ROM [ 0x04d8 ], &g_rom.mz700rom [ 0x04d8 ], 8 );
+            memcpy ( &g_memory.ROM [ 0x04f8 ], &g_rom.mz700rom [ 0x04f8 ], 15 );
+        };
+        g_cmthack.load_patch_installed = enabled & 1;
+    } else if ( g_rom.user_defined_cmthack_type == ROM_CMTHACK_CUSTOM ) {
+        g_cmthack.load_patch_installed = enabled & 1;
+        rom_reinstall ( ROMTYPE_USER_DEFINED );
     };
-    g_cmthack.load_patch_installed = enabled & 1;
 
     ui_cmt_hack_menu_update ( );
 }
