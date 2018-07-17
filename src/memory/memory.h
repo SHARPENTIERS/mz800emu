@@ -51,11 +51,6 @@ extern "C" {
      * Velikost jednotlivych pameti
      * 
      */
-#define MEMORY_SIZE_ROM_MZ700 0x1000
-#define MEMORY_SIZE_ROM_CGROM 0x1000
-#define MEMORY_SIZE_ROM_MZ800 0x2000
-
-#define MEMORY_SIZE_ROM  MEMORY_SIZE_ROM_MZ700 + MEMORY_SIZE_ROM_CGROM + MEMORY_SIZE_ROM_MZ800
 #define MEMORY_SIZE_RAM  0x10000
 
 #define MEMORY_SIZE_VRAM_BANK 0x2000
@@ -101,7 +96,7 @@ extern "C" {
      */
     typedef struct st_MEMORY {
         Z80EX_BYTE map;
-        Z80EX_BYTE ROM [ MEMORY_SIZE_ROM ];
+        Z80EX_BYTE ROM [ ROM_SIZE_TOTAL ];
         Z80EX_BYTE RAM [ MEMORY_SIZE_RAM ];
         Z80EX_BYTE VRAM [ MEMORY_SIZE_VRAM ];
         Z80EX_BYTE EXVRAM [ MEMORY_SIZE_VRAM ];

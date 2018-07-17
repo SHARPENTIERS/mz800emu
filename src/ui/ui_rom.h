@@ -24,18 +24,18 @@
  */
 
 #ifndef UI_ROM_H
-#define	UI_ROM_H
+#define UI_ROM_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
     extern void ui_rom_menu_update ( void );
+    extern void ui_rom_settings_open_window ( void );
 
-
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* UI_ROM_H */
+#endif /* UI_ROM_H */
 

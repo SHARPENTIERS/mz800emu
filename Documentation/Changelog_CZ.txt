@@ -99,7 +99,8 @@ Novinky a zmeny v emulaci:
 	  a nabootuje se Unicard Manager.
 	  Prozatim je implementovano jen cteni RTC, nastaveni pracovniho
 	  adresare, cteni adresare v rezimu FILELIST, otevreni a cteni
-	  souboru, cteni statusu.
+	  souboru, cteni statusu. Dale je mozne mountovat a ejectovat DSK z
+	  SDROOT.
 
 	- filechooser: u MZF souboru je v nahledu zobrazeno info z MZF
 	  headeru
@@ -108,6 +109,8 @@ Novinky a zmeny v emulaci:
 
 	- pridana zjednodusena implementace IDE8 
 	  (podporovano systemem NIPOS - https://www.ordoz.com/mz800emu/files/nipos/ )
+
+	- nyni lze definovat externi ROM s podporou CMT hack
 
 Obecne:
 

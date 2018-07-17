@@ -24,13 +24,19 @@
  */
 
 #ifndef ROM_H
-#define	ROM_H
+#define ROM_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "z80ex/include/z80ex.h"
+
+#define ROM_SIZE_MZ700 0x1000
+#define ROM_SIZE_CGROM 0x1000
+#define ROM_SIZE_MZ800 0x2000
+
+#define ROM_SIZE_TOTAL  ROM_SIZE_MZ700 + ROM_SIZE_CGROM + ROM_SIZE_MZ800
 
 
     extern const Z80EX_BYTE c_ROM_MZ700 [];
@@ -67,6 +73,7 @@ extern "C" {
     extern const Z80EX_BYTE c_ROM_WILLY_jap_CGROM [];
     extern const Z80EX_BYTE c_ROM_WILLY_jap_MZ800 [];
 
+
     typedef enum en_ROMTYPE {
         ROMTYPE_STANDARD = 0,
         ROMTYPE_JSS103,
@@ -79,21 +86,60 @@ extern "C" {
         ROMTYPE_USER_DEFINED,
     } en_ROMTYPE;
 
+
+    typedef enum en_ROM_BOOL {
+        ROM_BOOL_NO = 0,
+        ROM_BOOL_YES = 1
+    } en_ROM_BOOL;
+
+
+    typedef enum en_ROM_CMTHACK {
+        ROM_CMTHACK_DISABLED = 0,
+        ROM_CMTHACK_DEFAULT,
+        ROM_CMTHACK_CUSTOM
+    } en_ROM_CMTHACK;
+
+
+    typedef struct st_ROM_AREA {
+        const Z80EX_BYTE mz700rom[ROM_SIZE_MZ700];
+        const Z80EX_BYTE cgrom[ROM_SIZE_CGROM];
+        const Z80EX_BYTE mz800rom[ROM_SIZE_MZ800];
+    } st_ROM_AREA;
+
+
     typedef struct st_ROM {
         en_ROMTYPE type;
         const Z80EX_BYTE *mz700rom;
         const Z80EX_BYTE *cgrom;
         const Z80EX_BYTE *mz800rom;
+        en_ROM_BOOL user_defined_allinone;
+        char *user_defined_allinone_fp;
+        char *user_defined_mz700_fp;
+        char *user_defined_cgrom_fp;
+        char *user_defined_mz800_fp;
+        en_ROM_CMTHACK user_defined_cmthack_type;
+        en_ROM_BOOL user_defined_cmthack_allinone;
+        char *user_defined_cmthack_allinone_fp;
+        char *user_defined_cmthack_mz700_fp;
+        char *user_defined_cmthack_cgrom_fp;
+        char *user_defined_cmthack_mz800_fp;
+        st_ROM_AREA rom_user_defined;
+        st_ROM_AREA rom_user_defined_cmthack;
+        en_ROM_BOOL user_defined_rom_loaded;
     } st_ROM;
 
     extern st_ROM g_rom;
 
     extern void rom_init ( void );
     extern void rom_reinstall ( en_ROMTYPE romtype );
+    extern int rom_user_defined_check_filepath ( char **filepath, en_ROM_BOOL clear );
+    extern int rom_user_defined_check_size ( char **filepath, uint32_t size, en_ROM_BOOL clear );
+    extern void rom_set_user_defined_filepath ( char **dst, char *src );
+    extern int rom_user_defined_rom_area_load ( st_ROM_AREA *dst, en_ROM_BOOL allinone, char *allinone_fp, char *mz700_fp, char *cgrom_fp, char *mz800_fp );
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* ROM_H */
+#endif /* ROM_H */
 
