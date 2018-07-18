@@ -70,6 +70,7 @@
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 #include "debugger/debugger.h"
+#include "ui/debugger/ui_debugger.h"
 #include "ui/debugger/ui_breakpoints.h"
 #include "debugger/ui_membrowser.h"
 #include "debugger/ui_dissassembler.h"
@@ -825,3 +826,18 @@ G_MODULE_EXPORT void on_menuitem_joystick_setup_activate ( GtkMenuItem *menuitem
 
     ui_joy_show_window ( );
 }
+
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+
+
+void ui_main_debugger_windows_refresh ( void ) {
+
+    if ( gtk_widget_is_visible ( ui_get_widget ( "dbg_membrowser_window" ) ) ) ui_membrowser_refresh ( );
+
+    if ( gtk_widget_is_visible ( ui_get_widget ( "debugger_main_window" ) ) ) {
+        ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
+        ui_debugger_update_stack ( );
+    };
+}
+
+#endif

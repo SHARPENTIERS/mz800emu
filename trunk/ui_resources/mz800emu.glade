@@ -610,15 +610,15 @@ From time when data were real zeros and ones and computers were
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkAdjustment" id="joy2_trig1_button_adjustment">
-    <property name="lower">-1</property>
-    <property name="upper">100</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">10</property>
-  </object>
   <object class="GtkAdjustment" id="joy2_horizontal_center_adjustment">
     <property name="lower">-32768</property>
     <property name="upper">32767</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
+  <object class="GtkAdjustment" id="joy2_trig1_button_adjustment">
+    <property name="lower">-1</property>
+    <property name="upper">100</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
@@ -1507,6 +1507,186 @@ Directory will be initialised when Unicard is connected.</property>
                             <property name="label" translatable="yes">Set HDD1 Slave Image...</property>
                             <property name="use_underline">True</property>
                             <signal name="activate" handler="on_menuitem_ide8_hdd1_image_activate" swapped="no"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkMenuItem" id="menuitem4">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">MemExt</property>
+                    <property name="use_underline">True</property>
+                    <child type="submenu">
+                      <object class="GtkMenu" id="menu24">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <child>
+                          <object class="GtkRadioMenuItem" id="radiomenuitem_memext_notconnected">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">_Not Connected</property>
+                            <property name="use_underline">True</property>
+                            <property name="draw_as_radio">True</property>
+                            <signal name="toggled" handler="on_memext_connection_changed" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem27">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkRadioMenuItem" id="radiomenuitem_memext_pehu">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Model ´Peroutka &amp; Hucik´</property>
+                            <property name="use_underline">True</property>
+                            <property name="draw_as_radio">True</property>
+                            <property name="group">radiomenuitem_memext_notconnected</property>
+                            <signal name="toggled" handler="on_memext_connection_changed" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkRadioMenuItem" id="radiomenuitem_memext_luftner">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Model ´Luftner´</property>
+                            <property name="use_underline">True</property>
+                            <property name="draw_as_radio">True</property>
+                            <property name="group">radiomenuitem_memext_notconnected</property>
+                            <signal name="toggled" handler="on_memext_connection_changed" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem28">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_memext_init_mem">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Filling RAM on Device Init</property>
+                            <property name="use_underline">True</property>
+                            <child type="submenu">
+                              <object class="GtkMenu" id="menu25">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="radiomenuitem_memext_init_mem_null">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Filled of Zeros</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <signal name="toggled" handler="on_memext_init_mem_changed" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="radiomenuitem_memext_init_mem_random">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Filled of Random Values</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiomenuitem_memext_init_mem_null</property>
+                                    <signal name="toggled" handler="on_memext_init_mem_changed" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkRadioMenuItem" id="radiomenuitem_memext_init_mem_sharp">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Filled as Sharp Std RAM</property>
+                                    <property name="use_underline">True</property>
+                                    <property name="draw_as_radio">True</property>
+                                    <property name="group">radiomenuitem_memext_init_mem_null</property>
+                                    <signal name="toggled" handler="on_memext_init_mem_changed" swapped="no"/>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_memext_mem_content">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Memory Content</property>
+                            <property name="use_underline">True</property>
+                            <child type="submenu">
+                              <object class="GtkMenu" id="menu26">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_memext_ram_load">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Load MemExt RAM From File...</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_menuitem_memext_ram_load_activate" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_memext_ram_save">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Save MemExt RAM Into File...</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_menuitem_memext_ram_save_activate" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkSeparatorMenuItem" id="separatormenuitem29">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_memext_flash_load">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Load MemExt FLASH From File...</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_menuitem_memext_flash_load_activate" swapped="no"/>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkMenuItem" id="menuitem_memext_flash_save">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Save MemExt FLASH Into File...</property>
+                                    <property name="use_underline">True</property>
+                                    <signal name="activate" handler="on_menuitem_memext_flash_save_activate" swapped="no"/>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="checkmenuitem_memext_luftner_init_reset">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="tooltip_text" translatable="yes">This option is recommended, if you not have a specially
+fixed ROM for the Luftner´s model of MemExt.</property>
+                            <property name="label" translatable="yes">Forced Auto Init on Reset</property>
+                            <property name="use_underline">True</property>
+                            <signal name="toggled" handler="on_checkmenuitem_memext_luftner_init_reset_toggled" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_memext_luftner_flash_settings">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">FLASH Auto Load Filepath...</property>
+                            <property name="use_underline">True</property>
+                            <signal name="activate" handler="on_menuitem_memext_luftner_flash_settings_activate" swapped="no"/>
                           </object>
                         </child>
                       </object>

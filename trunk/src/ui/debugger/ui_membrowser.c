@@ -497,7 +497,7 @@ static void ui_membrowser_edit_ascii_fix_cursor_position_left ( void ) {
  * 
  * @return TRUE - pokud vzniknul pozadavek k prechodu na dalsi stranku
  */
-static gboolean ui_membrowser_edit_ascii_fix_cursor_position_right ( void ) {
+static gboolean ui_membrowser_edit_ascii_fix_cursor_position_right ( gboolean mouse_event ) {
     GtkWidget *view = ui_get_widget ( "dbg_membrowser_textview" );
     GtkTextBuffer *buffer = gtk_text_view_get_buffer ( GTK_TEXT_VIEW ( view ) );
     GtkTextIter iter;
@@ -514,7 +514,7 @@ static gboolean ui_membrowser_edit_ascii_fix_cursor_position_right ( void ) {
             gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
             gtk_text_buffer_place_cursor ( buffer, &iter );
         } else {
-            if ( g_membrowser.selected_addr != ( g_membrowser.mem_size - 1 ) ) {
+            if ( ( mouse_event == FALSE ) && ( g_membrowser.selected_addr != ( g_membrowser.mem_size - 1 ) ) ) {
                 return TRUE;
             } else {
                 uint32_t offset;
@@ -762,7 +762,10 @@ static void on_dbg_membrowser_textbuffer_changed ( GtkTextBuffer *textbuffer, gp
         };
     } else {
         if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MAPED ) {
-            cmthack_load_data_into_actual_mapped_memory ( &g_membrowser.data_current[addr], addr, 1 );
+            memory_load_block ( &g_membrowser.data_current[addr], addr, 1, MEMORY_LOAD_MAPED );
+            g_membrowser.data_current[addr] = debugger_memory_read_byte ( addr );
+        } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_RAM ) {
+            memory_load_block ( &g_membrowser.data_current[addr], addr, 1, MEMORY_LOAD_RAMONLY );
             g_membrowser.data_current[addr] = debugger_memory_read_byte ( addr );
         } else {
             g_membrowser.data_current[addr] = 0x00;
@@ -773,7 +776,7 @@ static void on_dbg_membrowser_textbuffer_changed ( GtkTextBuffer *textbuffer, gp
     if ( g_membrowser.mode == MEMBROWSER_MODE_EDIT_HEX ) {
         next_page = ui_membrowser_edit_hex_fix_cursor_position_right ( );
     } else {
-        next_page = ui_membrowser_edit_ascii_fix_cursor_position_right ( );
+        next_page = ui_membrowser_edit_ascii_fix_cursor_position_right ( FALSE );
     };
 
     gdk_threads_add_idle ( ui_membrowser_update_textbuffer_set_selected, &next_page );
@@ -1027,10 +1030,7 @@ static void ui_membrowser_load_data_from_memsrc ( void ) {
     switch ( g_membrowser.memsrc ) {
 
         case MEMBROWSER_SOURCE_MAPED:
-            break;
-
         case MEMBROWSER_SOURCE_RAM:
-            g_membrowser.MEM = g_memory.RAM;
             break;
 
         case MEMBROWSER_SOURCE_VRAM:
@@ -1087,7 +1087,7 @@ static void ui_membrowser_load_data_from_memsrc ( void ) {
             };
         };
     } else {
-        if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MAPED ) {
+        if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MAPED ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_RAM ) ) {
             int i;
             for ( i = 0; i < g_membrowser.mem_size; i++ ) {
                 g_membrowser.data_current[i] = debugger_memory_read_byte ( i );
@@ -1162,7 +1162,7 @@ G_MODULE_EXPORT void on_dbg_membrowser_textview_move_cursor_after ( GtkTextView 
         };
     } else {
         if ( g_membrowser.mode == MEMBROWSER_MODE_EDIT_ASCII ) {
-            ui_membrowser_edit_ascii_fix_cursor_position_right ( );
+            ui_membrowser_edit_ascii_fix_cursor_position_right ( FALSE );
         } else {
             ui_membrowser_edit_hex_fix_cursor_position_right ( );
         };
@@ -1197,13 +1197,13 @@ G_MODULE_EXPORT gboolean on_dbg_membrowser_textview_button_press_event ( GtkWidg
         if ( g_membrowser.mode == MEMBROWSER_MODE_EDIT_HEX ) {
             ui_membrowser_edit_hex_fix_cursor_position_right ( );
         } else {
-            ui_membrowser_edit_ascii_fix_cursor_position_right ( );
+            ui_membrowser_edit_ascii_fix_cursor_position_right ( TRUE );
         };
     } else {
         if ( col <= ( 5 + 55 ) ) {
             ui_membrowser_edit_hex_fix_cursor_position_right ( );
         } else {
-            ui_membrowser_edit_ascii_fix_cursor_position_right ( );
+            ui_membrowser_edit_ascii_fix_cursor_position_right ( TRUE );
         };
     };
 
@@ -1871,12 +1871,71 @@ G_MODULE_EXPORT void on_dbg_membrowser_pezik_addressing_comboboxtext_changed ( G
 }
 
 
+static void ui_membrowser_load_block_cb ( uint32_t addr, uint8_t *data, uint32_t size, void *user_data ) {
+
+    Z80EX_WORD mem_max = g_membrowser.mem_size - 1;
+
+    if ( g_membrowser.MEM != NULL ) {
+
+        Z80EX_WORD src_addr = 0;
+
+        if ( ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_PEZIK_E8 ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_PEZIK_68 ) ) && ( g_membrowser.pezik_addressing == MEMBROWSER_PEZIK_ADDRESSING_LE ) ) {
+            /* pezik little endian */
+            while ( size ) {
+                unsigned le_addr = addr + src_addr;
+                g_membrowser.MEM[ ( ( le_addr & 0xff ) << 8 ) | ( le_addr >> 8 )] = data[src_addr++];
+                size--;
+            };
+        } else {
+            while ( size ) {
+                uint32_t i = addr + size;
+                uint32_t load_size = size;
+
+                if ( i > mem_max ) {
+                    load_size = mem_max - addr;
+                };
+
+                memcpy ( &g_membrowser.MEM[addr], &data[src_addr], load_size );
+
+                size -= load_size;
+                src_addr += load_size;
+                addr += load_size + 1;
+                addr &= mem_max;
+            };
+        };
+
+    } else {
+        if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MAPED ) {
+            memory_load_block ( data, addr, size, MEMORY_LOAD_MAPED );
+        } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_RAM ) {
+            memory_load_block ( data, addr, size, MEMORY_LOAD_RAMONLY );
+        } else {
+            fprintf ( stderr, "%s():%d - Unsupported memory source (%d)\n", __func__, __LINE__, g_membrowser.memsrc );
+        };
+    };
+
+    // Pokud se psalo do VRAM pres "MAPED", tak by se mel provest update obrazu sam, 
+    // ale po primem zapisu do g_memoryVRAM_* je potreba udelat update framebufferu a prekreslit okno.
+    if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) {
+        if ( DMD_TEST_MZ700 ) {
+            framebuffer_update_MZ700_all_rows ( );
+        } else {
+            framebuffer_MZ800_all_screen_rows_fill ( );
+        };
+        g_iface_sdl.redraw_full_screen_request = 1;
+        iface_sdl_update_window ( );
+    };
+
+    g_free ( data );
+}
+
+
 G_MODULE_EXPORT void on_dbg_membrowser_load_button_clicked ( GtkButton *button, gpointer data ) {
-    ui_memload_select_file ( );
+    ui_memload_select_file ( NULL, ui_membrowser_load_block_cb, g_membrowser.mem_size, NULL );
 }
 
 
 G_MODULE_EXPORT void on_dbg_membrowser_save_button_clicked ( GtkButton *button, gpointer data ) {
-    ui_memsave_window_show ( );
+    ui_memsave_window_show ( g_membrowser.data_current, g_membrowser.mem_size, TRUE );
 }
 #endif

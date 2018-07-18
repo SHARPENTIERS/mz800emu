@@ -51,11 +51,12 @@ extern "C" {
      * Velikost jednotlivych pameti
      * 
      */
-#define MEMORY_SIZE_RAM  0x10000
+#define MEMORY_SIZE_RAM         0x10000
 
-#define MEMORY_SIZE_VRAM_BANK 0x2000
+#define MEMORY_SIZE_VRAM_BANK   0x2000
 #define MEMORY_SIZE_VRAM        MEMORY_SIZE_VRAM_BANK * 2
 
+#define MEMORY_MEMRAM_POINTS    0x10
 
     /*
      * 
@@ -96,6 +97,8 @@ extern "C" {
      */
     typedef struct st_MEMORY {
         Z80EX_BYTE map;
+        Z80EX_BYTE *memram_read [ MEMORY_MEMRAM_POINTS ];
+        Z80EX_BYTE *memram_write [ MEMORY_MEMRAM_POINTS ];
         Z80EX_BYTE ROM [ ROM_SIZE_TOTAL ];
         Z80EX_BYTE RAM [ MEMORY_SIZE_RAM ];
         Z80EX_BYTE VRAM [ MEMORY_SIZE_VRAM ];
@@ -154,6 +157,9 @@ extern "C" {
     /* Studena inicializace pameti */
     extern void memory_init ( void );
 
+    /* Zmena pripojeni bank memextu */
+    extern void memory_reconnect_ram ( void );
+
     /* Callback pro cteni bajtu */
     extern Z80EX_BYTE memory_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD addr, int m1_state, void *user_data );
 
@@ -174,8 +180,18 @@ extern "C" {
     extern void memory_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value );
 
 
+    typedef enum en_MEMORY_LOAD {
+        MEMORY_LOAD_MAPED = 0,
+        MEMORY_LOAD_RAMONLY,
+    } en_MEMORY_LOAD;
+
+    /* Nacteni datoveho bloku do pameti */
+    extern void memory_load_block ( uint8_t *data, Z80EX_WORD addr, Z80EX_WORD size, en_MEMORY_LOAD type );
+
+
     static inline Z80EX_BYTE memory_pure_ram_read_byte ( Z80EX_WORD addr ) {
-        return g_memory.RAM [ addr ];
+        //return g_memory.RAM [ addr ];
+        return ( g_memory.memram_read[( addr >> 12 )] ) [ ( addr & 0x0fff ) ];
     }
 
 #ifdef MEMORY_MAKE_STATISTICS

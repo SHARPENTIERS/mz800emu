@@ -108,9 +108,11 @@ Novinky a zmeny v emulaci:
 	- pridana podpora numericke klavesnice
 
 	- pridana zjednodusena implementace IDE8 
-	  (podporovano systemem NIPOS - https://www.ordoz.com/mz800emu/files/nipos/ )
+	  (podporovano systemem NIPOS od Marka Smihly - https://www.ordoz.com/mz800emu/files/nipos/ )
 
 	- nyni lze definovat externi ROM s podporou CMT hack
+
+	- implementovany oba typy MemExt, FLASH se nahrava ze souboru a neni z emulace prepisovatelna
 
 Obecne:
 

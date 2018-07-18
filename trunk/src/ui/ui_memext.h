@@ -1,8 +1,8 @@
 /* 
- * File:   cmthack.h
+ * File:   ui_memext.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 2. července 2015, 20:50
+ * Created on 18. července 2018, 14:57
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -23,41 +23,20 @@
  * ---------------------------------------------------------------------------
  */
 
-#ifndef CMTHACK_H
-#define CMTHACK_H
+
+#ifndef UI_MEMEXT_H
+#define UI_MEMEXT_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <stdio.h>
-#include "libs/generic_driver/generic_driver.h"
-#include "z80ex_common.h"
-
-
-    typedef struct st_CMTHACK {
-        st_HANDLER mzf_handler;
-        char *last_filename;
-        unsigned load_patch_installed;
-    } st_CMTHACK;
-
-    extern st_CMTHACK g_cmthack;
-
-    extern void cmthack_reinstall_rom_patch ( void );
-    extern void cmthack_load_rom_patch ( unsigned enabled );
-
-    extern void cmthack_reset ( void );
-    extern void cmthack_init ( void );
-    extern void cmthack_exit ( void );
-
-    extern void cmthack_load_file ( void );
-    extern void cmthack_load_mzf_filename ( char *filename );
-    extern void cmthack_read_mzf_body ( void );
+    extern void ui_memext_menu_update ( void );
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* CMTHACK_H */
+#endif /* UI_MEMEXT_H */
 

@@ -57,11 +57,15 @@ static FILE *g_memload_file;
 static long g_memload_fsize;
 static gboolean g_ui_memload_offset_lock = FALSE;
 static gboolean g_ui_memload_memaloc_lock = FALSE;
+static uint8_t *g_ui_memload_dst;
+static uint32_t g_ui_memload_dst_size;
+static ui_memload_cb g_ui_memload_cb;
+static void *g_ui_memload_cb_data;
 
 
 static void ui_memload_ok_button_sensitivity ( void ) {
     GtkWidget *button = ui_get_widget ( "dbg_memload_ok_button" );
-    Z80EX_WORD size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ) ) );
+    uint32_t size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ) ) );
     gboolean button_is_enabled = ( size ) ? TRUE : FALSE;
     gtk_widget_set_sensitive ( button, button_is_enabled );
 }
@@ -90,10 +94,10 @@ G_MODULE_EXPORT void on_dbg_memload_close_button_clicked ( GtkButton *button, gp
 
 static void ui_memload_check_size ( void ) {
     uint32_t offset = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ) ) );
-    Z80EX_WORD size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ) ) );
+    uint32_t size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ) ) );
     if ( size > ( g_memload_fsize - offset ) ) {
-        char buff[5];
-        snprintf ( buff, sizeof ( buff ), "%04X", (Z80EX_WORD) ( g_memload_fsize - offset ) );
+        char buff[9];
+        snprintf ( buff, sizeof ( buff ), "%04X", (uint32_t) ( g_memload_fsize - offset ) );
         gtk_entry_set_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ), buff );
     };
 }
@@ -147,9 +151,9 @@ G_MODULE_EXPORT void on_dbg_memload_offset_dec_entry_changed ( GtkEditable *ed, 
 }
 
 
-static void ui_memload_set_hex_size ( Z80EX_WORD size ) {
+static void ui_memload_set_hex_size ( uint32_t size ) {
     g_ui_memload_memaloc_lock = TRUE;
-    char buff[5];
+    char buff[9];
     snprintf ( buff, sizeof ( buff ), "%04X", size );
     gtk_entry_set_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ), buff );
     g_ui_memload_memaloc_lock = FALSE;
@@ -157,9 +161,9 @@ static void ui_memload_set_hex_size ( Z80EX_WORD size ) {
 }
 
 
-static void ui_memload_set_dec_size ( Z80EX_WORD size ) {
+static void ui_memload_set_dec_size ( uint32_t size ) {
     g_ui_memload_memaloc_lock = TRUE;
-    char buff[6];
+    char buff[11];
     snprintf ( buff, sizeof ( buff ), "%d", size );
     gtk_entry_set_text ( ui_get_entry ( "dbg_memload_size_dec_entry" ), buff );
     g_ui_memload_memaloc_lock = FALSE;
@@ -167,15 +171,15 @@ static void ui_memload_set_dec_size ( Z80EX_WORD size ) {
 }
 
 
-static void ui_memload_set_size ( Z80EX_WORD size ) {
+static void ui_memload_set_size ( uint32_t size ) {
     ui_memload_set_hex_size ( size );
     ui_memload_set_dec_size ( size );
 }
 
 
-static void ui_memload_set_to ( Z80EX_WORD to ) {
+static void ui_memload_set_to ( uint32_t to ) {
     g_ui_memload_memaloc_lock = TRUE;
-    char buff[5];
+    char buff[9];
     snprintf ( buff, sizeof ( buff ), "%04X", to );
     gtk_entry_set_text ( ui_get_entry ( "dbg_memload_to_entry" ), buff );
     g_ui_memload_memaloc_lock = FALSE;
@@ -191,13 +195,13 @@ G_MODULE_EXPORT void on_dbg_memload_from_entry_changed ( GtkEditable *ed, gpoint
         return;
     };
 
-    Z80EX_WORD addr_from = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_from_entry" ) ) );
-    Z80EX_WORD addr_to = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_to_entry" ) ) );
+    uint32_t addr_from = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_from_entry" ) ) );
+    uint32_t addr_to = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_to_entry" ) ) );
 
-    Z80EX_WORD mask = g_membrowser.mem_size - 1;
-    if ( addr_from > ( g_membrowser.mem_size - 1 ) ) {
-        addr_from = ( g_membrowser.mem_size - 1 );
-        char buff[5];
+    uint32_t mask = g_ui_memload_dst_size - 1;
+    if ( addr_from > ( g_ui_memload_dst_size - 1 ) ) {
+        addr_from = ( g_ui_memload_dst_size - 1 );
+        char buff[9];
         snprintf ( buff, sizeof ( buff ), "%04X", addr_from );
         g_ui_memload_memaloc_lock = TRUE;
         gtk_entry_set_text ( ui_get_entry ( "dbg_memload_from_entry" ), buff );
@@ -209,7 +213,7 @@ G_MODULE_EXPORT void on_dbg_memload_from_entry_changed ( GtkEditable *ed, gpoint
 }
 
 
-static Z80EX_WORD ui_memload_get_from ( void ) {
+static uint32_t ui_memload_get_from ( void ) {
     if ( !gtk_entry_get_text_length ( ui_get_entry ( "dbg_memload_from_entry" ) ) ) {
         g_ui_memload_memaloc_lock = TRUE;
         gtk_entry_set_text ( ui_get_entry ( "dbg_memload_from_entry" ), "0000" );
@@ -224,19 +228,18 @@ G_MODULE_EXPORT void on_dbg_memload_to_entry_changed ( GtkEditable *ed, gpointer
     if ( g_ui_memload_memaloc_lock ) return;
     ui_hexeditable_changed ( ed, user_data );
 
-    Z80EX_WORD addr_from = ui_memload_get_from ( );
-    Z80EX_WORD addr_to = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_to_entry" ) ) );
+    uint32_t addr_from = ui_memload_get_from ( );
+    uint32_t addr_to = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_to_entry" ) ) );
 
-    Z80EX_WORD mask = g_membrowser.mem_size - 1;
-    if ( addr_to > ( g_membrowser.mem_size - 1 ) ) {
-        addr_to = ( g_membrowser.mem_size - 1 );
-        char buff[5];
+    uint32_t mask = g_ui_memload_dst_size - 1;
+    if ( addr_to > ( g_ui_memload_dst_size - 1 ) ) {
+        addr_to = ( g_ui_memload_dst_size - 1 );
+        char buff[9];
         snprintf ( buff, sizeof ( buff ), "%04X", addr_to );
         g_ui_memload_memaloc_lock = TRUE;
         gtk_entry_set_text ( ui_get_entry ( "dbg_memload_to_entry" ), buff );
         g_ui_memload_memaloc_lock = FALSE;
     };
-
 
     ui_memload_set_size ( ( addr_to - addr_from ) & mask );
     ui_memload_check_size ( );
@@ -247,13 +250,13 @@ G_MODULE_EXPORT void on_dbg_memload_size_hex_entry_changed ( GtkEditable *ed, gp
     if ( g_ui_memload_memaloc_lock ) return;
     ui_hexeditable_changed ( ed, user_data );
 
-    Z80EX_WORD addr_from = ui_memload_get_from ( );
-    Z80EX_WORD size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ) ) );
+    uint32_t addr_from = ui_memload_get_from ( );
+    uint32_t size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ) ) );
 
-    Z80EX_WORD mask = g_membrowser.mem_size - 1;
-    if ( size > ( g_membrowser.mem_size - 1 ) ) {
-        size = ( g_membrowser.mem_size - 1 );
-        char buff[5];
+    uint32_t mask = g_ui_memload_dst_size - 1;
+    if ( size > ( g_ui_memload_dst_size - 1 ) ) {
+        size = ( g_ui_memload_dst_size - 1 );
+        char buff[9];
         snprintf ( buff, sizeof ( buff ), "%04X", size );
         g_ui_memload_memaloc_lock = TRUE;
         gtk_entry_set_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ), buff );
@@ -271,22 +274,22 @@ G_MODULE_EXPORT void on_dbg_memload_size_dec_entry_changed ( GtkEditable *ed, gp
     g_ui_memload_memaloc_lock = TRUE;
 
     ui_digiteditable_changed ( ed, user_data );
-    
-    Z80EX_WORD addr_from = ui_memload_get_from ( );
-    int atoi_size = atoi ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_dec_entry" ) ) );
 
-    Z80EX_WORD mask = g_membrowser.mem_size - 1;
-    if ( atoi_size > ( g_membrowser.mem_size - 1 ) ) {
-        atoi_size = ( g_membrowser.mem_size - 1 );
-        char buff[6];
+    uint32_t addr_from = ui_memload_get_from ( );
+    uint32_t atoi_size = atoi ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_dec_entry" ) ) );
+
+    uint32_t mask = g_ui_memload_dst_size - 1;
+    if ( atoi_size > ( g_ui_memload_dst_size - 1 ) ) {
+        atoi_size = ( g_ui_memload_dst_size - 1 );
+        char buff[11];
         snprintf ( buff, sizeof ( buff ), "%d", atoi_size );
 
         gtk_entry_set_text ( ui_get_entry ( "dbg_memload_size_dec_entry" ), buff );
     };
     g_ui_memload_memaloc_lock = FALSE;
 
-    ui_memload_set_to ( ( addr_from + (Z80EX_WORD) atoi_size ) & mask );
-    ui_memload_set_hex_size ( (Z80EX_WORD) atoi_size );
+    ui_memload_set_to ( ( addr_from + atoi_size ) & mask );
+    ui_memload_set_hex_size ( atoi_size );
     ui_memload_check_size ( );
 }
 
@@ -310,7 +313,7 @@ void ui_memload_window_show ( void ) {
 
     gtk_entry_set_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ), "0" );
 
-    Z80EX_WORD memmax = g_membrowser.mem_size - 1;
+    uint32_t memmax = g_ui_memload_dst_size - 1;
 
     snprintf ( buff, sizeof ( buff ), "%04X", ( g_memload_fsize < memmax ) ? (unsigned) g_memload_fsize : memmax );
     gtk_entry_set_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ), buff );
@@ -325,7 +328,12 @@ void ui_memload_window_show ( void ) {
 }
 
 
-void ui_memload_select_file ( void ) {
+void ui_memload_select_file ( uint8_t *dst, ui_memload_cb cb, uint32_t dst_size, void *user_data ) {
+
+    g_ui_memload_dst = dst;
+    g_ui_memload_dst_size = dst_size;
+    g_ui_memload_cb = cb;
+    g_ui_memload_cb_data = user_data;
 
     static char *last_filepath = NULL; //TODO: bylo by slusne to pak pri exitu po sobe uklidit
     char *filepath = ui_file_chooser_open_file ( last_filepath, NULL, "Load file into memory", ui_get_window ( "dbg_membrowser_window" ), FC_MODE_OPEN, NULL );
@@ -353,77 +361,33 @@ G_MODULE_EXPORT void on_dbg_memload_ok_button_clicked ( GtkButton *button, gpoin
     ui_memload_window_hide ( );
 
     uint32_t offset = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_offset_hex_entry" ) ) );
-    Z80EX_WORD size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ) ) );
-    Z80EX_WORD addr = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_from_entry" ) ) );
+    uint32_t size = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_size_hex_entry" ) ) );
+    uint32_t addr = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_memload_from_entry" ) ) );
 
-    uint8_t data[0x10000];
     fseek ( g_memload_file, offset, SEEK_SET );
-    uint32_t read_size = fread ( data, 1, size, g_memload_file );
+
+    uint8_t *dst = NULL;
+
+    if ( g_ui_memload_dst ) {
+        dst = &g_ui_memload_dst[addr];
+    } else {
+        dst = ui_utils_mem_alloc ( size );
+    };
+
+    uint32_t read_size = fread ( dst, 1, size, g_memload_file );
+
     fclose ( g_memload_file );
     if ( read_size != size ) {
         ui_show_error ( "Can't read data from file\n" );
+        if ( !g_ui_memload_dst ) g_free ( dst );
+        return;
     };
 
-    if ( !TEST_EMULATION_PAUSED ) {
-        mz800_pause_emulation ( 1 );
-    };
-
-    Z80EX_WORD mem_max = g_membrowser.mem_size - 1;
-
-    if ( g_membrowser.MEM != NULL ) {
-
-        Z80EX_WORD src_addr = 0;
-
-        if ( ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_PEZIK_E8 ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_PEZIK_68 ) ) && ( g_membrowser.pezik_addressing == MEMBROWSER_PEZIK_ADDRESSING_LE ) ) {
-            /* pezik little endian */
-            while ( size ) {
-                unsigned le_addr = addr + src_addr;
-                g_membrowser.MEM[ ( ( le_addr & 0xff ) << 8 ) | ( le_addr >> 8 )] = data[src_addr++];
-                size--;
-            };
-        } else {
-            while ( size ) {
-                uint32_t i = addr + size;
-                uint32_t load_size = size;
-
-                if ( i > mem_max ) {
-                    load_size = mem_max - addr;
-                };
-
-                memcpy ( &g_membrowser.MEM[addr], &data[src_addr], load_size );
-
-                size -= load_size;
-                src_addr += load_size;
-                addr += load_size + 1;
-                addr &= mem_max;
-            };
-        };
-
-    } else {
-        //if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MAPED ) {
-        cmthack_load_data_into_actual_mapped_memory ( data, addr, size );
-    };
+    if ( g_ui_memload_cb ) g_ui_memload_cb ( addr, dst, size, g_ui_memload_cb_data );
 
     printf ( "\nLoad done.\n" );
 
-    // Pokud se psalo do VRAM pres "MAPED", tak by se mel provest update obrazu sam, 
-    // ale po primem zapisu do g_memoryVRAM_* je potreba udelat update framebufferu a prekreslit okno.
-    if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) {
-        if ( DMD_TEST_MZ700 ) {
-            framebuffer_update_MZ700_all_rows ( );
-        } else {
-            framebuffer_MZ800_all_screen_rows_fill ( );
-        };
-        g_iface_sdl.redraw_full_screen_request = 1;
-        iface_sdl_update_window ( );
-    };
-
-    ui_membrowser_refresh ( );
-
-    if ( gtk_widget_is_visible ( ui_get_widget ( "debugger_main_window" ) ) ) {
-        ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
-        ui_debugger_update_stack ( );
-    };
+    ui_main_debugger_windows_refresh ( );
 }
 
 #endif

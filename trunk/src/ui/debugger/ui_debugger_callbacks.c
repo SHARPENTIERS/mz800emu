@@ -106,13 +106,13 @@ G_MODULE_EXPORT void on_dbg_mem_load_mzf_menuitem_activate ( GtkCheckMenuItem *m
     (void) menuitem;
     (void) user_data;
 
-/*
-    if ( !TEST_EMULATION_PAUSED ) {
-        mz800_pause_emulation ( 1 );
-    };
-*/
+    /*
+        if ( !TEST_EMULATION_PAUSED ) {
+            mz800_pause_emulation ( 1 );
+        };
+     */
 
-    char *filename = ui_file_chooser_open_mzf("", (void*) ui_get_window("debugger_main_window"));
+    char *filename = ui_file_chooser_open_mzf ( "", (void*) ui_get_window ( "debugger_main_window" ) );
     if ( filename == NULL ) return;
 
     st_HANDLER *h = generic_driver_open_memory_from_file ( NULL, g_driver, filename );
@@ -135,7 +135,7 @@ G_MODULE_EXPORT void on_dbg_mem_load_mzf_menuitem_activate ( GtkCheckMenuItem *m
 
     char ascii_filename[MZF_FNAME_FULL_LENGTH];
     mzf_tools_get_fname ( &mzfhdr, ascii_filename );
-    printf ( "\nDebugger load MZF\n" );
+    printf ( "\nDebugger load MZF body into RAM\n" );
     printf ( "fname: %s\n", ascii_filename );
     printf ( "ftype: 0x%02x\n", mzfhdr.ftype );
     printf ( "fstrt: 0x%04x\n", mzfhdr.fstrt );
@@ -151,24 +151,7 @@ G_MODULE_EXPORT void on_dbg_mem_load_mzf_menuitem_activate ( GtkCheckMenuItem *m
 
     generic_driver_close ( h );
 
-    Z80EX_WORD src_addr = 0;
-    Z80EX_WORD addr = mzfhdr.fstrt;
-    Z80EX_WORD size = mzfhdr.fsize;
-
-    while ( size ) {
-        uint32_t i = addr + size;
-        uint32_t load_size = size;
-
-        if ( i > 0xffff ) {
-            load_size = 0xffff - addr;
-        };
-
-        memcpy ( &g_memory.RAM[addr], &data[src_addr], load_size );
-
-        size -= load_size;
-        src_addr += load_size;
-        addr += load_size + 1;
-    };
+    memory_load_block ( data, mzfhdr.fstrt, mzfhdr.fsize, MEMORY_LOAD_RAMONLY );
 
     printf ( "\nDebugger load MZF - Done.\n" );
     ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );

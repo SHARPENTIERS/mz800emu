@@ -31,9 +31,11 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 
-    extern void ui_memsave_window_show ( void );
+    extern void ui_memsave_window_show ( uint8_t *src, uint32_t src_size, gboolean allow_mzf );
 
 #endif
 
