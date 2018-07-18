@@ -33,7 +33,11 @@ extern "C" {
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 
-    extern void ui_memload_select_file ( void );
+#include <stdint.h>
+
+    typedef void (*ui_memload_cb )( uint32_t addr, uint8_t *data, uint32_t size, void *user_data );
+
+    extern void ui_memload_select_file ( uint8_t *dst, ui_memload_cb cb, uint32_t dst_size, void *user_data );
 
 #endif
 

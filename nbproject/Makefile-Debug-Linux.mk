@@ -107,6 +107,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_ge_MZ800.o \
 	${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_CGROM.o \
 	${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.o \
+	${OBJECTDIR}/src/memory/memext.o \
 	${OBJECTDIR}/src/memory/memory.o \
 	${OBJECTDIR}/src/memory/rom.o \
 	${OBJECTDIR}/src/mz800.o \
@@ -138,6 +139,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/ui_ide8.o \
 	${OBJECTDIR}/src/ui/ui_joy.o \
 	${OBJECTDIR}/src/ui/ui_main.o \
+	${OBJECTDIR}/src/ui/ui_memext.o \
 	${OBJECTDIR}/src/ui/ui_qdisk.o \
 	${OBJECTDIR}/src/ui/ui_ramdisk.o \
 	${OBJECTDIR}/src/ui/ui_rom.o \
@@ -538,6 +540,11 @@ ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.o: src/memory/ROM/WILLY/RO
 	${RM} "$@.d"
 	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.o src/memory/ROM/WILLY/ROM_WILLY_jap_MZ800.c
 
+${OBJECTDIR}/src/memory/memext.o: src/memory/memext.c 
+	${MKDIR} -p ${OBJECTDIR}/src/memory
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/memory/memext.o src/memory/memext.c
+
 ${OBJECTDIR}/src/memory/memory.o: src/memory/memory.c 
 	${MKDIR} -p ${OBJECTDIR}/src/memory
 	${RM} "$@.d"
@@ -692,6 +699,11 @@ ${OBJECTDIR}/src/ui/ui_main.o: src/ui/ui_main.c
 	${MKDIR} -p ${OBJECTDIR}/src/ui
 	${RM} "$@.d"
 	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_main.o src/ui/ui_main.c
+
+${OBJECTDIR}/src/ui/ui_memext.o: src/ui/ui_memext.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_memext.o src/ui/ui_memext.c
 
 ${OBJECTDIR}/src/ui/ui_qdisk.o: src/ui/ui_qdisk.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui

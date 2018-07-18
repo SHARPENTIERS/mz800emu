@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+#include "mz800emu_cfg.h"
+
 #include <gtk/gtk.h>
 
 #ifdef LINUX
@@ -101,6 +103,10 @@ extern "C" {
 
     extern void ui_main_update_rear_dip_switch_mz800_mode ( unsigned state );
     extern void ui_main_update_rear_dip_switch_cmt_inverted_polarity ( unsigned state );
+
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+    extern void ui_main_debugger_windows_refresh ( void );
+#endif
 
 #ifdef UI_TOPMENU_IS_WINDOW
     extern void ui_hide_main_menu ( void );

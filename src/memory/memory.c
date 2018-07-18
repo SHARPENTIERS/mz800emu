@@ -31,6 +31,7 @@
 #include "z80ex/include/z80ex.h"
 
 #include "mz800.h"
+#include "memext.h"
 #include "memory.h"
 #include "rom.h"
 #include "gdg/gdg.h"
@@ -73,8 +74,10 @@ Z80EX_BYTE *g_memoryVRAM_IV = &g_memory.EXVRAM [ MEMORY_SIZE_VRAM_BANK ];
 
 #define MEMORY_ROM_READ_BYTE                g_memory.ROM [ addr & 0x3fff ]
 
-#define MEMORY_RAM_READ_BYTE                g_memory.RAM [ addr ]
-#define MEMORY_RAM_WRITE_BYTE               g_memory.RAM [ addr ] = value;
+//#define MEMORY_RAM_READ_BYTE                g_memory.RAM [ addr ]
+//#define MEMORY_RAM_WRITE_BYTE               g_memory.RAM [ addr ] = value;
+#define MEMORY_RAM_READ_BYTE                ( g_memory.memram_read[( addr >> 12 )] ) [ (addr & 0x0fff) ]
+#define MEMORY_RAM_WRITE_BYTE               ( g_memory.memram_write[( addr >> 12 )] ) [ (addr & 0x0fff) ] = value;
 
 #define MEMORY_VRAM_MZ700_READ_BYTE_SYNC    vramctrl_mz700_memop_read_byte_sync ( addr & ~0xe000 )
 #define MEMORY_VRAM_MZ700_WRITE_BYTE_SYNC   vramctrl_mz700_memop_write_byte_sync ( addr & ~0xe000, value )
@@ -233,11 +236,32 @@ void memory_map_pread ( en_MMAP_PREAD mmap_port ) {
     };
 }
 
+
 /*******************************************************************************
  *
- * Inicializace pameti RAM, VRAM a EXVRAM
+ * Inicializace pameti RAM, MEMEXT, VRAM a EXVRAM
  * 
  ******************************************************************************/
+
+void memory_reconnect_ram ( void ) {
+    if ( TEST_MEMEXT_CONNECTED ) {
+        int i;
+        for ( i = 0; i < MEMORY_MEMRAM_POINTS; i++ ) {
+            g_memory.memram_read[i] = memext_get_ram_read_pointer_by_addr_point ( i );
+            g_memory.memram_write[i] = memext_get_ram_write_pointer_by_addr_point ( i );
+        };
+    } else {
+        int i;
+        for ( i = 0; i < MEMORY_MEMRAM_POINTS; i++ ) {
+            g_memory.memram_read[i] = &g_memory.RAM[( i << 12 )];
+            g_memory.memram_write[i] = &g_memory.RAM[( i << 12 )];
+        };
+    };
+
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+    ui_main_debugger_windows_refresh ( );
+#endif
+}
 
 
 /**
@@ -300,6 +324,9 @@ void memory_init ( void ) {
     rom_init ( );
 
     g_memory.map = 0;
+
+    memext_init ( );
+    memory_reconnect_ram ( );
 
 #ifdef MEMORY_MAKE_STATISTICS
     memset ( &g_memory_statistics, 0x00, sizeof (g_memory_statistics ) );
@@ -398,6 +425,9 @@ void memory_write_memory_statistics ( void ) {
 void memory_reset ( void ) {
     DBGPRINTF ( DBGINF, "\n" );
     g_memory.map = MEMORY_MAP_FLAG_ROM_0000 | MEMORY_MAP_FLAG_ROM_1000 | MEMORY_MAP_FLAG_ROM_E000;
+
+    memext_reset ( );
+    memory_reconnect_ram ( );
 }
 
 
@@ -704,4 +734,94 @@ void memory_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
     memory_internal_write_d000_dfff ( addr_high );
     memory_internal_write_e000_efff ( addr_high );
     memory_internal_write_f000_ffff ( addr_high );
+}
+
+
+/**
+ * Nacteni datoveho bloku do pameti.
+ * 
+ * @param data
+ * @param addr
+ * @param size
+ * @param type - MEMORY_LOAD_MAPPED, MEMORY_LOAD_RAMONLY
+ */
+void memory_load_block ( uint8_t *data, Z80EX_WORD addr, Z80EX_WORD size, en_MEMORY_LOAD type ) {
+
+    Z80EX_WORD src_addr = 0;
+
+    while ( size ) {
+        //uint8_t *dst = &g_memory.RAM[addr];
+        uint8_t *dst = g_memory.memram_write[( addr ) >> 12] + ( addr & 0x0fff );
+        uint8_t *src = &data[src_addr];
+        uint32_t total_size = addr + size;
+        uint32_t load_size;
+
+        if ( type == MEMORY_LOAD_RAMONLY ) {
+            uint32_t limit = ( ( addr >> 12 ) + 1 ) << 12;
+            load_size = ( total_size < limit ) ? size : ( limit - addr );
+            memcpy ( dst, src, load_size );
+        } else {
+            if ( addr < 0x1000 ) {
+                load_size = ( total_size < 0x1000 ) ? size : ( 0x1000 - addr );
+                if ( !MEMORY_MAP_TEST_ROM_0000 ) {
+                    memcpy ( dst, src, load_size );
+                };
+            } else if ( addr < 0x2000 ) {
+                load_size = ( total_size < 0x2000 ) ? size : ( 0x2000 - addr );
+                if ( !MEMORY_MAP_TEST_ROM_1000 ) {
+                    memcpy ( dst, src, load_size );
+                };
+            } else if ( addr < 0x8000 ) {
+                uint32_t limit = ( ( addr >> 12 ) + 1 ) << 12;
+                load_size = ( total_size < limit ) ? size : ( limit - addr );
+                memcpy ( dst, src, load_size );
+            } else if ( addr < 0xa000 ) {
+                load_size = ( total_size < 0xa000 ) ? size : ( 0xa000 - addr );
+                if ( !MEMORY_MAP_TEST_VRAM_8000 ) {
+                    uint32_t limit = ( ( addr >> 12 ) + 1 ) << 12;
+                    load_size = ( total_size < limit ) ? size : ( limit - addr );
+                    memcpy ( dst, src, load_size );
+                } else {
+                    int i;
+                    for ( i = 0; i < load_size; i++ ) {
+                        vramctrl_mz800_memop_write_byte ( ( addr + i ) & 0x3fff, data[( src_addr + i )] );
+                    };
+                };
+            } else if ( addr < 0xc000 ) {
+                load_size = ( total_size < 0xc000 ) ? size : ( 0xc000 - addr );
+                if ( !MEMORY_MAP_TEST_VRAM_A000 ) {
+                    uint32_t limit = ( ( addr >> 12 ) + 1 ) << 12;
+                    load_size = ( total_size < limit ) ? size : ( limit - addr );
+                    memcpy ( dst, src, load_size );
+                } else {
+                    int i;
+                    for ( i = 0; i < load_size; i++ ) {
+                        vramctrl_mz800_memop_write_byte ( ( addr + i ) & 0x3fff, data[( src_addr + i )] );
+                    };
+                };
+            } else if ( addr < 0xd000 ) {
+                load_size = ( total_size < 0xd000 ) ? size : ( 0xd000 - addr );
+                if ( MEMORY_MAP_TEST_CGRAM ) {
+                    dst = &g_memoryVRAM_I[( addr & 0x0fff )];
+                };
+                memcpy ( dst, src, load_size );
+            } else if ( addr < 0xe000 ) {
+                load_size = ( total_size < 0xe000 ) ? size : ( 0xe000 - addr );
+                if ( MEMORY_MAP_TEST_VRAM_D000 ) {
+                    dst = &g_memoryVRAM_II[( addr & 0x0fff )];
+                };
+                memcpy ( dst, src, load_size );
+            } else {
+                uint32_t limit = ( ( addr >> 12 ) + 1 ) << 12;
+                load_size = ( total_size < limit ) ? size : ( limit - addr );
+                if ( !MEMORY_MAP_TEST_ROM_E000 ) {
+                    memcpy ( dst, src, load_size );
+                };
+            };
+        };
+
+        size -= load_size;
+        src_addr += load_size;
+        addr += load_size;
+    };
 }

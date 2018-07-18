@@ -29,6 +29,7 @@
 #include "port.h"
 #include "mz800.h"
 #include "memory/memory.h"
+#include "memory/memext.h"
 #include "gdg/gdg.h"
 #include "ctc8253/ctc8253.h"
 #include "pio8255/pio8255.h"
@@ -347,6 +348,13 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
         case 0xe6:
             /* zapisujeme na memory mapper: 0xe0 - 0xe6 */
             memory_map_pwrite ( port_lsb );
+            break;
+
+        case 0xe7:
+            /* zapisujeme na memext mapper: 0xe7 */
+            if ( TEST_MEMEXT_CONNECTED ) {
+                memext_map_pwrite ( ( ( port >> 12 ) & 0x0f ), value );
+            };
             break;
 
 

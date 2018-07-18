@@ -480,26 +480,6 @@
     <signal name="row-changed" handler="on_dbg_breakpoints_treestore_row_changed" swapped="no"/>
     <signal name="row-inserted" handler="on_dbg_breakpoints_treestore_row_inserted" swapped="no"/>
   </object>
-  <object class="GtkListStore" id="dbg_disassembled_liststore">
-    <columns>
-      <!-- column-name addr -->
-      <column type="guint"/>
-      <!-- column-name bytes -->
-      <column type="guint"/>
-      <!-- column-name addr_txt -->
-      <column type="gchararray"/>
-      <!-- column-name byte0 -->
-      <column type="gchararray"/>
-      <!-- column-name byte1 -->
-      <column type="gchararray"/>
-      <!-- column-name byte2 -->
-      <column type="gchararray"/>
-      <!-- column-name byte3 -->
-      <column type="gchararray"/>
-      <!-- column-name mnemonic -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
   <object class="GtkWindow" id="dbg_breakpoints_window">
     <property name="width_request">200</property>
     <property name="height_request">400</property>
@@ -785,6 +765,26 @@
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkListStore" id="dbg_disassembled_liststore">
+    <columns>
+      <!-- column-name addr -->
+      <column type="guint"/>
+      <!-- column-name bytes -->
+      <column type="guint"/>
+      <!-- column-name addr_txt -->
+      <column type="gchararray"/>
+      <!-- column-name byte0 -->
+      <column type="gchararray"/>
+      <!-- column-name byte1 -->
+      <column type="gchararray"/>
+      <!-- column-name byte2 -->
+      <column type="gchararray"/>
+      <!-- column-name byte3 -->
+      <column type="gchararray"/>
+      <!-- column-name mnemonic -->
+      <column type="gchararray"/>
+    </columns>
   </object>
   <object class="GtkMenu" id="dbg_disassembled_menu">
     <property name="visible">True</property>
@@ -1128,6 +1128,7 @@
     <property name="height_request">550</property>
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Memory Browser</property>
+    <property name="resizable">False</property>
     <signal name="key-press-event" handler="on_dbg_membrowser_window_key_press_event" swapped="no"/>
     <signal name="delete-event" handler="on_dbg_membrowser_window_delete_event" swapped="no"/>
     <child>
@@ -1155,6 +1156,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">Load data into selected memory block</property>
                     <signal name="clicked" handler="on_dbg_membrowser_load_button_clicked" swapped="no"/>
                     <child>
                       <object class="GtkBox" id="box27">
@@ -1199,6 +1201,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">Save data from selected memory block</property>
                     <signal name="clicked" handler="on_dbg_membrowser_save_button_clicked" swapped="no"/>
                     <child>
                       <object class="GtkBox" id="box28">
@@ -1767,7 +1770,7 @@
   </object>
   <object class="GtkWindow" id="dbg_memload_window">
     <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Load file into actual memory</property>
+    <property name="title" translatable="yes">Load file into memory</property>
     <property name="modal">True</property>
     <signal name="delete-event" handler="on_dbg_memload_window_delete_event" swapped="no"/>
     <child>
@@ -1987,7 +1990,7 @@
                     <property name="max_length">8</property>
                     <property name="invisible_char">●</property>
                     <property name="activates_default">True</property>
-                    <property name="width_chars">10</property>
+                    <property name="width_chars">12</property>
                     <property name="xalign">1</property>
                     <property name="invisible_char_set">True</property>
                     <signal name="changed" handler="on_dbg_memload_offset_hex_entry_changed" swapped="no"/>
@@ -2078,10 +2081,10 @@
                       <object class="GtkEntry" id="dbg_memload_from_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="max_length">4</property>
+                        <property name="max_length">8</property>
                         <property name="invisible_char">●</property>
                         <property name="activates_default">True</property>
-                        <property name="width_chars">6</property>
+                        <property name="width_chars">12</property>
                         <property name="xalign">1</property>
                         <property name="invisible_char_set">True</property>
                         <signal name="changed" handler="on_dbg_memload_from_entry_changed" swapped="no"/>
@@ -2097,10 +2100,10 @@
                       <object class="GtkEntry" id="dbg_memload_to_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="max_length">4</property>
+                        <property name="max_length">8</property>
                         <property name="invisible_char">●</property>
                         <property name="activates_default">True</property>
-                        <property name="width_chars">6</property>
+                        <property name="width_chars">12</property>
                         <property name="xalign">1</property>
                         <property name="invisible_char_set">True</property>
                         <signal name="changed" handler="on_dbg_memload_to_entry_changed" swapped="no"/>
@@ -2198,10 +2201,10 @@
                       <object class="GtkEntry" id="dbg_memload_size_hex_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="max_length">4</property>
+                        <property name="max_length">8</property>
                         <property name="invisible_char">●</property>
                         <property name="activates_default">True</property>
-                        <property name="width_chars">6</property>
+                        <property name="width_chars">12</property>
                         <property name="xalign">1</property>
                         <property name="invisible_char_set">True</property>
                         <signal name="changed" handler="on_dbg_memload_size_hex_entry_changed" swapped="no"/>
@@ -2217,10 +2220,10 @@
                       <object class="GtkEntry" id="dbg_memload_size_dec_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="max_length">5</property>
+                        <property name="max_length">10</property>
                         <property name="invisible_char">●</property>
                         <property name="activates_default">True</property>
-                        <property name="width_chars">6</property>
+                        <property name="width_chars">12</property>
                         <property name="xalign">1</property>
                         <property name="invisible_char_set">True</property>
                         <signal name="changed" handler="on_dbg_memload_size_dec_entry_changed" swapped="no"/>
@@ -2331,7 +2334,7 @@
   <object class="GtkEntryBuffer" id="dbg_memsave_size_hex_entrybuffer"/>
   <object class="GtkWindow" id="dbg_memsave_window">
     <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Save Actual Memory Dump</property>
+    <property name="title" translatable="yes">Save Data</property>
     <property name="modal">True</property>
     <signal name="delete-event" handler="on_dbg_memsave_window_delete_event" swapped="no"/>
     <child>
@@ -2406,10 +2409,10 @@
                       <object class="GtkEntry" id="dbg_memsave_from_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="max_length">4</property>
+                        <property name="max_length">8</property>
                         <property name="invisible_char">●</property>
                         <property name="activates_default">True</property>
-                        <property name="width_chars">6</property>
+                        <property name="width_chars">12</property>
                         <property name="xalign">1</property>
                         <property name="invisible_char_set">True</property>
                         <signal name="changed" handler="on_dbg_memsave_from_entry_changed" swapped="no"/>
@@ -2425,10 +2428,10 @@
                       <object class="GtkEntry" id="dbg_memsave_to_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="max_length">4</property>
+                        <property name="max_length">8</property>
                         <property name="invisible_char">●</property>
                         <property name="activates_default">True</property>
-                        <property name="width_chars">6</property>
+                        <property name="width_chars">12</property>
                         <property name="xalign">1</property>
                         <property name="invisible_char_set">True</property>
                         <signal name="changed" handler="on_dbg_memsave_to_entry_changed" swapped="no"/>
@@ -2527,10 +2530,10 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="buffer">dbg_memsave_size_hex_entrybuffer</property>
-                        <property name="max_length">4</property>
+                        <property name="max_length">8</property>
                         <property name="invisible_char">●</property>
                         <property name="activates_default">True</property>
-                        <property name="width_chars">6</property>
+                        <property name="width_chars">12</property>
                         <property name="xalign">1</property>
                         <property name="invisible_char_set">True</property>
                         <signal name="changed" handler="on_dbg_memsave_size_hex_entry_changed" swapped="no"/>
@@ -2546,10 +2549,10 @@
                       <object class="GtkEntry" id="dbg_memsave_size_dec_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="max_length">5</property>
+                        <property name="max_length">10</property>
                         <property name="invisible_char">●</property>
                         <property name="activates_default">True</property>
-                        <property name="width_chars">6</property>
+                        <property name="width_chars">12</property>
                         <property name="xalign">1</property>
                         <property name="invisible_char_set">True</property>
                         <signal name="changed" handler="on_dbg_memsave_size_dec_entry_changed" swapped="no"/>
@@ -2600,7 +2603,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkFrame" id="frame7">
+          <object class="GtkFrame" id="dbg_memsave_mzfheader_frame">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="label_xalign">0.5</property>
@@ -2733,7 +2736,7 @@
                     <property name="can_focus">True</property>
                     <property name="halign">start</property>
                     <property name="buffer">dbg_memsave_size_hex_entrybuffer</property>
-                    <property name="max_length">4</property>
+                    <property name="max_length">8</property>
                     <property name="invisible_char">●</property>
                     <property name="activates_default">True</property>
                     <property name="width_chars">6</property>
