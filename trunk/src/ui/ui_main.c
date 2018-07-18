@@ -832,8 +832,6 @@ G_MODULE_EXPORT void on_menuitem_joystick_setup_activate ( GtkMenuItem *menuitem
 
 void ui_main_debugger_windows_refresh ( void ) {
 
-    if ( gtk_widget_is_visible ( ui_get_widget ( "dbg_membrowser_window" ) ) ) ui_membrowser_refresh ( );
-
     if ( gtk_widget_is_visible ( ui_get_widget ( "debugger_main_window" ) ) ) {
         ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
         ui_debugger_update_stack ( );

@@ -43,6 +43,9 @@ extern "C" {
         MEMBROWSER_SOURCE_MAPED = 0,
         MEMBROWSER_SOURCE_RAM,
         MEMBROWSER_SOURCE_VRAM,
+        MEMBROWSER_SOURCE_MZ700ROM,
+        MEMBROWSER_SOURCE_CGROM,
+        MEMBROWSER_SOURCE_MZ800ROM,
         /* ramdisky - pred praci s nimi kontrolujeme, zda jsou pripojeny */
         MEMBROWSER_SOURCE_PEZIK_E8,
         MEMBROWSER_SOURCE_PEZIK_68,

@@ -1421,6 +1421,9 @@
                   <item translatable="yes">Actual Mapped Memory</item>
                   <item translatable="yes">RAM</item>
                   <item translatable="yes">VRAM</item>
+                  <item translatable="yes">ROM: MZ-700 (editable)</item>
+                  <item translatable="yes">ROM: CGROM (editable)</item>
+                  <item translatable="yes">ROM: MZ-800 (editable)</item>
                   <item translatable="yes">Pezik 512 KB (0xe8 - 0xef)</item>
                   <item translatable="yes">Pezik 512 KB (0x68 - 0x6f)</item>
                   <item translatable="yes">MR-1R18 Compatibile</item>

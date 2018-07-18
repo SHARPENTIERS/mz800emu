@@ -35,7 +35,7 @@ Debugger:
 	  nebo z aktualne mapovane pameti (Alt + I)
 
 	- vytvoren novy Memory Browser (Alt + E), ktery umoznuje prohlizeni,
-	  nebo editaci libovolneho bloku z RAM, VRAM a vsech ramdisku.
+	  nebo editaci libovolneho bloku z RAM, VRAM, ROM a vsech ramdisku.
 	  Komparativni mod umoznuje vizualizovat zmeny v pameti oproti 
 	  posledni refreshi. Dale take nabizi moznost ulozit, libovolnou 
 	  cast kterekoliv pameti do souboru, nebo ji naopak z jakehokoliv

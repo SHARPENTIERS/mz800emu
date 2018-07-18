@@ -1018,8 +1018,10 @@ void ui_membrowser_set_mem_size ( uint32_t memsize ) {
 
 static void ui_membrowser_load_data_from_memsrc ( void ) {
 
-    if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) {
+    if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MZ800ROM ) ) {
         ui_membrowser_set_mem_size ( 0x2000 );
+    } else if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MZ700ROM ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_CGROM ) ) {
+        ui_membrowser_set_mem_size ( 0x1000 );
     } else {
         ui_membrowser_set_mem_size ( 0x10000 );
     };
@@ -1031,6 +1033,18 @@ static void ui_membrowser_load_data_from_memsrc ( void ) {
 
         case MEMBROWSER_SOURCE_MAPED:
         case MEMBROWSER_SOURCE_RAM:
+            break;
+
+        case MEMBROWSER_SOURCE_MZ700ROM:
+            g_membrowser.MEM = g_memory.ROM;
+            break;
+
+        case MEMBROWSER_SOURCE_CGROM:
+            g_membrowser.MEM = g_memory.ROM + ROM_SIZE_MZ700;
+            break;
+
+        case MEMBROWSER_SOURCE_MZ800ROM:
+            g_membrowser.MEM = g_memory.ROM + ROM_SIZE_MZ700 + ROM_SIZE_CGROM;
             break;
 
         case MEMBROWSER_SOURCE_VRAM:
@@ -1642,6 +1656,9 @@ G_MODULE_EXPORT void on_dbg_membrowser_source_comboboxtext_changed ( GtkComboBox
     switch ( memsrc ) {
         case MEMBROWSER_SOURCE_MAPED:
         case MEMBROWSER_SOURCE_RAM:
+        case MEMBROWSER_SOURCE_MZ700ROM:
+        case MEMBROWSER_SOURCE_CGROM:
+        case MEMBROWSER_SOURCE_MZ800ROM:
             gtk_widget_hide ( bank256_combobox );
             gtk_widget_hide ( bank_combotext );
             gtk_widget_hide ( pezik_addr_combotext );
@@ -1916,7 +1933,7 @@ static void ui_membrowser_load_block_cb ( uint32_t addr, uint8_t *data, uint32_t
 
     // Pokud se psalo do VRAM pres "MAPED", tak by se mel provest update obrazu sam, 
     // ale po primem zapisu do g_memoryVRAM_* je potreba udelat update framebufferu a prekreslit okno.
-    if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) {
+    if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_CGROM ) ) {
         if ( DMD_TEST_MZ700 ) {
             framebuffer_update_MZ700_all_rows ( );
         } else {
@@ -1927,6 +1944,8 @@ static void ui_membrowser_load_block_cb ( uint32_t addr, uint8_t *data, uint32_t
     };
 
     g_free ( data );
+
+    ui_membrowser_refresh ( );
 }
 
 
