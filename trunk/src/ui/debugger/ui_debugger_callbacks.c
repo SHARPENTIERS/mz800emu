@@ -40,6 +40,8 @@
 #include "ui_debugger.h"
 #include "ui_debugger_iasm.h"
 #include "memory/memory.h"
+#include "memory/memext.h"
+#include "ui_dbg_memext.h"
 #include "ui_breakpoints.h"
 #include "debugger/breakpoints.h"
 #include "ui_membrowser.h"
@@ -352,6 +354,9 @@ G_MODULE_EXPORT gboolean on_dbg_mmap ( GtkWidget *widget, GdkEventButton *event,
     if ( !TEST_EMULATION_PAUSED ) {
         ui_debugger_pause_emulation ( );
     } else {
+
+        gtk_widget_set_sensitive ( ui_get_widget ( "dbg_mmap_memext_remap" ), ( TEST_MEMEXT_CONNECTED ) );
+
         // win32 a win64 GTK ve stavajici verzi umi jen gtk_menu_popup, ktery je vsak v novych verzich deprecated
 #ifdef WINDOWS
         gtk_menu_popup ( GTK_MENU ( ui_get_widget ( "dbg_mmap_menu" ) ), NULL, NULL, NULL, NULL, 0, 0 );
@@ -410,6 +415,13 @@ G_MODULE_EXPORT void on_dbg_mmap_mount_all ( GtkMenuItem *menuitem, gpointer use
 
 G_MODULE_EXPORT void on_dbg_mmap_umount_all ( GtkMenuItem *menuitem, gpointer user_data ) {
     debugger_mmap_umount ( MEMORY_MAP_FLAG_ROM_0000 | MEMORY_MAP_FLAG_ROM_1000 | MEMORY_MAP_FLAG_CGRAM_VRAM | MEMORY_MAP_FLAG_ROM_E000 );
+}
+
+
+G_MODULE_EXPORT void on_dbg_mmap_memext_remap_activate ( GtkMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+    ui_dbg_memext_show ( );
 }
 
 

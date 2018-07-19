@@ -34,7 +34,7 @@ extern "C" {
 #include "ui/ui_main.h"
 #include "pioz80/pioz80.h"
 #include "ctc8253/ctc8253.h"
-
+#include "memory/memext.h"
 
 
 #define DEBUGGER_STACK_ROWS             20
@@ -164,6 +164,9 @@ extern "C" {
         // memory map
         int last_map;
         int last_mmap_dmd;
+        // memext
+        int last_memext;
+        int last_memext_map [ MEMEXT_RAW_MAP_SIZE ];
 
         // 8255
         GtkWidget *i8255_cmt_in_label;

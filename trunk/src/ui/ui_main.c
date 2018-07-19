@@ -72,6 +72,7 @@
 #include "debugger/debugger.h"
 #include "ui/debugger/ui_debugger.h"
 #include "ui/debugger/ui_breakpoints.h"
+#include "ui/debugger/ui_dbg_memext.h"
 #include "debugger/ui_membrowser.h"
 #include "debugger/ui_dissassembler.h"
 #endif
@@ -636,6 +637,16 @@ G_MODULE_EXPORT void on_menuitem_open_dissassembler_activate ( GtkMenuItem *menu
     ui_dissassembler_show_window ( );
 }
 
+
+G_MODULE_EXPORT void on_menuitem_memext_map_settings_activate ( GtkMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+    ui_dbg_memext_show ( );
+}
+
 #else
 
 
@@ -660,6 +671,12 @@ G_MODULE_EXPORT void on_menuitem_open_membrowser_activate ( GtkMenuItem *menuite
 
 
 G_MODULE_EXPORT void on_menuitem_open_dissassembler_activate ( GtkMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+}
+
+
+G_MODULE_EXPORT void on_menuitem_memext_map_settings_activate ( GtkMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
 }
@@ -835,6 +852,7 @@ void ui_main_debugger_windows_refresh ( void ) {
     if ( gtk_widget_is_visible ( ui_get_widget ( "debugger_main_window" ) ) ) {
         ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
         ui_debugger_update_stack ( );
+        ui_debugger_update_mmap ( );
     };
 }
 

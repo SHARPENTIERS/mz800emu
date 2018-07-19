@@ -44,6 +44,7 @@
 #include "gdg/gdg.h"
 #include "gdg/video.h"
 #include "memory/memory.h"
+#include "memory/memext.h"
 #include "cmt/cmt.h"
 #include "pio8255/pio8255.h"
 #include "ctc8253/ctc8253.h"
@@ -599,6 +600,58 @@ static inline void ui_debugger_set_mmap ( st_UIMMAPBANK *mmbank, en_UI_MMBSTATE 
 
 void ui_debugger_update_mmap ( void ) {
 
+    /* MemExt */
+
+    int memext_state = ( TEST_MEMEXT_CONNECTED_PEHU ) | ( TEST_MEMEXT_CONNECTED_LUFTNER << 1 );
+
+    if ( memext_state == 0 ) {
+        if ( g_uidebugger.last_memext != memext_state ) {
+            int i;
+            for ( i = 0; i < MEMEXT_RAW_MAP_SIZE; i++ ) {
+                char label_name[14];
+                snprintf ( label_name, sizeof ( label_name ), "mmap_memext_%X", i );
+                gtk_label_set_text ( ui_get_label ( label_name ), "--" );
+                g_uidebugger.last_memext_map[i] = -1;
+            };
+            g_uidebugger.last_memext = memext_state;
+        };
+    } else {
+
+        if ( g_uidebugger.last_memext != memext_state ) {
+            int i;
+            for ( i = 0; i < MEMEXT_RAW_MAP_SIZE; i++ ) {
+                char label_name[14];
+                snprintf ( label_name, sizeof ( label_name ), "mmap_memext_%X", i );
+                g_uidebugger.last_memext_map[i] = g_memext.map[i];
+                if ( ( !( i & 1 ) ) || ( TEST_MEMEXT_TYPE_LUFTNER ) ) {
+                    char buff[3];
+                    snprintf ( buff, sizeof ( buff ), "%02X", g_memext.map[i] >> ( TEST_MEMEXT_TYPE_PEHU ) );
+                    gtk_label_set_text ( ui_get_label ( label_name ), buff );
+                } else {
+                    gtk_label_set_text ( ui_get_label ( label_name ), "--" );
+                };
+            };
+            g_uidebugger.last_memext = memext_state;
+        } else {
+            int i;
+            for ( i = 0; i < MEMEXT_RAW_MAP_SIZE; i++ ) {
+                if ( g_uidebugger.last_memext_map[i] != g_memext.map[i] ) {
+                    char label_name[14];
+                    snprintf ( label_name, sizeof ( label_name ), "mmap_memext_%X", i );
+                    g_uidebugger.last_memext_map[i] = g_memext.map[i];
+                    if ( ( !( i & 1 ) ) || ( TEST_MEMEXT_TYPE_LUFTNER ) ) {
+                        char buff[3];
+                        snprintf ( buff, sizeof ( buff ), "%02X", g_memext.map[i] >> ( TEST_MEMEXT_TYPE_PEHU ) );
+                        gtk_label_set_text ( ui_get_label ( label_name ), buff );
+                    };
+                };
+            };
+        };
+    };
+
+
+    /* Standardni mapovani */
+
     if ( ( g_gdg.regDMD == g_uidebugger.last_mmap_dmd ) && ( g_memory.map == g_uidebugger.last_map ) ) {
         return;
     };
@@ -1126,6 +1179,15 @@ void ui_debugger_initialize_mmap ( void ) {
 
     g_uidebugger.last_map = -1;
     g_uidebugger.last_mmap_dmd = -1;
+    g_uidebugger.last_memext = -1;
+    int i;
+    for ( i = 0; i < MEMEXT_RAW_MAP_SIZE; i++ ) {
+        char label_name[14];
+        snprintf ( label_name, sizeof ( label_name ), "mmap_memext_%X", i );
+        gtk_label_set_text ( ui_get_label ( label_name ), "--" );
+        g_uidebugger.last_memext_map[i] = -1;
+    };
+
 
     char *g_mmap_names[MMBANK_COUNT] = {
                                         "dbg_mmap_drawingarea0",
@@ -1147,7 +1209,6 @@ void ui_debugger_initialize_mmap ( void ) {
                                         "dbg_mmap_drawingareaF",
     };
 
-    int i;
     for ( i = 0; i < MMBANK_COUNT; i++ ) {
         GtkWidget *widget = ui_get_widget ( g_mmap_names[i] );
         ui_debugger_create_mmap_pixbuf ( widget, &g_uidebugger.mmapbank[i] );
