@@ -259,7 +259,7 @@ void memory_reconnect_ram ( void ) {
     };
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
-    if ( TEST_DEBUGGER_STEP_CALL ) {
+    if ( TEST_EMULATION_PAUSED ) {
         ui_main_debugger_windows_refresh ( );
     };
 #endif

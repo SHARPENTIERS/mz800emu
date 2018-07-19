@@ -42,6 +42,8 @@ void ui_memext_menu_update ( void ) {
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     gtk_widget_set_visible ( ui_get_widget ( "menuitem_memext_mem_content" ), TRUE );
+    // menu Debugger -> MemExt Settings...
+    gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_memext_map_settings" ), ( TEST_MEMEXT_CONNECTED ) );
 #else
     gtk_widget_set_visible ( ui_get_widget ( "menuitem_memext_mem_content" ), FALSE );
 #endif

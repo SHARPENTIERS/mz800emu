@@ -2124,6 +2124,21 @@ fixed ROM for the Luftner´s model of MemExt.</property>
                             <signal name="activate" handler="on_menuitem_open_dissassembler_activate" swapped="no"/>
                           </object>
                         </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem30">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_memext_map_settings">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Mem_Ext Map Settings...</property>
+                            <property name="use_underline">True</property>
+                            <signal name="activate" handler="on_menuitem_memext_map_settings_activate" swapped="no"/>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>

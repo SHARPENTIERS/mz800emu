@@ -112,7 +112,7 @@ int main ( int argc, char** argv ) {
     printf ( "\nTips:\n" );
     printf ( "   - use right-click mouse button on the emulator window to show the MAIN MENU.\n" );
     printf ( "   - edit the file ./ui_resources/mz800emu.css, if you need change UI menu fonts, colors, etc...\n" );
-    printf ( "\nTips on some useful shortcut keys:\n" );
+    printf ( "\nSome useful shortcut keys:\n" );
     printf ( "   Alt + C - virtual CMT\n" );
     printf ( "   Alt + K - virtual keyboard\n" );
     printf ( "   Alt + D - debugger\n" );

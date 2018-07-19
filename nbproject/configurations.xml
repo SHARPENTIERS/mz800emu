@@ -139,6 +139,7 @@
         </logicalFolder>
         <logicalFolder name="f1" displayName="MZ-800 Debugger" projectFiles="true">
           <itemPath>src/ui/debugger/ui_breakpoints.h</itemPath>
+          <itemPath>src/ui/debugger/ui_dbg_memext.h</itemPath>
           <itemPath>src/ui/debugger/ui_debugger.h</itemPath>
           <itemPath>src/ui/debugger/ui_debugger_iasm.h</itemPath>
           <itemPath>src/ui/debugger/ui_dissassembler.h</itemPath>
@@ -349,6 +350,7 @@
         </logicalFolder>
         <logicalFolder name="f1" displayName="MZ-800 Debugger" projectFiles="true">
           <itemPath>src/ui/debugger/ui_breakpoints.c</itemPath>
+          <itemPath>src/ui/debugger/ui_dbg_memext.c</itemPath>
           <itemPath>src/ui/debugger/ui_debugger.c</itemPath>
           <itemPath>src/ui/debugger/ui_debugger_callbacks.c</itemPath>
           <itemPath>src/ui/debugger/ui_debugger_iasm.c</itemPath>
@@ -833,6 +835,10 @@
       <item path="src/ui/debugger/ui_breakpoints.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_memext.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_memext.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_debugger.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1440,6 +1446,10 @@
       </item>
       <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/ui/debugger/ui_dbg_memext.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_memext.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ui/debugger/ui_debugger.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_debugger.h" ex="false" tool="3" flavor2="0">
@@ -2036,6 +2046,10 @@
       <item path="src/ui/debugger/ui_breakpoints.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_memext.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_memext.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_debugger.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2645,6 +2659,10 @@
       <item path="src/ui/debugger/ui_breakpoints.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_memext.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_memext.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_debugger.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -3260,6 +3278,10 @@
       </item>
       <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/ui/debugger/ui_dbg_memext.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_memext.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ui/debugger/ui_debugger.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/debugger/ui_debugger.h" ex="false" tool="3" flavor2="0">
@@ -3874,6 +3896,10 @@
       </item>
       <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/ui/debugger/ui_dbg_memext.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_memext.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/ui/debugger/ui_debugger.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_debugger.h" ex="false" tool="3" flavor2="0">
@@ -4485,6 +4511,10 @@
       <item path="src/ui/debugger/ui_breakpoints.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_memext.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_memext.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_debugger.c" ex="false" tool="0" flavor2="0">
       </item>

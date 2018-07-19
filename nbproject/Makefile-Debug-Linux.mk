@@ -119,6 +119,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ramdisk/ramdisk.o \
 	${OBJECTDIR}/src/sharpmz_ascii.o \
 	${OBJECTDIR}/src/ui/debugger/ui_breakpoints.o \
+	${OBJECTDIR}/src/ui/debugger/ui_dbg_memext.o \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger.o \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger_callbacks.o \
 	${OBJECTDIR}/src/ui/debugger/ui_debugger_iasm.o \
@@ -599,6 +600,11 @@ ${OBJECTDIR}/src/ui/debugger/ui_breakpoints.o: src/ui/debugger/ui_breakpoints.c
 	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger
 	${RM} "$@.d"
 	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_breakpoints.o src/ui/debugger/ui_breakpoints.c
+
+${OBJECTDIR}/src/ui/debugger/ui_dbg_memext.o: src/ui/debugger/ui_dbg_memext.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger
+	${RM} "$@.d"
+	$(COMPILE.c) -g -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex/ -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/debugger/ui_dbg_memext.o src/ui/debugger/ui_dbg_memext.c
 
 ${OBJECTDIR}/src/ui/debugger/ui_debugger.o: src/ui/debugger/ui_debugger.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui/debugger
