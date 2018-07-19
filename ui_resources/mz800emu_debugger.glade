@@ -1427,6 +1427,8 @@
                   <item translatable="yes">Pezik 512 KB (0xe8 - 0xef)</item>
                   <item translatable="yes">Pezik 512 KB (0x68 - 0x6f)</item>
                   <item translatable="yes">MR-1R18 Compatibile</item>
+                  <item translatable="yes">MemExt ´Peroutka&amp;Hucik´</item>
+                  <item translatable="yes">MemExt ´Luftner´</item>
                 </items>
                 <signal name="changed" handler="on_dbg_membrowser_source_comboboxtext_changed" swapped="no"/>
               </object>
@@ -1517,10 +1519,10 @@
                   <object class="GtkEntry" id="dbg_mebrowser_goto_addr_hex_entry">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="max_length">4</property>
+                    <property name="max_length">8</property>
                     <property name="invisible_char">●</property>
                     <property name="activates_default">True</property>
-                    <property name="width_chars">6</property>
+                    <property name="width_chars">11</property>
                     <property name="xalign">1</property>
                     <property name="invisible_char_set">True</property>
                     <property name="caps_lock_warning">False</property>
@@ -1549,10 +1551,10 @@
                   <object class="GtkEntry" id="dbg_mebrowser_goto_addr_dec_entry">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="max_length">5</property>
+                    <property name="max_length">10</property>
                     <property name="invisible_char">●</property>
                     <property name="activates_default">True</property>
-                    <property name="width_chars">7</property>
+                    <property name="width_chars">11</property>
                     <property name="xalign">1</property>
                     <property name="invisible_char_set">True</property>
                     <property name="caps_lock_warning">False</property>
