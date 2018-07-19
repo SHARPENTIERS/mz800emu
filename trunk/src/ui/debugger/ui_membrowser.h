@@ -46,10 +46,12 @@ extern "C" {
         MEMBROWSER_SOURCE_MZ700ROM,
         MEMBROWSER_SOURCE_CGROM,
         MEMBROWSER_SOURCE_MZ800ROM,
-        /* ramdisky - pred praci s nimi kontrolujeme, zda jsou pripojeny */
+        /* externi pameti - pred praci s nimi kontrolujeme, zda jsou pripojeny */
         MEMBROWSER_SOURCE_PEZIK_E8,
         MEMBROWSER_SOURCE_PEZIK_68,
         MEMBROWSER_SOURCE_MZ1R18,
+        MEMBROWSER_SOURCE_MEMEXT_PEHU,
+        MEMBROWSER_SOURCE_MEMEXT_LUFTNER,
     } en_MEMBROWSER_SOURCE;
 
 
@@ -74,6 +76,7 @@ extern "C" {
         int pezik_bank[2];
         en_MEMBROWSER_PEZIK_ADDRESSING pezik_addressing;
         int mr1z18_bank;
+        int memext_bank;
 
         uint8_t *MEM;
 
@@ -85,7 +88,7 @@ extern "C" {
         gboolean show_comparative;
         gboolean sh_ascii_conversion;
 
-        Z80EX_WORD selected_addr;
+        uint32_t selected_addr;
         gint page;
         en_MEMBROWSER_MODE mode;
 

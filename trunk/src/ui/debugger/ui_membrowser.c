@@ -44,6 +44,7 @@
 #include "ui/ui_hexeditable.h"
 #include "ui_memload.h"
 #include "ui_memsave.h"
+#include "memory/memext.h"
 
 
 #define MEMBROWSER_MEM_MAX  0x10000
@@ -56,20 +57,20 @@ static gboolean g_membrowser_initialised = FALSE;
 
 st_UI_MEMBROWSER g_membrowser;
 
-extern void ui_membrowser_show_page ( int page );
+extern void ui_membrowser_show_page ( uint32_t page );
 
 
-static int ui_membrowser_get_page_by_addr ( Z80EX_WORD addr ) {
+static uint32_t ui_membrowser_get_page_by_addr ( uint32_t addr ) {
     return ( addr / MEMBROWSER_ADDRESSES_PER_PAGE );
 }
 
 
-static Z80EX_WORD ui_membrowser_get_first_addr_on_page ( int page ) {
+static uint32_t ui_membrowser_get_first_addr_on_page ( uint32_t page ) {
     return ( page * MEMBROWSER_ADDRESSES_PER_PAGE );
 }
 
 
-static Z80EX_WORD ui_membrowser_get_last_addr_on_page ( int page ) {
+static uint32_t ui_membrowser_get_last_addr_on_page ( uint32_t page ) {
     return ui_membrowser_get_first_addr_on_page ( page ) + MEMBROWSER_ADDRESSES_PER_PAGE - 1;
 }
 
@@ -86,13 +87,13 @@ static void ui_membrowser_get_cursor_position ( gint *row, gint *col ) {
 }
 
 
-static Z80EX_WORD ui_membrowser_get_addr_by_offset ( uint32_t offset ) {
+static uint32_t ui_membrowser_get_addr_by_offset ( uint32_t offset ) {
 
     gint row = offset / MEMBROWSER_ROW_LENGTH;
     gint col = offset % MEMBROWSER_ROW_LENGTH;
 
     col -= 5;
-    Z80EX_WORD addr = ui_membrowser_get_first_addr_on_page ( g_membrowser.page ) + row * 0x10;
+    uint32_t addr = ui_membrowser_get_first_addr_on_page ( g_membrowser.page ) + row * 0x10;
     if ( col > 52 ) {
         // MEMBROWSER_MODE_EDIT_ASCII
         addr += col - ( 52 + 3 );
@@ -172,7 +173,7 @@ static Z80EX_WORD ui_membrowser_get_addr_by_offset ( uint32_t offset ) {
 }
 
 
-static Z80EX_WORD ui_membrowser_get_addr_by_cursor_position ( void ) {
+static uint32_t ui_membrowser_get_addr_by_cursor_position ( void ) {
     gint row, col;
     ui_membrowser_get_cursor_position ( &row, &col );
     uint32_t offset = col + ( row * MEMBROWSER_ROW_LENGTH );
@@ -180,14 +181,14 @@ static Z80EX_WORD ui_membrowser_get_addr_by_cursor_position ( void ) {
 }
 
 
-static uint32_t ui_membrowser_get_ascii_offset_by_addr ( Z80EX_WORD addr ) {
-    Z80EX_WORD first_addr = ui_membrowser_get_first_addr_on_page ( g_membrowser.page );
+static uint32_t ui_membrowser_get_ascii_offset_by_addr ( uint32_t addr ) {
+    uint32_t first_addr = ui_membrowser_get_first_addr_on_page ( g_membrowser.page );
     return ( ( addr - first_addr ) / 0x10 ) * MEMBROWSER_ROW_LENGTH + 5 + 52 + 3 + ( addr % 0x10 );
 }
 
 
-static uint32_t ui_membrowser_get_hex_offset_by_addr ( Z80EX_WORD addr ) {
-    Z80EX_WORD first_addr = ui_membrowser_get_first_addr_on_page ( g_membrowser.page );
+static uint32_t ui_membrowser_get_hex_offset_by_addr ( uint32_t addr ) {
+    uint32_t first_addr = ui_membrowser_get_first_addr_on_page ( g_membrowser.page );
     uint32_t offset = ( ( addr - first_addr ) / 0x10 ) * MEMBROWSER_ROW_LENGTH;
     switch ( addr % 0x10 ) {
         case 0x00:
@@ -258,7 +259,7 @@ static void ui_membrowser_update_selected_addr_label ( void ) {
 }
 
 
-static void ui_membrowser_update_addr_in_textview ( Z80EX_WORD addr ) {
+static void ui_membrowser_update_addr_in_textview ( uint32_t addr ) {
     g_membrowser.lock_textbuffer_changed = TRUE;
 
     GtkWidget *view = ui_get_widget ( "dbg_membrowser_textview" );
@@ -531,7 +532,7 @@ static gboolean ui_membrowser_edit_ascii_fix_cursor_position_right ( gboolean mo
 static gboolean ui_membrowser_update_textbuffer_set_selected ( gpointer user_data ) {
     gboolean *next_page = (gboolean*) user_data;
     if ( ( user_data == NULL ) || ( *next_page == FALSE ) ) {
-        Z80EX_WORD old_addr = g_membrowser.selected_addr;
+        uint32_t old_addr = g_membrowser.selected_addr;
         g_membrowser.selected_addr = ui_membrowser_get_addr_by_cursor_position ( );
         gint row, col;
         ui_membrowser_get_cursor_position ( &row, &col );
@@ -553,13 +554,13 @@ static gboolean ui_membrowser_update_textbuffer_set_selected ( gpointer user_dat
 
 
 static void ui_membrowser_update_selected_addr ( void ) {
-    Z80EX_WORD new_addr = ui_membrowser_get_addr_by_cursor_position ( );
+    uint32_t new_addr = ui_membrowser_get_addr_by_cursor_position ( );
     if ( ( new_addr == g_membrowser.selected_addr ) && ( new_addr != ( g_membrowser.mem_size - 1 ) ) ) return;
     gdk_threads_add_idle ( ui_membrowser_update_textbuffer_set_selected, NULL );
 }
 
 
-void ui_membrowser_show_page ( int page ) {
+void ui_membrowser_show_page ( uint32_t page ) {
 
     g_membrowser.page = page;
     ui_membrowser_update_selected_page_label ( );
@@ -568,9 +569,9 @@ void ui_membrowser_show_page ( int page ) {
     gtk_adjustment_set_value ( g_membrowser.page_adjustment, g_membrowser.page );
     g_membrowser.lock_page_vscale = FALSE;
 
-    int previous_page = ui_membrowser_get_page_by_addr ( g_membrowser.selected_addr );
-    int new_addr = g_membrowser.selected_addr + ( ( g_membrowser.page - previous_page ) * MEMBROWSER_ADDRESSES_PER_PAGE );
-    g_membrowser.selected_addr = (Z80EX_WORD) new_addr;
+    uint32_t previous_page = ui_membrowser_get_page_by_addr ( g_membrowser.selected_addr );
+    uint32_t new_addr = g_membrowser.selected_addr + ( ( g_membrowser.page - previous_page ) * MEMBROWSER_ADDRESSES_PER_PAGE );
+    g_membrowser.selected_addr = new_addr;
     ui_membrowser_update_selected_addr_label ( );
 
     g_membrowser.lock_textbuffer_changed = TRUE;
@@ -583,11 +584,11 @@ void ui_membrowser_show_page ( int page ) {
     gtk_text_buffer_get_end_iter ( buffer, &iter );
 
 
-    Z80EX_WORD start_addr = ui_membrowser_get_first_addr_on_page ( g_membrowser.page );
-    Z80EX_WORD end_addr = ui_membrowser_get_last_addr_on_page ( g_membrowser.page );
+    uint32_t start_addr = ui_membrowser_get_first_addr_on_page ( g_membrowser.page );
+    uint32_t end_addr = ui_membrowser_get_last_addr_on_page ( g_membrowser.page );
 
-    int byte_pos = 0;
-    int i;
+    uint32_t byte_pos = 0;
+    uint32_t i;
     for ( i = start_addr; i <= end_addr; i++ ) {
 
         if ( ( i % 0x10 ) == 0 ) {
@@ -708,6 +709,27 @@ static int ui_membrowser_check_ramdisk_noisily ( void ) {
 }
 
 
+static int ui_membrowser_check_memext ( void ) {
+    if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MEMEXT_PEHU ) {
+        if ( TEST_MEMEXT_CONNECTED_PEHU ) return EXIT_SUCCESS;
+    } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MEMEXT_LUFTNER ) {
+        if ( TEST_MEMEXT_CONNECTED_LUFTNER ) return EXIT_SUCCESS;
+    };
+    return EXIT_FAILURE;
+}
+
+
+static int ui_membrowser_check_memext_noisily ( void ) {
+    if ( EXIT_SUCCESS != ui_membrowser_check_memext ( ) ) {
+        ui_show_error ( "Selected type of MemExt device is not connected!" );
+        g_membrowser.MEM = NULL;
+        memset ( g_membrowser.data_current, 0x00, MEMBROWSER_MEM_MAX );
+        return EXIT_FAILURE;
+    };
+    return EXIT_SUCCESS;
+}
+
+
 static void on_dbg_membrowser_textbuffer_changed ( GtkTextBuffer *textbuffer, gpointer user_data ) {
 
     if ( g_membrowser.lock_textbuffer_changed ) return;
@@ -728,7 +750,7 @@ static void on_dbg_membrowser_textbuffer_changed ( GtkTextBuffer *textbuffer, gp
     gtk_text_buffer_get_iter_at_offset ( textbuffer, &start_iter, offset - 1 );
     gtk_text_buffer_get_iter_at_offset ( textbuffer, &end_iter, offset );
     char *c = gtk_text_buffer_get_text ( textbuffer, &start_iter, &end_iter, FALSE );
-    Z80EX_WORD addr = ui_membrowser_get_addr_by_offset ( offset - 1 );
+    uint32_t addr = ui_membrowser_get_addr_by_offset ( offset - 1 );
 
     if ( g_membrowser.mode == MEMBROWSER_MODE_EDIT_HEX ) {
         Z80EX_BYTE halfbyte = (Z80EX_BYTE) debuger_hextext_to_uint32 ( c );
@@ -750,8 +772,10 @@ static void on_dbg_membrowser_textbuffer_changed ( GtkTextBuffer *textbuffer, gp
 
     // ulozeni g_membrowser.data_current[addr] do skutecne pameti
 
-    if ( g_membrowser.memsrc >= MEMBROWSER_SOURCE_PEZIK_68 ) {
+    if ( ( g_membrowser.memsrc >= MEMBROWSER_SOURCE_PEZIK_68 ) && ( g_membrowser.memsrc <= MEMBROWSER_SOURCE_MZ1R18 ) ) {
         ui_membrowser_check_ramdisk_noisily ( );
+    } else if ( ( g_membrowser.memsrc >= MEMBROWSER_SOURCE_MEMEXT_PEHU ) && ( g_membrowser.memsrc <= MEMBROWSER_SOURCE_MEMEXT_LUFTNER ) ) {
+        ui_membrowser_check_memext_noisily ( );
     };
 
     if ( g_membrowser.MEM != NULL ) {
@@ -766,7 +790,15 @@ static void on_dbg_membrowser_textbuffer_changed ( GtkTextBuffer *textbuffer, gp
             g_membrowser.data_current[addr] = debugger_memory_read_byte ( addr );
         } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_RAM ) {
             memory_load_block ( &g_membrowser.data_current[addr], addr, 1, MEMORY_LOAD_RAMONLY );
-            g_membrowser.data_current[addr] = debugger_memory_read_byte ( addr );
+            g_membrowser.data_current[addr] = debugger_memory_read_byte ( addr ); // muzeme narazit na namapovanou FLASH, ktera je R/O
+        } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MEMEXT_LUFTNER ) {
+            uint8_t *srcmem;
+            if ( g_membrowser.memext_bank & 0x80 ) {
+                srcmem = &g_memext.FLASH[( ( g_membrowser.memext_bank & 0x7f ) * MEMEXT_LUFTNER_BANK_SIZE )];
+            } else {
+                srcmem = &g_memext.RAM[( g_membrowser.memext_bank * MEMEXT_LUFTNER_BANK_SIZE )];
+            };
+            srcmem[addr] = g_membrowser.data_current[addr];
         } else {
             g_membrowser.data_current[addr] = 0x00;
         };
@@ -852,7 +884,7 @@ static void ui_membrowser_set_mode ( en_MEMBROWSER_MODE mode ) {
 
 static void on_dbg_membrowser_page_adjustment_value_changed ( GtkAdjustment *adjustment, gpointer user_data ) {
     if ( g_membrowser.lock_page_vscale ) return;
-    int page = (int) gtk_range_get_value ( GTK_RANGE ( g_membrowser.page_vscale ) );
+    uint32_t page = (uint32_t) gtk_range_get_value ( GTK_RANGE ( g_membrowser.page_vscale ) );
     if ( page == g_membrowser.page ) return;
     ui_membrowser_show_page ( page );
 }
@@ -871,7 +903,7 @@ static void ui_membrowser_initialise_bank256_combobox ( void ) {
         gtk_tree_store_set ( store, &iter, 0, buff, -1 );
         int j;
         for ( j = 0; j < 0x10; j++ ) {
-            int bank = i << 4 | j;
+            uint32_t bank = i << 4 | j;
             snprintf ( buff, sizeof ( buff ), "bank 0x%02x", bank );
             gtk_tree_store_append ( store, &iter2, &iter );
             gtk_tree_store_set ( store, &iter2, 0, buff, 1, bank, -1 );
@@ -1018,9 +1050,9 @@ void ui_membrowser_set_mem_size ( uint32_t memsize ) {
 
 static void ui_membrowser_load_data_from_memsrc ( void ) {
 
-    if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MZ800ROM ) ) {
+    if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MZ800ROM ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MEMEXT_PEHU ) ) {
         ui_membrowser_set_mem_size ( 0x2000 );
-    } else if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MZ700ROM ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_CGROM ) ) {
+    } else if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MZ700ROM ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_CGROM ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MEMEXT_LUFTNER ) ) {
         ui_membrowser_set_mem_size ( 0x1000 );
     } else {
         ui_membrowser_set_mem_size ( 0x10000 );
@@ -1028,11 +1060,21 @@ static void ui_membrowser_load_data_from_memsrc ( void ) {
 
     g_membrowser.MEM = NULL;
     gboolean pezik_LE = FALSE;
+    int memext_luftner_check = EXIT_FAILURE;
 
     switch ( g_membrowser.memsrc ) {
 
         case MEMBROWSER_SOURCE_MAPED:
         case MEMBROWSER_SOURCE_RAM:
+            break;
+        case MEMBROWSER_SOURCE_MEMEXT_LUFTNER:
+            memext_luftner_check = ui_membrowser_check_memext_noisily ( );
+            break;
+
+        case MEMBROWSER_SOURCE_MEMEXT_PEHU:
+            if ( EXIT_SUCCESS == ui_membrowser_check_memext_noisily ( ) ) {
+                g_membrowser.MEM = &g_memext.RAM[( g_membrowser.memext_bank * MEMEXT_PEHU_BANK_SIZE )];
+            };
             break;
 
         case MEMBROWSER_SOURCE_MZ700ROM:
@@ -1106,7 +1148,17 @@ static void ui_membrowser_load_data_from_memsrc ( void ) {
             for ( i = 0; i < g_membrowser.mem_size; i++ ) {
                 g_membrowser.data_current[i] = debugger_memory_read_byte ( i );
             };
+        } else if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MEMEXT_LUFTNER ) && ( memext_luftner_check == EXIT_SUCCESS ) ) {
+            uint8_t *srcmem;
+            if ( g_membrowser.memext_bank & 0x80 ) {
+                srcmem = &g_memext.FLASH[( ( g_membrowser.memext_bank & 0x7f ) * MEMEXT_LUFTNER_BANK_SIZE )];
+            } else {
+                srcmem = &g_memext.RAM[( g_membrowser.memext_bank * MEMEXT_LUFTNER_BANK_SIZE )];
+            };
+            memcpy ( g_membrowser.data_current, srcmem, g_membrowser.mem_size );
+
         } else {
+            // neznamy zdroj?
             memset ( g_membrowser.data_current, 0x00, MEMBROWSER_MEM_MAX );
         };
     };
@@ -1119,8 +1171,12 @@ static void ui_membrowser_show ( void ) {
 
     ui_membrowser_init ( );
 
-    if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_PEZIK_68 ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_PEZIK_E8 ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MZ1R18 ) ) {
+    if ( ( g_membrowser.memsrc >= MEMBROWSER_SOURCE_PEZIK_68 ) && ( g_membrowser.memsrc <= MEMBROWSER_SOURCE_MZ1R18 ) ) {
         if ( EXIT_SUCCESS != ui_membrowser_check_ramdisk ( ) ) {
+            g_membrowser.memsrc = MEMBROWSER_SOURCE_MAPED;
+        };
+    } else if ( ( g_membrowser.memsrc >= MEMBROWSER_SOURCE_MEMEXT_PEHU ) && ( g_membrowser.memsrc <= MEMBROWSER_SOURCE_MEMEXT_LUFTNER ) ) {
+        if ( EXIT_SUCCESS != ui_membrowser_check_memext ( ) ) {
             g_membrowser.memsrc = MEMBROWSER_SOURCE_MAPED;
         };
     };
@@ -1720,11 +1776,56 @@ G_MODULE_EXPORT void on_dbg_membrowser_source_comboboxtext_changed ( GtkComboBox
                     gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( bank_combotext ), buff );
                 };
                 gtk_combo_box_set_active ( GTK_COMBO_BOX ( bank_combotext ), 0 );
-                g_membrowser.mr1z18_bank = 0;
                 g_membrowser.lock_bank_combotext = FALSE;
                 gtk_widget_hide ( bank256_combobox );
                 gtk_widget_show ( bank_combotext );
             };
+            g_membrowser.mr1z18_bank = 0;
+
+            gtk_widget_hide ( pezik_addr_combotext );
+            break;
+
+        case MEMBROWSER_SOURCE_MEMEXT_PEHU:
+        case MEMBROWSER_SOURCE_MEMEXT_LUFTNER:
+            if ( ( memsrc == MEMBROWSER_SOURCE_MEMEXT_PEHU ) && ( !TEST_MEMEXT_CONNECTED_PEHU ) ) {
+                ui_show_error ( "This memory disc device is not connected!" );
+                g_membrowser.lock_source_combotext = TRUE;
+                gtk_combo_box_set_active ( combobox, g_membrowser.memsrc );
+                g_membrowser.lock_source_combotext = FALSE;
+                return;
+            } else if ( ( memsrc == MEMBROWSER_SOURCE_MEMEXT_LUFTNER ) && ( !TEST_MEMEXT_CONNECTED_LUFTNER ) ) {
+                ui_show_error ( "This memory disc device is not connected!" );
+                g_membrowser.lock_source_combotext = TRUE;
+                gtk_combo_box_set_active ( combobox, g_membrowser.memsrc );
+                g_membrowser.lock_source_combotext = FALSE;
+                return;
+            };
+
+            if ( memsrc == MEMBROWSER_SOURCE_MEMEXT_LUFTNER ) {
+                g_membrowser.lock_bank256_combobox = TRUE;
+
+                GtkTreeModel *model = gtk_combo_box_get_model ( GTK_COMBO_BOX ( bank256_combobox ) );
+                GtkTreeIter iter;
+                gtk_tree_model_get_iter_from_string ( model, &iter, "0:0" );
+                gtk_combo_box_set_active_iter ( GTK_COMBO_BOX ( bank256_combobox ), &iter );
+                g_membrowser.lock_bank256_combobox = FALSE;
+                gtk_widget_show ( bank256_combobox );
+                gtk_widget_hide ( bank_combotext );
+            } else {
+                g_membrowser.lock_bank_combotext = TRUE;
+                gtk_combo_box_text_remove_all ( GTK_COMBO_BOX_TEXT ( bank_combotext ) );
+                int i;
+                for ( i = 0; i < MEMEXT_PEHU_BANKS; i++ ) {
+                    char buff[20];
+                    snprintf ( buff, sizeof ( buff ), "Bank %d", i );
+                    gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( bank_combotext ), buff );
+                };
+                gtk_combo_box_set_active ( GTK_COMBO_BOX ( bank_combotext ), 0 );
+                g_membrowser.lock_bank_combotext = FALSE;
+                gtk_widget_hide ( bank256_combobox );
+                gtk_widget_show ( bank_combotext );
+            };
+            g_membrowser.memext_bank = 0;
 
             gtk_widget_hide ( pezik_addr_combotext );
             break;
@@ -1753,9 +1854,9 @@ G_MODULE_EXPORT void on_dbg_mebrowser_goto_addr_hex_entry_changed ( GtkEditable 
     g_membrowser.lock_goto_entry = TRUE;
     ui_hexeditable_changed ( ed, user_data );
 
-    Z80EX_WORD addr = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_mebrowser_goto_addr_hex_entry" ) ) );
+    uint32_t addr = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_mebrowser_goto_addr_hex_entry" ) ) );
 
-    char buff[6];
+    char buff[9];
     buff[0] = 0x00;
     if ( gtk_entry_get_text_length ( ui_get_entry ( "dbg_mebrowser_goto_addr_hex_entry" ) ) ) {
         snprintf ( buff, sizeof ( buff ), "%d", addr );
@@ -1770,9 +1871,9 @@ G_MODULE_EXPORT void on_dbg_mebrowser_goto_addr_dec_entry_changed ( GtkEditable 
     g_membrowser.lock_goto_entry = TRUE;
     ui_digiteditable_changed ( ed, user_data );
 
-    Z80EX_WORD addr = (Z80EX_WORD) atoi ( gtk_entry_get_text ( ui_get_entry ( "dbg_mebrowser_goto_addr_dec_entry" ) ) );
+    uint32_t addr = atoi ( gtk_entry_get_text ( ui_get_entry ( "dbg_mebrowser_goto_addr_dec_entry" ) ) );
 
-    char buff[5];
+    char buff[11];
     buff[0] = 0x00;
     if ( gtk_entry_get_text_length ( ui_get_entry ( "dbg_mebrowser_goto_addr_dec_entry" ) ) ) {
         snprintf ( buff, sizeof ( buff ), "%04X", addr );
@@ -1791,16 +1892,16 @@ static void ui_membrowser_goto_addr_action ( void ) {
         g_membrowser.lock_goto_entry = FALSE;
     };
 
-    Z80EX_WORD addr = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_mebrowser_goto_addr_hex_entry" ) ) );
+    uint32_t addr = debuger_hextext_to_uint32 ( gtk_entry_get_text ( ui_get_entry ( "dbg_mebrowser_goto_addr_hex_entry" ) ) );
 
     if ( addr > ( g_membrowser.mem_size - 1 ) ) {
         addr = g_membrowser.mem_size - 1;
-        char buff[5];
+        char buff[9];
         snprintf ( buff, sizeof ( buff ), "%04X", addr );
         gtk_entry_set_text ( ui_get_entry ( "dbg_mebrowser_goto_addr_hex_entry" ), buff );
     };
 
-    int page = ui_membrowser_get_page_by_addr ( addr );
+    uint32_t page = ui_membrowser_get_page_by_addr ( addr );
     GtkWidget *view = ui_get_widget ( "dbg_membrowser_textview" );
 
     if ( page != g_membrowser.page ) {
@@ -1858,6 +1959,10 @@ G_MODULE_EXPORT void on_dbg_membrowser_bank_comboboxtext_changed ( GtkComboBox *
         g_membrowser.pezik_bank[RAMDISK_PEZIK_E8] = bank;
     } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MZ1R18 ) {
         g_membrowser.mr1z18_bank = bank;
+    } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MEMEXT_PEHU ) {
+        g_membrowser.memext_bank = bank;
+    } else {
+        fprintf ( stderr, "%s():%d - Unknown memsrc 0x%02x\n", __func__, __LINE__, g_membrowser.memsrc );
     };
 
     ui_membrowser_load_data_from_memsrc ( );
@@ -1873,7 +1978,14 @@ G_MODULE_EXPORT void on_dbg_membrowser_bank256_combobox_changed ( GtkComboBox *w
     GtkTreeModel *model = gtk_combo_box_get_model ( widget );
     GValue gv_bank = G_VALUE_INIT;
     gtk_tree_model_get_value ( model, &iter, 1, &gv_bank );
-    g_membrowser.mr1z18_bank = g_value_get_uint ( &gv_bank );
+
+    if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MZ1R18 ) {
+        g_membrowser.mr1z18_bank = g_value_get_uint ( &gv_bank );
+    } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MEMEXT_LUFTNER ) {
+        g_membrowser.memext_bank = g_value_get_uint ( &gv_bank );
+    } else {
+        fprintf ( stderr, "%s():%d - Unknown memsrc 0x%02x\n", __func__, __LINE__, g_membrowser.memsrc );
+    };
 
     ui_membrowser_load_data_from_memsrc ( );
     ui_membrowser_show_page ( g_membrowser.page );
@@ -1890,11 +2002,11 @@ G_MODULE_EXPORT void on_dbg_membrowser_pezik_addressing_comboboxtext_changed ( G
 
 static void ui_membrowser_load_block_cb ( uint32_t addr, uint8_t *data, uint32_t size, void *user_data ) {
 
-    Z80EX_WORD mem_max = g_membrowser.mem_size - 1;
+    uint32_t mem_max = g_membrowser.mem_size - 1;
 
     if ( g_membrowser.MEM != NULL ) {
 
-        Z80EX_WORD src_addr = 0;
+        uint32_t src_addr = 0;
 
         if ( ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_PEZIK_E8 ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_PEZIK_68 ) ) && ( g_membrowser.pezik_addressing == MEMBROWSER_PEZIK_ADDRESSING_LE ) ) {
             /* pezik little endian */

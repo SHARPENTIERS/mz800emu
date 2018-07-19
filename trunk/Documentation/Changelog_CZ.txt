@@ -1,47 +1,4 @@
 
-
-Debugger:
-
-	- pridana historie vykonanych instrukci
-
-	- po dvojkliku na jmeno registru se nastavi dissassembled focus na 
-	  adresu z hodnoty registru
-
-	- po dvojkliku na adresu v zasobniku se nastavi dissassembled focus 
-	  na adresu z hodnoty ulozene v zasobniku
-
-	- byly pridany informace o stavu PIO8255, CTC8253, PIOZ80 a info
-	  o stavu interrupt signalu
-
-	- pridana moznost zmenit stav maskovani interruptu z CTC2 
-	  (Vystupem z PIO8255)
-
-	- pridana informace o GDG signalech a moznost nastavovat regBorder, 
-	  regPal, regWF a regWF
-
-	- pridan 32 bitovy uzivatelsky citac vykonanych CPU taktu
-
-	- v dissassembled window je nyni mozne scrollovat v rozsahu cele 
-	  pameti pomoci Up, Down, PgUp a PgDown a koleckem mysi
-
-	- krom puvodniho "step into" byly pridany take funkce "step over" a 
-	  "run to cursor"
-
-	- v debuggeru lze nyni nahravat MZF soubory do RAM
-
-	- mame nove ikony v toolbaru :)
-
-	- vytvoren nastroj pro dissassemblovani libovolneho bloku z RAM, 
-	  nebo z aktualne mapovane pameti (Alt + I)
-
-	- vytvoren novy Memory Browser (Alt + E), ktery umoznuje prohlizeni,
-	  nebo editaci libovolneho bloku z RAM, VRAM, ROM a vsech ramdisku.
-	  Komparativni mod umoznuje vizualizovat zmeny v pameti oproti 
-	  posledni refreshi. Dale take nabizi moznost ulozit, libovolnou 
-	  cast kterekoliv pameti do souboru, nebo ji naopak z jakehokoliv
-	  binarniho souboru nahrat
-
-
 Novinky a zmeny v emulaci:
 
 	- CMT: kliknutim na "hodiny" se prepina zobrazeni mezi "play time" a 
@@ -112,7 +69,51 @@ Novinky a zmeny v emulaci:
 
 	- nyni lze definovat externi ROM s podporou CMT hack
 
-	- implementovany oba typy MemExt, FLASH se nahrava ze souboru a neni z emulace prepisovatelna
+	- implementovany oba typy MemExt. U MemExt-u Davida Luftnera se obsah FLASH nahrava ze souboru
+	  a neni emulovano jeji prepisovani primo ze Sharpa. ROM FLASH rovnez neni emulovana.
+	 (Zarizeni by mela byt podporovana napr. systemem MZIX https://sourceforge.net/projects/umzix/ )
+
+
+Debugger:
+
+	- pridana historie vykonanych instrukci
+
+	- po dvojkliku na jmeno registru se nastavi dissassembled focus na 
+	  adresu z hodnoty registru
+
+	- po dvojkliku na adresu v zasobniku se nastavi dissassembled focus 
+	  na adresu z hodnoty ulozene v zasobniku
+
+	- byly pridany informace o stavu PIO8255, CTC8253, PIOZ80 a info
+	  o stavu interrupt signalu
+
+	- pridana moznost zmenit stav maskovani interruptu z CTC2 
+	  (Vystupem z PIO8255)
+
+	- pridana informace o GDG signalech a moznost nastavovat regBorder, 
+	  regPal, regWF a regWF
+
+	- pridan 32 bitovy uzivatelsky citac vykonanych CPU taktu
+
+	- v dissassembled window je nyni mozne scrollovat v rozsahu cele 
+	  pameti pomoci Up, Down, PgUp a PgDown a koleckem mysi
+
+	- krom puvodniho "step into" byly pridany take funkce "step over" a 
+	  "run to cursor"
+
+	- v debuggeru lze nyni nahravat MZF soubory do RAM
+
+	- mame nove ikony v toolbaru :)
+
+	- vytvoren nastroj pro dissassemblovani libovolneho bloku z RAM, 
+	  nebo z aktualne mapovane pameti (Alt + I)
+
+	- vytvoren novy Memory Browser (Alt + E), ktery umoznuje prohlizeni,
+	  nebo editaci libovolneho bloku z RAM, VRAM, ROM, MemExt a vsech ramdisku.
+	  Komparativni mod umoznuje vizualizovat zmeny v pameti oproti 
+	  posledni refreshi. Dale take nabizi moznost ulozit, libovolnou 
+	  cast kterekoliv pameti do souboru, nebo ji naopak z jakehokoliv
+	  binarniho souboru nahrat
 
 Obecne:
 

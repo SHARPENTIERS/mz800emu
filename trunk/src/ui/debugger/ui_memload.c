@@ -387,7 +387,9 @@ G_MODULE_EXPORT void on_dbg_memload_ok_button_clicked ( GtkButton *button, gpoin
 
     printf ( "\nLoad done.\n" );
 
-    ui_main_debugger_windows_refresh ( );
+    if ( TEST_EMULATION_PAUSED ) {
+        ui_main_debugger_windows_refresh ( );
+    };
 }
 
 #endif
