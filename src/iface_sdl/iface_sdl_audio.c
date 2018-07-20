@@ -17,6 +17,10 @@
 #include "mz800.h"
 #include "audio.h"
 
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+#include "debugger/debugger.h"
+#endif
+
 
 typedef enum en_IFACE_AUDIO_BUFFER_STATE {
     IFACE_AUDIO_BUFFER_STATE_NORMAL = 0,
@@ -73,18 +77,26 @@ void iface_sdl_audio_callback ( void *userdata, Uint8 *stream, int len ) {
         SDL_UnlockMutex ( g_iface_audio.play_lock );
         SDL_UnlockMutex ( g_iface_audio.write_lock );
 
-        if ( SDL_AUDIO_ISSIGNED ( g_iface_audio.spec_have.format ) ) {
-            /* bugfix: SDL-2.0.7 v linuxu vynucuje signed format */
-            uint16_t *value = g_iface_audio.buffer;
-            int reallen = len / sizeof (uint16_t );
-            int i;
-            uint16_t *dst = (uint16_t *) stream;
-            for ( i = 0; i < reallen; i++ ) {
-                *dst++ = ( *value++ ) - 0x8000;
-            };
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+        if ( ( g_debugger.animated_updates == DEBUGGER_ANIMATED_UPDATES_ENABLED_WTHOUT_AUDIO ) && ( TEST_DEBUGGER_ACTIVE ) ) {
+            memset ( stream, 0x00, len );
         } else {
-            memcpy ( stream, g_iface_audio.buffer, len );
+#endif        
+            if ( SDL_AUDIO_ISSIGNED ( g_iface_audio.spec_have.format ) ) {
+                /* bugfix: SDL-2.0.7 v linuxu vynucuje signed format */
+                uint16_t *value = g_iface_audio.buffer;
+                int reallen = len / sizeof (uint16_t );
+                int i;
+                uint16_t *dst = (uint16_t *) stream;
+                for ( i = 0; i < reallen; i++ ) {
+                    *dst++ = ( *value++ ) - 0x8000;
+                };
+            } else {
+                memcpy ( stream, g_iface_audio.buffer, len );
+            };
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
         };
+#endif
     };
 }
 

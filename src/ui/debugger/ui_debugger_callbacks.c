@@ -190,6 +190,18 @@ G_MODULE_EXPORT void on_dbg_pause_switch_menuitem_activate ( GtkCheckMenuItem *m
 }
 
 
+G_MODULE_EXPORT void on_dbg_animated_enabled_without_audio_radiomenuitem_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+
+    if ( g_uidebugger.accelerators_locked != 0 ) return;
+    g_debugger.animated_updates = DEBUGGER_ANIMATED_UPDATES_ENABLED_WTHOUT_AUDIO;
+    ui_debugger_hide_spinner_window ( );
+    debugger_step_call ( 0 );
+    printf ( "Debugger animations ENABLED without audio\n" );
+}
+
+
 G_MODULE_EXPORT void on_dbg_animated_enabled_radiomenuitem_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
@@ -198,6 +210,7 @@ G_MODULE_EXPORT void on_dbg_animated_enabled_radiomenuitem_toggled ( GtkCheckMen
     g_debugger.animated_updates = DEBUGGER_ANIMATED_UPDATES_ENABLED;
     ui_debugger_hide_spinner_window ( );
     debugger_step_call ( 0 );
+    printf ( "Debugger animations ENABLED\n" );
 }
 
 
@@ -208,6 +221,7 @@ G_MODULE_EXPORT void on_dbg_animated_disabled_radiomenuitem_toggled ( GtkCheckMe
     if ( g_uidebugger.accelerators_locked != 0 ) return;
     g_debugger.animated_updates = DEBUGGER_ANIMATED_UPDATES_DISABLED;
     ui_debugger_show_spinner_window ( );
+    printf ( "Debugger animations DISABLED\n" );
 }
 
 

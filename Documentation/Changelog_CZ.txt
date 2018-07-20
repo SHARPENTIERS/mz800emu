@@ -115,6 +115,8 @@ Debugger:
 	  cast kterekoliv pameti do souboru, nebo ji naopak z jakehokoliv
 	  binarniho souboru nahrat
 
+	- pridana moznost potlacit audio pri animaci debuggeru
+
 Obecne:
 
 	- prizpusobeni interface pro SDL-2.0.5

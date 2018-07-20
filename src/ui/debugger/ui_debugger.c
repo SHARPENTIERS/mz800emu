@@ -1034,6 +1034,7 @@ void ui_debugger_update_all ( void ) {
 
 
 void ui_debugger_update_animated ( void ) {
+
     static unsigned animate_call = 0;
     static unsigned animate_phase = 0;
 
@@ -1464,11 +1465,17 @@ void ui_debugger_show_main_window ( void ) {
     if ( g_debugger.animated_updates == DEBUGGER_ANIMATED_UPDATES_DISABLED ) {
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "dbg_animated_disabled_radiomenuitem" ), TRUE );
         ui_debugger_show_spinner_window ( );
+        printf ( "Debugger activated - animations DISABLED\n" );
     } else if ( g_debugger.animated_updates == DEBUGGER_ANIMATED_UPDATES_ENABLED ) {
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "dbg_animated_enabled_radiomenuitem" ), TRUE );
         ui_debugger_hide_spinner_window ( );
+        printf ( "Debugger activated - animations ENABLED\n" );
+    } else if ( g_debugger.animated_updates == DEBUGGER_ANIMATED_UPDATES_ENABLED_WTHOUT_AUDIO ) {
+        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "dbg_animated_enabled_without_audio_radiomenuitem" ), TRUE );
+        ui_debugger_hide_spinner_window ( );
+        printf ( "Debugger activated - animations ENABLED without audio\n" );
     } else {
-        printf ( "%s() - %d: Error: unknow animation state '%d'\n", __func__, __LINE__, g_debugger.animated_updates );
+        fprintf ( stderr, "%s():%d - Unknown animation state '%d'\n", __func__, __LINE__, g_debugger.animated_updates );
     };
 
     g_uidebugger.accelerators_locked = 0;
