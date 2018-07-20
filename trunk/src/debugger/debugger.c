@@ -85,15 +85,16 @@ void debugger_init ( void ) {
     g_debugger.active = 0;
     g_debugger.memop_call = 0;
     debugger_step_call ( 0 );
-    g_debugger.animated_updates = DEBUGGER_ANIMATED_UPDATES_DISABLED;
+    g_debugger.animated_updates = DEBUGGER_ANIMATED_UPDATES_ENABLED_WTHOUT_AUDIO;
     breakpoints_init ( );
 
     CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "DEBUGGER" );
 
     CFGELM *elm;
-    elm = cfgmodule_register_new_element ( cmod, "animated_updates", CFGENTYPE_KEYWORD, 1,
+    elm = cfgmodule_register_new_element ( cmod, "animated_updates", CFGENTYPE_KEYWORD, DEBUGGER_ANIMATED_UPDATES_ENABLED_WTHOUT_AUDIO,
                                            0, "DISABLED",
                                            1, "ENABLED",
+                                           2, "ENABLED_WITHOUT_AUDIO",
                                            -1 );
     cfgelement_set_handlers ( elm, (void*) &g_debugger.animated_updates, (void*) &g_debugger.animated_updates );
 

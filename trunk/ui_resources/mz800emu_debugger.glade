@@ -2558,7 +2558,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label179">
+              <object class="GtkLabel" id="dbg_memext_bank_hex_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Bank HEX</property>
@@ -2574,7 +2574,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label180">
+              <object class="GtkLabel" id="dbg_memext_bank_dec_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Bank DEC</property>
@@ -3763,72 +3763,6 @@
             <child>
               <placeholder/>
             </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -3997,7 +3931,6 @@
       </object>
     </child>
   </object>
-  <object class="GtkEntryBuffer" id="dbg_memsave_size_hex_entrybuffer"/>
   <object class="GtkWindow" id="dbg_memload_window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Load file into memory</property>
@@ -4963,6 +4896,7 @@
                     <property name="visible">True</property>
                     <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip_text" translatable="yes">This field is not editable</property>
                     <property name="halign">start</property>
                     <property name="buffer">dbg_memsave_size_hex_entrybuffer</property>
                     <property name="max_length">8</property>
@@ -5556,18 +5490,6 @@
       </object>
     </child>
   </object>
-  <object class="GtkListStore" id="dbg_stack_liststore">
-    <columns>
-      <!-- column-name addr -->
-      <column type="guint"/>
-      <!-- column-name addr_txt -->
-      <column type="gchararray"/>
-      <!-- column-name value_txt -->
-      <column type="gchararray"/>
-      <!-- column-name value -->
-      <column type="guint"/>
-    </columns>
-  </object>
   <object class="GtkWindow" id="debugger_iasm_help_window">
     <property name="width_request">700</property>
     <property name="height_request">550</property>
@@ -5928,14 +5850,14 @@
                               </object>
                             </child>
                             <child>
-                              <object class="GtkRadioMenuItem" id="dbg_animated_custom_radiomenuitem">
+                              <object class="GtkRadioMenuItem" id="dbg_animated_enabled_without_audio_radiomenuitem">
                                 <property name="visible">True</property>
-                                <property name="sensitive">False</property>
                                 <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">_Custom</property>
+                                <property name="label" translatable="yes">Enabled - _Audio is Suppressed</property>
                                 <property name="use_underline">True</property>
                                 <property name="draw_as_radio">True</property>
                                 <property name="group">radiogrp_dbg_animated</property>
+                                <signal name="toggled" handler="on_dbg_animated_enabled_without_audio_radiomenuitem_toggled" swapped="no"/>
                               </object>
                             </child>
                           </object>
@@ -11062,11 +10984,54 @@ instruction to open inline assembler, or right click for menu</property>
     <property name="can_focus">False</property>
     <property name="draw_as_radio">True</property>
   </object>
+  <object class="GtkSizeGroup" id="dbg_memext_banks_horizontal_sizegroup">
+    <widgets>
+      <widget name="dbg_memext_hex_bank_0"/>
+      <widget name="dbg_memext_dec_bank_0"/>
+      <widget name="dbg_memext_bank_hex_label"/>
+      <widget name="dbg_memext_bank_dec_label"/>
+    </widgets>
+  </object>
+  <object class="GtkSizeGroup" id="dbg_memext_banks_vertical_sizegroup">
+    <property name="mode">vertical</property>
+    <widgets>
+      <widget name="dbg_memext_hex_bank_0"/>
+      <widget name="dbg_memext_memtype_0"/>
+      <widget name="dbg_memext_memtype_1"/>
+      <widget name="dbg_memext_memtype_2"/>
+      <widget name="dbg_memext_memtype_3"/>
+      <widget name="dbg_memext_memtype_4"/>
+      <widget name="dbg_memext_memtype_5"/>
+      <widget name="dbg_memext_memtype_6"/>
+      <widget name="dbg_memext_memtype_7"/>
+      <widget name="dbg_memext_memtype_8"/>
+      <widget name="dbg_memext_memtype_9"/>
+      <widget name="dbg_memext_memtype_A"/>
+      <widget name="dbg_memext_memtype_B"/>
+      <widget name="dbg_memext_memtype_C"/>
+      <widget name="dbg_memext_memtype_D"/>
+      <widget name="dbg_memext_memtype_E"/>
+      <widget name="dbg_memext_memtype_F"/>
+    </widgets>
+  </object>
+  <object class="GtkEntryBuffer" id="dbg_memsave_size_hex_entrybuffer"/>
   <object class="GtkSizeGroup" id="dbg_sizegroup1">
     <property name="mode">both</property>
     <widgets>
       <widget name="dbg_reg0_treeview"/>
       <widget name="dbg_reg1_treeview"/>
     </widgets>
+  </object>
+  <object class="GtkListStore" id="dbg_stack_liststore">
+    <columns>
+      <!-- column-name addr -->
+      <column type="guint"/>
+      <!-- column-name addr_txt -->
+      <column type="gchararray"/>
+      <!-- column-name value_txt -->
+      <column type="gchararray"/>
+      <!-- column-name value -->
+      <column type="guint"/>
+    </columns>
   </object>
 </interface>

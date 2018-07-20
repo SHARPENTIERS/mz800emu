@@ -374,9 +374,9 @@ static void ui_dbg_memext_refresh ( void ) {
             char entry_name[22];
             snprintf ( entry_name, sizeof ( entry_name ), "dbg_memext_hex_bank_%X", i );
             gtk_entry_set_text ( ui_get_entry ( entry_name ), "" );
-            gtk_widget_set_sensitive ( ui_get_widget ( entry_name ), FALSE );
+            gtk_widget_set_visible ( ui_get_widget ( entry_name ), FALSE );
             snprintf ( entry_name, sizeof ( entry_name ), "dbg_memext_dec_bank_%X", i );
-            gtk_widget_set_sensitive ( ui_get_widget ( entry_name ), FALSE );
+            gtk_widget_set_visible ( ui_get_widget ( entry_name ), FALSE );
             ui_dbg_memext_update_memtype ( i );
         };
 
@@ -416,9 +416,9 @@ static void ui_dbg_memext_refresh ( void ) {
                 snprintf ( buff, sizeof ( buff ), "%02X", ( g_memext.map[i] / 2 ) );
                 gtk_entry_set_text ( ui_get_entry ( entry_name ), buff );
             };
-            gtk_widget_set_sensitive ( ui_get_widget ( entry_name ), sensitive );
+            gtk_widget_set_visible ( ui_get_widget ( entry_name ), sensitive );
             snprintf ( entry_name, sizeof ( entry_name ), "dbg_memext_dec_bank_%X", i );
-            gtk_widget_set_sensitive ( ui_get_widget ( entry_name ), sensitive );
+            gtk_widget_set_visible ( ui_get_widget ( entry_name ), sensitive );
             ui_dbg_memext_update_memtype ( i );
         };
 
@@ -436,9 +436,9 @@ static void ui_dbg_memext_refresh ( void ) {
             char buff[3];
             snprintf ( buff, sizeof ( buff ), "%02X", g_memext.map[i] );
             gtk_entry_set_text ( ui_get_entry ( entry_name ), buff );
-            gtk_widget_set_sensitive ( ui_get_widget ( entry_name ), TRUE );
+            gtk_widget_set_visible ( ui_get_widget ( entry_name ), TRUE );
             snprintf ( entry_name, sizeof ( entry_name ), "dbg_memext_dec_bank_%X", i );
-            gtk_widget_set_sensitive ( ui_get_widget ( entry_name ), TRUE );
+            gtk_widget_set_visible ( ui_get_widget ( entry_name ), TRUE );
             ui_dbg_memext_update_memtype ( i );
         };
 
