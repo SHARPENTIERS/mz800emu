@@ -56,6 +56,7 @@ extern "C" {
      * Prace se soubory
      * 
      */
+    extern char* ui_utils_file_name_locale_from_utf8 ( const char *filename_in_utf8 );
     extern FILE* ui_utils_file_open ( const char *filename_in_utf8, const char *mode );
     extern void ui_utils_file_close ( FILE *fh );
     extern unsigned int ui_utils_file_read ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh );

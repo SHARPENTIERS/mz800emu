@@ -145,7 +145,9 @@ static int ide8_drive_open_image ( st_IDE8_DRIVE *drive, char *filepath ) {
         FS_LAYER_FOPEN ( drive->fp, filepath, FS_LAYER_FMODE_W );
     };
     if ( !drive->fp ) {
-        fprintf ( stderr, "%s():%d - Can't open file '%s'\n", __func__, __LINE__, filepath );
+        char *filepath_locale = ui_utils_file_name_locale_from_utf8 ( filepath );
+        fprintf ( stderr, "%s():%d - Can't open file '%s'\n", __func__, __LINE__, filepath_locale );
+        ui_utils_mem_free ( filepath_locale );
         return EXIT_FAILURE;
     };
     drive->total_blocks = ide8_drive_get_total_blocks ( drive );

@@ -113,12 +113,16 @@ char* ui_utils_basename ( const char *file_name ) {
  * 
  */
 
+char* ui_utils_file_name_locale_from_utf8 ( const char *filename_in_utf8 ) {
+    return g_locale_from_utf8 ( filename_in_utf8, -1, NULL, NULL, NULL );
+}
+
 
 FILE* ui_utils_file_open ( const char *filename_in_utf8, const char *mode ) {
     char *filename_in_locale;
     FILE *fp;
 
-    filename_in_locale = g_locale_from_utf8 ( filename_in_utf8, -1, NULL, NULL, NULL );
+    filename_in_locale = ui_utils_file_name_locale_from_utf8 ( filename_in_utf8 );
     fp = fopen ( filename_in_locale, mode );
     ui_utils_mem_free ( filename_in_locale );
     return fp;
@@ -150,7 +154,7 @@ unsigned int ui_utils_file_write ( void *buffer, unsigned int size, unsigned int
 
 int ui_utils_file_access ( const char *filename_in_utf8, int type ) {
     char *filename_in_locale;
-    filename_in_locale = g_locale_from_utf8 ( filename_in_utf8, -1, NULL, NULL, NULL );
+    filename_in_locale = ui_utils_file_name_locale_from_utf8 ( filename_in_utf8 );
     int retval = access ( filename_in_locale, type );
     ui_utils_mem_free ( filename_in_locale );
     return retval;
