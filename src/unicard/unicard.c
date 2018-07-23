@@ -384,6 +384,19 @@ FRESULT unicard_chdir ( char *dirpath ) {
 }
 
 
+int unicard_get_cwd ( FRESULT *ff_res, char *buff, int buff_size ) {
+    // na skutecne unikarte je potreba z vystupu getcwd odstranit prvni 2 znaky "0:" 
+    // *ff_res = f_getcwd ( (char*) buff_local, buff_size );
+    *ff_res = FR_OK;
+    int len = strlen ( g_unicard.work_dir );
+    if ( len < buff_size ) {
+        memcpy ( buff, g_unicard.work_dir, len + 1 );
+        return EXIT_SUCCESS;
+    };
+    return EXIT_FAILURE;
+}
+
+
 void unicard_dir_init ( st_UNICARD_DIR *dir ) {
     dir->dh = NULL;
     dir->dirpath = NULL;
