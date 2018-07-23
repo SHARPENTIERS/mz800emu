@@ -63,7 +63,9 @@ void memext_flash_reload ( void ) {
             FS_LAYER_FREAD ( fh, g_memext.FLASH, sizeof (g_memext.FLASH ), &readlen );
             FS_LAYER_FCLOSE ( fh );
         } else {
-            fprintf ( stderr, "%s():%d - Can't open file '%s'\n", __func__, __LINE__, g_memext.flash_filepath );
+            char *filepath_locale = ui_utils_file_name_locale_from_utf8 ( g_memext.flash_filepath );
+            fprintf ( stderr, "%s():%d - Can't open file '%s'\n", __func__, __LINE__, filepath_locale );
+            ui_utils_mem_free ( filepath_locale );
         };
     };
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
@@ -81,7 +83,7 @@ static void memext_init_luftner ( void ) {
     memset ( g_memext.FLASH, 0xff, sizeof (g_memext.FLASH ) );
 
     if ( TEST_MEMEXT_CONNECTED ) {
-        memext_flash_reload ();
+        memext_flash_reload ( );
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
         ui_main_debugger_windows_refresh ( );
 #endif

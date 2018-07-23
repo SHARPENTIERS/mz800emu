@@ -30,9 +30,6 @@
 
 #include <glib.h>
 #include <glib/gstdio.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #include "ui/ui_utils.h"
 #include "ui/ui_unicard.h"
@@ -62,25 +59,32 @@ char* unicard_get_sd_root_dirpath ( void ) {
 void unicard_set_sd_root_dirpath ( char *sd_root ) {
     if ( ( !sd_root ) || ( sd_root[0] == 0x00 ) ) return;
     cfgelement_set_text_value ( g_elm_sd_root, sd_root );
-    printf ( "Unicard: new SD root is '%s'\n", sd_root );
+    char *sd_root_locale = ui_utils_file_name_locale_from_utf8 ( sd_root );
+    printf ( "Unicard: new SD root is '%s'\n", sd_root_locale );
+    g_free ( sd_root_locale );
 }
 
 
 static int unicard_init_sd_dir ( char *dirpath, char *description ) {
 
+    char *dirpath_locale = ui_utils_file_name_locale_from_utf8 ( dirpath );
+
     if ( !g_file_test ( dirpath, G_FILE_TEST_EXISTS ) ) {
-        printf ( "%s: '%s'\n", description, dirpath );
+        printf ( "%s: '%s'\n", description, dirpath_locale );
         if ( -1 == g_mkdir_with_parents ( dirpath, UNICARD_DEFAULT_DIR_MODE ) ) {
-            fprintf ( stderr, "%s():%d - Can't create directory '%s'\n", __func__, __LINE__, dirpath );
+            fprintf ( stderr, "%s():%d - Can't create directory '%s'\n", __func__, __LINE__, dirpath_locale );
+            g_free ( dirpath_locale );
             return EXIT_FAILURE;
         };
     };
 
     if ( !g_file_test ( dirpath, G_FILE_TEST_IS_DIR ) ) {
-        fprintf ( stderr, "%s():%d - This is not a directory '%s'\n", __func__, __LINE__, dirpath );
+        fprintf ( stderr, "%s():%d - This is not a directory '%s'\n", __func__, __LINE__, dirpath_locale );
+        g_free ( dirpath_locale );
         return EXIT_FAILURE;
     };
 
+    g_free ( dirpath_locale );
     return EXIT_SUCCESS;
 }
 
@@ -88,10 +92,12 @@ static int unicard_init_sd_dir ( char *dirpath, char *description ) {
 static int unicard_init_sd_file ( char *filepath, const uint8_t *src, uint32_t size ) {
 
     if ( !g_file_test ( filepath, G_FILE_TEST_EXISTS ) ) {
-        printf ( "Unicard - create file: '%s'\n", filepath );
+        char *filepath_locale = ui_utils_file_name_locale_from_utf8 ( filepath );
+        printf ( "Unicard - create file: '%s'\n", filepath_locale );
         FILE *fh = g_fopen ( filepath, "wb" );
         if ( !fh ) {
-            fprintf ( stderr, "%s():%d - Can't create file '%s'\n", __func__, __LINE__, filepath );
+            fprintf ( stderr, "%s():%d - Can't create file '%s'\n", __func__, __LINE__, filepath_locale );
+            g_free ( filepath_locale );
             return EXIT_FAILURE;
         };
 
@@ -99,9 +105,12 @@ static int unicard_init_sd_file ( char *filepath, const uint8_t *src, uint32_t s
         int ret = fs_layer_fwrite ( &fh, (uint8_t*) src, size, &write_len );
         fclose ( fh );
         if ( ( ret != FS_LAYER_FR_OK ) || ( write_len != size ) ) {
-            fprintf ( stderr, "%s():%d - Can't write file '%s'\n", __func__, __LINE__, filepath );
+            fprintf ( stderr, "%s():%d - Can't write file '%s'\n", __func__, __LINE__, filepath_locale );
+            g_free ( filepath_locale );
             return EXIT_FAILURE;
         };
+
+        g_free ( filepath_locale );
     };
 
     return EXIT_SUCCESS;
@@ -167,7 +176,10 @@ void unicard_set_connected ( en_UNICARD_CONNECTION conn ) {
     if ( g_unicard.connected == conn ) return;
 
     if ( conn == UNICARD_CONNECTION_CONNECTED ) {
-        if ( EXIT_SUCCESS != unicard_init_sd ( unicard_get_sd_root_dirpath ( ) ) ) return;
+        if ( EXIT_SUCCESS != unicard_init_sd ( unicard_get_sd_root_dirpath ( ) ) ) {
+            ui_unicard_update_menu ( );
+            return;
+        };
         g_unicard.connected = UNICARD_CONNECTION_CONNECTED;
         unimgr_init ( );
         qdisk_activate_unicard_boot_loader ( );
@@ -256,120 +268,93 @@ void unicard_read_rtc ( st_UNICARD_RTC *rtc ) {
 }
 
 
-static inline gboolean unicard_char_is_path_separator ( char c ) {
-    if ( ( c == '/' ) || ( c == '\\' ) ) return TRUE;
-    return FALSE;
-}
-
-
-typedef struct st_PATH_NODES {
-    uint32_t count_nodes;
-    char **node;
-} st_PATH_NODES;
-
-
-static void unicard_path_nodes_destroy ( st_PATH_NODES *pn ) {
-    int i;
-    for ( i = 0; i < pn->count_nodes; i++ ) {
-        ui_utils_mem_free ( pn->node[i] );
-    };
-    ui_utils_mem_free ( pn->node );
-    ui_utils_mem_free ( pn );
-}
-
-
 /**
- * Z filepath vytvorime absolutni cestu.
- * Pokud se v ceste objevi napr. "/nesmysl/../smysl", tak z parseru vyleze
- * cessta "/smysl" bez ohledy na to, zda adresar "/nesmysl" existuje, ci nikoliv.
+ * Z filepath vytvorime absolutni filepath ve ktere je:
  * 
+ * - zredukovan pocet lomitek
+ * - odstraneno /./, ./
+ * - zpracovano ../
+ * 
+ * Neoveruje se, zda adresare, ktere jsou uvedeny v ceste existuji.
+ * 
+ * Vracime nove vytvoreny retezec.
  */
-static st_PATH_NODES* unicard_path_nodes_from_filepath ( char *filepath ) {
-
-    uint32_t count_nodes = 1;
-    uint32_t *node_pos = (uint32_t*) ui_utils_mem_alloc0 ( sizeof ( uint32_t ) );
-    uint32_t *node_len = (uint32_t*) ui_utils_mem_alloc0 ( sizeof ( uint32_t ) );
-
-    uint32_t pos = 0;
-    while ( ( filepath[pos] != 0x00 ) && unicard_char_is_path_separator ( filepath[pos] ) ) {
-        pos++;
-    };
-
-    node_pos[0] = pos;
-    node_len[0] = 0;
-
-    while ( filepath[pos] != 0x00 ) {
-        if ( unicard_char_is_path_separator ( filepath[pos] ) ) {
-            node_len[( count_nodes - 1 )] = pos - node_pos[( count_nodes - 1 )];
-            count_nodes++;
-            node_pos = (uint32_t*) ui_utils_mem_realloc ( node_pos, sizeof ( uint32_t ) * count_nodes );
-            node_len = (uint32_t*) ui_utils_mem_realloc ( node_len, sizeof ( uint32_t ) * count_nodes );
-            node_pos[( count_nodes - 1 )] = pos + 1;
-            node_len[( count_nodes - 1 )] = 0;
-        };
-        pos++;
-    };
-
-    node_len[( count_nodes - 1 )] = pos - node_pos[( count_nodes - 1 )];
-
-    //printf ( "\n\nCount nodes: %d\n\n", count_nodes );
-
-    st_PATH_NODES *pn = NULL;
-
-    if ( unicard_char_is_path_separator ( filepath[0] ) ) {
-        pn = (st_PATH_NODES*) ui_utils_mem_alloc0 ( sizeof ( st_PATH_NODES ) );
-        pn->count_nodes = 0;
-        pn->node = (char**) ui_utils_mem_alloc0 ( sizeof ( char* ) );
-    } else {
-        pn = unicard_path_nodes_from_filepath ( g_unicard.work_dir );
-    };
-
-    uint32_t i;
-    for ( i = 0; i < count_nodes; i++ ) {
-        char *node = (char*) ui_utils_mem_alloc0 ( node_len[i] + 1 );
-        memcpy ( node, &filepath[node_pos[i]], node_len[i] );
-        //printf ( "%d. start: %d, len: %d, '%s'\n", i, node_pos[i], node_len[i], node );
-
-        if ( ( node_len[i] == 0 ) || ( 0 == strcmp ( node, "." ) ) ) {
-            ui_utils_mem_free ( node );
-        } else if ( 0 == strcmp ( node, ".." ) ) {
-            if ( pn->count_nodes != 0 ) {
-                ui_utils_mem_free ( pn->node[( pn->count_nodes - 1 )] );
-                pn->count_nodes--;
-                if ( pn->count_nodes != 0 ) {
-                    pn->node = (char**) ui_utils_mem_realloc ( pn->node, sizeof ( char* ) * pn->count_nodes );
-                };
-            };
-            ui_utils_mem_free ( node );
-        } else {
-            pn->count_nodes++;
-            pn->node = (char**) ui_utils_mem_realloc ( pn->node, sizeof ( char* ) * pn->count_nodes );
-            pn->node[( pn->count_nodes - 1 )] = node;
-            //printf ( "ctrl: '%s', '%s'\n", pn->node[( pn->count_nodes - 1 )], node );
-        };
-    };
-
-    ui_utils_mem_free ( node_pos );
-    ui_utils_mem_free ( node_len );
-
-    return pn;
-}
-
-
-static char* unicard_create_naked_filepath ( char *filepath ) {
+static char* unicard_create_naked_filepath ( const char *filepath ) {
     char *naked_filepath = (char*) ui_utils_mem_alloc0 ( 1 );
 
-    st_PATH_NODES *pn = unicard_path_nodes_from_filepath ( filepath );
-    int i;
-    for ( i = 0; i < pn->count_nodes; i++ ) {
-        uint32_t len = strlen ( pn->node[i] ) + 1 + strlen ( pn->node[i] ) + 1;
-        naked_filepath = (char*) ui_utils_mem_realloc ( naked_filepath, len );
-        strncat ( naked_filepath, "/", len );
-        strncat ( naked_filepath, pn->node[i], len );
-    };
-    unicard_path_nodes_destroy ( pn );
+    if ( !filepath ) return naked_filepath;
 
-    //printf ( "naked filepath: '%s'\n", naked_filepath );
+    int filepath_len = strlen ( filepath );
+    if ( !filepath_len ) return naked_filepath;
+
+    char *complete_filepath;
+    int complete_len;
+
+    //printf ( "NKFP RECEIVED '%s'\n", filepath );
+
+    if ( filepath[0] != '/' ) {
+        complete_filepath = g_build_filename ( g_unicard.work_dir, filepath, NULL );
+        complete_len = strlen ( complete_filepath );
+    } else {
+        complete_filepath = (char*) ui_utils_mem_alloc0 ( filepath_len + 1 );
+        memcpy ( complete_filepath, filepath, filepath_len );
+        complete_len = filepath_len;
+    };
+
+    int real_count_nodes = 0;
+    char **real_node = (char**) ui_utils_mem_alloc ( sizeof ( char* ) );
+    int search_start = 1;
+    int *path_components = (int*) ui_utils_mem_alloc0 ( sizeof ( int ) );
+    int count_path_components = 0;
+
+    int i;
+    for ( i = 0; i <= complete_len; i++ ) {
+        if ( complete_filepath[i] == '/' ) {
+            complete_filepath[i] = 0x00;
+            search_start = 1;
+        } else if ( search_start ) {
+            if ( complete_filepath[i] == '.' ) {
+                int j = i + 1;
+                if ( ( complete_filepath[j] == '/' ) || ( complete_filepath[j] == 0x00 ) ) continue;
+                if ( complete_filepath[j] == '.' ) {
+                    int k = j + 1;
+                    if ( ( complete_filepath[k] == '/' ) || ( complete_filepath[k] == 0x00 ) ) {
+                        if ( count_path_components ) count_path_components--;
+                        continue;
+                    };
+                };
+            };
+            if ( strlen ( &complete_filepath[i] ) ) {
+                search_start = 0;
+                real_node = (char**) ui_utils_mem_realloc ( real_node, sizeof ( char** ) * ( real_count_nodes + 1 ) );
+                real_node[real_count_nodes] = &complete_filepath[i];
+                path_components = (int*) ui_utils_mem_realloc ( path_components, sizeof ( int ) * ( count_path_components + 1 ) );
+                path_components[count_path_components++] = real_count_nodes;
+                real_count_nodes++;
+            };
+        };
+    };
+
+    if ( count_path_components ) {
+        int naked_filepath_len = 1;
+        for ( i = 0; i < count_path_components; i++ ) {
+            int j = path_components[i];
+            naked_filepath_len += strlen ( real_node[j] ) + 1 + 1;
+            naked_filepath = (char*) ui_utils_mem_realloc ( naked_filepath, naked_filepath_len );
+            strncat ( naked_filepath, "/", naked_filepath_len );
+            strncat ( naked_filepath, real_node[j], naked_filepath_len );
+        };
+    } else {
+        naked_filepath = (char*) ui_utils_mem_realloc ( naked_filepath, 2 );
+        strncpy ( naked_filepath, "/", 2 );
+    };
+
+    //printf ( "NKFP OUTPUT: '%s'\n", naked_filepath );
+
+    g_free ( complete_filepath );
+    g_free ( path_components );
+    g_free ( real_node );
+
     return naked_filepath;
 }
 
@@ -381,13 +366,17 @@ FRESULT unicard_chdir ( char *dirpath ) {
     char *naked_dirpath = unicard_create_naked_filepath ( dirpath );
     char *full_dirpath = g_build_filename ( unicard_get_sd_root_dirpath ( ), naked_dirpath, NULL );
 
+    char *full_dirpath_locale = ui_utils_file_name_locale_from_utf8 ( full_dirpath );
+
     if ( !g_file_test ( full_dirpath, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR ) ) {
-        fprintf ( stderr, "%s():%d - Error: dirpath '%s'\n", __func__, __LINE__, full_dirpath );
+        fprintf ( stderr, "%s():%d - Error: dirpath '%s'\n", __func__, __LINE__, full_dirpath_locale );
         ui_utils_mem_free ( naked_dirpath );
         ui_utils_mem_free ( full_dirpath );
+        ui_utils_mem_free ( full_dirpath_locale );
         return FR_NO_PATH;
     };
     ui_utils_mem_free ( full_dirpath );
+    ui_utils_mem_free ( full_dirpath_locale );
 
     g_unicard.work_dir = naked_dirpath;
 
@@ -419,9 +408,12 @@ FRESULT unicard_dir_open ( st_UNICARD_DIR *dir, char *dirpath ) {
     char *naked_dirpath = unicard_create_naked_filepath ( dirpath );
     char *full_dirpath = g_build_filename ( unicard_get_sd_root_dirpath ( ), naked_dirpath, NULL );
 
+    char *full_dirpath_locale = ui_utils_file_name_locale_from_utf8 ( full_dirpath );
+
     if ( !g_file_test ( full_dirpath, G_FILE_TEST_IS_DIR ) ) {
-        fprintf ( stderr, "%s():%d - This is not DIR '%s'\n", __func__, __LINE__, full_dirpath );
+        fprintf ( stderr, "%s():%d - This is not DIR '%s'\n", __func__, __LINE__, full_dirpath_locale );
         ui_utils_mem_free ( full_dirpath );
+        ui_utils_mem_free ( full_dirpath_locale );
         ui_utils_mem_free ( naked_dirpath );
         return FR_NO_PATH;
     };
@@ -429,6 +421,7 @@ FRESULT unicard_dir_open ( st_UNICARD_DIR *dir, char *dirpath ) {
     GError* err = NULL;
     dir->dh = g_dir_open ( full_dirpath, 0, &err );
     ui_utils_mem_free ( full_dirpath );
+    ui_utils_mem_free ( full_dirpath_locale );
 
     if ( err != NULL ) {
         fprintf ( stderr, "%s():%d - Error: %s\n", __func__, __LINE__, err->message );
@@ -504,7 +497,9 @@ void unicard_file_init ( st_UNICARD_FILE *file ) {
 
 
 FRESULT unicard_file_close ( st_UNICARD_FILE *file ) {
+    //printf ( "%s():%d\n", __func__, __LINE__ );
     if ( file->fh == NULL ) return FR_OK;
+    //printf ( "OK - close\n" );
     // na unikarte udelat sync
     fclose ( file->fh );
     file->fh = NULL;
@@ -559,6 +554,8 @@ FRESULT unicard_file_open ( st_UNICARD_FILE *file, char *filepath, uint8_t fa_mo
     char *naked_filepath = unicard_create_naked_filepath ( filepath );
     char *full_filepath = g_build_filename ( unicard_get_sd_root_dirpath ( ), naked_filepath, NULL );
 
+    char *full_filepath_locale = ui_utils_file_name_locale_from_utf8 ( full_filepath );
+
     // fdc hack
     int fdcfg1_len = strlen ( UNICARD_FDCFG_FILE1 );
     if ( ( 0 == strncmp ( naked_filepath, UNICARD_FDCFG_FILE1, fdcfg1_len ) ) &&
@@ -584,24 +581,24 @@ FRESULT unicard_file_open ( st_UNICARD_FILE *file, char *filepath, uint8_t fa_mo
     };
 
     if ( !g_file_test ( full_filepath, G_FILE_TEST_EXISTS ) ) {
-        fprintf ( stderr, "%s():%d - File not exists '%s'\n", __func__, __LINE__, full_filepath );
+        fprintf ( stderr, "%s():%d - File not exists '%s'\n", __func__, __LINE__, full_filepath_locale );
         ui_utils_mem_free ( full_filepath );
+        ui_utils_mem_free ( full_filepath_locale );
         ui_utils_mem_free ( naked_filepath );
         return FR_NO_FILE;
     };
 
     file->fh = g_fopen ( full_filepath, mode );
-
     if ( !file->fh ) {
-
-
-        fprintf ( stderr, "%s():%d - Cant open: %s, in mode '%s'\n", __func__, __LINE__, full_filepath, mode );
+        fprintf ( stderr, "%s():%d - Cant open: %s, in mode '%s'\n", __func__, __LINE__, full_filepath_locale, mode );
         ui_utils_mem_free ( full_filepath );
+        ui_utils_mem_free ( full_filepath_locale );
         ui_utils_mem_free ( naked_filepath );
         return FR_DISK_ERR;
     };
 
     ui_utils_mem_free ( full_filepath );
+    ui_utils_mem_free ( full_filepath_locale );
     file->filepath = naked_filepath;
 
     return FR_OK;
@@ -635,12 +632,15 @@ void unicard_fdc_mount ( uint8_t drive_id, char *filepath ) {
         char *naked_filepath = unicard_create_naked_filepath ( filepath );
         char *full_filepath = g_build_filename ( unicard_get_sd_root_dirpath ( ), naked_filepath, NULL );
 
+        char *full_filepath_locale = ui_utils_file_name_locale_from_utf8 ( full_filepath );
+
         if ( !g_file_test ( full_filepath, G_FILE_TEST_EXISTS ) ) {
-            fprintf ( stderr, "%s():%d - File not exists '%s'\n", __func__, __LINE__, full_filepath );
+            fprintf ( stderr, "%s():%d - File not exists '%s'\n", __func__, __LINE__, full_filepath_locale );
         } else {
             fdc_mount_dskfile ( drive_id, full_filepath );
         };
         ui_utils_mem_free ( full_filepath );
+        ui_utils_mem_free ( full_filepath_locale );
         ui_utils_mem_free ( naked_filepath );
     } else {
         fdc_umount ( drive_id );
