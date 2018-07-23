@@ -28,7 +28,7 @@
  * Dokumentace
  * 
  */
-// <editor-fold defaultstate="collapsed" desc="PrintEvent function">
+// <editor-fold defaultstate="collapsed" desc="Dokumentace - Status">
 /*
  *
  * Prikazy prijate pres CMD port
@@ -593,6 +593,18 @@ static void unimgr_write_CMD ( uint8_t data ) {
             do_cmdCHDIR ( UNIMGR_CMDSTATE_START );
             break;
 
+        case cmdGETCWD:
+            if ( EXIT_SUCCESS == unicard_get_cwd ( &g_unimgr.ff_res, (char*) g_unimgr.buf_byte, sizeof ( g_unimgr.buf_byte ) ) ) {
+                g_unimgr.buf = g_unimgr.buf_byte;
+                g_unimgr.buf_count = strlen ( (char*) g_unimgr.buf_byte ) + 1;
+                //g_unimgr.buf[g_unimgr.buf_count] = 0x0d;
+                g_unimgr.sts_err = UNIMGR_STS_OK;
+                g_unimgr.cmd_phase = UNIMGR_CMDSTATE_DOUTRQ;
+            } else {
+                g_unimgr.cmd_phase = UNIMGR_CMDSTATE_DONE;
+            };
+            break;
+
         case cmdFILELIST:
             g_unimgr.readdir_mode = READDIR_MODE_FILELIST;
             do_cmdREADDIR ( UNIMGR_CMDSTATE_START );
@@ -747,6 +759,7 @@ static uint8_t unimgr_read_DATA ( void ) {
         switch ( g_unimgr.cmd ) {
 
             case cmdREV:
+            case cmdGETCWD:
                 ret = unimgr_output_data_txt ( );
                 break;
 

@@ -97,6 +97,7 @@ extern "C" {
     extern void unicard_read_rtc ( st_UNICARD_RTC *rtc );
 
     extern FRESULT unicard_chdir ( char *dirpath );
+    extern int unicard_get_cwd ( FRESULT *ff_res, char *buff, int buff_size );
 
     extern void unicard_dir_init ( st_UNICARD_DIR *dir );
     extern FRESULT unicard_dir_open ( st_UNICARD_DIR *dir, char *dirpath );
