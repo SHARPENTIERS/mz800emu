@@ -55,7 +55,7 @@ Novinky a zmeny v emulaci:
 	  do rezimu "Unicard Boot Loader", tak staci stisknout RESET (F12) + Q
 	  a nabootuje se Unicard Manager.
 	  Prozatim je implementovano jen cteni RTC, nastaveni pracovniho
-	  adresare, cteni adresare v rezimu FILELIST, otevreni a cteni
+	  adresare, cteni CWD, cteni adresare v rezimu FILELIST, otevreni a cteni
 	  souboru, cteni statusu. Dale je mozne mountovat a ejectovat DSK z
 	  SDROOT.
 
@@ -66,6 +66,9 @@ Novinky a zmeny v emulaci:
 
 	- pridana zjednodusena implementace IDE8 
 	  (podporovano systemem NIPOS od Marka Smihly - https://www.ordoz.com/mz800emu/files/nipos/ )
+	  Radic podporuje standardni CHS a "ztratovy" 16 bit rezim, nicmene jsem 
+	  naimplementoval (a zatim neodzkousel) i LBA + podporu nativni 8 bit
+	  datove sbernice, tak jak to umi napr. CF disky
 
 	- nyni lze definovat externi ROM s podporou CMT hack
 

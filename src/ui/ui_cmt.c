@@ -229,7 +229,11 @@ void ui_cmt_hack_menu_update ( void ) {
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_hack" ), FALSE );
     };
     UNLOCK_UICALLBACKS ( );
-    gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_cmt_hack" ), ( g_rom.user_defined_cmthack_type == ROM_CMTHACK_DISABLED ) ? FALSE : TRUE );
+    gboolean cmth_sensitive = TRUE;
+    if ( g_rom.type == ROMTYPE_USER_DEFINED ) {
+        cmth_sensitive = ( g_rom.user_defined_cmthack_type == ROM_CMTHACK_DISABLED ) ? FALSE : TRUE;
+    };
+    gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_cmt_hack" ), cmth_sensitive );
 }
 
 
