@@ -33,6 +33,7 @@
 #include <assert.h>
 
 #include "cmt.h"
+#include "mz800.h"
 
 #include "gdg/gdg.h"
 
@@ -56,6 +57,9 @@ void cmt_stop ( void ) {
     if ( TEST_CMT_STOP ) return;
     g_cmt.state = CMT_STATE_STOP;
     g_cmt.playsts = CMTEXT_BLOCK_PLAYSTS_STOP;
+    if ( g_cmt.cpu_boost == CMT_CPU_BOOST_ENABLED ) {
+        mz800_switch_emulation_speed ( 0 );
+    };
     ui_cmt_window_update ( );
 }
 
@@ -78,6 +82,9 @@ void cmt_play ( void ) {
     //printf ( "CMT start: %ul\n", gdg_get_total_ticks ( ) );
     g_cmt.ui_player_update = 0;
     ui_cmt_window_update ( );
+    if ( g_cmt.cpu_boost == CMT_CPU_BOOST_ENABLED ) {
+        mz800_switch_emulation_speed ( 1 );
+    };
     g_cmt.ext->block->cb_play ( g_cmt.ext );
 }
 
@@ -142,6 +149,13 @@ void cmt_propagatecfg_inverted_polarity ( void *e, void *data ) {
 }
 
 
+void cmt_propagatecfg_cpu_boost ( void *e, void *data ) {
+    (void) e;
+    (void) data;
+    cmt_cpu_boost_set ( cfgelement_get_bool_value ( (CFGELM *) e ) );
+}
+
+
 void cmt_init ( void ) {
 
     CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "CMT" );
@@ -160,6 +174,10 @@ void cmt_init ( void ) {
     elm = cfgmodule_register_new_element ( cmod, "cmt_polarity_inverted", CFGENTYPE_BOOL, CMT_STREAM_POLARITY_NORMAL );
     cfgelement_set_propagate_cb ( elm, cmt_propagatecfg_inverted_polarity, NULL );
     cfgelement_set_handlers ( elm, (void*) &g_cmt.polarity, (void*) &g_cmt.polarity );
+
+    elm = cfgmodule_register_new_element ( cmod, "cpu_boost", CFGENTYPE_BOOL, CMT_CPU_BOOST_ENABLED );
+    cfgelement_set_propagate_cb ( elm, cmt_propagatecfg_cpu_boost, NULL );
+    cfgelement_set_handlers ( elm, (void*) &g_cmt.cpu_boost, (void*) &g_cmt.cpu_boost );
 
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );
@@ -273,4 +291,20 @@ void cmt_screen_done_period ( void ) {
 int cmt_read_data ( void ) {
     cmt_update_output ( );
     return g_cmt.output;
+}
+
+
+void cmt_cpu_boost_set ( en_CMT_CPU_BOOST cpu_boost ) {
+
+    g_cmt.cpu_boost = cpu_boost;
+
+    if ( !TEST_CMT_STOP ) {
+        if ( g_cmt.cpu_boost == CMT_CPU_BOOST_ENABLED ) {
+            mz800_switch_emulation_speed ( 1 );
+        } else {
+            mz800_switch_emulation_speed ( 0 );
+        };
+    };
+
+    ui_cmt_cpu_boost_menu_update ( );
 }

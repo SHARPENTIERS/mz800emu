@@ -237,6 +237,15 @@ void ui_cmt_hack_menu_update ( void ) {
 }
 
 
+void ui_cmt_cpu_boost_menu_update ( void ) {
+    LOCK_UICALLBACKS ( );
+    gboolean cpu_boost_state = ( g_cmt.cpu_boost ) ? TRUE : FALSE;
+    gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_cpu_boost" ), cpu_boost_state );
+    gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( ui_get_widget ( "cmt_cpu_boost_checkbutton" ) ), cpu_boost_state );
+    UNLOCK_UICALLBACKS ( );
+}
+
+
 void ui_cmt_speed_menu_update ( void ) {
 
     LOCK_UICALLBACKS ( );
@@ -1135,4 +1144,17 @@ G_MODULE_EXPORT void on_cmt_filelist_button_clicked ( GtkButton *button, gpointe
     (void) button;
     (void) data;
     ui_cmt_tape_index_show ( );
+}
+
+
+G_MODULE_EXPORT void on_cmt_cpu_boost_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer data ) {
+    (void) data;
+
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+
+    if ( FALSE == gtk_toggle_button_get_active ( togglebutton ) ) {
+        cmt_cpu_boost_set ( CMT_CPU_BOOST_DISABLED );
+    } else {
+        cmt_cpu_boost_set ( CMT_CPU_BOOST_ENABLED );
+    };
 }

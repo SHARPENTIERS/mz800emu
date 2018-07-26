@@ -799,6 +799,24 @@ G_MODULE_EXPORT void on_menuitem_dip_switch_cmt_inverted_polarity_toggled ( GtkC
 }
 
 
+G_MODULE_EXPORT void on_menuitem_cmt_cpu_boost_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+
+    if ( FALSE == gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_cmt_cpu_boost" ) ) ) {
+        cmt_cpu_boost_set ( CMT_CPU_BOOST_DISABLED );
+    } else {
+        cmt_cpu_boost_set ( CMT_CPU_BOOST_ENABLED );
+    };
+}
+
+
 G_MODULE_EXPORT void on_menuitem_keyboard_disable_hotkeys_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
