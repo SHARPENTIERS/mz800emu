@@ -137,10 +137,12 @@ static gboolean ui_file_chooser_create_preview_MZF ( GtkWidget *preview, char *f
     char fname[sizeof ( st_MZF_FILENAME )];
     mzf_tools_get_fname ( &hdr, (char*) &fname );
     const char format[] = "<b>NAME:</b> %s\n<b>TYPE:</b> 0x%02X\n<b>SIZE:</b> 0x%04X\n<b>STRT:</b> 0x%04X\n<b>EXEC:</b> 0x%04X";
-    uint32_t length = sizeof ( format ) + sizeof ( fname ) + 2 + 4 + 4 + 4 + 1;
+    char *pango_fname = g_markup_escape_text ( fname, -1 );
+    uint32_t length = sizeof ( format ) + sizeof ( pango_fname ) + 2 + 4 + 4 + 4 + 1;
     char *buff = ui_utils_mem_alloc0 ( length );
-    g_snprintf ( buff, length, format, fname, hdr.ftype, hdr.fsize, hdr.fstrt, hdr.fexec );
+    g_snprintf ( buff, length, format, pango_fname, hdr.ftype, hdr.fsize, hdr.fstrt, hdr.fexec );
     gtk_label_set_markup ( GTK_LABEL ( preview ), buff );
+    g_free ( pango_fname );
     g_free ( buff );
     return TRUE;
 }
