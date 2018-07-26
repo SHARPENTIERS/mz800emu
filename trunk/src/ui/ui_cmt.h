@@ -24,24 +24,25 @@
  */
 
 #ifndef UI_CMT_H
-#define	UI_CMT_H
+#define UI_CMT_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
     extern void ui_cmt_init ( void );
     extern void ui_cmt_window_show_hide ( void );
     extern void ui_cmt_hack_menu_update ( void );
+    extern void ui_cmt_cpu_boost_menu_update ( void );
     extern void ui_cmt_window_update ( void );
     extern void ui_cmt_update_player ( void );
     extern void ui_cmt_set_filename ( char *filename );
     extern void ui_cmt_tape_index_hide ( void );
     extern void ui_cmt_tape_index_update_filelist ( void );
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* UI_CMT_H */
+#endif /* UI_CMT_H */
 

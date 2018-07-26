@@ -955,8 +955,6 @@ void mz800_flush_full_screen ( void ) {
 
 
     if ( g_gdg.framebuffer_state || g_iface_sdl.redraw_full_screen_request ) {
-
-
         iface_sdl_update_window ( );
         g_gdg.framebuffer_state = FB_STATE_NOT_CHANGED;
     };

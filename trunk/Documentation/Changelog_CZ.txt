@@ -76,6 +76,8 @@ Novinky a zmeny v emulaci:
 	  a neni emulovano jeji prepisovani primo ze Sharpa. ROM FLASH rovnez neni emulovana.
 	 (Zarizeni by mela byt podporovana napr. systemem MZIX https://sourceforge.net/projects/umzix/ )
 
+	- virtual CMT: pridana volba CPU boost
+
 
 Debugger:
 

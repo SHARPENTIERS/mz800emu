@@ -46,6 +46,12 @@ extern "C" {
     } en_CMT_STATE;
 
 
+    typedef enum en_CMT_CPU_BOOST {
+        CMT_CPU_BOOST_DISABLED = 0,
+        CMT_CPU_BOOST_ENABLED = 1
+    } en_CMT_CPU_BOOST;
+
+
     typedef struct st_CMT {
         st_CMTEXT *ext;
         char *last_filename;
@@ -56,6 +62,7 @@ extern "C" {
         int output;
         uint64_t start_time;
         int ui_player_update;
+        en_CMT_CPU_BOOST cpu_boost;
     } st_CMT;
 
     extern st_CMT g_cmt;
@@ -74,6 +81,8 @@ extern "C" {
     extern void cmt_screen_done_period ( void );
     extern int cmt_read_data ( void );
     extern void cmt_update_output ( void );
+
+    extern void cmt_cpu_boost_set ( en_CMT_CPU_BOOST cpu_boost );
 
 #define TEST_CMT_FILLED (g_cmt.ext != NULL)
 #define TEST_CMT_STOP (g_cmt.state == CMT_STATE_STOP)

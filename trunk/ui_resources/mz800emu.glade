@@ -1057,6 +1057,22 @@ From time when data were real zeros and ones and computers were
                             <signal name="activate" handler="on_menuitem_cmt_show_window" swapped="no"/>
                           </object>
                         </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem31">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="menuitem_cmt_cpu_boost">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="tooltip_text" translatable="yes">Boost CPU speed to MAX, when CMT is playing</property>
+                            <property name="label" translatable="yes">CPU _boost</property>
+                            <property name="use_underline">True</property>
+                            <signal name="toggled" handler="on_menuitem_cmt_cpu_boost_toggled" swapped="no"/>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>
