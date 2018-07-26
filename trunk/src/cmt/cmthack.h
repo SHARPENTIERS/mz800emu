@@ -54,6 +54,7 @@ extern "C" {
     extern void cmthack_load_mzf_filename ( char *filename );
     extern void cmthack_read_mzf_body ( void );
 
+#define TEST_CMTHACK_INSTALLED (g_cmthack.load_patch_installed)
 
 #ifdef __cplusplus
 }

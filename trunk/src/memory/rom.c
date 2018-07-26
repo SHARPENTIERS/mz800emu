@@ -91,6 +91,14 @@ int rom_user_defined_rom_area_load ( st_ROM_AREA *dst, en_ROM_BOOL allinone, cha
 }
 
 
+static void rom_cmthack_is_not_compatibile ( void ) {
+    if ( TEST_CMTHACK_INSTALLED ) {
+        printf ( "CMTHACK is not compatibile with selected ROM - CMTHACK DISABLED\n" );
+        cmthack_load_rom_patch ( 0 );
+    };
+}
+
+
 static void rom_install ( en_ROMTYPE romtype ) {
 
     en_ROM_BOOL custom_rom_error = FALSE;
@@ -118,14 +126,17 @@ static void rom_install ( en_ROMTYPE romtype ) {
             break;
 
         case ROMTYPE_WILLY_EN:
+            rom_cmthack_is_not_compatibile ( );
             rom_install_predefined ( c_ROM_WILLY_MZ700, c_ROM_WILLY_en_CGROM, c_ROM_WILLY_en_MZ800 );
             break;
 
         case ROMTYPE_WILLY_GE:
+            rom_cmthack_is_not_compatibile ( );
             rom_install_predefined ( c_ROM_WILLY_MZ700, c_ROM_WILLY_ge_CGROM, c_ROM_WILLY_ge_MZ800 );
             break;
 
         case ROMTYPE_WILLY_JAP:
+            rom_cmthack_is_not_compatibile ( );
             rom_install_predefined ( c_ROM_WILLY_MZ700, c_ROM_WILLY_jap_CGROM, c_ROM_WILLY_jap_MZ800 );
             break;
 
@@ -154,7 +165,7 @@ static void rom_install ( en_ROMTYPE romtype ) {
             };
 
             if ( g_rom.user_defined_cmthack_type == ROM_CMTHACK_DISABLED ) {
-                cmthack_load_rom_patch ( 0 );
+                rom_cmthack_is_not_compatibile ( );
             };
 
             if ( g_cmthack.load_patch_installed ) {

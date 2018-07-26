@@ -137,6 +137,9 @@ extern "C" {
     extern void rom_set_user_defined_filepath ( char **dst, char *src );
     extern int rom_user_defined_rom_area_load ( st_ROM_AREA *dst, en_ROM_BOOL allinone, char *allinone_fp, char *mz700_fp, char *cgrom_fp, char *mz800_fp );
 
+#define TEST_ROM_WILLY ( ( g_rom.type >= ROMTYPE_WILLY_EN ) && ( g_rom.type <= ROMTYPE_WILLY_JAP ) )
+#define TEST_ROM_USER_DEFINED ( g_rom.type == ROMTYPE_USER_DEFINED )
+
 #ifdef __cplusplus
 }
 #endif
