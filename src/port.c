@@ -206,7 +206,7 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
             if ( g_pio8255.signal_PA_joy1_enabled ) {
                 retval = joy_read_byte ( JOY_DEVID_0 );
             } else {
-                retval = g_mz800.regDBUS_latch;
+                retval = 0xff;
             };
             break;
 
@@ -215,7 +215,7 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
             if ( g_pio8255.signal_PA_joy2_enabled ) {
                 retval = joy_read_byte ( JOY_DEVID_1 );
             } else {
-                retval = g_mz800.regDBUS_latch;
+                retval = 0xff;
             };
             break;
 
