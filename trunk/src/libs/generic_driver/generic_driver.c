@@ -115,8 +115,25 @@ static inline void* generic_driver_utils_mem_alloc0 ( uint32_t size ) {
 
 #define generic_driver_utils_mem_free( ptr ) free ( ptr )
 #define generic_driver_utils_file_open( filename, mode ) fopen ( filename, mode )
-#define generic_driver_utils_file_read( buffer, size, count_bytes, fh ) fread ( buffer, size, count_bytes, fh )
-#define generic_driver_utils_file_write( buffer, size, count_bytes, fh ) fwrite ( buffer, size, count_bytes, fh )
+
+
+static inline unsigned int generic_driver_utils_file_read ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh ) {
+#ifdef WINDOWS
+    /*  stdio bug projevujici se pri "RW" mode :( */
+    fseek ( fh, ftell ( fh ), SEEK_SET );
+#endif
+    return fread ( buffer, size, count_bytes, fh );
+}
+
+
+static inline unsigned int generic_driver_utils_file_write ( void *buffer, unsigned int size, unsigned int count_bytes, FILE *fh ) {
+#ifdef WINDOWS
+    /*  stdio bug projevujici se pri "RW" mode :( */
+    fseek ( fh, ftell ( fh ), SEEK_SET );
+#endif
+    return fwrite ( buffer, size, count_bytes, fh );
+}
+
 #define generic_driver_utils_file_close( fh ) fclose ( fh )
 
 #endif
@@ -325,7 +342,7 @@ st_HANDLER* generic_driver_open_memory_from_file ( st_HANDLER *handler, st_DRIVE
 
     if ( !( ( !h ) || ( d->err ) || ( h->err ) ) ) {
 
-        generic_driver_utils_file_read ( h->spec.memspec.ptr, size, 1, fh );
+        generic_driver_utils_file_read ( h->spec.memspec.ptr, 1, size, fh );
 
         if ( ferror ( fh ) ) {
             if ( handler == NULL ) {
@@ -354,11 +371,13 @@ int generic_driver_save_memory ( st_HANDLER *h, char *filename ) {
 
     if ( EXIT_SUCCESS != generic_driver_memory_operation_internal_bootstrap ( h ) ) return EXIT_FAILURE;
 
-    FILE *fh = generic_driver_utils_file_open ( filename, "w" );
+    FILE *fh = generic_driver_utils_file_open ( filename, "wb" );
 
     if ( !fh ) return EXIT_FAILURE;
 
-    generic_driver_utils_file_write ( memspec->ptr, memspec->size, 1, fh );
+    fseek ( fh, 0, SEEK_SET );
+
+    generic_driver_utils_file_write ( memspec->ptr, 1, memspec->size, fh );
 
     generic_driver_utils_file_close ( fh );
 
