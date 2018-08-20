@@ -77,7 +77,8 @@ Novinky a zmeny v emulaci:
 	 (Zarizeni by mela byt podporovana napr. systemem MZIX https://sourceforge.net/projects/umzix/ )
 
 	- virtual CMT: pridana volba CPU boost
-
+	
+	- CMT: nyni je mozny save do WAV
 
 Debugger:
 

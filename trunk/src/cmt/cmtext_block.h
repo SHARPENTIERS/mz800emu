@@ -74,7 +74,9 @@ extern "C" {
     extern void cmtext_block_set_polarity ( void *cmtext, en_CMT_STREAM_POLARITY polarity );
     extern en_CMTEXT_BLOCK_TYPE cmtext_block_get_type ( st_CMTEXT_BLOCK *block );
     extern uint32_t cmtext_block_get_rate ( st_CMTEXT_BLOCK *block );
+    extern uint32_t cmtext_block_get_size ( st_CMTEXT_BLOCK *block );
     extern uint16_t cmtext_block_get_pause_after ( st_CMTEXT_BLOCK *block );
+    extern st_CMT_STREAM* cmtext_block_get_stream ( st_CMTEXT_BLOCK *block );
     extern en_CMT_STREAM_TYPE cmtext_block_get_stream_type ( st_CMTEXT_BLOCK *block );
     extern int cmtext_block_get_block_id ( st_CMTEXT_BLOCK *block );
     extern uint64_t cmtext_block_get_count_scans ( st_CMTEXT_BLOCK *block );

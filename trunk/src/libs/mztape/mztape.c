@@ -310,10 +310,12 @@ static void mztape_prepare_pulses_length ( st_MZTAPE_PULSES_LENGTH *pulses, en_M
 
     pulses->long_pulse.high = src->long_pulse.high / g_cmtspeed_divisor[mztape_speed];
     pulses->long_pulse.low = src->long_pulse.low / g_cmtspeed_divisor[mztape_speed];
+    //pulses->long_pulse.low = pulses->long_pulse.high;
     pulses->long_pulse.total = pulses->long_pulse.high + pulses->long_pulse.low;
 
     pulses->short_pulse.high = src->short_pulse.high / g_cmtspeed_divisor[mztape_speed];
     pulses->short_pulse.low = src->short_pulse.low / g_cmtspeed_divisor[mztape_speed];
+    //pulses->short_pulse.low = pulses->short_pulse.high;
     pulses->short_pulse.total = pulses->short_pulse.high + pulses->short_pulse.low;
 }
 
@@ -743,7 +745,7 @@ st_CMT_STREAM* mztape_create_stream_from_mztapemzf ( st_MZTAPE_MZF *mztmzf, en_C
                 return NULL;
             };
 
-            st_CMT_BITSTREAM *bitstream = cmt_bitstream_new_from_vstream ( vstream );
+            st_CMT_BITSTREAM *bitstream = cmt_bitstream_new_from_vstream ( vstream, 0 );
             cmt_vstream_destroy ( vstream );
 
             if ( !bitstream ) {

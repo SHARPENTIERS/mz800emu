@@ -71,6 +71,7 @@ extern "C" {
     extern uint64_t cmt_stream_get_count_scans ( st_CMT_STREAM *stream );
     extern double cmt_stream_get_scantime ( st_CMT_STREAM *stream );
     extern void cmt_stream_set_polarity ( st_CMT_STREAM *stream, en_CMT_STREAM_POLARITY polarity );
+    extern int cmt_stream_save_wav ( st_CMT_STREAM *stream, uint32_t rate, char *filename );
 
 #ifdef __cplusplus
 }

@@ -61,6 +61,7 @@ void cmtext_container_tape_destroy ( st_CMTEXT_CONTAINER_TAPE *tape, int count_b
 void cmtext_container_destroy ( st_CMTEXT_CONTAINER *container ) {
     if ( !container ) return;
     if ( container->name ) ui_utils_mem_free ( container->name );
+    if ( container->filepath ) ui_utils_mem_free ( container->filepath );
     cmtext_container_tape_destroy ( container->tape, container->count_blocks );
     ui_utils_mem_free ( container );
 }
@@ -98,7 +99,7 @@ st_CMTEXT_CONTAINER_TAPE* cmtext_container_tape_new ( st_HANDLER *h, st_CMTEXT_T
 
 st_CMTEXT_CONTAINER* cmtext_container_new (
                                             en_CMTEXT_CONTAINER_TYPE type,
-                                            char *name,
+                                            char *filepath,
                                             int count_blocks,
                                             st_CMTEXT_CONTAINER_TAPE *tape,
                                             cmtext_container_cb_next_block cb_next_block,
@@ -113,14 +114,18 @@ st_CMTEXT_CONTAINER* cmtext_container_new (
     };
     container->type = type;
     container->count_blocks = count_blocks;
-    int name_size = sizeof ( char ) * ( strlen ( name ) + 1 );
-    container->name = (char*) ui_utils_mem_alloc0 ( name_size );
-    if ( !container->name ) {
-        fprintf ( stderr, "%s():%d - Can't alocate memory (%d).", __func__, __LINE__, name_size );
+
+    int filepath_size = sizeof ( char ) * ( strlen ( filepath ) + 1 );
+    container->filepath = (char*) ui_utils_mem_alloc0 ( filepath_size );
+    if ( !container->filepath ) {
+        fprintf ( stderr, "%s():%d - Can't alocate memory (%d).", __func__, __LINE__, filepath_size );
         cmtext_container_destroy ( container );
         return NULL;
     };
-    container->name = name;
+    strncpy ( container->filepath, filepath, filepath_size );
+
+    container->name = ui_utils_basename ( filepath );
+
     container->tape = tape;
     container->cb_next_block = cb_next_block;
     container->cb_previous_block = cb_previous_block;
@@ -133,6 +138,12 @@ const char* cmtext_container_get_name ( st_CMTEXT_CONTAINER *container ) {
     assert ( container );
     assert ( container->name );
     return container->name;
+}
+
+const char* cmtext_container_get_filepath ( st_CMTEXT_CONTAINER *container ) {
+    assert ( container );
+    assert ( container->filepath );
+    return container->filepath;
 }
 
 
@@ -160,6 +171,7 @@ en_CMTEXT_BLOCK_SPEED cmtext_container_get_block_speed ( st_CMTEXT_CONTAINER *co
     assert ( block_id < container->count_blocks );
     return container->tape->index[block_id].blspeed;
 }
+
 
 void cmtext_container_set_block_speed ( st_CMTEXT_CONTAINER *container, int block_id, en_CMTEXT_BLOCK_SPEED blspeed ) {
     assert ( container );

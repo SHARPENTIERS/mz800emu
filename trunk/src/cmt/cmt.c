@@ -55,11 +55,16 @@ st_CMT g_cmt;
 void cmt_stop ( void ) {
     if ( !TEST_CMT_FILLED ) return;
     if ( TEST_CMT_STOP ) return;
+
+    if ( g_cmt.ext->cb_stop ) g_cmt.ext->cb_stop ( );
+
     g_cmt.state = CMT_STATE_STOP;
     g_cmt.playsts = CMTEXT_BLOCK_PLAYSTS_STOP;
+
     if ( g_cmt.cpu_boost == CMT_CPU_BOOST_ENABLED ) {
         mz800_switch_emulation_speed ( 0 );
     };
+
     ui_cmt_window_update ( );
 }
 
@@ -67,7 +72,7 @@ void cmt_stop ( void ) {
 void cmt_eject ( void ) {
     if ( !TEST_CMT_FILLED ) return;
     if ( !TEST_CMT_STOP ) cmt_stop ( );
-    g_cmt.ext->cb_eject ( );
+    if ( g_cmt.ext->cb_eject ) g_cmt.ext->cb_eject ( );
     g_cmt.ext = NULL;
     ui_cmt_window_update ( );
 }
@@ -76,6 +81,7 @@ void cmt_eject ( void ) {
 void cmt_play ( void ) {
     if ( !TEST_CMT_FILLED ) return;
     if ( !TEST_CMT_STOP ) return;
+    if ( EXIT_SUCCESS != cmtext_is_playable ( g_cmt.ext ) ) return;
     g_cmt.state = CMT_STATE_PLAY;
     g_cmt.playsts = CMTEXT_BLOCK_PLAYSTS_BODY;
     g_cmt.start_time = gdg_get_total_ticks ( );
@@ -86,6 +92,54 @@ void cmt_play ( void ) {
         mz800_switch_emulation_speed ( 1 );
     };
     g_cmt.ext->block->cb_play ( g_cmt.ext );
+}
+
+
+void cmt_record ( void ) {
+    if ( !TEST_CMT_STOP ) return;
+    if ( ( TEST_CMT_FILLED ) && ( EXIT_SUCCESS != cmtext_is_recordable ( g_cmt.ext ) ) ) {
+        cmt_eject ( );
+    };
+    if ( !TEST_CMT_FILLED ) {
+        char *filepath = ui_file_chooser_open_wav_to_record ( );
+        if ( !filepath ) return;
+
+        char *fileext = ui_file_chooser_get_filename_extension ( filepath );
+        if ( fileext != NULL ) {
+            if ( 0 != strcasecmp ( fileext, "wav" ) ) fileext = NULL;
+        };
+
+        if ( fileext == NULL ) {
+            int len = strlen ( filepath ) + 5;
+            filepath = (char*) ui_utils_mem_realloc ( filepath, len );
+            strncat ( filepath, ".wav", len );
+        };
+
+        st_CMTEXT *ext = cmtext_get_recording_extension ( );
+
+        if ( EXIT_SUCCESS != ext->cb_open ( filepath ) ) {
+            ui_show_error ( "%s can't open file '%s'\n", cmtext_get_description ( ext ), filepath );
+            ui_utils_mem_free ( filepath );
+            return;
+        };
+
+        ui_utils_mem_free ( filepath );
+        g_cmt.ext = ext;
+        //ui_cmt_window_update ( );
+    };
+
+
+    g_cmt.state = CMT_STATE_RECORD;
+    g_cmt.playsts = CMTEXT_BLOCK_PLAYSTS_BODY;
+    g_cmt.start_time = gdg_get_total_ticks ( );
+    //printf ( "CMT start: %ul\n", gdg_get_total_ticks ( ) );
+    g_cmt.ui_player_update = 0;
+    ui_cmt_set_show_time ( UICMT_SHOW_PLAY_TIME );
+    ui_cmt_window_update ( );
+    if ( g_cmt.cpu_boost == CMT_CPU_BOOST_ENABLED ) {
+        mz800_switch_emulation_speed ( 1 );
+    };
+    //g_cmt.ext->block->cb_record ( g_cmt.ext );
 }
 
 
@@ -237,7 +291,6 @@ int cmt_open ( void ) {
 
 void cmt_update_output ( void ) {
 
-    if ( !TEST_CMT_FILLED ) return;
     if ( !TEST_CMT_PLAY ) return;
 
     uint64_t play_ticks = gdg_get_total_ticks ( ) - g_cmt.start_time;
@@ -276,8 +329,7 @@ void cmt_update_output ( void ) {
 
 void cmt_screen_done_period ( void ) {
 
-    if ( !TEST_CMT_FILLED ) return;
-    if ( TEST_CMT_STOP ) return;
+    if ( ( !TEST_CMT_FILLED ) || ( TEST_CMT_STOP ) ) return;
 
     cmt_update_output ( );
 
@@ -291,6 +343,13 @@ void cmt_screen_done_period ( void ) {
 int cmt_read_data ( void ) {
     cmt_update_output ( );
     return g_cmt.output;
+}
+
+
+void cmt_write_data ( int value ) {
+    if ( !TEST_CMT_RECORD ) return;
+    uint64_t play_ticks = gdg_get_total_ticks ( ) - g_cmt.start_time;
+    if ( g_cmt.ext->cb_write ) g_cmt.ext->cb_write ( play_ticks, value );
 }
 
 

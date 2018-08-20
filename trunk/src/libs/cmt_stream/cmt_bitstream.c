@@ -75,21 +75,42 @@ st_CMT_BITSTREAM* cmt_bitstream_new ( uint32_t rate, uint32_t blocks, en_CMT_STR
 }
 
 
-st_CMT_BITSTREAM* cmt_bitstream_new_from_vstream ( st_CMT_VSTREAM *vstream ) {
+st_CMT_BITSTREAM* cmt_bitstream_new_from_vstream ( st_CMT_VSTREAM *vstream, uint32_t dst_rate ) {
+
     uint32_t rate = cmt_vstream_get_rate ( vstream );
+    if ( dst_rate == 0 ) dst_rate = rate;
+    double step = (double) rate / dst_rate;
+
+    uint64_t scans = cmt_vstream_get_count_scans ( vstream );
+    uint64_t dst_scans = scans / step;
+    if ( ( dst_scans * step ) < scans ) dst_scans++;
+    uint32_t blocks = cmt_bitstream_compute_required_blocks_from_scans ( dst_scans );
+
     en_CMT_STREAM_POLARITY polarity = cmt_vstream_get_polarity ( vstream );
-    uint64_t blocks = cmt_vstream_get_count_scans ( vstream );
-    st_CMT_BITSTREAM *stream = cmt_bitstream_new ( rate, blocks, polarity );
+    st_CMT_BITSTREAM *stream = cmt_bitstream_new ( dst_rate, blocks, polarity );
     if ( !stream ) return NULL;
 
-    uint64_t samples = 0;
     int value = 0;
+    uint64_t samples = 0;
+    uint32_t dst_position = 0;
 
-    uint32_t position = 0;
-    while ( EXIT_SUCCESS == cmt_vstream_read_pulse ( vstream, &samples, &value ) ) {
-        uint64_t i;
-        for ( i = 0; i < samples; i++ ) {
-            cmt_bitstream_set_value_on_position ( stream, position++, value );
+    double next_scan = step;
+    double total_samples = 0;
+
+    if ( dst_rate == rate ) {
+        while ( EXIT_SUCCESS == cmt_vstream_read_pulse ( vstream, &samples, &value ) ) {
+            uint64_t i;
+            for ( i = 0; i < samples; i++ ) {
+                cmt_bitstream_set_value_on_position ( stream, dst_position++, value );
+            };
+        };
+    } else {
+        while ( EXIT_SUCCESS == cmt_vstream_read_pulse ( vstream, &samples, &value ) ) {
+            total_samples += samples;
+            while ( total_samples >= next_scan ) {
+                cmt_bitstream_set_value_on_position ( stream, dst_position++, value );
+                next_scan += step;
+            };
         };
     };
 

@@ -42,7 +42,8 @@ extern "C" {
 
     typedef enum en_CMT_STATE {
         CMT_STATE_STOP = 0,
-        CMT_STATE_PLAY
+        CMT_STATE_PLAY,
+        CMT_STATE_RECORD,
     } en_CMT_STATE;
 
 
@@ -74,6 +75,7 @@ extern "C" {
     extern int cmt_open_file_by_extension ( char *filename );
     extern int cmt_open ( void );
     extern void cmt_play ( void );
+    extern void cmt_record ( void );
     extern void cmt_stop ( void );
     extern void cmt_eject ( void );
     extern int cmt_change_speed ( en_CMTSPEED cmtspeed );
@@ -81,12 +83,14 @@ extern "C" {
     extern void cmt_screen_done_period ( void );
     extern int cmt_read_data ( void );
     extern void cmt_update_output ( void );
+    extern void cmt_write_data ( int value );
 
     extern void cmt_cpu_boost_set ( en_CMT_CPU_BOOST cpu_boost );
 
 #define TEST_CMT_FILLED (g_cmt.ext != NULL)
 #define TEST_CMT_STOP (g_cmt.state == CMT_STATE_STOP)
 #define TEST_CMT_PLAY (g_cmt.state == CMT_STATE_PLAY)
+#define TEST_CMT_RECORD (g_cmt.state == CMT_STATE_RECORD)
 
 #define cmt_on_screen_done_event( ) { if ( !TEST_CMT_STOP ) cmt_screen_done_period (); }
 

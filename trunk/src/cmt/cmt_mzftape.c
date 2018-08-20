@@ -48,7 +48,8 @@ char *g_cmt_mzftape_fileext[] = {
 st_CMTEXT_INFO g_cmt_mzftape_info = {
                                      "MZT",
                                      g_cmt_mzftape_fileext,
-                                     "MZT cmt extension"
+                                     "MZT cmt extension",
+                                     CMTEXT_TYPE_PLAYABLE
 };
 
 extern st_CMTEXT *g_cmt_mzftape;
@@ -243,7 +244,7 @@ static int cmtmzftape_container_open ( char *filename ) {
         return EXIT_FAILURE;
     };
 
-    st_CMTEXT_CONTAINER *container = cmtext_container_new ( CMTEXT_CONTAINER_TYPE_SIMPLE_TAPE, ui_utils_basename ( filename ), count_blocks, tape, cmtmzftape_container_next_block, cmtmzftape_container_previous_block, cmtmzftape_container_open_block );
+    st_CMTEXT_CONTAINER *container = cmtext_container_new ( CMTEXT_CONTAINER_TYPE_SIMPLE_TAPE, filename, count_blocks, tape, cmtmzftape_container_next_block, cmtmzftape_container_previous_block, cmtmzftape_container_open_block );
     if ( !container ) {
         cmtext_container_tape_destroy ( tape, count_blocks );
         return EXIT_FAILURE;
@@ -282,7 +283,9 @@ st_CMTEXT g_cmt_mzftape_extension = {
                                      cmtmzftape_init,
                                      cmtmzftape_exit,
                                      cmtmzftape_container_open,
+                                     (cmtext_cb_stop) NULL,
                                      cmtmzftape_eject,
+                                     (cmtext_cb_write_data) NULL,
 };
 
 st_CMTEXT *g_cmt_mzftape = &g_cmt_mzftape_extension;

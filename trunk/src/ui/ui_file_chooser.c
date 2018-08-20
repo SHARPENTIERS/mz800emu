@@ -557,6 +557,21 @@ char* ui_file_chooser_open_mzf ( const char *predefined_filename, void *parent_w
 }
 
 
+char* ui_file_chooser_open_wav_to_record ( void ) {
+    st_UI_FCS_FILTERS *filters = ui_file_chooser_filters_new ( );
+    ui_file_chooser_filters_add_filter ( filters, ui_file_chooser_create_filter_wav ( ) );
+    char title[] = "Create / Select WAV file to record";
+    char *dirpath = NULL;
+    const char *lastdir = NULL;
+    ui_file_chooser_get_lastdir_for_cmtfile ( &dirpath, &lastdir, NULL, g_ui_filechooser.cmtfile_dir, g_ui_filechooser.mzf_dir );
+    GtkWindow *parent = ui_get_window ( "cmt_window" );
+    char *filepath = ui_file_chooser_internal_open_file ( NULL, ( dirpath ) ? dirpath : lastdir, title, parent, GTK_FILE_CHOOSER_ACTION_SAVE, filters );
+    if ( dirpath ) g_free ( dirpath );
+    ui_filechooser_set_last_dir_from_filepath ( filepath, &g_ui_filechooser.cmtfile_dir );
+    return filepath;
+}
+
+
 char* ui_file_chooser_open_mzq ( const char *predefined_filename ) {
     st_UI_FCS_FILTERS *filters = ui_file_chooser_filters_new ( );
     ui_file_chooser_filters_add_filter ( filters, ui_file_chooser_create_filter_mzq ( ) );

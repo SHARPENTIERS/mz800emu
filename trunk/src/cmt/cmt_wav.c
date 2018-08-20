@@ -47,7 +47,8 @@ char *g_cmt_wav_fileext[] = {
 st_CMTEXT_INFO g_cmt_wav_info = {
                                  "WAV",
                                  g_cmt_wav_fileext,
-                                 "WAV cmt extension"
+                                 "WAV cmt extension",
+                                 CMTEXT_TYPE_PLAYABLE
 };
 
 extern st_CMTEXT *g_cmt_wav;
@@ -117,7 +118,7 @@ static int cmtwav_container_open ( char *filename ) {
 
     cmtwav_eject ( );
 
-    st_CMTEXT_CONTAINER *container = cmtext_container_new ( CMTEXT_CONTAINER_TYPE_SINGLE, ui_utils_basename ( filename ), 1, NULL, NULL, NULL, NULL );
+    st_CMTEXT_CONTAINER *container = cmtext_container_new ( CMTEXT_CONTAINER_TYPE_SINGLE, filename, 1, NULL, NULL, NULL, NULL );
     if ( !container ) {
         return EXIT_FAILURE;
     };
@@ -166,7 +167,9 @@ st_CMTEXT g_cmt_wav_extension = {
                                  cmtwav_init,
                                  cmtwav_exit,
                                  cmtwav_container_open,
+                                 (cmtext_cb_stop) NULL,
                                  cmtwav_eject,
+                                 (cmtext_cb_write_data) NULL,
 };
 
 st_CMTEXT *g_cmt_wav = &g_cmt_wav_extension;

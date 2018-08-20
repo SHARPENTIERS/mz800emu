@@ -69,3 +69,24 @@ void mzf_tools_get_fname ( st_MZF_HEADER *mzfhdr, char *ascii_filename ) {
     };
     *ascii_filename = 0x00;
 }
+
+
+st_MZF_HEADER* mzf_tools_create_mzfhdr ( uint8_t ftype, uint16_t fsize, uint16_t fstrt, uint16_t fexec, uint8_t *fname, int fname_length, uint8_t *cmnt ) {
+    st_MZF_HEADER *mzfhdr = malloc ( sizeof ( st_MZF_HEADER ) );
+    if ( !mzfhdr ) return NULL;
+    mzfhdr->ftype = ftype;
+    mzfhdr->fsize = fsize;
+    mzfhdr->fstrt = fstrt;
+    mzfhdr->fexec = fexec;
+
+    if ( !cmnt ) {
+        memset ( &mzfhdr->cmnt, 0x00, sizeof ( mzfhdr->cmnt ) );
+    } else {
+        memcpy ( &mzfhdr->cmnt, cmnt, sizeof ( mzfhdr->cmnt ) );
+    };
+
+    memset ( &mzfhdr->fname, 0x0d, sizeof ( mzfhdr->fname ) );
+    int length = ( fname_length < sizeof ( mzfhdr->fname ) ) ? fname_length : sizeof ( mzfhdr->fname );
+    memcpy ( &mzfhdr->fname, fname, length );
+    return mzfhdr;
+}

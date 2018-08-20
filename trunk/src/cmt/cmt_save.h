@@ -1,8 +1,8 @@
 /* 
- * File:   mzf_tools.h
+ * File:   cmt_save.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 28. prosince 2017, 16:13
+ * Created on 31. července 2018, 9:57
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -24,23 +24,33 @@
  */
 
 
-#ifndef MZF_TOOLS_H
-#define MZF_TOOLS_H
+#ifndef CMT_SAVE_H
+#define CMT_SAVE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "mzf.h"
+#include <stdint.h>
+#include "cmtext.h"
 
-    extern void mzf_tools_set_fname ( st_MZF_HEADER *mzfhdr, char *ascii_filename );
-    uint8_t mzf_tools_get_fname_length ( st_MZF_HEADER *mzfhdr );
-    void mzf_tools_get_fname ( st_MZF_HEADER *mzfhdr, char *ascii_filename );
-    extern st_MZF_HEADER* mzf_tools_create_mzfhdr ( uint8_t ftype, uint16_t fsize, uint16_t fstrt, uint16_t fexec, uint8_t *fname, int fname_length, uint8_t *cmnt );
+    extern st_CMTEXT g_cmt_save_extension;
+
+
+    typedef struct st_CMTSAVE_BLOCKSPEC {
+        char *filepath;
+        uint64_t last_event;
+    } st_CMTSAVE_BLOCKSPEC;
+
+
+    void cmtsave_block_close ( st_CMTEXT_BLOCK *block );
+
+#define CMTSAVE_DEFAULT_SAMPLERATE  44100
+
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* MZF_TOOLS_H */
+#endif /* CMT_SAVE_H */
 
