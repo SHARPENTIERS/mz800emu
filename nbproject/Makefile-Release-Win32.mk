@@ -45,6 +45,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/cmt/cmt.o \
 	${OBJECTDIR}/src/cmt/cmt_mzf.o \
 	${OBJECTDIR}/src/cmt/cmt_mzftape.o \
+	${OBJECTDIR}/src/cmt/cmt_save.o \
 	${OBJECTDIR}/src/cmt/cmt_tap.o \
 	${OBJECTDIR}/src/cmt/cmt_wav.o \
 	${OBJECTDIR}/src/cmt/cmtext.o \
@@ -232,6 +233,11 @@ ${OBJECTDIR}/src/cmt/cmt_mzftape.o: src/cmt/cmt_mzftape.c
 	${MKDIR} -p ${OBJECTDIR}/src/cmt
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_mzftape.o src/cmt/cmt_mzftape.c
+
+${OBJECTDIR}/src/cmt/cmt_save.o: src/cmt/cmt_save.c 
+	${MKDIR} -p ${OBJECTDIR}/src/cmt
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X86 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/cmt/cmt_save.o src/cmt/cmt_save.c
 
 ${OBJECTDIR}/src/cmt/cmt_tap.o: src/cmt/cmt_tap.c 
 	${MKDIR} -p ${OBJECTDIR}/src/cmt

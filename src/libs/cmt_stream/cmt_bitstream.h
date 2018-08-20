@@ -58,7 +58,7 @@ extern "C" {
 
     extern st_CMT_BITSTREAM* cmt_bitstream_new ( uint32_t rate, uint32_t blocks, en_CMT_STREAM_POLARITY polarity );
     extern st_CMT_BITSTREAM* cmt_bitstream_new_from_wav ( st_HANDLER *wav_handler, en_CMT_STREAM_POLARITY polarity );
-    extern st_CMT_BITSTREAM* cmt_bitstream_new_from_vstream ( st_CMT_VSTREAM *vstream );
+    extern st_CMT_BITSTREAM* cmt_bitstream_new_from_vstream ( st_CMT_VSTREAM *vstream, uint32_t dst_rate );
     extern void cmt_bitstream_destroy ( st_CMT_BITSTREAM *stream );
     extern uint32_t cmt_bitstream_compute_required_blocks_from_scans ( uint32_t scans );
     extern int cmt_bitstream_create_wav ( st_HANDLER *wav_handler, st_CMT_BITSTREAM *stream );

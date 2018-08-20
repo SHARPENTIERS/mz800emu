@@ -32,7 +32,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-    
+
     extern uint16_t endianity_bswap16_BE ( uint16_t n );
     extern uint16_t endianity_bswap16_LE ( uint16_t n );
     extern uint32_t endianity_bswap32_BE ( uint32_t n );

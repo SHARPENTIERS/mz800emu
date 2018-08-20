@@ -150,9 +150,22 @@ uint32_t cmtext_block_get_rate ( st_CMTEXT_BLOCK *block ) {
 }
 
 
+uint32_t cmtext_block_get_size ( st_CMTEXT_BLOCK *block ) {
+    assert ( block != NULL );
+    if ( !block->stream ) return 0;
+    return cmt_stream_get_size ( block->stream );
+}
+
+
 uint16_t cmtext_block_get_pause_after ( st_CMTEXT_BLOCK *block ) {
     assert ( block != NULL );
     return block->pause_after;
+}
+
+
+st_CMT_STREAM* cmtext_block_get_stream ( st_CMTEXT_BLOCK *block ) {
+    assert ( block != NULL );
+    return block->stream;
 }
 
 
@@ -171,15 +184,15 @@ int cmtext_block_get_block_id ( st_CMTEXT_BLOCK *block ) {
 
 uint64_t cmtext_block_get_count_scans ( st_CMTEXT_BLOCK *block ) {
     assert ( block != NULL );
-    assert ( block->stream != NULL );
-    return cmt_stream_get_count_scans ( block->stream );
+    if ( block->stream != NULL ) return cmt_stream_get_count_scans ( block->stream );
+    return 0;
 }
 
 
 double cmtext_block_get_scantime ( st_CMTEXT_BLOCK *block ) {
     assert ( block != NULL );
-    assert ( block->stream != NULL );
-    return cmt_stream_get_scantime ( block->stream );
+    if ( block->stream != NULL ) return cmt_stream_get_scantime ( block->stream );
+    return 0;
 }
 
 

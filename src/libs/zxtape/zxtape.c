@@ -343,7 +343,7 @@ st_CMT_STREAM* zxtape_create_stream_from_tapblock ( en_ZXTAPE_BLOCK_FLAG flag, u
                 return NULL;
             };
 
-            st_CMT_BITSTREAM *bitstream = cmt_bitstream_new_from_vstream ( vstream );
+            st_CMT_BITSTREAM *bitstream = cmt_bitstream_new_from_vstream ( vstream, 0 );
             cmt_vstream_destroy ( vstream );
 
             if ( !bitstream ) {

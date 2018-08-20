@@ -38,17 +38,25 @@ extern "C" {
 #include "cmtext_block.h"
 
 
+#define CMTEXT_TYPE_UNKNOWN     0x00
+#define CMTEXT_TYPE_PLAYABLE    0x01
+#define CMTEXT_TYPE_RECORDABLE  0x02
+
+
     typedef struct st_CMTEXT_INFO {
         char *name;
         char **fileext; // podporovane pripony, zakonceno NULL
         char *description;
+        int type;
     } st_CMTEXT_INFO;
 
 
     typedef void ( *cmtext_cb_init ) (void);
     typedef void ( *cmtext_cb_exit ) (void);
     typedef int ( *cmtext_cb_open ) (char *filename );
+    typedef void ( *cmtext_cb_stop ) (void);
     typedef void ( *cmtext_cb_eject ) (void);
+    typedef void ( *cmtext_cb_write_data ) ( uint64_t play_ticks, int value );
 
 
     typedef struct st_CMTEXT {
@@ -58,7 +66,9 @@ extern "C" {
         cmtext_cb_init cb_init;
         cmtext_cb_exit cb_exit;
         cmtext_cb_open cb_open;
+        cmtext_cb_stop cb_stop;
         cmtext_cb_eject cb_eject;
+        cmtext_cb_write_data cb_write;
     } st_CMTEXT;
 
 
@@ -66,15 +76,19 @@ extern "C" {
     extern void cmtext_exit ( void );
 
     extern st_CMTEXT* cmtext_get_extension ( const char *filename );
+    extern st_CMTEXT* cmtext_get_recording_extension ( void );
     extern const char* cmtext_get_description ( st_CMTEXT *ext );
     extern const char* cmtext_get_name ( st_CMTEXT *ext );
+    extern st_CMTEXT_BLOCK* cmtext_get_block ( st_CMTEXT *ext );
     extern st_CMTEXT_CONTAINER* cmtext_get_container ( st_CMTEXT *ext );
+    extern int cmtext_get_type ( st_CMTEXT *ext );
 
     extern int cmtext_container_open ( const char *filename );
-    
-    extern const char* cmtext_get_filename_extension ( const char *filename );
-    
 
+    extern const char* cmtext_get_filename_extension ( const char *filename );
+
+    extern int cmtext_is_playable ( st_CMTEXT *ext );
+    extern int cmtext_is_recordable ( st_CMTEXT *ext );
 
 
 #ifdef __cplusplus

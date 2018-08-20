@@ -50,12 +50,13 @@ extern "C" {
     extern void ui_file_chooser_exit ( void );
 
     char* ui_file_chooser_get_filename_extension ( char *filename );
-    
+
     extern char* ui_file_chooser_open_file ( const char *predefined_filepath, const char *predefined_dirpath, const char *title, void *parent_window, en_FC_MODE fcmode, st_UI_FCS_FILTERS *filters );
 
     extern char* ui_file_chooser_open_cmt_file ( const char *predefined_filename );
     extern char* ui_file_chooser_open_cmthack_file ( const char *predefined_filename );
     extern char* ui_file_chooser_open_mzf ( const char *predefined_filename, void *parent_window );
+    extern char* ui_file_chooser_open_wav_to_record ( void );
     extern char* ui_file_chooser_open_mzq ( const char *predefined_filename );
     extern char* ui_file_chooser_open_dsk ( const char *predefined_filename );
     extern char* ui_file_chooser_open_dir ( const char *predefined_filepath, const char *title );

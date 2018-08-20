@@ -58,6 +58,7 @@
           <itemPath>src/cmt/cmt.h</itemPath>
           <itemPath>src/cmt/cmt_mzf.h</itemPath>
           <itemPath>src/cmt/cmt_mzftape.h</itemPath>
+          <itemPath>src/cmt/cmt_save.h</itemPath>
           <itemPath>src/cmt/cmt_tap.h</itemPath>
           <itemPath>src/cmt/cmt_wav.h</itemPath>
           <itemPath>src/cmt/cmtext.h</itemPath>
@@ -241,6 +242,7 @@
           <itemPath>src/cmt/cmt.c</itemPath>
           <itemPath>src/cmt/cmt_mzf.c</itemPath>
           <itemPath>src/cmt/cmt_mzftape.c</itemPath>
+          <itemPath>src/cmt/cmt_save.c</itemPath>
           <itemPath>src/cmt/cmt_tap.c</itemPath>
           <itemPath>src/cmt/cmt_wav.c</itemPath>
           <itemPath>src/cmt/cmtext.c</itemPath>
@@ -496,6 +498,10 @@
       <item path="src/cmt/cmt_mzftape.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_save.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_save.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_tap.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1110,6 +1116,10 @@
       </item>
       <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_save.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_save.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_tap.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_tap.h" ex="false" tool="3" flavor2="0">
@@ -1710,6 +1720,10 @@
       <item path="src/cmt/cmt_mzftape.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_save.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_save.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_tap.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2320,6 +2334,10 @@
       <item path="src/cmt/cmt_mzftape.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_save.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_save.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_tap.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2939,6 +2957,10 @@
       </item>
       <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_save.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_save.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_tap.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_tap.h" ex="false" tool="3" flavor2="0">
@@ -3557,6 +3579,10 @@
       </item>
       <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/cmt/cmt_save.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_save.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/cmt/cmt_tap.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_tap.h" ex="false" tool="3" flavor2="0">
@@ -4172,6 +4198,10 @@
       <item path="src/cmt/cmt_mzftape.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/cmt/cmt_mzftape.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_save.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/cmt/cmt_save.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/cmt/cmt_tap.c" ex="false" tool="0" flavor2="0">
       </item>

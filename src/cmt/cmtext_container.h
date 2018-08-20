@@ -101,7 +101,8 @@ extern "C" {
 
 
     typedef struct st_CMTEXT_CONTAINER {
-        char *name; // jmeno zdrojoveho souboru
+        char *filepath;
+        char *name; // basename filepath
         en_CMTEXT_CONTAINER_TYPE type;
         int count_blocks;
         st_CMTEXT_CONTAINER_TAPE *tape;
@@ -120,7 +121,7 @@ extern "C" {
 
     extern st_CMTEXT_CONTAINER* cmtext_container_new (
                                                        en_CMTEXT_CONTAINER_TYPE type,
-                                                       char *name,
+                                                       char *filepath,
                                                        int count_blocks,
                                                        st_CMTEXT_CONTAINER_TAPE *tape,
                                                        cmtext_container_cb_next_block cb_next_block,
@@ -131,6 +132,7 @@ extern "C" {
     extern void cmtext_container_destroy ( st_CMTEXT_CONTAINER *container );
 
     extern const char* cmtext_container_get_name ( st_CMTEXT_CONTAINER *container );
+    extern const char* cmtext_container_get_filepath ( st_CMTEXT_CONTAINER *container );
     extern en_CMTEXT_CONTAINER_TYPE cmtext_container_get_type ( st_CMTEXT_CONTAINER *container );
     extern int cmtext_container_get_count_blocks ( st_CMTEXT_CONTAINER *container );
 

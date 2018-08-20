@@ -96,18 +96,18 @@ extern "C" {
             uint8_t value8 = cmt_vstream->data[cmt_vstream->last_read_position];
             *event_byte_length = 1;
             if ( value8 < 0xff ) return value8;
-            uint16_t value16 = *( uint16_t* ) & cmt_vstream->data[cmt_vstream->last_read_position];
-            *event_byte_length = 2;
+            uint16_t value16 = *( uint16_t* ) & cmt_vstream->data[( cmt_vstream->last_read_position + 1 )];
+            *event_byte_length = 1 + 2;
             if ( value16 < 0xffff ) return value16;
-            uint32_t value32 = *( uint32_t* ) & cmt_vstream->data[cmt_vstream->last_read_position];
-            *event_byte_length = 4;
+            uint32_t value32 = *( uint32_t* ) & cmt_vstream->data[( cmt_vstream->last_read_position + 1 + 2 )];
+            *event_byte_length = 1 + 2 + 4;
             return value32;
         } else if ( cmt_vstream->min_byte_length == CMT_VSTREAM_BYTELENGTH16 ) {
             uint16_t value16 = *( uint16_t* ) & cmt_vstream->data[cmt_vstream->last_read_position];
             *event_byte_length = 2;
             if ( value16 < 0xffff ) return value16;
-            uint32_t value32 = *( uint32_t* ) & cmt_vstream->data[cmt_vstream->last_read_position];
-            *event_byte_length = 4;
+            uint32_t value32 = *( uint32_t* ) & cmt_vstream->data[( cmt_vstream->last_read_position + 2 )];
+            *event_byte_length = 2 + 4;
             return value32;
         };
         uint32_t value32 = *( uint32_t* ) & cmt_vstream->data[cmt_vstream->last_read_position];

@@ -42,7 +42,9 @@ const char* dsk_error_message ( st_HANDLER *h, st_DRIVER *d ) {
                                  "image not ready",
                                  "image is write protected",
                                  "track not found",
-                                 "sector not found"
+                                 "sector not found",
+                                 "not available on double-sided disk",
+                                 "no tracks"
     };
 
     if ( (en_DSK_ERROR) h->err >= DSK_ERROR_UNKNOWN ) return unknown_err_msg;

@@ -26,6 +26,7 @@
 #include <gtk/gtk.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 #include "ui_main.h"
 #include "ui_cmt.h"
@@ -43,25 +44,43 @@
 #include "libs/mztape/cmtspeed.h"
 #include "cmt/cmt_tap.h"
 #include "memory/rom.h"
-
-
-typedef enum en_UICMT_SHOW {
-    UICMT_SHOW_PLAY_TIME = 0,
-    UICMT_SHOW_REMAINING_TIME,
-} en_UICMT_SHOW;
+#include "gdg/gdg.h"
+#include "ui_utils.h"
 
 
 typedef struct st_UICMT {
     st_UIWINPOS pos;
     en_UICMT_SHOW show_time;
+    int last_show_stream_type; // -2 not initialised, -1 "--", 0...
+    int last_show_stream_rate; // -2 not initialised, -1 "--", 0...
+    int32_t last_show_stream_size; // -2 not initialised, -1 "--", 0...
 } st_UICMT;
 
 static st_UICMT g_uicmt;
 
 
+static void ui_cmt_show_time_changed ( void ) {
+    if ( g_uicmt.show_time == UICMT_SHOW_REMAINING_TIME ) {
+        gtk_label_set_text ( ui_get_label ( "cmt_time_info_label" ), "Remaining time:" );
+    } else {
+        gtk_label_set_text ( ui_get_label ( "cmt_time_info_label" ), "Play time:" );
+    };
+    ui_cmt_update_player ( );
+}
+
+
+void ui_cmt_set_show_time ( en_UICMT_SHOW show_time ) {
+    g_uicmt.show_time = show_time;
+    ui_cmt_show_time_changed ( );
+}
+
+
 void ui_cmt_init ( void ) {
     ui_main_setpos ( &g_uicmt.pos, -1, -1 );
-    g_uicmt.show_time = UICMT_SHOW_REMAINING_TIME;
+    g_uicmt.last_show_stream_type = -2;
+    g_uicmt.last_show_stream_rate = -2;
+    g_uicmt.last_show_stream_size = -2;
+    ui_cmt_set_show_time ( UICMT_SHOW_REMAINING_TIME );
 }
 
 
@@ -314,7 +333,24 @@ G_MODULE_EXPORT void on_cmt_stop_button_clicked ( GtkButton *button, gpointer da
     (void) button;
     (void) data;
 
-    cmt_stop ( );
+    if ( TEST_CMT_RECORD ) {
+        st_CMTEXT_BLOCK *block = cmtext_get_block ( g_cmt.ext );
+        uint32_t size = cmtext_block_get_size ( block );
+        if ( !size ) {
+            cmt_eject ( );
+        } else {
+            st_CMTEXT_CONTAINER *container = cmtext_get_container ( g_cmt.ext );
+            const char *fpath = cmtext_container_get_filepath ( container );
+            int len = strlen ( fpath ) + 1;
+            char *filepath = ui_utils_mem_alloc0 ( len );
+            strncpy ( filepath, fpath, len );
+            cmt_eject ( );
+            cmt_open_file_by_extension ( filepath );
+            ui_utils_mem_free ( filepath );
+        };
+    } else {
+        cmt_stop ( );
+    };
 }
 
 
@@ -322,7 +358,9 @@ G_MODULE_EXPORT void on_cmt_record_togglebutton_toggled ( GtkToggleButton *toggl
     (void) togglebutton;
     (void) data;
 
-    printf ( "%s()\n", __func__ );
+    if ( ( gtk_toggle_button_get_active ( togglebutton ) ) && ( TEST_CMT_STOP ) ) {
+        cmt_record ( );
+    };
 }
 
 
@@ -429,6 +467,71 @@ G_MODULE_EXPORT void on_cmt_speed_comboboxtext_changed ( GtkComboBox *combobox, 
 }
 
 
+static void ui_cmt_set_stream_info_labels_none ( void ) {
+    if ( g_uicmt.last_show_stream_type != -1 ) gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "--" );
+    if ( g_uicmt.last_show_stream_rate != -1 ) gtk_label_set_text ( ui_get_label ( "cmt_stream_rate_label" ), "--" );
+    if ( g_uicmt.last_show_stream_size != -1 ) gtk_label_set_text ( ui_get_label ( "cmt_stream_size_label" ), "--" );
+    g_uicmt.last_show_stream_type = -1;
+    g_uicmt.last_show_stream_rate = -1;
+    g_uicmt.last_show_stream_size = -1;
+}
+
+
+static void ui_cmt_set_stream_info_labels ( st_CMTEXT_BLOCK *block ) {
+
+    char buff [ 100 ];
+
+    if ( !block ) {
+        ui_cmt_set_stream_info_labels_none ( );
+        return;
+    } else {
+        en_CMTEXT_BLOCK_TYPE block_type = cmtext_block_get_type ( g_cmt.ext->block );
+
+        if ( ( block_type != CMTEXT_BLOCK_TYPE_WAV ) || ( !cmtext_block_get_stream ( block ) ) ) {
+            ui_cmt_set_stream_info_labels_none ( );
+            return;
+        } else {
+            en_CMT_STREAM_TYPE stream_type = cmtext_block_get_stream_type ( block );
+            if ( stream_type == CMT_STREAM_TYPE_BITSTREAM ) {
+                if ( g_uicmt.last_show_stream_type != stream_type ) gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "bitstream" );
+            } else if ( stream_type == CMT_STREAM_TYPE_VSTREAM ) {
+                if ( g_uicmt.last_show_stream_type != stream_type ) gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "vstream" );
+            } else {
+                fprintf ( stderr, "%s():%d - Unknown cmt stream type '%d'\n", __func__, __LINE__, stream_type );
+            };
+            g_uicmt.last_show_stream_type = stream_type;
+        };
+    };
+
+    uint32_t rate = cmtext_block_get_rate ( block );
+    if ( rate != g_uicmt.last_show_stream_rate ) {
+        if ( rate < 1000000 ) {
+            snprintf ( buff, sizeof (buff ), "%0.2f kHz", ( (float) rate / 1000 ) );
+        } else {
+            snprintf ( buff, sizeof (buff ), "%0.2f MHz", ( (float) rate / 1000000 ) );
+        };
+        gtk_label_set_text ( ui_get_label ( "cmt_stream_rate_label" ), buff );
+        g_uicmt.last_show_stream_rate = rate;
+    };
+
+    uint32_t size = cmtext_block_get_size ( block );
+
+    if ( size != g_uicmt.last_show_stream_size ) {
+        if ( !size ) {
+            snprintf ( buff, sizeof (buff ), "--" );
+        } else if ( size < 1024 ) {
+            snprintf ( buff, sizeof (buff ), "%d B", size );
+        } else if ( size < ( 1024 * 1024 ) ) {
+            snprintf ( buff, sizeof (buff ), "%0.2f kB", ( (float) size / 1024 ) );
+        } else {
+            snprintf ( buff, sizeof (buff ), "%0.2f MB", ( (float) size / ( 1024 * 1024 ) ) );
+        };
+        gtk_label_set_text ( ui_get_label ( "cmt_stream_size_label" ), buff );
+        g_uicmt.last_show_stream_size = size;
+    };
+}
+
+
 void ui_cmt_window_update ( void ) {
 
     GtkWidget *window = ui_get_widget ( "cmt_window" );
@@ -468,96 +571,87 @@ void ui_cmt_window_update ( void ) {
     gtk_label_set_text ( ui_get_label ( "cmt_fexec_label" ), "--" );
     gtk_label_set_text ( ui_get_label ( "cmt_fstart_label" ), "--" );
     gtk_label_set_text ( ui_get_label ( "cmt_file_speed_label" ), "--" );
-    gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "--" );
-    gtk_label_set_text ( ui_get_label ( "cmt_stream_rate_label" ), "--" );
+    //gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "--" );
+    //gtk_label_set_text ( ui_get_label ( "cmt_stream_rate_label" ), "--" );
+    //gtk_label_set_text ( ui_get_label ( "cmt_stream_size_label" ), "--" );
+    ui_cmt_set_stream_info_labels ( NULL );
+
+    if ( TEST_CMT_FILLED ) {
+        if ( ( EXIT_SUCCESS == cmtext_is_playable ( g_cmt.ext ) ) && ( g_cmt.playsts != CMTEXT_BLOCK_PLAYSTS_PAUSE ) ) {
 
 
-    if ( ( TEST_CMT_FILLED ) && ( g_cmt.playsts != CMTEXT_BLOCK_PLAYSTS_PAUSE ) ) {
+            uint16_t file_bdspeed = 0;
+            st_MZF_HEADER *mzfhdr = NULL;
+            st_CMTEXT_TAPE_ITEM_TAPHDR *taphdr = NULL;
+            st_CMTEXT_TAPE_ITEM_TAPDATA *tapdata = NULL;
 
+            switch ( cmtext_block_get_type ( g_cmt.ext->block ) ) {
+                case CMTEXT_BLOCK_TYPE_MZF:
+                    file_bdspeed = ( !g_cmt.ext->block->cb_get_bdspeed ) ? 0 : g_cmt.ext->block->cb_get_bdspeed ( g_cmt.ext );
+                    mzfhdr = cmtmzf_block_get_spec_mzfheader ( g_cmt.ext->block );
+                    g_assert ( mzfhdr != NULL );
 
-        uint16_t file_bdspeed = 0;
-        st_MZF_HEADER *mzfhdr = NULL;
-        st_CMTEXT_TAPE_ITEM_TAPHDR *taphdr = NULL;
-        st_CMTEXT_TAPE_ITEM_TAPDATA *tapdata = NULL;
+                    snprintf ( buff, sizeof (buff ), "0x%02x", mzfhdr->ftype );
+                    gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), buff );
 
-        switch ( cmtext_block_get_type ( g_cmt.ext->block ) ) {
-            case CMTEXT_BLOCK_TYPE_MZF:
-                file_bdspeed = ( !g_cmt.ext->block->cb_get_bdspeed ) ? 0 : g_cmt.ext->block->cb_get_bdspeed ( g_cmt.ext );
-                mzfhdr = cmtmzf_block_get_spec_mzfheader ( g_cmt.ext->block );
-                g_assert ( mzfhdr != NULL );
+                    mzf_tools_get_fname ( mzfhdr, (char*) &buff );
+                    gtk_label_set_text ( ui_get_label ( "cmt_filename_label" ), buff );
 
-                snprintf ( buff, sizeof (buff ), "0x%02x", mzfhdr->ftype );
-                gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), buff );
+                    snprintf ( buff, sizeof (buff ), "0x%04x", mzfhdr->fsize );
+                    gtk_label_set_text ( ui_get_label ( "cmt_fsize_label" ), buff );
 
-                mzf_tools_get_fname ( mzfhdr, (char*) &buff );
-                gtk_label_set_text ( ui_get_label ( "cmt_filename_label" ), buff );
+                    snprintf ( buff, sizeof (buff ), "0x%04x", mzfhdr->fexec );
+                    gtk_label_set_text ( ui_get_label ( "cmt_fexec_label" ), buff );
 
-                snprintf ( buff, sizeof (buff ), "0x%04x", mzfhdr->fsize );
-                gtk_label_set_text ( ui_get_label ( "cmt_fsize_label" ), buff );
+                    snprintf ( buff, sizeof (buff ), "0x%04x", mzfhdr->fstrt );
+                    gtk_label_set_text ( ui_get_label ( "cmt_fstart_label" ), buff );
 
-                snprintf ( buff, sizeof (buff ), "0x%04x", mzfhdr->fexec );
-                gtk_label_set_text ( ui_get_label ( "cmt_fexec_label" ), buff );
+                    snprintf ( buff, sizeof (buff ), "%d Bd", file_bdspeed );
+                    gtk_label_set_text ( ui_get_label ( "cmt_file_speed_label" ), buff );
+                    break;
 
-                snprintf ( buff, sizeof (buff ), "0x%04x", mzfhdr->fstrt );
-                gtk_label_set_text ( ui_get_label ( "cmt_fstart_label" ), buff );
+                case CMTEXT_BLOCK_TYPE_WAV:
+                    gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), "WAV" );
+                    break;
 
-                snprintf ( buff, sizeof (buff ), "%d Bd", file_bdspeed );
-                gtk_label_set_text ( ui_get_label ( "cmt_file_speed_label" ), buff );
-                break;
+                case CMTEXT_BLOCK_TYPE_TAPHEADER:
+                    file_bdspeed = ( !g_cmt.ext->block->cb_get_bdspeed ) ? 0 : g_cmt.ext->block->cb_get_bdspeed ( g_cmt.ext );
+                    taphdr = cmttap_block_get_spec_tapheader ( g_cmt.ext->block );
+                    g_assert ( taphdr != NULL );
 
-            case CMTEXT_BLOCK_TYPE_WAV:
-                gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), "WAV" );
-                break;
+                    snprintf ( buff, sizeof (buff ), "0x%02x", taphdr->code );
+                    gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), buff );
 
-            case CMTEXT_BLOCK_TYPE_TAPHEADER:
-                file_bdspeed = ( !g_cmt.ext->block->cb_get_bdspeed ) ? 0 : g_cmt.ext->block->cb_get_bdspeed ( g_cmt.ext );
-                taphdr = cmttap_block_get_spec_tapheader ( g_cmt.ext->block );
-                g_assert ( taphdr != NULL );
+                    gtk_label_set_text ( ui_get_label ( "cmt_filename_label" ), taphdr->fname );
 
-                snprintf ( buff, sizeof (buff ), "0x%02x", taphdr->code );
-                gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), buff );
+                    snprintf ( buff, sizeof (buff ), "%d Bd", file_bdspeed );
+                    gtk_label_set_text ( ui_get_label ( "cmt_file_speed_label" ), buff );
+                    break;
 
-                gtk_label_set_text ( ui_get_label ( "cmt_filename_label" ), taphdr->fname );
+                case CMTEXT_BLOCK_TYPE_TAPDATA:
+                    file_bdspeed = ( !g_cmt.ext->block->cb_get_bdspeed ) ? 0 : g_cmt.ext->block->cb_get_bdspeed ( g_cmt.ext );
+                    tapdata = cmttap_block_get_spec_tapdata ( g_cmt.ext->block );
+                    g_assert ( tapdata != NULL );
 
-                snprintf ( buff, sizeof (buff ), "%d Bd", file_bdspeed );
-                gtk_label_set_text ( ui_get_label ( "cmt_file_speed_label" ), buff );
-                break;
+                    snprintf ( buff, sizeof (buff ), "0x%04x", tapdata->size - 2 );
+                    gtk_label_set_text ( ui_get_label ( "cmt_fsize_label" ), buff );
 
-            case CMTEXT_BLOCK_TYPE_TAPDATA:
-                file_bdspeed = ( !g_cmt.ext->block->cb_get_bdspeed ) ? 0 : g_cmt.ext->block->cb_get_bdspeed ( g_cmt.ext );
-                tapdata = cmttap_block_get_spec_tapdata ( g_cmt.ext->block );
-                g_assert ( tapdata != NULL );
+                    snprintf ( buff, sizeof (buff ), "%d Bd", file_bdspeed );
+                    gtk_label_set_text ( ui_get_label ( "cmt_file_speed_label" ), buff );
+                    break;
 
-                snprintf ( buff, sizeof (buff ), "0x%04x", tapdata->size - 2 );
-                gtk_label_set_text ( ui_get_label ( "cmt_fsize_label" ), buff );
+                default:
+                    fprintf ( stderr, "%s():%d - Unknown cmtext block type '%d'\n", __func__, __LINE__, cmtext_block_get_type ( g_cmt.ext->block ) );
+            };
 
-                snprintf ( buff, sizeof (buff ), "%d Bd", file_bdspeed );
-                gtk_label_set_text ( ui_get_label ( "cmt_file_speed_label" ), buff );
-                break;
+            // stream info
+            ui_cmt_set_stream_info_labels ( g_cmt.ext->block );
 
-            default:
-                fprintf ( stderr, "%s():%d - Unknown cmtext block type '%d'\n", __func__, __LINE__, cmtext_block_get_type ( g_cmt.ext->block ) );
+        } else if ( EXIT_SUCCESS == cmtext_is_recordable ( g_cmt.ext ) ) {
+            gtk_label_set_text ( ui_get_label ( "cmt_filetype_label" ), "SAVE" );
+            // stream info
+            ui_cmt_set_stream_info_labels ( g_cmt.ext->block );
         };
-
-
-        // stream info
-        en_CMT_STREAM_TYPE stream_type = cmtext_block_get_stream_type ( g_cmt.ext->block );
-        if ( stream_type == CMT_STREAM_TYPE_BITSTREAM ) {
-            gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "bitstream" );
-        } else if ( stream_type == CMT_STREAM_TYPE_VSTREAM ) {
-            gtk_label_set_text ( ui_get_label ( "cmt_stream_source_label" ), "vstream" );
-        } else {
-            fprintf ( stderr, "%s():%d - Unknown cmt stream type '%d'\n", __func__, __LINE__, stream_type );
-        };
-
-        uint32_t rate = cmtext_block_get_rate ( g_cmt.ext->block );
-        if ( rate < 1000000 ) {
-            snprintf ( buff, sizeof (buff ), "%0.2f kHz", ( (float) rate / 1000 ) );
-        } else {
-            snprintf ( buff, sizeof (buff ), "%0.2f MHz", ( (float) rate / 1000000 ) );
-        };
-        gtk_label_set_text ( ui_get_label ( "cmt_stream_rate_label" ), buff );
-
     };
 
 
@@ -569,7 +663,11 @@ void ui_cmt_window_update ( void ) {
             snprintf ( buff, sizeof (buff ), "*** Playing a gap space of %d ms ***", cmtext_block_get_pause_after ( g_cmt.ext->block ) );
             gtk_progress_bar_set_text ( ui_get_progress_bar ( "cmt_progressbar" ), buff );
         } else {
-            gtk_progress_bar_set_text ( ui_get_progress_bar ( "cmt_progressbar" ), g_cmt.ext->block->cb_get_playname ( g_cmt.ext ) );
+            if ( g_cmt.ext->block->cb_get_playname ) {
+                gtk_progress_bar_set_text ( ui_get_progress_bar ( "cmt_progressbar" ), g_cmt.ext->block->cb_get_playname ( g_cmt.ext ) );
+            } else {
+                gtk_progress_bar_set_text ( ui_get_progress_bar ( "cmt_progressbar" ), cmtext_container_get_name ( container ) );
+            };
         };
     };
 
@@ -585,7 +683,7 @@ void ui_cmt_window_update ( void ) {
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_eject_button" ), FALSE );
 
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_play_togglebutton" ), FALSE );
-        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_record_togglebutton" ), FALSE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "cmt_record_togglebutton" ), TRUE );
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_stop_button" ), FALSE );
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_pause_button" ), FALSE );
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_speed_comboboxtext" ), TRUE );
@@ -641,7 +739,10 @@ void ui_cmt_window_update ( void ) {
 
             gtk_widget_set_sensitive ( ui_get_widget ( "cmt_speed_comboboxtext" ), TRUE );
 
+            LOCK_UICALLBACKS ( );
             gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( ui_get_widget ( "cmt_play_togglebutton" ) ), FALSE );
+            gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( ui_get_widget ( "cmt_record_togglebutton" ) ), FALSE );
+            UNLOCK_UICALLBACKS ( );
         } else {
             gtk_widget_set_sensitive ( ui_get_widget ( "cmt_open_button" ), FALSE );
             gtk_widget_set_sensitive ( ui_get_widget ( "cmt_eject_button" ), TRUE );
@@ -653,11 +754,13 @@ void ui_cmt_window_update ( void ) {
 
             gtk_widget_set_sensitive ( ui_get_widget ( "cmt_speed_comboboxtext" ), FALSE );
 
+            LOCK_UICALLBACKS ( );
             if ( TEST_CMT_PLAY ) {
-                LOCK_UICALLBACKS ( );
                 gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( ui_get_widget ( "cmt_play_togglebutton" ) ), TRUE );
-                UNLOCK_UICALLBACKS ( );
+            } else if ( TEST_CMT_RECORD ) {
+                gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( ui_get_widget ( "cmt_record_togglebutton" ) ), TRUE );
             };
+            UNLOCK_UICALLBACKS ( );
         };
     };
 
@@ -690,20 +793,28 @@ void ui_cmt_update_player ( void ) {
     guint32 print_time;
 
     if ( TEST_CMT_FILLED ) {
-        double scan_time = cmtext_block_get_scantime ( g_cmt.ext->block );
-        uint64_t scans = cmtext_block_get_count_scans ( g_cmt.ext->block );
-        gdouble body_total_time = ( scan_time * scans );
-        if ( !TEST_CMT_STOP ) {
-            if ( g_cmt.playsts == CMTEXT_BLOCK_PLAYSTS_PAUSE ) {
-                total_time = 0.001 * cmtext_block_get_pause_after ( g_cmt.ext->block );
-                play_time = cmt_get_playtime ( ) - body_total_time;
-            } else {
-                total_time = body_total_time;
-                play_time = cmt_get_playtime ( );
-            };
+        if ( TEST_CMT_RECORD ) {
+            ui_cmt_set_stream_info_labels ( g_cmt.ext->block );
+
+            total_time = UI_CMT_RECORDING_MAX_TIME_IN_SEC;
+            play_time = cmt_get_playtime ( );
             fraction = ( play_time / total_time );
         } else {
-            total_time = body_total_time;
+            double scan_time = cmtext_block_get_scantime ( g_cmt.ext->block );
+            uint64_t scans = cmtext_block_get_count_scans ( g_cmt.ext->block );
+            gdouble body_total_time = ( scan_time * scans );
+            if ( TEST_CMT_PLAY ) {
+                if ( g_cmt.playsts == CMTEXT_BLOCK_PLAYSTS_PAUSE ) {
+                    total_time = 0.001 * cmtext_block_get_pause_after ( g_cmt.ext->block );
+                    play_time = cmt_get_playtime ( ) - body_total_time;
+                } else {
+                    total_time = body_total_time;
+                    play_time = cmt_get_playtime ( );
+                };
+                fraction = ( play_time / total_time );
+            } else {
+                total_time = body_total_time;
+            };
         };
     };
 
@@ -733,27 +844,23 @@ void ui_cmt_set_filename ( char *filename ) {
 }
 
 
-void ui_cmt_show_time_changed ( void ) {
+static void ui_cmt_switch_show_time ( void ) {
     if ( g_uicmt.show_time == UICMT_SHOW_REMAINING_TIME ) {
-        g_uicmt.show_time = UICMT_SHOW_PLAY_TIME;
-        gtk_label_set_text ( ui_get_label ( "cmt_time_info_label" ), "Play time:" );
+        ui_cmt_set_show_time ( UICMT_SHOW_PLAY_TIME );
     } else {
-        g_uicmt.show_time = UICMT_SHOW_REMAINING_TIME;
-        gtk_label_set_text ( ui_get_label ( "cmt_time_info_label" ), "Remaining time:" );
+        ui_cmt_set_show_time ( UICMT_SHOW_REMAINING_TIME );
     };
-
-    ui_cmt_update_player ( );
 }
 
 
 G_MODULE_EXPORT gboolean on_cmt_time_info_eventbox_button_press_event ( GtkWidget *widget, GdkEvent *event, gpointer user_data ) {
-    ui_cmt_show_time_changed ( );
+    ui_cmt_switch_show_time ( );
     return FALSE;
 }
 
 
 G_MODULE_EXPORT gboolean on_cmt_time_eventbox_button_press_event ( GtkWidget *widget, GdkEvent *event, gpointer user_data ) {
-    ui_cmt_show_time_changed ( );
+    ui_cmt_switch_show_time ( );
     return FALSE;
 }
 

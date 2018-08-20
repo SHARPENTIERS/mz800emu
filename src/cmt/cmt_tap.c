@@ -48,7 +48,8 @@ char *g_cmt_tap_fileext[] = {
 st_CMTEXT_INFO g_cmt_tap_info = {
                                  "TAP",
                                  g_cmt_tap_fileext,
-                                 "TAP cmt extension"
+                                 "TAP cmt extension",
+                                 CMTEXT_TYPE_PLAYABLE
 };
 
 extern st_CMTEXT *g_cmt_tap;
@@ -538,7 +539,7 @@ static int cmttap_container_open ( char *filename ) {
         return EXIT_FAILURE;
     };
 
-    st_CMTEXT_CONTAINER *container = cmtext_container_new ( CMTEXT_CONTAINER_TYPE_SIMPLE_TAPE, ui_utils_basename ( filename ), count_blocks, tape, cmttap_container_next_block, cmttap_container_previous_block, cmttap_container_open_block );
+    st_CMTEXT_CONTAINER *container = cmtext_container_new ( CMTEXT_CONTAINER_TYPE_SIMPLE_TAPE, filename, count_blocks, tape, cmttap_container_next_block, cmttap_container_previous_block, cmttap_container_open_block );
     if ( !container ) {
         cmtext_container_tape_destroy ( tape, count_blocks );
         return EXIT_FAILURE;
@@ -579,7 +580,9 @@ st_CMTEXT g_cmt_tap_extension = {
                                  cmttap_init,
                                  cmttap_exit,
                                  cmttap_container_open,
+                                 (cmtext_cb_stop) NULL,
                                  cmttap_eject,
+                                 (cmtext_cb_write_data) NULL,
 };
 
 st_CMTEXT *g_cmt_tap = &g_cmt_tap_extension;

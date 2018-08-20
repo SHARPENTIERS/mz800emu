@@ -145,6 +145,8 @@ extern "C" {
         DSK_ERROR_WRITE_PROTECTED = HANDLER_ERROR_WRITE_PROTECTED,
         DSK_ERROR_TRACK_NOT_FOUND = HANDLER_ERROR_USER,
         DSK_ERROR_SECTOR_NOT_FOUND,
+        DSK_ERROR_DOUBLE_SIDED, // pokousime se vyrobit oboustranny disk s lichym poctem stop
+        DSK_ERROR_NO_TRACKS, // pokousime se vyrobit disk s nulovym poctem stop
         DSK_ERROR_UNKNOWN
     } en_DSK_ERROR;
 

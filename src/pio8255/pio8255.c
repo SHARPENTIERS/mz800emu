@@ -83,13 +83,14 @@ void pio8255_init ( void ) {
 void static inline pio8255_set_pc01 ( uint8_t new_pc01 ) {
     if ( new_pc01 != g_pio8255.signal_pc01 ) {
         g_pio8255.signal_pc01 = new_pc01;
+        cmt_write_data ( new_pc01 );
         //printf("bdc=%lu\n", bdcounter++);
 #if 0
         static uint32_t last = 0;
 #ifdef LINUX
-        printf ( "CMT: %d - %lu\n", new_pc01, gdg_get_total_ticks ( ) - last );
+        printf ( "CMT: %d - %lu, %lu\n", new_pc01, gdg_get_total_ticks ( ) - last, ( gdg_get_total_ticks ( ) - last ) / 8 );
 #else
-        printf ( "CMT: %d - %llu\n", new_pc01, gdg_get_total_ticks ( ) - last );
+        printf ( "CMT: %d - %llu, %llu\n", new_pc01, gdg_get_total_ticks ( ) - last, ( gdg_get_total_ticks ( ) - last ) / 8 );
 #endif
         last = gdg_get_total_ticks ( );
 #endif
@@ -108,7 +109,7 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
     switch ( addr ) {
 
         case DEF_PIO8255_PORTA:
-            //DBGPRINTF ( DBGINF, "addr = %d (PORT_A), value = 0x%02x )\n", addr, value );
+            DBGPRINTF ( DBGINF, "addr = %d (PORT_A), value = 0x%02x )\n", addr, value );
             g_pio8255.signal_PA = value;
 
             // 0. - 3. bit vzorkovani klavesnice - aktivni pri H
@@ -242,7 +243,7 @@ Z80EX_BYTE pio8255_read ( int addr ) {
             iface_sdl_pool_keyboard_events ( );
             //g_pio8255.keyboard_matrix [ 2 ] &= 0xdf;
             Z80EX_BYTE retval = g_pio8255.keyboard_matrix [ g_pio8255.signal_PA_keybord_column ] & g_pio8255.vkbd_matrix [ g_pio8255.signal_PA_keybord_column ];
-            //DBGPRINTF ( DBGINF, "addr = 0x%02x, keyboard_matrix[%d] = 0x%02x, PC = 0x%04x\n", addr, g_pio8255.signal_PA_keybord_column, retval, g_mz800.instruction_addr );
+            DBGPRINTF ( DBGINF, "addr = 0x%02x, keyboard_matrix[%d] = 0x%02x, PC = 0x%04x\n", addr, g_pio8255.signal_PA_keybord_column, retval, g_mz800.instruction_addr );
             return retval;
 
             /* TODO: prozatim mame jen ty nejpodstatnejsi bity */
@@ -301,6 +302,7 @@ void pio8255_pc2_set ( int value ) {
 int pio8255_pc1_get ( void ) {
     return g_pio8255.signal_pc01;
 }
+
 
 int pio8255_pc2_get ( void ) {
     return g_pio8255.signal_pc02;

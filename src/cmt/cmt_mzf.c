@@ -52,7 +52,8 @@ char *g_cmt_mzf_fileext[] = {
 st_CMTEXT_INFO g_cmt_mzf_info = {
                                  "MZF",
                                  g_cmt_mzf_fileext,
-                                 "MZF cmt extension"
+                                 "MZF cmt extension",
+                                 CMTEXT_TYPE_PLAYABLE
 };
 
 extern st_CMTEXT *g_cmt_mzf;
@@ -255,7 +256,7 @@ static int cmtmzf_container_open ( char *filename ) {
 
     cmtmzf_eject ( );
 
-    st_CMTEXT_CONTAINER *container = cmtext_container_new ( CMTEXT_CONTAINER_TYPE_SINGLE, ui_utils_basename ( filename ), 1, NULL, NULL, NULL, NULL );
+    st_CMTEXT_CONTAINER *container = cmtext_container_new ( CMTEXT_CONTAINER_TYPE_SINGLE, filename, 1, NULL, NULL, NULL, NULL );
     if ( !container ) {
         return EXIT_FAILURE;
     };
@@ -304,7 +305,9 @@ st_CMTEXT g_cmt_mzf_extension = {
                                  cmtmzf_init,
                                  cmtmzf_exit,
                                  cmtmzf_container_open,
+                                 (cmtext_cb_stop) NULL,
                                  cmtmzf_eject,
+                                 (cmtext_cb_write_data) NULL,
 };
 
 st_CMTEXT *g_cmt_mzf = &g_cmt_mzf_extension;

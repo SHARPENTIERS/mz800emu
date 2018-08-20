@@ -30,6 +30,13 @@
 extern "C" {
 #endif
 
+
+    typedef enum en_UICMT_SHOW {
+        UICMT_SHOW_PLAY_TIME = 0,
+        UICMT_SHOW_REMAINING_TIME,
+    } en_UICMT_SHOW;
+
+
     extern void ui_cmt_init ( void );
     extern void ui_cmt_window_show_hide ( void );
     extern void ui_cmt_hack_menu_update ( void );
@@ -39,6 +46,9 @@ extern "C" {
     extern void ui_cmt_set_filename ( char *filename );
     extern void ui_cmt_tape_index_hide ( void );
     extern void ui_cmt_tape_index_update_filelist ( void );
+    extern void ui_cmt_set_show_time ( en_UICMT_SHOW show_time );
+
+#define UI_CMT_RECORDING_MAX_TIME_IN_SEC    (99 * 60)
 
 #ifdef __cplusplus
 }
