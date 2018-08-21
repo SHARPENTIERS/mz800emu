@@ -790,7 +790,7 @@ static void on_dbg_membrowser_textbuffer_changed ( GtkTextBuffer *textbuffer, gp
             g_membrowser.data_current[addr] = debugger_memory_read_byte ( addr );
         } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_RAM ) {
             memory_load_block ( &g_membrowser.data_current[addr], addr, 1, MEMORY_LOAD_RAMONLY );
-            g_membrowser.data_current[addr] = debugger_memory_read_byte ( addr ); // muzeme narazit na namapovanou FLASH, ktera je R/O
+            g_membrowser.data_current[addr] = debugger_pure_ram_read_byte ( addr ); // muzeme narazit na namapovanou FLASH, ktera je R/O
         } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MEMEXT_LUFTNER ) {
             uint8_t *srcmem;
             if ( g_membrowser.memext_bank & 0x80 ) {
@@ -1067,6 +1067,7 @@ static void ui_membrowser_load_data_from_memsrc ( void ) {
         case MEMBROWSER_SOURCE_MAPED:
         case MEMBROWSER_SOURCE_RAM:
             break;
+
         case MEMBROWSER_SOURCE_MEMEXT_LUFTNER:
             memext_luftner_check = ui_membrowser_check_memext_noisily ( );
             break;
@@ -1143,10 +1144,15 @@ static void ui_membrowser_load_data_from_memsrc ( void ) {
             };
         };
     } else {
-        if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MAPED ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_RAM ) ) {
+        if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MAPED ) {
             int i;
             for ( i = 0; i < g_membrowser.mem_size; i++ ) {
                 g_membrowser.data_current[i] = debugger_memory_read_byte ( i );
+            };
+        } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_RAM ) {
+            int i;
+            for ( i = 0; i < g_membrowser.mem_size; i++ ) {
+                g_membrowser.data_current[i] = debugger_pure_ram_read_byte ( i );
             };
         } else if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MEMEXT_LUFTNER ) && ( memext_luftner_check == EXIT_SUCCESS ) ) {
             uint8_t *srcmem;
