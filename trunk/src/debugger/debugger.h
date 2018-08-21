@@ -103,6 +103,7 @@ extern "C" {
     extern uint32_t debuger_hextext_to_uint32 ( const char *txt );
 
 #define debugger_memory_read_byte(addr) debugger_dasm_read_cb ( addr, NULL )
+#define debugger_pure_ram_read_byte(addr) debugger_dasm_pure_ram_read_cb ( addr, NULL )
 
 #ifdef __cplusplus
 }
