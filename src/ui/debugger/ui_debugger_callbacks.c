@@ -776,6 +776,8 @@ G_MODULE_EXPORT void on_dbg_step_over_toolbutton_clicked ( GtkToolButton *toolbu
          ( 0 == strncasecmp ( mnemonic, "otdr", 4 ) ) ||
          ( 0 == strncasecmp ( mnemonic, "inir", 4 ) ) ||
          ( 0 == strncasecmp ( mnemonic, "indr", 4 ) ) ||
+         ( 0 == strncasecmp ( mnemonic, "cpir", 4 ) ) ||
+         ( 0 == strncasecmp ( mnemonic, "cpdr", 4 ) ) ||
          ( 0 == strncasecmp ( mnemonic, "djnz", 4 ) )
          ) {
         breakpoints_set_temporary_event ( addr + bytecode_length );
