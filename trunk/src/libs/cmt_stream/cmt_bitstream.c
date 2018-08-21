@@ -91,11 +91,11 @@ st_CMT_BITSTREAM* cmt_bitstream_new_from_vstream ( st_CMT_VSTREAM *vstream, uint
     if ( !stream ) return NULL;
 
     int value = 0;
-    uint64_t samples = 0;
     uint32_t dst_position = 0;
 
     double next_scan = step;
     double total_samples = 0;
+    uint64_t samples = 0;
 
     if ( dst_rate == rate ) {
         while ( EXIT_SUCCESS == cmt_vstream_read_pulse ( vstream, &samples, &value ) ) {
@@ -105,12 +105,32 @@ st_CMT_BITSTREAM* cmt_bitstream_new_from_vstream ( st_CMT_VSTREAM *vstream, uint
             };
         };
     } else {
+        int previous_value = 0;
+        double scan_min_limit = step / 2;
         while ( EXIT_SUCCESS == cmt_vstream_read_pulse ( vstream, &samples, &value ) ) {
-            total_samples += samples;
-            while ( total_samples >= next_scan ) {
-                cmt_bitstream_set_value_on_position ( stream, dst_position++, value );
+
+            double d_samples = samples;
+
+            while ( ( total_samples + d_samples ) >= next_scan ) {
+
+                double new_state_samples = ( next_scan - total_samples );
+                total_samples += new_state_samples;
+                d_samples -= new_state_samples;
                 next_scan += step;
+
+                int sample_value;
+                if ( previous_value == value ) {
+                    sample_value = value;
+                } else {
+                    sample_value = ( new_state_samples >= scan_min_limit ) ? value : previous_value;
+                };
+                cmt_bitstream_set_value_on_position ( stream, dst_position++, sample_value );
+
+                previous_value = value;
             };
+
+            previous_value = value;
+            total_samples += d_samples;
         };
     };
 
