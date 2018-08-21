@@ -675,10 +675,12 @@ st_CMT_VSTREAM* mztape_create_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, e
                 break;
 
             case MZTAPE_BLOCK_HDR:
+            case MZTAPE_BLOCK_HDRC:
                 ret = mztape_add_cmt_vstream_data_block ( vstream, &gpulses, mztmzf->header, sizeof ( st_MZF_HEADER ) );
                 break;
 
             case MZTAPE_BLOCK_FILE:
+            case MZTAPE_BLOCK_FILEC:
                 ret = mztape_add_cmt_vstream_data_block ( vstream, &gpulses, mztmzf->body, mztmzf->size );
                 break;
 
@@ -738,14 +740,14 @@ st_CMT_STREAM* mztape_create_stream_from_mztapemzf ( st_MZTAPE_MZF *mztmzf, en_C
                 return NULL;
             };
 #else
-            st_CMT_VSTREAM *vstream = mztape_create_cmt_vstream_from_mztmzf ( mztmzf, mztape_fset, cmtspeed, rate );
+            st_CMT_VSTREAM *vstream = mztape_create_cmt_vstream_from_mztmzf ( mztmzf, mztape_fset, cmtspeed, GDGCLK_BASE );
             if ( !vstream ) {
                 fprintf ( stderr, "%s() - %d: Can't create vstream\n", __func__, __LINE__ );
                 cmt_stream_destroy ( stream );
                 return NULL;
             };
 
-            st_CMT_BITSTREAM *bitstream = cmt_bitstream_new_from_vstream ( vstream, 0 );
+            st_CMT_BITSTREAM *bitstream = cmt_bitstream_new_from_vstream ( vstream, rate );
             cmt_vstream_destroy ( vstream );
 
             if ( !bitstream ) {
