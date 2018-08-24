@@ -805,12 +805,6 @@
                           </packing>
                         </child>
                         <child>
-                          <placeholder/>
-                        </child>
-                        <child>
-                          <placeholder/>
-                        </child>
-                        <child>
                           <object class="GtkLabel" id="label14">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
@@ -854,6 +848,12 @@
                             <property name="width">1</property>
                             <property name="height">1</property>
                           </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                        <child>
+                          <placeholder/>
                         </child>
                       </object>
                       <packing>
@@ -1002,6 +1002,7 @@
                     <items>
                       <item translatable="yes">1:1 - 1200 Bd</item>
                       <item translatable="yes">2:1 - 2400 Bd</item>
+                      <item translatable="yes">2:1 - 2400 Bd (cp/m)</item>
                       <item translatable="yes">7:3 - 2800 Bd</item>
                       <item translatable="yes">8:3 - 3200 Bd</item>
                       <item translatable="yes">3:1 - 3600 Bd</item>

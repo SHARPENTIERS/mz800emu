@@ -80,6 +80,8 @@ Novinky a zmeny v emulaci:
 	
 	- CMT: nyni je mozny save do WAV
 
+	- CMT: bugfix - u konverze z MZF byl prodlouzen GAP
+
 Debugger:
 
 	- pridana historie vykonanych instrukci

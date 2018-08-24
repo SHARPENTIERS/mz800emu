@@ -106,7 +106,8 @@ static st_CMT_STREAM* cmtsave_stream_new ( int value ) {
         return NULL;
     };
 
-    stream->str.vstream = cmt_vstream_new ( GDGCLK_BASE, CMT_VSTREAM_BYTELENGTH16, value, CMT_STREAM_POLARITY_NORMAL );
+    //stream->str.vstream = cmt_vstream_new ( GDGCLK_BASE, CMT_VSTREAM_BYTELENGTH16, value, CMT_STREAM_POLARITY_NORMAL );
+    stream->str.vstream = cmt_vstream_new ( CMTSAVE_DEFAULT_SAMPLERATE, CMT_VSTREAM_BYTELENGTH8, value, CMT_STREAM_POLARITY_NORMAL );
     if ( !stream->str.vstream ) {
         cmt_stream_destroy ( stream );
         return NULL;
@@ -138,6 +139,15 @@ static st_CMTEXT_BLOCK* cmtsave_block_open ( char *filename ) {
     };
 
     block->spec = blspec;
+
+#if 0
+    block->cb_play = cmtext_block_play;
+    block->cb_get_playname = cmtext_block_get_playname;
+    block->cb_set_polarity = cmtext_block_set_polarity;
+    block->cb_set_speed = (cmtext_block_cb_set_speed) NULL;
+    block->cb_get_bdspeed = (cmtext_block_cb_get_bdspeed) NULL;
+#endif
+
     return block;
 }
 
@@ -177,7 +187,11 @@ static void cmtsave_write_data ( uint64_t play_ticks, int value ) {
         blspec->last_event = ( play_ticks > GDGCLK_BASE ) ? ( play_ticks - GDGCLK_BASE ) : 0;
     };
 
-    uint32_t count_samples = play_ticks - blspec->last_event;
+    uint32_t count_ticks = play_ticks - blspec->last_event;
+    double ratecnv = (double) GDGCLK_BASE / cmt_stream_get_rate ( stream );
+    uint32_t count_samples = round ( (double) count_ticks / ratecnv );
+
+    //printf ( "SAVE: %d - %d - %d\n", value, count_ticks, count_samples );
 
     if ( stream->stream_type == CMT_STREAM_TYPE_VSTREAM ) {
         st_CMT_VSTREAM *vstream = stream->str.vstream;

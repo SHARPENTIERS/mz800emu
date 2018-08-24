@@ -125,7 +125,8 @@ st_CMT_BITSTREAM* cmt_bitstream_new_from_vstream ( st_CMT_VSTREAM *vstream, uint
                     sample_value = ( new_state_samples >= scan_min_limit ) ? value : previous_value;
                 };
                 cmt_bitstream_set_value_on_position ( stream, dst_position++, sample_value );
-
+                //cmt_bitstream_set_value_on_position ( stream, dst_position++, value );
+                
                 previous_value = value;
             };
 

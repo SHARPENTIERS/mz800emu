@@ -133,7 +133,7 @@ extern "C" {
     extern struct st_mz800 g_mz800;
 
 #define TEST_EMULATION_PAUSED       ( g_mz800.emulation_paused != 0 )
-
+#define TEST_MAX_EMULATION_SPEED    ( g_mz800.use_max_emulation_speed == 1 )
 
 #define SET_MZ800_EVENT(e,t) {\
     g_mz800.event.event_name = e;\

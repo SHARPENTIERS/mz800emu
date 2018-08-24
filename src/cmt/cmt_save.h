@@ -46,7 +46,7 @@ extern "C" {
     void cmtsave_block_close ( st_CMTEXT_BLOCK *block );
 
 #define CMTSAVE_DEFAULT_SAMPLERATE  44100
-
+//#define CMTSAVE_DEFAULT_SAMPLERATE  192000
 
 #ifdef __cplusplus
 }
