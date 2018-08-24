@@ -64,6 +64,8 @@ extern "C" {
         uint64_t start_time;
         int ui_player_update;
         en_CMT_CPU_BOOST cpu_boost;
+        int recording_to_stream; // pri RECORD identifikuje, zda uz mame zalozen stream
+        uint64_t recording_last_event;
     } st_CMT;
 
     extern st_CMT g_cmt;

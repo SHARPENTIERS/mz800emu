@@ -146,6 +146,24 @@ G_MODULE_EXPORT void on_menuitem_cmt_speed_2_1_toggled ( GtkCheckMenuItem *menui
 }
 
 
+G_MODULE_EXPORT void on_menuitem_cmt_speed_2_1_cpm_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+
+    if ( gtk_check_menu_item_get_active ( menuitem ) ) {
+        LOCK_UICALLBACKS ( );
+        cmt_change_speed ( CMTSPEED_2_1_CPM );
+        UNLOCK_UICALLBACKS ( );
+    };
+}
+
+
 G_MODULE_EXPORT void on_menuitem_cmt_speed_7_3_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
@@ -282,6 +300,9 @@ void ui_cmt_speed_menu_update ( void ) {
         case CMTSPEED_2_1:
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_2_1" ), TRUE );
             break;
+        case CMTSPEED_2_1_CPM:
+            gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_2_1_cpm" ), TRUE );
+            break;
         case CMTSPEED_7_3:
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_speed_7_3" ), TRUE );
             break;
@@ -339,6 +360,7 @@ G_MODULE_EXPORT void on_cmt_stop_button_clicked ( GtkButton *button, gpointer da
         if ( !size ) {
             cmt_eject ( );
         } else {
+#if 1
             st_CMTEXT_CONTAINER *container = cmtext_get_container ( g_cmt.ext );
             const char *fpath = cmtext_container_get_filepath ( container );
             int len = strlen ( fpath ) + 1;
@@ -347,6 +369,10 @@ G_MODULE_EXPORT void on_cmt_stop_button_clicked ( GtkButton *button, gpointer da
             cmt_eject ( );
             cmt_open_file_by_extension ( filepath );
             ui_utils_mem_free ( filepath );
+#else
+            g_cmt.ext->info->type = CMTEXT_TYPE_PLAYABLE;
+            cmt_stop ( );
+#endif
         };
     } else {
         cmt_stop ( );
@@ -693,6 +719,10 @@ void ui_cmt_window_update ( void ) {
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_rewind_button" ), FALSE );
         gtk_widget_set_sensitive ( ui_get_widget ( "cmt_forward_button" ), FALSE );
 
+        LOCK_UICALLBACKS ( );
+        gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( ui_get_widget ( "cmt_play_togglebutton" ) ), FALSE );
+        gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( ui_get_widget ( "cmt_record_togglebutton" ) ), FALSE );
+        UNLOCK_UICALLBACKS ( );
     } else {
 
         if ( CMTEXT_CONTAINER_TYPE_SIMPLE_TAPE == cmtext_container_get_type ( container ) ) {

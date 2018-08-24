@@ -40,6 +40,7 @@ extern "C" {
         CMTSPEED_NONE = 0,
         CMTSPEED_1_1, // 1:1
         CMTSPEED_2_1, // 2:1
+        CMTSPEED_2_1_CPM, // 2:1
         CMTSPEED_3_1, // 3:1
         CMTSPEED_3_2, // 3:2
         CMTSPEED_7_3, // 7:3
@@ -68,7 +69,11 @@ extern "C" {
 
 
     static inline void cmtspeed_get_speedtxt ( char *dsttxt, int size, en_CMTSPEED cmtspeed, uint16_t base_bdspeed ) {
-        snprintf ( dsttxt, size, "%d Bd", cmtspeed_get_bdspeed ( cmtspeed, base_bdspeed ) );
+        if ( cmtspeed == CMTSPEED_2_1_CPM ) {
+            snprintf ( dsttxt, size, "%d Bd (cp/m)", cmtspeed_get_bdspeed ( cmtspeed, base_bdspeed ) );
+        } else {
+            snprintf ( dsttxt, size, "%d Bd", cmtspeed_get_bdspeed ( cmtspeed, base_bdspeed ) );
+        };
     }
 
 

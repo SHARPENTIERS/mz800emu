@@ -30,6 +30,7 @@ const double g_cmtspeed_divisor[] = {
                                      0,
                                      ( (double) 1 / 1 ),
                                      ( (double) 2 / 1 ),
+                                     ( (double) 2 / 1 ), // cpm
                                      ( (double) 3 / 1 ),
                                      ( (double) 3 / 2 ),
                                      ( (double) 7 / 3 ),
@@ -43,6 +44,7 @@ const char *g_cmtspeed_ratio[] = {
                                   "?:?",
                                   "1:1",
                                   "2:1",
+                                  "2:1 (cp/m)",
                                   "3:1",
                                   "3:2",
                                   "7:3",

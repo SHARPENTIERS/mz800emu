@@ -102,7 +102,10 @@ void cmt_record ( void ) {
     };
     if ( !TEST_CMT_FILLED ) {
         char *filepath = ui_file_chooser_open_wav_to_record ( );
-        if ( !filepath ) return;
+        if ( !filepath ) {
+            ui_cmt_window_update ( );
+            return;
+        };
 
         char *fileext = ui_file_chooser_get_filename_extension ( filepath );
         if ( fileext != NULL ) {
@@ -120,6 +123,7 @@ void cmt_record ( void ) {
         if ( EXIT_SUCCESS != ext->cb_open ( filepath ) ) {
             ui_show_error ( "%s can't open file '%s'\n", cmtext_get_description ( ext ), filepath );
             ui_utils_mem_free ( filepath );
+            ui_cmt_window_update ( );
             return;
         };
 
@@ -134,12 +138,14 @@ void cmt_record ( void ) {
     g_cmt.start_time = gdg_get_total_ticks ( );
     //printf ( "CMT start: %ul\n", gdg_get_total_ticks ( ) );
     g_cmt.ui_player_update = 0;
+    g_cmt.recording_to_stream = 0;
     ui_cmt_set_show_time ( UICMT_SHOW_PLAY_TIME );
     ui_cmt_window_update ( );
-    if ( g_cmt.cpu_boost == CMT_CPU_BOOST_ENABLED ) {
-        mz800_switch_emulation_speed ( 1 );
-    };
-    //g_cmt.ext->block->cb_record ( g_cmt.ext );
+    /*
+        if ( g_cmt.cpu_boost == CMT_CPU_BOOST_ENABLED ) {
+            mz800_switch_emulation_speed ( 1 );
+        };
+     */
 }
 
 
@@ -337,6 +343,29 @@ void cmt_screen_done_period ( void ) {
 
     g_cmt.ui_player_update = 0;
     ui_cmt_update_player ( );
+
+    if ( TEST_CMT_RECORD ) {
+        if ( g_cmt.recording_to_stream == 0 ) {
+            st_CMTEXT_BLOCK *block = cmtext_get_block ( g_cmt.ext );
+            st_CMT_STREAM *stream = cmtext_block_get_stream ( block );
+            if ( stream != NULL ) {
+                g_cmt.recording_to_stream = 1;
+                if ( g_cmt.cpu_boost == CMT_CPU_BOOST_ENABLED ) {
+                    mz800_switch_emulation_speed ( 1 );
+                };
+            };
+        } else {
+            if ( ( gdg_get_total_ticks ( ) - g_cmt.recording_last_event ) > ( 5 * GDGCLK_BASE ) ) {
+                if ( ( g_cmt.cpu_boost == CMT_CPU_BOOST_ENABLED ) && ( TEST_MAX_EMULATION_SPEED ) ) {
+                    mz800_switch_emulation_speed ( 0 );
+                };
+            } else {
+                if ( ( g_cmt.cpu_boost == CMT_CPU_BOOST_ENABLED ) && ( !TEST_MAX_EMULATION_SPEED ) ) {
+                    mz800_switch_emulation_speed ( 1 );
+                };
+            };
+        };
+    };
 }
 
 
@@ -348,8 +377,9 @@ int cmt_read_data ( void ) {
 
 void cmt_write_data ( int value ) {
     if ( !TEST_CMT_RECORD ) return;
-    uint64_t play_ticks = gdg_get_total_ticks ( ) - g_cmt.start_time;
-    if ( g_cmt.ext->cb_write ) g_cmt.ext->cb_write ( play_ticks, value );
+    g_cmt.recording_last_event = gdg_get_total_ticks ( );
+    uint64_t play_ticks = g_cmt.recording_last_event - g_cmt.start_time;
+    if ( g_cmt.ext->cb_write ) g_cmt.ext->cb_write ( play_ticks, ~value );
 }
 
 

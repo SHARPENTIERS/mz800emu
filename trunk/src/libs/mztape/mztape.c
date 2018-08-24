@@ -111,6 +111,7 @@
 const en_CMTSPEED g_mztape_speed[] = {
                                       CMTSPEED_1_1, // 1200 Bd
                                       CMTSPEED_2_1, // 2400 Bd
+                                      CMTSPEED_2_1_CPM, // 2400 Bd
                                       CMTSPEED_7_3, // 2800 Bd
                                       CMTSPEED_8_3, // 3200 Bd
                                       CMTSPEED_3_1, // 3600 Bd
@@ -175,9 +176,16 @@ const st_MZTAPE_PULSES_LENGTH g_mztape_pulses_800 = {
 };
  */
 
-st_MZTAPE_PULSES_GDGTICS g_mztape_pulses_gdgticks_800 = {
+// pulzy podle Intercopy 10.2
+st_MZTAPE_PULSES_GDGTICS g_mztape_pulses_gdgticks_800_intercopy = {
     { 8335, 8760 },
     { 4356, 4930 },
+};
+
+// pulzy podle cmt.com v cp/m
+st_MZTAPE_PULSES_GDGTICS g_mztape_pulses_gdgticks_800_cmtcom = {
+    { 9300, 8660 },
+    { 5400, 4660 },
 };
 
 const st_MZTAPE_PULSES_LENGTH g_mztape_pulses_80B = {
@@ -629,13 +637,26 @@ st_CMT_VSTREAM* mztape_create_cmt_vstream_from_mztmzf ( st_MZTAPE_MZF *mztmzf, e
         return NULL;
     };
 
+    st_MZTAPE_PULSES_GDGTICS gpulses;
+
     double gdg_ticks_by_sample = (double) GDGCLK_BASE / rate;
 
-    st_MZTAPE_PULSES_GDGTICS gpulses;
-    gpulses.long_pulse.high = round ( ( (double) g_mztape_pulses_gdgticks_800.long_pulse.high / gdg_ticks_by_sample ) / g_cmtspeed_divisor[mztape_speed] );
-    gpulses.long_pulse.low = round ( ( (double) g_mztape_pulses_gdgticks_800.long_pulse.low / gdg_ticks_by_sample ) / g_cmtspeed_divisor[mztape_speed] );
-    gpulses.short_pulse.high = round ( ( (double) g_mztape_pulses_gdgticks_800.short_pulse.high / gdg_ticks_by_sample ) / g_cmtspeed_divisor[mztape_speed] );
-    gpulses.short_pulse.low = round ( ( (double) g_mztape_pulses_gdgticks_800.short_pulse.low / gdg_ticks_by_sample ) / g_cmtspeed_divisor[mztape_speed] );
+    st_MZTAPE_PULSES_GDGTICS *srcpulses = ( mztape_speed == CMTSPEED_2_1_CPM ) ? &g_mztape_pulses_gdgticks_800_cmtcom : &g_mztape_pulses_gdgticks_800_intercopy;
+
+#if 1
+    gpulses.long_pulse.high = round ( ( (double) srcpulses->long_pulse.high / gdg_ticks_by_sample ) / g_cmtspeed_divisor[mztape_speed] );
+    gpulses.long_pulse.low = round ( ( (double) srcpulses->long_pulse.low / gdg_ticks_by_sample ) / g_cmtspeed_divisor[mztape_speed] );
+    gpulses.short_pulse.high = round ( ( (double) srcpulses->short_pulse.high / gdg_ticks_by_sample ) / g_cmtspeed_divisor[mztape_speed] );
+    gpulses.short_pulse.low = round ( ( (double) srcpulses->short_pulse.low / gdg_ticks_by_sample ) / g_cmtspeed_divisor[mztape_speed] );
+#else
+    gpulses.long_pulse.high = ( ( ( srcpulses->long_pulse.high / gdg_ticks_by_sample / 5 ) * 1200 ) / cmtspeed_get_bdspeed ( mztape_speed, 1200 ) ) * 5;
+    gpulses.long_pulse.low = ( ( ( srcpulses->long_pulse.low / gdg_ticks_by_sample / 5 ) * 1200 ) / cmtspeed_get_bdspeed ( mztape_speed, 1200 ) ) * 5;
+    gpulses.short_pulse.high = ( ( ( srcpulses->short_pulse.high / gdg_ticks_by_sample / 5 ) * 1200 ) / cmtspeed_get_bdspeed ( mztape_speed, 1200 ) ) * 5;
+    gpulses.short_pulse.low = ( ( ( srcpulses->short_pulse.high / gdg_ticks_by_sample / 5 ) * 1200 ) / cmtspeed_get_bdspeed ( mztape_speed, 1200 ) ) * 5;
+#endif
+
+    //printf ( "Long - H: %d, L: %d\n", gpulses.long_pulse.high, gpulses.long_pulse.low );
+    //printf ( "Long - H: %d, L: %d\n", gpulses.short_pulse.high, gpulses.short_pulse.low );
 
     const en_MZTAPE_BLOCK *format = g_formats[mztape_format]->blocks;
 
@@ -740,7 +761,7 @@ st_CMT_STREAM* mztape_create_stream_from_mztapemzf ( st_MZTAPE_MZF *mztmzf, en_C
                 return NULL;
             };
 #else
-            st_CMT_VSTREAM *vstream = mztape_create_cmt_vstream_from_mztmzf ( mztmzf, mztape_fset, cmtspeed, GDGCLK_BASE );
+            st_CMT_VSTREAM *vstream = mztape_create_cmt_vstream_from_mztmzf ( mztmzf, mztape_fset, cmtspeed, rate );
             if ( !vstream ) {
                 fprintf ( stderr, "%s() - %d: Can't create vstream\n", __func__, __LINE__ );
                 cmt_stream_destroy ( stream );

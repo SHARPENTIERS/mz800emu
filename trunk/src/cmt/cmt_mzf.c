@@ -140,9 +140,10 @@ static void cmtmzf_eject ( void ) {
 }
 
 
-st_CMT_STREAM* cmtmzf_generate_stream_from_mztapemzf ( st_MZTAPE_MZF *mztapemzf, en_CMTSPEED cmtspeed, en_CMT_STREAM_TYPE type ) {
+static st_CMT_STREAM* cmtmzf_generate_stream_from_mztapemzf ( st_MZTAPE_MZF *mztapemzf, en_CMTSPEED cmtspeed, en_CMT_STREAM_TYPE type ) {
 
     st_CMT_STREAM *stream = mztape_create_stream_from_mztapemzf ( mztapemzf, cmtspeed, type, MZTAPE_FORMATSET_MZ800_SANE, CMTSTREAM_DEFAULT_RATE );
+    //st_CMT_STREAM *stream = mztape_create_stream_from_mztapemzf ( mztapemzf, cmtspeed, type, MZTAPE_FORMATSET_MZ800_SANE, GDGCLK_BASE );
     if ( !stream ) {
         return NULL;
     };
