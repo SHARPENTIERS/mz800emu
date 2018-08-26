@@ -63,6 +63,9 @@ extern "C" {
     extern void pio8255_pc2_set ( int value );
     extern int pio8255_pc1_get ( void );
     extern int pio8255_pc2_get ( void );
+    extern int pio8255_pa4_get ( void );
+    extern int pio8255_pa5_get ( void );
+    extern int pio8255_pa0_3_get ( void );
 
     /* priprava klavesove matrix */
     extern void interface_keyboard_init ( void );

@@ -113,9 +113,8 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
             g_pio8255.signal_PA = value;
 
             // 0. - 3. bit vzorkovani klavesnice - aktivni pri H
-            if ( 9 >= ( value & 0x0f ) ) {
-                g_pio8255.signal_PA_keybord_column = value & 0x0f;
-            };
+            int pahalf = value & 0x0f;
+            g_pio8255.signal_PA_keybord_column = ( pahalf < 0x0a ) ? pahalf : ( pahalf - 0x0a );
 
             // 4. bit Joystick-1 strobe - aktivni pri L
             g_pio8255.signal_PA_joy1_enabled = ( !( value & 0x20 ) ) ? 1 : 0;
@@ -309,3 +308,16 @@ int pio8255_pc2_get ( void ) {
 }
 
 
+int pio8255_pa4_get ( void ) {
+    return g_pio8255.signal_PA_joy1_enabled;
+}
+
+
+int pio8255_pa5_get ( void ) {
+    return g_pio8255.signal_PA_joy2_enabled;
+}
+
+
+int pio8255_pa0_3_get ( void ) {
+    return g_pio8255.signal_PA_keybord_column;
+}

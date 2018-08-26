@@ -171,10 +171,16 @@ extern "C" {
         // 8255
         GtkWidget *i8255_cmt_in_label;
         GtkWidget *i8255_cmt_out_label;
+        GtkWidget *i8255_joy1_strobe_label;
+        GtkWidget *i8255_joy2_strobe_label;
+        GtkWidget *i8255_keyboard_strobe_label;
         GtkWidget *i8255_cursor_timer_label;
         GtkWidget *i8255_ctc2_mask_checkbutton;
         int last_cmtin;
         int last_cmtout;
+        int last_joy1;
+        int last_joy2;
+        int last_keyboard;
         int last_cursor_timer;
         gboolean last_i8255_ctc2_mask;
 
