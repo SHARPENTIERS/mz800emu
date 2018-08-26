@@ -417,6 +417,29 @@ void ui_debugger_update_internals ( void ) {
         g_uidebugger.last_cmtout = cmtout;
     };
 
+    /* i8255 joy1 strobe */
+    int joy1 = pio8255_pa4_get ( );
+    if ( joy1 != g_uidebugger.last_joy1 ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.i8255_joy1_strobe_label ), ( joy1 ) ? "1" : "0" );
+        g_uidebugger.last_joy1 = joy1;
+    };
+
+    /* i8255 joy2 strobe */
+    int joy2 = pio8255_pa5_get ( );
+    if ( joy2 != g_uidebugger.last_joy2 ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.i8255_joy2_strobe_label ), ( joy2 ) ? "1" : "0" );
+        g_uidebugger.last_joy2 = joy2;
+    };
+
+    /* i8255 keyboard strobe */
+    int keyboard = pio8255_pa0_3_get ( );
+    if ( keyboard != g_uidebugger.last_keyboard ) {
+        char buff[2];
+        snprintf ( buff, sizeof ( buff ), "%d", keyboard );
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.i8255_keyboard_strobe_label ), buff );
+        g_uidebugger.last_keyboard = keyboard;
+    };
+
     /* i8255 cursor timer */
     int cursor_timer = mz800_get_cursor_timer_state ( );
     if ( cursor_timer != g_uidebugger.last_cursor_timer ) {
@@ -1336,6 +1359,9 @@ void ui_debugger_show_main_window ( void ) {
         // i8255
         g_uidebugger.i8255_cmt_in_label = ui_get_widget ( "dbg_8255_cmt_in_label" );
         g_uidebugger.i8255_cmt_out_label = ui_get_widget ( "dbg_8255_cmt_out_label" );
+        g_uidebugger.i8255_joy1_strobe_label = ui_get_widget ( "dbg_8255_joy1_strobe_label" );
+        g_uidebugger.i8255_joy2_strobe_label = ui_get_widget ( "dbg_8255_joy2_strobe_label" );
+        g_uidebugger.i8255_keyboard_strobe_label = ui_get_widget ( "dbg_8255_keyboard_strobe_label" );
         g_uidebugger.i8255_cursor_timer_label = ui_get_widget ( "dbg_8255_cursor_label" );
         g_uidebugger.i8255_ctc2_mask_checkbutton = ui_get_widget ( "dbg_8255_ctc2_mask_checkbutton" );
         g_uidebugger.last_cmtin = -1;
