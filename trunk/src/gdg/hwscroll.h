@@ -48,6 +48,16 @@ extern "C" {
     extern void hwscroll_reset ( void );
     extern void hwscroll_set_reg ( int addr, Z80EX_BYTE value );
 
+    extern int hwscroll_get_ssa ( void );
+    extern int hwscroll_get_sea ( void );
+    extern int hwscroll_get_sw ( void );
+    extern int hwscroll_get_sof ( void );
+
+    extern void hwscroll_set_ssa ( int value );
+    extern void hwscroll_set_sea ( int value );
+    extern void hwscroll_set_sw ( int value );
+    extern void hwscroll_set_sof ( int value );
+
 #if 1
 #define TEST_HWSCRL_ENABLED (g_hwscroll.enabled)
 #define TEST_HWSCRL_ADDR_IN_SCRL_AREA(addr) ( ( addr >= g_hwscroll.regSSA ) && ( addr < g_hwscroll.regSEA ) )

@@ -3931,7 +3931,6 @@
       </object>
     </child>
   </object>
-  <object class="GtkEntryBuffer" id="dbg_memsave_size_hex_entrybuffer"/>
   <object class="GtkWindow" id="dbg_memload_window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Load file into memory</property>
@@ -4495,6 +4494,7 @@
       </object>
     </child>
   </object>
+  <object class="GtkEntryBuffer" id="dbg_memsave_size_hex_entrybuffer"/>
   <object class="GtkWindow" id="dbg_memsave_window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Save Data</property>
@@ -9629,7 +9629,7 @@ or double-click on addr to focus to his value</property>
               </packing>
             </child>
             <child>
-              <object class="GtkFrame" id="frame2">
+              <object class="GtkFrame" id="dbg_gdg_signals_frame">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label_xalign">0.5</property>
@@ -10083,190 +10083,6 @@ or double-click on addr to focus to his value</property>
               </packing>
             </child>
             <child>
-              <object class="GtkFrame" id="frame4">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label_xalign">0.5</property>
-                <property name="shadow_type">out</property>
-                <child>
-                  <object class="GtkGrid" id="grid12">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="margin_left">3</property>
-                    <property name="margin_right">3</property>
-                    <property name="margin_top">3</property>
-                    <property name="margin_bottom">3</property>
-                    <child>
-                      <object class="GtkLabel" id="label153">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="xalign">0</property>
-                        <property name="label" translatable="yes">Border</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">1</property>
-                        <property name="width">1</property>
-                        <property name="height">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="label154">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="halign">center</property>
-                        <property name="margin_left">3</property>
-                        <property name="margin_right">3</property>
-                        <property name="label" translatable="yes">:</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">1</property>
-                        <property name="width">1</property>
-                        <property name="height">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="label155">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="xalign">0</property>
-                        <property name="label" translatable="yes">Pal Group</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">2</property>
-                        <property name="width">1</property>
-                        <property name="height">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="label156">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="halign">center</property>
-                        <property name="margin_left">3</property>
-                        <property name="margin_right">3</property>
-                        <property name="label" translatable="yes">:</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">2</property>
-                        <property name="width">1</property>
-                        <property name="height">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkComboBoxText" id="dbg_gdg_reg_border_comboboxtext">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="entry_text_column">0</property>
-                        <property name="id_column">1</property>
-                        <items>
-                          <item translatable="yes">Black</item>
-                          <item translatable="yes">Blue</item>
-                          <item translatable="yes">Red</item>
-                          <item translatable="yes">Magenta</item>
-                          <item translatable="yes">Green</item>
-                          <item translatable="yes">Cyan</item>
-                          <item translatable="yes">Yellow</item>
-                          <item translatable="yes">White</item>
-                          <item translatable="yes">Gray</item>
-                          <item translatable="yes">L. Blue</item>
-                          <item translatable="yes">L. Red</item>
-                          <item translatable="yes">L. Magenta</item>
-                          <item translatable="yes">L. Green</item>
-                          <item translatable="yes">L. Cyan</item>
-                          <item translatable="yes">L. Yellow</item>
-                          <item translatable="yes">L. White</item>
-                        </items>
-                        <signal name="changed" handler="on_dbg_gdg_reg_border_comboboxtext_changed" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="left_attach">3</property>
-                        <property name="top_attach">1</property>
-                        <property name="width">1</property>
-                        <property name="height">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkFixed" id="fixed5">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="hexpand">True</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">2</property>
-                        <property name="top_attach">1</property>
-                        <property name="width">1</property>
-                        <property name="height">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="label157">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes"> </property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">0</property>
-                        <property name="top_attach">0</property>
-                        <property name="width">1</property>
-                        <property name="height">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkComboBoxText" id="dbg_gdg_reg_palgrp_comboboxtext">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="entry_text_column">0</property>
-                        <property name="id_column">1</property>
-                        <items>
-                          <item translatable="yes">Group 0</item>
-                          <item translatable="yes">Group 1</item>
-                          <item translatable="yes">Group 2</item>
-                          <item translatable="yes">Group 3</item>
-                        </items>
-                        <signal name="changed" handler="on_dbg_gdg_reg_palgrp_comboboxtext_changed" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="left_attach">3</property>
-                        <property name="top_attach">2</property>
-                        <property name="width">1</property>
-                        <property name="height">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                </child>
-                <child type="label">
-                  <object class="GtkLabel" id="label152">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">&lt;b&gt;Color Registers&lt;/b&gt;</property>
-                    <property name="use_markup">True</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="left_attach">0</property>
-                <property name="top_attach">4</property>
-                <property name="width">1</property>
-                <property name="height">1</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkGrid" id="grid11">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -10373,61 +10189,462 @@ or double-click on addr to focus to his value</property>
               </packing>
             </child>
             <child>
-              <object class="GtkFrame" id="frame5">
+              <object class="GtkNotebook" id="dbg_gdg_notebook">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label_xalign">0.5</property>
-                <property name="shadow_type">out</property>
+                <property name="can_focus">True</property>
+                <property name="margin_top">3</property>
                 <child>
-                  <object class="GtkGrid" id="grid13">
+                  <object class="GtkBox" id="box36">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkFixed" id="fixed29">
+                        <property name="height_request">11</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkGrid" id="dbg_gdg_colors_grid">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="valign">start</property>
+                        <property name="margin_left">3</property>
+                        <property name="margin_right">3</property>
+                        <child>
+                          <object class="GtkLabel" id="label153">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="xalign">0</property>
+                            <property name="label" translatable="yes">Border</property>
+                          </object>
+                          <packing>
+                            <property name="left_attach">0</property>
+                            <property name="top_attach">0</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="label154">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="margin_left">3</property>
+                            <property name="margin_right">3</property>
+                            <property name="label" translatable="yes">:</property>
+                          </object>
+                          <packing>
+                            <property name="left_attach">1</property>
+                            <property name="top_attach">0</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="label155">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="xalign">0</property>
+                            <property name="label" translatable="yes">Pal Group</property>
+                          </object>
+                          <packing>
+                            <property name="left_attach">0</property>
+                            <property name="top_attach">1</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="label156">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="halign">center</property>
+                            <property name="margin_left">3</property>
+                            <property name="margin_right">3</property>
+                            <property name="label" translatable="yes">:</property>
+                          </object>
+                          <packing>
+                            <property name="left_attach">1</property>
+                            <property name="top_attach">1</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkComboBoxText" id="dbg_gdg_reg_border_comboboxtext">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="entry_text_column">0</property>
+                            <property name="id_column">1</property>
+                            <items>
+                              <item translatable="yes">Black</item>
+                              <item translatable="yes">Blue</item>
+                              <item translatable="yes">Red</item>
+                              <item translatable="yes">Magenta</item>
+                              <item translatable="yes">Green</item>
+                              <item translatable="yes">Cyan</item>
+                              <item translatable="yes">Yellow</item>
+                              <item translatable="yes">White</item>
+                              <item translatable="yes">Gray</item>
+                              <item translatable="yes">L. Blue</item>
+                              <item translatable="yes">L. Red</item>
+                              <item translatable="yes">L. Magenta</item>
+                              <item translatable="yes">L. Green</item>
+                              <item translatable="yes">L. Cyan</item>
+                              <item translatable="yes">L. Yellow</item>
+                              <item translatable="yes">L. White</item>
+                            </items>
+                            <signal name="changed" handler="on_dbg_gdg_reg_border_comboboxtext_changed" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="left_attach">3</property>
+                            <property name="top_attach">0</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkFixed" id="fixed5">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="hexpand">True</property>
+                          </object>
+                          <packing>
+                            <property name="left_attach">2</property>
+                            <property name="top_attach">0</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkComboBoxText" id="dbg_gdg_reg_palgrp_comboboxtext">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="entry_text_column">0</property>
+                            <property name="id_column">1</property>
+                            <items>
+                              <item translatable="yes">Group 0</item>
+                              <item translatable="yes">Group 1</item>
+                              <item translatable="yes">Group 2</item>
+                              <item translatable="yes">Group 3</item>
+                            </items>
+                            <signal name="changed" handler="on_dbg_gdg_reg_palgrp_comboboxtext_changed" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="left_attach">3</property>
+                            <property name="top_attach">1</property>
+                            <property name="width">1</property>
+                            <property name="height">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <placeholder/>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkFixed" id="fixed30">
+                        <property name="height_request">5</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkFrame" id="dbg_color_palette_frame">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="valign">end</property>
+                        <property name="margin_left">3</property>
+                        <property name="margin_right">3</property>
+                        <property name="margin_bottom">3</property>
+                        <property name="hexpand">True</property>
+                        <property name="vexpand">True</property>
+                        <property name="label_xalign">0.5</property>
+                        <property name="shadow_type">out</property>
+                        <child>
+                          <object class="GtkGrid" id="grid13">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <child>
+                              <object class="GtkComboBoxText" id="dbg_gdg_reg_pal0_comboboxtext">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="has_tooltip">True</property>
+                                <property name="tooltip_markup" translatable="yes">Pal 0</property>
+                                <property name="tooltip_text" translatable="yes">Pal 0</property>
+                                <property name="entry_text_column">0</property>
+                                <property name="id_column">1</property>
+                                <items>
+                                  <item translatable="yes">Black</item>
+                                  <item translatable="yes">Blue</item>
+                                  <item translatable="yes">Red</item>
+                                  <item translatable="yes">Magenta</item>
+                                  <item translatable="yes">Green</item>
+                                  <item translatable="yes">Cyan</item>
+                                  <item translatable="yes">Yellow</item>
+                                  <item translatable="yes">White</item>
+                                  <item translatable="yes">Gray</item>
+                                  <item translatable="yes">L. Blue</item>
+                                  <item translatable="yes">L. Red</item>
+                                  <item translatable="yes">L. Magenta</item>
+                                  <item translatable="yes">L. Green</item>
+                                  <item translatable="yes">L. Cyan</item>
+                                  <item translatable="yes">L. Yellow</item>
+                                  <item translatable="yes">L. White</item>
+                                </items>
+                                <signal name="changed" handler="on_dbg_gdg_reg_pal0_comboboxtext_changed" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="left_attach">0</property>
+                                <property name="top_attach">0</property>
+                                <property name="width">1</property>
+                                <property name="height">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkFixed" id="fixed17">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="hexpand">True</property>
+                                <property name="vexpand">True</property>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="top_attach">1</property>
+                                <property name="width">1</property>
+                                <property name="height">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkComboBoxText" id="dbg_gdg_reg_pal1_comboboxtext">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="has_tooltip">True</property>
+                                <property name="tooltip_markup" translatable="yes">Pal 1</property>
+                                <property name="tooltip_text" translatable="yes">Pal 1</property>
+                                <property name="entry_text_column">0</property>
+                                <property name="id_column">1</property>
+                                <items>
+                                  <item translatable="yes">Black</item>
+                                  <item translatable="yes">Blue</item>
+                                  <item translatable="yes">Red</item>
+                                  <item translatable="yes">Magenta</item>
+                                  <item translatable="yes">Green</item>
+                                  <item translatable="yes">Cyan</item>
+                                  <item translatable="yes">Yellow</item>
+                                  <item translatable="yes">White</item>
+                                  <item translatable="yes">Gray</item>
+                                  <item translatable="yes">L. Blue</item>
+                                  <item translatable="yes">L. Red</item>
+                                  <item translatable="yes">L. Magenta</item>
+                                  <item translatable="yes">L. Green</item>
+                                  <item translatable="yes">L. Cyan</item>
+                                  <item translatable="yes">L. Yellow</item>
+                                  <item translatable="yes">L. White</item>
+                                </items>
+                                <signal name="changed" handler="on_dbg_gdg_reg_pal1_comboboxtext_changed" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="left_attach">2</property>
+                                <property name="top_attach">0</property>
+                                <property name="width">1</property>
+                                <property name="height">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkComboBoxText" id="dbg_gdg_reg_pal2_comboboxtext">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="has_tooltip">True</property>
+                                <property name="tooltip_markup" translatable="yes">Pal 2</property>
+                                <property name="tooltip_text" translatable="yes">Pal 2</property>
+                                <property name="entry_text_column">0</property>
+                                <property name="id_column">1</property>
+                                <items>
+                                  <item translatable="yes">Black</item>
+                                  <item translatable="yes">Blue</item>
+                                  <item translatable="yes">Red</item>
+                                  <item translatable="yes">Magenta</item>
+                                  <item translatable="yes">Green</item>
+                                  <item translatable="yes">Cyan</item>
+                                  <item translatable="yes">Yellow</item>
+                                  <item translatable="yes">White</item>
+                                  <item translatable="yes">Gray</item>
+                                  <item translatable="yes">L. Blue</item>
+                                  <item translatable="yes">L. Red</item>
+                                  <item translatable="yes">L. Magenta</item>
+                                  <item translatable="yes">L. Green</item>
+                                  <item translatable="yes">L. Cyan</item>
+                                  <item translatable="yes">L. Yellow</item>
+                                  <item translatable="yes">L. White</item>
+                                </items>
+                                <signal name="changed" handler="on_dbg_gdg_reg_pal2_comboboxtext_changed" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="left_attach">0</property>
+                                <property name="top_attach">2</property>
+                                <property name="width">1</property>
+                                <property name="height">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkComboBoxText" id="dbg_gdg_reg_pal3_comboboxtext">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="has_tooltip">True</property>
+                                <property name="tooltip_markup" translatable="yes">Pal 3</property>
+                                <property name="tooltip_text" translatable="yes">Pal 3</property>
+                                <property name="entry_text_column">0</property>
+                                <property name="id_column">1</property>
+                                <items>
+                                  <item translatable="yes">Black</item>
+                                  <item translatable="yes">Blue</item>
+                                  <item translatable="yes">Red</item>
+                                  <item translatable="yes">Magenta</item>
+                                  <item translatable="yes">Green</item>
+                                  <item translatable="yes">Cyan</item>
+                                  <item translatable="yes">Yellow</item>
+                                  <item translatable="yes">White</item>
+                                  <item translatable="yes">Gray</item>
+                                  <item translatable="yes">L. Blue</item>
+                                  <item translatable="yes">L. Red</item>
+                                  <item translatable="yes">L. Magenta</item>
+                                  <item translatable="yes">L. Green</item>
+                                  <item translatable="yes">L. Cyan</item>
+                                  <item translatable="yes">L. Yellow</item>
+                                  <item translatable="yes">L. White</item>
+                                </items>
+                                <signal name="changed" handler="on_dbg_gdg_reg_pal3_comboboxtext_changed" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="left_attach">2</property>
+                                <property name="top_attach">2</property>
+                                <property name="width">1</property>
+                                <property name="height">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                          </object>
+                        </child>
+                        <child type="label">
+                          <object class="GtkLabel" id="label158">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">&lt;b&gt;Color Palette&lt;/b&gt;</property>
+                            <property name="use_markup">True</property>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">True</property>
+                        <property name="fill">True</property>
+                        <property name="pack_type">end</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                  </object>
+                </child>
+                <child type="tab">
+                  <object class="GtkLabel" id="label179">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="label" translatable="yes">GDG Colors</property>
+                  </object>
+                  <packing>
+                    <property name="tab_fill">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkGrid" id="grid12">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="margin_left">3</property>
                     <property name="margin_right">3</property>
-                    <property name="margin_top">3</property>
+                    <property name="margin_top">10</property>
                     <property name="margin_bottom">3</property>
+                    <property name="row_spacing">5</property>
+                    <property name="row_homogeneous">True</property>
                     <child>
-                      <object class="GtkComboBoxText" id="dbg_gdg_reg_pal0_comboboxtext">
+                      <object class="GtkFixed" id="fixed31">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="has_tooltip">True</property>
-                        <property name="tooltip_markup" translatable="yes">Pal 0</property>
-                        <property name="tooltip_text" translatable="yes">Pal 0</property>
-                        <property name="entry_text_column">0</property>
-                        <property name="id_column">1</property>
-                        <items>
-                          <item translatable="yes">Black</item>
-                          <item translatable="yes">Blue</item>
-                          <item translatable="yes">Red</item>
-                          <item translatable="yes">Magenta</item>
-                          <item translatable="yes">Green</item>
-                          <item translatable="yes">Cyan</item>
-                          <item translatable="yes">Yellow</item>
-                          <item translatable="yes">White</item>
-                          <item translatable="yes">Gray</item>
-                          <item translatable="yes">L. Blue</item>
-                          <item translatable="yes">L. Red</item>
-                          <item translatable="yes">L. Magenta</item>
-                          <item translatable="yes">L. Green</item>
-                          <item translatable="yes">L. Cyan</item>
-                          <item translatable="yes">L. Yellow</item>
-                          <item translatable="yes">L. White</item>
-                        </items>
-                        <signal name="changed" handler="on_dbg_gdg_reg_pal0_comboboxtext_changed" swapped="no"/>
+                        <property name="hexpand">True</property>
                       </object>
                       <packing>
-                        <property name="left_attach">0</property>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">1</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label189">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">center</property>
+                        <property name="margin_left">5</property>
+                        <property name="margin_right">5</property>
+                        <property name="label" translatable="yes">:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">3</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label157">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">center</property>
+                        <property name="margin_left">5</property>
+                        <property name="margin_right">5</property>
+                        <property name="label" translatable="yes">:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
                         <property name="top_attach">0</property>
                         <property name="width">1</property>
                         <property name="height">1</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkFixed" id="fixed17">
+                      <object class="GtkLabel" id="label188">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="hexpand">True</property>
-                        <property name="vexpand">True</property>
+                        <property name="halign">center</property>
+                        <property name="margin_left">5</property>
+                        <property name="margin_right">5</property>
+                        <property name="label" translatable="yes">:</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
@@ -10437,69 +10654,55 @@ or double-click on addr to focus to his value</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkComboBoxText" id="dbg_gdg_reg_pal1_comboboxtext">
+                      <object class="GtkLabel" id="label190">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="has_tooltip">True</property>
-                        <property name="tooltip_markup" translatable="yes">Pal 1</property>
-                        <property name="tooltip_text" translatable="yes">Pal 1</property>
-                        <property name="entry_text_column">0</property>
-                        <property name="id_column">1</property>
-                        <items>
-                          <item translatable="yes">Black</item>
-                          <item translatable="yes">Blue</item>
-                          <item translatable="yes">Red</item>
-                          <item translatable="yes">Magenta</item>
-                          <item translatable="yes">Green</item>
-                          <item translatable="yes">Cyan</item>
-                          <item translatable="yes">Yellow</item>
-                          <item translatable="yes">White</item>
-                          <item translatable="yes">Gray</item>
-                          <item translatable="yes">L. Blue</item>
-                          <item translatable="yes">L. Red</item>
-                          <item translatable="yes">L. Magenta</item>
-                          <item translatable="yes">L. Green</item>
-                          <item translatable="yes">L. Cyan</item>
-                          <item translatable="yes">L. Yellow</item>
-                          <item translatable="yes">L. White</item>
-                        </items>
-                        <signal name="changed" handler="on_dbg_gdg_reg_pal1_comboboxtext_changed" swapped="no"/>
+                        <property name="halign">center</property>
+                        <property name="margin_left">5</property>
+                        <property name="margin_right">5</property>
+                        <property name="label" translatable="yes">:</property>
                       </object>
                       <packing>
-                        <property name="left_attach">2</property>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">2</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label152">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="xalign">0</property>
+                        <property name="label" translatable="yes">Scroll Area Start</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
                         <property name="top_attach">0</property>
                         <property name="width">1</property>
                         <property name="height">1</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkComboBoxText" id="dbg_gdg_reg_pal2_comboboxtext">
+                      <object class="GtkLabel" id="label187">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="has_tooltip">True</property>
-                        <property name="tooltip_markup" translatable="yes">Pal 2</property>
-                        <property name="tooltip_text" translatable="yes">Pal 2</property>
-                        <property name="entry_text_column">0</property>
-                        <property name="id_column">1</property>
-                        <items>
-                          <item translatable="yes">Black</item>
-                          <item translatable="yes">Blue</item>
-                          <item translatable="yes">Red</item>
-                          <item translatable="yes">Magenta</item>
-                          <item translatable="yes">Green</item>
-                          <item translatable="yes">Cyan</item>
-                          <item translatable="yes">Yellow</item>
-                          <item translatable="yes">White</item>
-                          <item translatable="yes">Gray</item>
-                          <item translatable="yes">L. Blue</item>
-                          <item translatable="yes">L. Red</item>
-                          <item translatable="yes">L. Magenta</item>
-                          <item translatable="yes">L. Green</item>
-                          <item translatable="yes">L. Cyan</item>
-                          <item translatable="yes">L. Yellow</item>
-                          <item translatable="yes">L. White</item>
-                        </items>
-                        <signal name="changed" handler="on_dbg_gdg_reg_pal2_comboboxtext_changed" swapped="no"/>
+                        <property name="xalign">0</property>
+                        <property name="label" translatable="yes">Scroll Area End</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">1</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label191">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="xalign">0</property>
+                        <property name="label" translatable="yes">Scroll Area Width</property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
@@ -10509,37 +10712,142 @@ or double-click on addr to focus to his value</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkComboBoxText" id="dbg_gdg_reg_pal3_comboboxtext">
+                      <object class="GtkLabel" id="label192">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="has_tooltip">True</property>
-                        <property name="tooltip_markup" translatable="yes">Pal 3</property>
-                        <property name="tooltip_text" translatable="yes">Pal 3</property>
-                        <property name="entry_text_column">0</property>
-                        <property name="id_column">1</property>
-                        <items>
-                          <item translatable="yes">Black</item>
-                          <item translatable="yes">Blue</item>
-                          <item translatable="yes">Red</item>
-                          <item translatable="yes">Magenta</item>
-                          <item translatable="yes">Green</item>
-                          <item translatable="yes">Cyan</item>
-                          <item translatable="yes">Yellow</item>
-                          <item translatable="yes">White</item>
-                          <item translatable="yes">Gray</item>
-                          <item translatable="yes">L. Blue</item>
-                          <item translatable="yes">L. Red</item>
-                          <item translatable="yes">L. Magenta</item>
-                          <item translatable="yes">L. Green</item>
-                          <item translatable="yes">L. Cyan</item>
-                          <item translatable="yes">L. Yellow</item>
-                          <item translatable="yes">L. White</item>
-                        </items>
-                        <signal name="changed" handler="on_dbg_gdg_reg_pal3_comboboxtext_changed" swapped="no"/>
+                        <property name="xalign">0</property>
+                        <property name="label" translatable="yes">Scroll Offset</property>
                       </object>
                       <packing>
-                        <property name="left_attach">2</property>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">3</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="dbg_hwscroll_ssa_entry">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="has_tooltip">True</property>
+                        <property name="tooltip_text" translatable="yes">SSA &lt;0 - 127&gt;</property>
+                        <property name="halign">end</property>
+                        <property name="max_length">3</property>
+                        <property name="invisible_char">●</property>
+                        <property name="width_chars">8</property>
+                        <property name="xalign">1</property>
+                        <property name="invisible_char_set">True</property>
+                        <signal name="changed" handler="on_dbg_hwscroll_ssa_entry_changed" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">0</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="dbg_hwscroll_sea_entry">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="has_tooltip">True</property>
+                        <property name="tooltip_text" translatable="yes">SEA &lt;0 - 127&gt;</property>
+                        <property name="halign">end</property>
+                        <property name="max_length">3</property>
+                        <property name="invisible_char">●</property>
+                        <property name="width_chars">8</property>
+                        <property name="xalign">1</property>
+                        <property name="invisible_char_set">True</property>
+                        <signal name="changed" handler="on_dbg_hwscroll_sea_entry_changed" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">1</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="dbg_hwscroll_sw_entry">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="has_tooltip">True</property>
+                        <property name="tooltip_text" translatable="yes">SW &lt;0 - 127&gt;</property>
+                        <property name="halign">end</property>
+                        <property name="max_length">3</property>
+                        <property name="invisible_char">●</property>
+                        <property name="width_chars">8</property>
+                        <property name="xalign">1</property>
+                        <property name="invisible_char_set">True</property>
+                        <signal name="changed" handler="on_dbg_hwscroll_sw_entry_changed" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
                         <property name="top_attach">2</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="dbg_hwscroll_sof_entry">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="has_tooltip">True</property>
+                        <property name="tooltip_text" translatable="yes">SOF &lt;0 - 1023&gt;</property>
+                        <property name="halign">end</property>
+                        <property name="max_length">4</property>
+                        <property name="invisible_char">●</property>
+                        <property name="width_chars">8</property>
+                        <property name="xalign">1</property>
+                        <property name="invisible_char_set">True</property>
+                        <signal name="changed" handler="on_dbg_hwscroll_sof_entry_changed" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">3</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label193">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="xalign">0</property>
+                        <property name="label" translatable="yes">Scroll Enabled</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">4</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label194">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">center</property>
+                        <property name="margin_left">5</property>
+                        <property name="margin_right">5</property>
+                        <property name="label" translatable="yes">:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">4</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="dbg_hwscroll_enabled_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">3</property>
+                        <property name="top_attach">4</property>
                         <property name="width">1</property>
                         <property name="height">1</property>
                       </packing>
@@ -10557,21 +10865,27 @@ or double-click on addr to focus to his value</property>
                       <placeholder/>
                     </child>
                   </object>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
                 </child>
-                <child type="label">
-                  <object class="GtkLabel" id="label158">
+                <child type="tab">
+                  <object class="GtkLabel" id="label180">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">&lt;b&gt;Color Palette&lt;/b&gt;</property>
-                    <property name="use_markup">True</property>
+                    <property name="label" translatable="yes">GDG HW Scroll</property>
                   </object>
+                  <packing>
+                    <property name="position">1</property>
+                    <property name="tab_fill">False</property>
+                  </packing>
                 </child>
               </object>
               <packing>
                 <property name="left_attach">0</property>
-                <property name="top_attach">5</property>
+                <property name="top_attach">4</property>
                 <property name="width">1</property>
-                <property name="height">1</property>
+                <property name="height">2</property>
               </packing>
             </child>
           </object>
@@ -11155,5 +11469,18 @@ instruction to open inline assembler, or right click for menu</property>
       <!-- column-name value -->
       <column type="guint"/>
     </columns>
+  </object>
+  <object class="GtkWindow" id="window1">
+    <property name="can_focus">False</property>
+    <child>
+      <placeholder/>
+    </child>
+  </object>
+  <object class="GtkSizeGroup" id="dbg_gdg_signals_and_colorpalette_sizegroup">
+    <property name="mode">vertical</property>
+    <widgets>
+      <widget name="dbg_gdg_signals_frame"/>
+      <widget name="dbg_color_palette_frame"/>
+    </widgets>
   </object>
 </interface>

@@ -56,6 +56,10 @@
 #include "libs/generic_driver/generic_driver.h"
 #include "ui/generic_driver/ui_memory_driver.h"
 
+#include "gdg/hwscroll.h"
+
+gboolean g_ui_debugger_callbacks_hwscroll_entry_lock = FALSE;
+
 
 static st_DRIVER *g_driver = &g_ui_memory_driver_static;
 
@@ -1145,5 +1149,149 @@ G_MODULE_EXPORT gboolean on_dbg_spinner_window_press_event ( GtkWidget *widget, 
     return FALSE;
 }
 
+
+G_MODULE_EXPORT void on_dbg_hwscroll_ssa_entry_changed ( GtkEditable *ed, gpointer user_data ) {
+    if ( g_ui_debugger_callbacks_hwscroll_entry_lock ) return;
+
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        ui_debugger_pause_emulation ( );
+        g_uidebugger.last_gdg_ssa = -1;
+        return;
+    };
+
+    ui_digiteditable_changed ( ed, user_data );
+
+    g_ui_debugger_callbacks_hwscroll_entry_lock = TRUE;
+
+    GtkEntry *entry = ui_get_entry ( "dbg_hwscroll_ssa_entry" );
+
+    uint32_t value = 0;
+
+    if ( !gtk_entry_get_text_length ( entry ) ) {
+        //gtk_entry_set_text ( entry, "0" );
+    } else {
+        value = atoi ( gtk_entry_get_text ( entry ) );
+        if ( value > 0x7f ) {
+            gtk_entry_set_text ( entry, "127" );
+        };
+    };
+
+    g_ui_debugger_callbacks_hwscroll_entry_lock = FALSE;
+
+    hwscroll_set_ssa ( value );
+
+    gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_ENABLED ) ? "1" : "0" );
+    g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_ENABLED;
+}
+
+
+G_MODULE_EXPORT void on_dbg_hwscroll_sea_entry_changed ( GtkEditable *ed, gpointer user_data ) {
+    if ( g_ui_debugger_callbacks_hwscroll_entry_lock ) return;
+
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        ui_debugger_pause_emulation ( );
+        g_uidebugger.last_gdg_sea = -1;
+        return;
+    };
+
+    ui_digiteditable_changed ( ed, user_data );
+
+    g_ui_debugger_callbacks_hwscroll_entry_lock = TRUE;
+
+    GtkEntry *entry = ui_get_entry ( "dbg_hwscroll_sea_entry" );
+
+    uint32_t value = 0;
+
+    if ( !gtk_entry_get_text_length ( entry ) ) {
+        //gtk_entry_set_text ( entry, "0" );
+    } else {
+        value = atoi ( gtk_entry_get_text ( entry ) );
+        if ( value > 0x7f ) {
+            gtk_entry_set_text ( entry, "127" );
+            value = 0x7f;
+        };
+    };
+
+    g_ui_debugger_callbacks_hwscroll_entry_lock = FALSE;
+
+    hwscroll_set_sea ( value );
+
+    gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_ENABLED ) ? "1" : "0" );
+    g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_ENABLED;
+}
+
+
+G_MODULE_EXPORT void on_dbg_hwscroll_sw_entry_changed ( GtkEditable *ed, gpointer user_data ) {
+    if ( g_ui_debugger_callbacks_hwscroll_entry_lock ) return;
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        ui_debugger_pause_emulation ( );
+        g_uidebugger.last_gdg_sw = -1;
+        return;
+    };
+
+    ui_digiteditable_changed ( ed, user_data );
+
+    g_ui_debugger_callbacks_hwscroll_entry_lock = TRUE;
+
+    GtkEntry *entry = ui_get_entry ( "dbg_hwscroll_sw_entry" );
+
+    uint32_t value = 0;
+
+    if ( !gtk_entry_get_text_length ( entry ) ) {
+        //gtk_entry_set_text ( entry, "0" );
+    } else {
+        value = atoi ( gtk_entry_get_text ( entry ) );
+        if ( value > 0x7f ) {
+            gtk_entry_set_text ( entry, "127" );
+            value = 0x7f;
+        };
+    };
+
+    g_ui_debugger_callbacks_hwscroll_entry_lock = FALSE;
+
+    hwscroll_set_sw ( value );
+
+    gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_ENABLED ) ? "1" : "0" );
+    g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_ENABLED;
+}
+
+
+G_MODULE_EXPORT void on_dbg_hwscroll_sof_entry_changed ( GtkEditable *ed, gpointer user_data ) {
+    if ( g_ui_debugger_callbacks_hwscroll_entry_lock ) return;
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        ui_debugger_pause_emulation ( );
+        g_uidebugger.last_gdg_sof = -1;
+        return;
+    };
+
+    ui_digiteditable_changed ( ed, user_data );
+
+    g_ui_debugger_callbacks_hwscroll_entry_lock = TRUE;
+
+    GtkEntry *entry = ui_get_entry ( "dbg_hwscroll_sof_entry" );
+
+    uint32_t value = 0;
+
+    if ( !gtk_entry_get_text_length ( entry ) ) {
+        //gtk_entry_set_text ( entry, "0" );
+    } else {
+        value = atoi ( gtk_entry_get_text ( entry ) );
+        if ( value > 0x3ff ) {
+            gtk_entry_set_text ( entry, "1023" );
+            value = 0x3ff;
+        };
+    };
+
+    g_ui_debugger_callbacks_hwscroll_entry_lock = FALSE;
+
+    hwscroll_set_sof ( value );
+
+    gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_ENABLED ) ? "1" : "0" );
+    g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_ENABLED;
+}
 
 #endif
