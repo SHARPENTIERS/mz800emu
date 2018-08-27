@@ -142,6 +142,7 @@
           <itemPath>src/ui/debugger/ui_breakpoints.h</itemPath>
           <itemPath>src/ui/debugger/ui_dbg_memext.h</itemPath>
           <itemPath>src/ui/debugger/ui_debugger.h</itemPath>
+          <itemPath>src/ui/debugger/ui_debugger_callbacks.h</itemPath>
           <itemPath>src/ui/debugger/ui_debugger_iasm.h</itemPath>
           <itemPath>src/ui/debugger/ui_dissassembler.h</itemPath>
           <itemPath>src/ui/debugger/ui_membrowser.h</itemPath>
@@ -855,6 +856,11 @@
             tool="0"
             flavor2="0">
       </item>
+      <item path="src/ui/debugger/ui_debugger_callbacks.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="src/ui/debugger/ui_debugger_iasm.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_debugger_iasm.h" ex="false" tool="3" flavor2="0">
@@ -1469,6 +1475,11 @@
             tool="0"
             flavor2="0">
       </item>
+      <item path="src/ui/debugger/ui_debugger_callbacks.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="src/ui/debugger/ui_debugger_iasm.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_debugger_iasm.h" ex="false" tool="3" flavor2="0">
@@ -2072,6 +2083,11 @@
       <item path="src/ui/debugger/ui_debugger_callbacks.c"
             ex="false"
             tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_debugger_callbacks.h"
+            ex="false"
+            tool="3"
             flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_debugger_iasm.c" ex="false" tool="0" flavor2="0">
@@ -2690,6 +2706,11 @@
             ex="false"
             tool="0"
             flavor2="10">
+      </item>
+      <item path="src/ui/debugger/ui_debugger_callbacks.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_debugger_iasm.c"
             ex="false"
@@ -3313,6 +3334,11 @@
             tool="0"
             flavor2="10">
       </item>
+      <item path="src/ui/debugger/ui_debugger_callbacks.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="src/ui/debugger/ui_debugger_iasm.c"
             ex="false"
             tool="0"
@@ -3935,6 +3961,11 @@
             tool="0"
             flavor2="0">
       </item>
+      <item path="src/ui/debugger/ui_debugger_callbacks.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
       <item path="src/ui/debugger/ui_debugger_iasm.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_debugger_iasm.h" ex="false" tool="3" flavor2="0">
@@ -4553,6 +4584,11 @@
       <item path="src/ui/debugger/ui_debugger_callbacks.c"
             ex="false"
             tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_debugger_callbacks.h"
+            ex="false"
+            tool="3"
             flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_debugger_iasm.c" ex="false" tool="0" flavor2="0">

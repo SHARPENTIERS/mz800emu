@@ -58,6 +58,8 @@
 #include "pioz80/pioz80.h"
 #include "ctc8253/ctc8253.h"
 #include "gdg/vramctrl.h"
+#include "gdg/hwscroll.h"
+#include "ui_debugger_callbacks.h"
 
 
 static const uint32_t g_mmap_color[MMBSTATE_COUNT] = {
@@ -396,6 +398,60 @@ void ui_debugger_update_internals ( void ) {
     if ( g_uidebugger.last_gdg_beam_state != gdg_beam_state ) {
         gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_beam_label ), gdg_beam_state );
         g_uidebugger.last_gdg_beam_state = gdg_beam_state;
+    };
+
+    /*
+     * GDG HW Scroll
+     */
+
+    /* HW Scroll SSA */
+    int ssa = hwscroll_get_ssa ( );
+    if ( ssa != g_uidebugger.last_gdg_ssa ) {
+        char buff[4];
+        snprintf ( buff, sizeof ( buff ), "%d", ssa );
+        g_ui_debugger_callbacks_hwscroll_entry_lock = TRUE;
+        gtk_entry_set_text ( GTK_ENTRY ( g_uidebugger.gdg_ssa_entry ), buff );
+        g_ui_debugger_callbacks_hwscroll_entry_lock = FALSE;
+        g_uidebugger.last_gdg_ssa = ssa;
+    };
+
+    /* HW Scroll SEA */
+    int sea = hwscroll_get_sea ( );
+    if ( sea != g_uidebugger.last_gdg_sea ) {
+        char buff[4];
+        snprintf ( buff, sizeof ( buff ), "%d", sea );
+        g_ui_debugger_callbacks_hwscroll_entry_lock = TRUE;
+        gtk_entry_set_text ( GTK_ENTRY ( g_uidebugger.gdg_sea_entry ), buff );
+        g_ui_debugger_callbacks_hwscroll_entry_lock = FALSE;
+        g_uidebugger.last_gdg_sea = sea;
+    };
+
+    /* HW Scroll SW */
+    int sw = hwscroll_get_sw ( );
+    if ( sw != g_uidebugger.last_gdg_sw ) {
+        char buff[4];
+        snprintf ( buff, sizeof ( buff ), "%d", sw );
+        g_ui_debugger_callbacks_hwscroll_entry_lock = TRUE;
+        gtk_entry_set_text ( GTK_ENTRY ( g_uidebugger.gdg_sw_entry ), buff );
+        g_ui_debugger_callbacks_hwscroll_entry_lock = FALSE;
+        g_uidebugger.last_gdg_sw = sw;
+    };
+
+    /* HW Scroll SOF */
+    int sof = hwscroll_get_sof ( );
+    if ( sof != g_uidebugger.last_gdg_sof ) {
+        char buff[5];
+        snprintf ( buff, sizeof ( buff ), "%d", sof );
+        g_ui_debugger_callbacks_hwscroll_entry_lock = TRUE;
+        gtk_entry_set_text ( GTK_ENTRY ( g_uidebugger.gdg_sof_entry ), buff );
+        g_ui_debugger_callbacks_hwscroll_entry_lock = FALSE;
+        g_uidebugger.last_gdg_sof = sof;
+    };
+
+    /* HW Scroll Enabled */
+    if ( TEST_HWSCRL_ENABLED != g_uidebugger.last_gdg_hwscroll_enabled ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_ENABLED ) ? "1" : "0" );
+        g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_ENABLED;
     };
 
     /*
@@ -958,7 +1014,7 @@ void ui_debugger_update_disassembled ( Z80EX_WORD addr, int row ) {
         select_row = row + 1;
 
         char path_str [ 5 ];
-        sprintf ( path_str, "%d", row );
+        snprintf ( path_str, sizeof ( path_str ), "%d", row );
         gtk_tree_model_get_iter_from_string ( model, &iter, path_str );
     };
 
@@ -1480,6 +1536,18 @@ void ui_debugger_show_main_window ( void ) {
         g_uidebugger.last_gdg_ypos = 0;
         g_uidebugger.last_gdg_tempo = 0;
         g_uidebugger.last_gdg_beam_state = NULL;
+
+        // GDG HW Scroll
+        g_uidebugger.gdg_ssa_entry = ui_get_widget ( "dbg_hwscroll_ssa_entry" );
+        g_uidebugger.gdg_sea_entry = ui_get_widget ( "dbg_hwscroll_sea_entry" );
+        g_uidebugger.gdg_sw_entry = ui_get_widget ( "dbg_hwscroll_sw_entry" );
+        g_uidebugger.gdg_sof_entry = ui_get_widget ( "dbg_hwscroll_sof_entry" );
+        g_uidebugger.gdg_hwscroll_enabled_label = ui_get_widget ( "dbg_hwscroll_enabled_label" );
+        g_uidebugger.last_gdg_ssa = -1;
+        g_uidebugger.last_gdg_sea = -1;
+        g_uidebugger.last_gdg_sw = -1;
+        g_uidebugger.last_gdg_sof = -1;
+        g_uidebugger.last_gdg_hwscroll_enabled = -1;
 
         // CPU ticks
         g_uidebugger.cpu_ticks_entry = ui_get_widget ( "dbg_cpu_ticks_entry" );

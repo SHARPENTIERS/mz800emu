@@ -275,6 +275,18 @@ extern "C" {
         //int last_gdg_cnt; // nema smysl - pokazde bude jiny
         const char *last_gdg_beam_state;
 
+        // GDG HW Scroll
+        GtkWidget *gdg_ssa_entry;
+        GtkWidget *gdg_sea_entry;
+        GtkWidget *gdg_sw_entry;
+        GtkWidget *gdg_sof_entry;
+        GtkWidget *gdg_hwscroll_enabled_label;
+        int last_gdg_ssa;
+        int last_gdg_sea;
+        int last_gdg_sw;
+        int last_gdg_sof;
+        int last_gdg_hwscroll_enabled;
+
         // CPU ticks
         GtkWidget *cpu_ticks_entry;
         uint64_t cpu_ticks_start;

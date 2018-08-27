@@ -85,48 +85,9 @@ void hwscroll_reset ( void ) {
 }
 
 
-void hwscroll_set_reg ( int addr, Z80EX_BYTE value ) {
+static void hwscroll_regs_changed ( void ) {
 
-    //DBGPRINTF ( DBGINF, "addr: 0x%02x, value: 0x%02x, PC: 0x%04x\n", addr, value, z80ex_get_reg ( g_mz800.cpu, regPC ) );
-
-    if ( !DMD_TEST_MZ700 ) {
-        /* TODO: bylo by dobre volat update az ve chvili, kdy vime, ze se opravdu neco zmenilo */
-        framebuffer_MZ800_screen_changed ( );
-    };
-
-    switch ( addr ) {
-
-            /* nastaveni SOF_LO: 0x01cf */
-        case 0x01:
-            g_hwscroll.regSOF &= 0x03 << 11;
-            g_hwscroll.regSOF |= ( value & 0xff ) << 3;
-            break;
-
-
-            /* nastaveni SOF_HI: 0x02cf */
-        case 0x02:
-            g_hwscroll.regSOF &= 0xff << 3;
-            g_hwscroll.regSOF |= ( value & 0x03 ) << 11;
-            break;
-
-
-            /* nastaveni SW: 0x03cf */
-        case 0x03:
-            g_hwscroll.regSW = ( value & 0x7f ) << 6;
-            break;
-
-
-            /* nastaveni SSA: 0x04cf */
-        case 0x04:
-            g_hwscroll.regSSA = ( value & 0x7f ) << 6;
-            break;
-
-
-            /* nastaveni SEA: 0x05cf */
-        case 0x05:
-            g_hwscroll.regSEA = ( value & 0x7f ) << 6;
-            break;
-    };
+    int last_hwscroll_enabled = g_hwscroll.enabled;
 
     /* jsou splneny vsechny podminky pro scroll? */
     if ( ( g_hwscroll.regSOF > 0 ) &&
@@ -172,6 +133,53 @@ void hwscroll_set_reg ( int addr, Z80EX_BYTE value ) {
 #endif
     };
 
+    if ( ( !DMD_TEST_MZ700 ) && ( !( last_hwscroll_enabled | g_hwscroll.enabled ) ) ) {
+        framebuffer_MZ800_screen_changed ( );
+    };
+}
+
+
+void hwscroll_set_reg ( int addr, Z80EX_BYTE value ) {
+
+    //DBGPRINTF ( DBGINF, "addr: 0x%02x, value: 0x%02x, PC: 0x%04x\n", addr, value, z80ex_get_reg ( g_mz800.cpu, regPC ) );
+
+    switch ( addr ) {
+
+            /* nastaveni SOF_LO: 0x01cf */
+        case 0x01:
+            g_hwscroll.regSOF &= 0x03 << 11;
+            g_hwscroll.regSOF |= ( value & 0xff ) << 3;
+            //printf ( "LO: %d (%d)\n", value, g_hwscroll.regSOF );
+            break;
+
+
+            /* nastaveni SOF_HI: 0x02cf */
+        case 0x02:
+            g_hwscroll.regSOF &= 0xff << 3;
+            g_hwscroll.regSOF |= ( value & 0x03 ) << 11;
+            //printf ( "HI: %d (%d)\n", value, g_hwscroll.regSOF );
+            break;
+
+
+            /* nastaveni SW: 0x03cf */
+        case 0x03:
+            g_hwscroll.regSW = ( value & 0x7f ) << 6;
+            break;
+
+
+            /* nastaveni SSA: 0x04cf */
+        case 0x04:
+            g_hwscroll.regSSA = ( value & 0x7f ) << 6;
+            break;
+
+
+            /* nastaveni SEA: 0x05cf */
+        case 0x05:
+            g_hwscroll.regSEA = ( value & 0x7f ) << 6;
+            break;
+    };
+
+    hwscroll_regs_changed ( );
 }
 
 #if 0
@@ -195,3 +203,47 @@ unsigned hwscroll_shift_addr ( unsigned addr ) {
 }
 
 #endif
+
+
+int hwscroll_get_ssa ( void ) {
+    return g_hwscroll.regSSA;
+}
+
+
+int hwscroll_get_sea ( void ) {
+    return g_hwscroll.regSEA >> 6;
+}
+
+
+int hwscroll_get_sw ( void ) {
+    return g_hwscroll.regSW >> 6;
+}
+
+
+int hwscroll_get_sof ( void ) {
+    return g_hwscroll.regSOF >> 3;
+}
+
+
+void hwscroll_set_ssa ( int value ) {
+    g_hwscroll.regSSA = value & 0x7f;
+    hwscroll_regs_changed ( );
+}
+
+
+void hwscroll_set_sea ( int value ) {
+    g_hwscroll.regSEA = ( value & 0x7f ) << 6;
+    hwscroll_regs_changed ( );
+}
+
+
+void hwscroll_set_sw ( int value ) {
+    g_hwscroll.regSW = ( value & 0x7f ) << 6;
+    hwscroll_regs_changed ( );
+}
+
+
+void hwscroll_set_sof ( int value ) {
+    g_hwscroll.regSOF = ( value & 0x3ff ) << 3;
+    hwscroll_regs_changed ( );
+}
