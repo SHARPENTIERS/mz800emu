@@ -1,8 +1,8 @@
 /* 
- * File:   build_time.h
+ * File:   version_xml_parser.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 15. září 2015, 12:19
+ * Created on 6. září 2018, 7:33
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -23,21 +23,23 @@
  * ---------------------------------------------------------------------------
  */
 
-#ifndef BUILD_TIME_H
-#define	BUILD_TIME_H
 
-#ifdef	__cplusplus
+#ifndef VERSION_XML_PARSER_H
+#define VERSION_XML_PARSER_H
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
+#include <glib.h>
 
-    extern char* build_time_get ( void );
-    extern char* build_time_get_revision_txt ( void );
-    extern int build_time_get_revision_int ( void );
+#include "version_check.h"
 
-#ifdef	__cplusplus
+    extern st_VERSION_REPORT* version_xml_document_parse ( gchar *xmldocument, gsize length, gboolean quiet );
+
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* BUILD_TIME_H */
+#endif /* VERSION_XML_PARSER_H */
 

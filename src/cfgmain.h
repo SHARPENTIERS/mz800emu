@@ -24,16 +24,27 @@
  */
 
 #ifndef CFGMAIN_H
-#define	CFGMAIN_H
+#define CFGMAIN_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
+#include <stdint.h>
 #include "cfgfile/cfgroot.h"
 
+    // Povolena konvence a.b.c, nebo a.b.c.d
+#define CFGMAIN_EMULATOR_VERSION_NUM_STRING "1.0.3"
 
-#define EMULATOR_VERSION "1.0.3 devel"
+
+    /*
+     * Hodnota je nacitana take ze scriptu tools/create_package-Release-Win32.sh !
+     */
+#define CFGMAIN_EMULATOR_VERSION_TAG "devel"
+    //#define CFGMAIN_EMULATOR_VERSION_TAG "snapshot"
+    //#define CFGMAIN_EMULATOR_VERSION_TAG "stable"
+
+#define EMULATOR_VERSION CFGMAIN_EMULATOR_VERSION_NUM_STRING " " CFGMAIN_EMULATOR_VERSION_TAG
 
 #define CFGFILE_INI_FILENAME    "mz800emu.ini"
 
@@ -66,11 +77,11 @@ extern "C" {
     extern void cfgmain_init ( void );
     extern void cfgmain_exit ( void );
     extern char* cfgmain_create_timestamp ( void );
+    extern uint32_t cfgmain_get_version_uint32 ( void );
 
-
-#ifdef	__cplusplus
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* CFGMAIN_H */
+#endif /* CFGMAIN_H */
 

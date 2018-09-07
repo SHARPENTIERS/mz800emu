@@ -50,10 +50,7 @@ MKDIR=mkdir
 CP=cp
 CCADMIN=CCadmin
 
-# prozatim odlozene pkg baliky:
-# gtk+-2.0
-# libxml-2.0
-PKG_OBJECTS		:= gtk+-3.0 gmodule-export-2.0
+PKG_OBJECTS		:= gtk+-3.0 gmodule-export-2.0 libsoup-2.4 libxml-2.0
 
 BUILD_HOST_OS		:= ${shell uname -o }
 

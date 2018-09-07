@@ -67,6 +67,8 @@
 #include "ui/ui_main.h"
 #include "typedefs.h"
 
+#include "version_check/version_check.h"
+
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 #include "debugger/debugger.h"
 #include "debugger/breakpoints.h"
@@ -323,6 +325,11 @@ static inline void mz800_event_screen_done ( void ) {
         };
 
         iface_sdl_pool_all_events ( );
+        
+        if ( TEST_VERSION_CHECK_THREAD_DONE ) {
+            version_check_parse_thread_response ( );
+        };
+
         ui_iteration ( );
 
         if ( g_gdg.framebuffer_state || g_iface_sdl.redraw_full_screen_request ) {

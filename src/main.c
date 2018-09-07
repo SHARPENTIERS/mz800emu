@@ -25,6 +25,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <locale.h>
+#include <glib.h>
 
 #include "main.h"
 
@@ -34,6 +36,7 @@
 #include "iface_sdl/iface_sdl.h"
 #include "mz800.h"
 #include "ui/ui_main.h"
+#include "version_check/version_check.h"
 
 #if 0
 #include <windows.h>
@@ -50,6 +53,7 @@ void main_app_quit ( int exit_value ) {
     if ( exit_value == 0 ) {
         fprintf ( stderr, "Main App is normaly exiting...\n" );
         cfgmain_exit ( );
+        version_check_exit ( );
         mz800_exit ( );
     } else {
         fprintf ( stderr, "Oops ... Main App is abnormaly exiting...\n" );
@@ -76,6 +80,9 @@ void main_app_init ( void ) {
  * 
  */
 int main ( int argc, char** argv ) {
+
+    g_setenv ( "LC_ALL", "C", TRUE );
+    setlocale ( LC_ALL, "" );
 
 #if 0
     /*
@@ -107,6 +114,9 @@ int main ( int argc, char** argv ) {
     iface_sdl_init ( );
     //ui_init ( argc, argv );
     ui_init ( );
+
+    version_check_init ( );
+
     mz800_init ( );
 
     printf ( "\nTips:\n" );

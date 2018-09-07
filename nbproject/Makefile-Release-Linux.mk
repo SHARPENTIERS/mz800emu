@@ -147,6 +147,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/ui_rom.o \
 	${OBJECTDIR}/src/ui/ui_unicard.o \
 	${OBJECTDIR}/src/ui/ui_utils.o \
+	${OBJECTDIR}/src/ui/ui_version_check.o \
 	${OBJECTDIR}/src/ui/vkbd/ui_vkbd.o \
 	${OBJECTDIR}/src/ui/vkbd/ui_vkbd_linux_x11.o \
 	${OBJECTDIR}/src/ui/vkbd/ui_vkbd_windows.o \
@@ -154,6 +155,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/unicard/MZFLOADER_MZQ.o \
 	${OBJECTDIR}/src/unicard/unicard.o \
 	${OBJECTDIR}/src/unicard/unimgr.o \
+	${OBJECTDIR}/src/version_check/version_check.o \
+	${OBJECTDIR}/src/version_check/version_xml_parser.o \
 	${OBJECTDIR}/src/z80ex/z80ex.o \
 	${OBJECTDIR}/src/z80ex/z80ex_dasm.o
 
@@ -742,6 +745,11 @@ ${OBJECTDIR}/src/ui/ui_utils.o: src/ui/ui_utils.c
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_utils.o src/ui/ui_utils.c
 
+${OBJECTDIR}/src/ui/ui_version_check.o: src/ui/ui_version_check.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/ui_version_check.o src/ui/ui_version_check.c
+
 ${OBJECTDIR}/src/ui/vkbd/ui_vkbd.o: src/ui/vkbd/ui_vkbd.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui/vkbd
 	${RM} "$@.d"
@@ -776,6 +784,16 @@ ${OBJECTDIR}/src/unicard/unimgr.o: src/unicard/unimgr.c
 	${MKDIR} -p ${OBJECTDIR}/src/unicard
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/unicard/unimgr.o src/unicard/unimgr.c
+
+${OBJECTDIR}/src/version_check/version_check.o: src/version_check/version_check.c 
+	${MKDIR} -p ${OBJECTDIR}/src/version_check
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/version_check/version_check.o src/version_check/version_check.c
+
+${OBJECTDIR}/src/version_check/version_xml_parser.o: src/version_check/version_xml_parser.c 
+	${MKDIR} -p ${OBJECTDIR}/src/version_check
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DLINUX -D_REENTRANT -D_XOPEN_SOURCE=500 -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/version_check/version_xml_parser.o src/version_check/version_xml_parser.c
 
 ${OBJECTDIR}/src/z80ex/z80ex.o: src/z80ex/z80ex.c 
 	${MKDIR} -p ${OBJECTDIR}/src/z80ex
