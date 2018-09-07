@@ -128,3 +128,5 @@ Debugger:
 Obecne:
 
 	- prizpusobeni interface pro SDL-2.0.5
+
+	- pridana automaticka kontrola novych verzi

@@ -84,6 +84,8 @@
 #include "ui_joy.h"
 #include "cmt/cmt.h"
 #include "ui_file_chooser.h"
+#include "version_check/version_check.h"
+#include "ui_version_check.h"
 
 
 
@@ -860,6 +862,34 @@ G_MODULE_EXPORT void on_menuitem_joystick_setup_activate ( GtkMenuItem *menuitem
 #endif
 
     ui_joy_show_window ( );
+}
+
+
+G_MODULE_EXPORT void on_menuitem_version_check_setup_activate ( GtkMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+
+    ui_version_check_show_setup_window ( );
+}
+
+
+G_MODULE_EXPORT void on_menuitem_version_check_now_activate ( GtkMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+
+    version_check_run_test ( TRUE );
 }
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED

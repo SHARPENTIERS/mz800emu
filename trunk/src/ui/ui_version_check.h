@@ -1,8 +1,8 @@
 /* 
- * File:   build_time.h
+ * File:   ui_version_check.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
- * Created on 15. září 2015, 12:19
+ * Created on 3. září 2018, 9:34
  * 
  * 
  * ----------------------------- License -------------------------------------
@@ -23,21 +23,23 @@
  * ---------------------------------------------------------------------------
  */
 
-#ifndef BUILD_TIME_H
-#define	BUILD_TIME_H
 
-#ifdef	__cplusplus
+#ifndef UI_VERSION_CHECK_H
+#define UI_VERSION_CHECK_H
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
+#include "version_check/version_check.h"
 
-    extern char* build_time_get ( void );
-    extern char* build_time_get_revision_txt ( void );
-    extern int build_time_get_revision_int ( void );
+    extern void ui_version_check_show_setup_window ( void );
+    extern void ui_version_check_show_report_window ( st_VERSION_BRANCH *branch );
 
-#ifdef	__cplusplus
+
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* BUILD_TIME_H */
+#endif /* UI_VERSION_CHECK_H */
 

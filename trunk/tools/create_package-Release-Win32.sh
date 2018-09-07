@@ -8,7 +8,8 @@ if [ "${1}" != "Release-Win32" ]; then
 fi
 
 PACKAGE_PLATFORM="win32"
-PACKAGE_SURFIX="with_gtk_and_sdl_libs"
+#PACKAGE_SURFIX="-with_gtk_and_sdl_libs"
+PACKAGE_SURFIX=""
 
 CND_CONF="Release-Win32"
 
@@ -28,7 +29,7 @@ MKDIR_EXE=mkdir
 CP_EXE=cp
 CHMOD_EXE=chmod
 UNAME_EXE=uname
-
+SVN_EXE=svn
 
 # Functions
 checkReturnCode () {
@@ -75,36 +76,88 @@ copyFileToTmpDir () {
 #done
 
 
-EMULATOR_VERSION_DEF=`${EGREP_EXE} "^#define\s+EMULATOR_VERSION\s+\".*\"" src/cfgmain.h`
+EMULATOR_VERSION_TAG_DEF=`${EGREP_EXE} "^(\s){0,}#define\s+CFGMAIN_EMULATOR_VERSION_TAG\s+\".*\"" src/cfgmain.h`
 
 if [ $? -ne 0 ]; then
-	echo "ERROR: Can't get EMULATOR_VERSION !"
-	exit 1
-fi
-
-let LINES=`echo "${EMULATOR_VERSION_DEF}" | ${WC_EXE} -l`
-checkReturnCode
-
-if [ ${LINES} -ne 1 ]; then
-	echo -e "ERROR: definition the  EMULATOR_VERSION has multiple lines:\n"
-	echo -e "${EMULATOR_VERSION_DEF}\n"
-	exit 1
-fi
-
-EMULATOR_VERSION_TXT=`echo "${EMULATOR_VERSION_DEF}" | ${SED_EXE} --regexp-extended -e 's/#define\s+EMULATOR_VERSION\s+\"//' -e 's/".*//'`
-checkReturnCode
-EMULATOR_VERSION_TXT=`echo ${EMULATOR_VERSION_TXT} | ${SED_EXE} --regexp-extended -e 's/^\s+//'`
-checkReturnCode
-EMULATOR_VERSION_TXT=`echo ${EMULATOR_VERSION_TXT} | ${SED_EXE} --regexp-extended -e 's/\s/_/g'`
-checkReturnCode
-
-if [ -z "${EMULATOR_VERSION_TXT}" ]; then
-	echo "ERROR: definition the  EMULATOR_VERSION is empty !"
+	echo "ERROR: Can't get EMULATOR_VERSION_TAG_DEF !"
 	exit 1
 fi
 
 
-echo -e "Release version: ${EMULATOR_VERSION_TXT}\n"
+
+let LINES=`echo "${EMULATOR_VERSION_TAG_DEF}" | ${WC_EXE} -l`
+checkReturnCode
+
+if [ ${LINES} -gt 1 ]; then
+	echo -e "ERROR: definition the  EMULATOR_VERSION_TAG_DEF has multiple lines:\n"
+	echo -e "${EMULATOR_VERSION_TAG_DEF}\n"
+	exit 1
+fi
+
+EMULATOR_VERSION_TAG_TXT=`echo "${EMULATOR_VERSION_TAG_DEF}" | ${SED_EXE} --regexp-extended -e 's/#define\s+CFGMAIN_EMULATOR_VERSION_TAG\s+\"//' -e 's/".*//'`
+checkReturnCode
+EMULATOR_VERSION_TAG_TXT=`echo ${EMULATOR_VERSION_TAG_TXT} | ${SED_EXE} --regexp-extended -e 's/^\s+//'`
+checkReturnCode
+EMULATOR_VERSION_TAG_TXT=`echo ${EMULATOR_VERSION_TAG_TXT} | ${SED_EXE} --regexp-extended -e 's/\s/_/g'`
+checkReturnCode
+
+if [ -z "${EMULATOR_VERSION_TAG_TXT}" ]; then
+	echo "ERROR: definition the EMULATOR_VERSION_TAG is empty !"
+	exit 1
+fi
+
+
+EMULATOR_VERSION_FULL_TXT=${EMULATOR_VERSION_TAG_TXT}
+
+
+#if [ "${EMULATOR_VERSION_TAG_TXT}" = "stable" ]; then
+
+	EMULATOR_VERSION_NUM_DEF=`${EGREP_EXE} "^(\s){0,}#define\s+CFGMAIN_EMULATOR_VERSION_NUM_STRING\s+\".*\"" src/cfgmain.h`
+
+	if [ $? -ne 0 ]; then
+		echo "ERROR: Can't get EMULATOR_VERSION_NUM_DEF !"
+		exit 1
+	fi
+
+
+	let LINES=`echo "${EMULATOR_VERSION_NUM_DEF}" | ${WC_EXE} -l`
+	checkReturnCode
+
+	if [ ${LINES} -gt 1 ]; then
+		echo -e "ERROR: definition the  EMULATOR_VERSION_NUM_DEF has multiple lines:\n"
+		echo -e "${EMULATOR_VERSION_NUM_DEF}\n"
+		exit 1
+	fi
+
+
+	EMULATOR_VERSION_NUM_TXT=`echo "${EMULATOR_VERSION_NUM_DEF}" | ${SED_EXE} --regexp-extended -e 's/#define\s+CFGMAIN_EMULATOR_VERSION_NUM_STRING\s+\"//' -e 's/".*//'`
+	checkReturnCode
+	EMULATOR_VERSION_NUM_TXT=`echo ${EMULATOR_VERSION_NUM_TXT} | ${SED_EXE} --regexp-extended -e 's/^\s+//'`
+	checkReturnCode
+	EMULATOR_VERSION_NUM_TXT=`echo ${EMULATOR_VERSION_NUM_TXT} | ${SED_EXE} --regexp-extended -e 's/\s/_/g'`
+	checkReturnCode
+
+	if [ -z "${EMULATOR_VERSION_NUM_TXT}" ]; then
+		echo "ERROR: definition the EMULATOR_VERSION_NUM is empty !"
+		exit 1
+	fi
+	
+	EMULATOR_VERSION_FULL_TXT="${EMULATOR_VERSION_TAG_TXT}-${EMULATOR_VERSION_NUM_TXT}"
+#else
+
+	EMULATOR_REVISION_TXT=`${SVN_EXE} info|${EGREP_EXE} "^Revision:"|${SED_EXE} -e 's/Revision://' -e 's/ //g'`
+	checkReturnCode
+	
+	if [ -z "${EMULATOR_REVISION_TXT}" ]; then
+		echo "ERROR: definition the EMULATOR_REVISION_TXT is empty !"
+		exit 1
+	fi
+	
+	EMULATOR_VERSION_FULL_TXT="${EMULATOR_VERSION_TAG_TXT}-${EMULATOR_VERSION_NUM_TXT}-rev_${EMULATOR_REVISION_TXT}"
+#fi
+
+
+echo -e "Release version: ${EMULATOR_VERSION_FULL_TXT}\n"
 
 #
 # Castecne zkopirovano z nbproject/Package-*.bash
@@ -119,8 +172,8 @@ NBTMPDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
 OUTPUT_PATH=${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/mz800emu-x86.exe
 OUTPUT_BASENAME=mz800emu.exe
-PACKAGE_TOP_DIR=${PROJECT_NAME}-${EMULATOR_VERSION_TXT}-${PACKAGE_PLATFORM}/
-PACKAGE_ARCHIVE_NAME=${PROJECT_NAME}-${EMULATOR_VERSION_TXT}-${PACKAGE_PLATFORM}-${PACKAGE_SURFIX}
+PACKAGE_TOP_DIR=${PROJECT_NAME}-${PACKAGE_PLATFORM}-${EMULATOR_VERSION_TAG_TXT}/
+PACKAGE_ARCHIVE_NAME=${PROJECT_NAME}-${PACKAGE_PLATFORM}-${EMULATOR_VERSION_FULL_TXT}${PACKAGE_SURFIX}
 
  
 
@@ -159,6 +212,7 @@ PACKAGE_DIRS="
 	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/icons/gnome/48x48/mimetypes \
 	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/icons/gnome/16x16/mimetypes \
 	${PACKAGE_TOP_DIR}/runtime/gtk-3/share/icons/hicolor \
+	${PACKAGE_TOP_DIR}/runtime/libsoup-2.4 \
 "
 
 

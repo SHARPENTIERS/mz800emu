@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <errno.h>
 #include <time.h>
@@ -33,7 +34,7 @@
 #include "cfgmain.h"
 #include "main.h"
 #include "build_time.h"
-
+#include "ui/ui_utils.h"
 
 struct st_CFGROOT *g_cfgmain;
 
@@ -97,3 +98,36 @@ void cfgmain_exit ( void ) {
     cfgroot_destroy ( g_cfgmain );
 }
 
+
+uint32_t cfgmain_get_version_uint32 ( void ) {
+
+    static uint32_t version = 0;
+    if ( version ) return version;
+
+    char *src = CFGMAIN_EMULATOR_VERSION_NUM_STRING;
+
+    int i;
+    int src_len = strlen ( CFGMAIN_EMULATOR_VERSION_NUM_STRING );
+    int start = 0;
+    int byte = 3;
+
+    for ( i = 0; i <= src_len; i++ ) {
+        if ( ( src[i] == '.' ) || ( src[i] == 0x00 ) ) {
+            if ( byte < 0 ) {
+                fprintf ( stderr, "%s():%d - Bad version string '%s'\n", __func__, __LINE__, CFGMAIN_EMULATOR_VERSION_NUM_STRING );
+                version = 0;
+                return 0;
+            };
+            int len = i - start;
+            char *buff = (char*) ui_utils_mem_alloc0 ( len + 1 );
+            strncpy ( buff, &src[start], len );
+            start = i + 1;
+            uint32_t value = atoi ( buff );
+            ui_utils_mem_free ( buff );
+            version += ( value & 0xff ) * ( 1 << ( byte * 8 ) );
+            byte--;
+        };
+    };
+
+    return version;
+}
