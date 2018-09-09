@@ -34,11 +34,17 @@ extern "C" {
 #include <stdint.h>
 #include <glib.h>
 
-#ifdef WINDOWS
+
+
+#ifndef WINDOWS_X86
     // ve WIN32 se mi nepodarilo zprovoznit https
-#define VERSION_CHECK_PROTOCOL "http"
-#else
+#define VERSION_CHECK_USE_HTTPS
+#endif
+
+#ifdef VERSION_CHECK_USE_HTTPS
 #define VERSION_CHECK_PROTOCOL "https"
+#else
+#define VERSION_CHECK_PROTOCOL "http"
 #endif
 
 #define VERSION_CHECK_URL VERSION_CHECK_PROTOCOL "://www.ordoz.com/mz800emu/version_check/"
@@ -56,6 +62,14 @@ extern "C" {
     } en_VERSION_CHECK_PERIOD;
 
 #define VERSION_CHECK_DEFAULT_PERIOD VERSION_CHECK_PERIOD_MONTHLY
+
+
+    typedef enum en_VERSION_CHECK_PROXY {
+        VERSION_CHECK_PROXY_NONE = 0,
+        VERSION_CHECK_PROXY_SYSTEM,
+        VERSION_CHECK_PROXY_MANUAL,
+    } en_VERSION_CHECK_PROXY;
+
 
     extern gboolean g_version_check_thread_done;
 
@@ -91,6 +105,10 @@ extern "C" {
     extern uint32_t version_check_get_last_check ( void );
     extern void version_check_update_last_check ( void );
     extern void version_check_set_ignored ( char *tag, uint32_t version, uint32_t revision );
+    extern en_VERSION_CHECK_PROXY version_check_get_proxy_settings ( void );
+    extern void version_check_set_proxy_settings ( en_VERSION_CHECK_PROXY use_proxy );
+    extern const char* version_check_get_proxy_server ( void );
+    extern void version_check_set_proxy_server ( const char *proxy_server );
 
     extern st_VERSION_REPORT* version_check_report_new ( guint32 elm_version );
     extern void version_check_report_free ( st_VERSION_REPORT *report );

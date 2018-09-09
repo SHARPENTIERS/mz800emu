@@ -19,6 +19,7 @@ Minimalni potrebne vybaveni:
 	- mingw32 ( pokud chcete crosskompilovat pro WIN32 )
 	- vyvojove knihovny SDL2 , ( v pripade cross kompilace v mingw je - potreba WIN32 verze ! ) https://www.libsdl.org/download-2.0.php
 	- GTK3
+	- libsoup-2.4
 	- pkg-config
 
 

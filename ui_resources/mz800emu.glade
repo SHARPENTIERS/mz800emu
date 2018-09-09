@@ -2273,6 +2273,11 @@ fixed ROM for the Luftner´s model of MemExt.</property>
       </object>
     </child>
   </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_rom">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
+  </object>
   <object class="GtkRadioMenuItem" id="radiogrp_cmt_speed">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -2299,11 +2304,6 @@ fixed ROM for the Luftner´s model of MemExt.</property>
     <property name="draw_as_radio">True</property>
   </object>
   <object class="GtkRadioMenuItem" id="radiogrp_ramdisk_type">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="draw_as_radio">True</property>
-  </object>
-  <object class="GtkRadioMenuItem" id="radiogrp_rom">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="draw_as_radio">True</property>
@@ -3073,7 +3073,9 @@ from the Tools submenu.</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="margin_top">10</property>
+                    <property name="row_spacing">5</property>
                     <property name="column_spacing">10</property>
+                    <property name="row_homogeneous">True</property>
                     <child>
                       <object class="GtkLabel" id="label3">
                         <property name="visible">True</property>
@@ -3089,32 +3091,49 @@ from the Tools submenu.</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkRadioButton" id="version_check_daily_radiobutton">
-                        <property name="label" translatable="yes">daily</property>
+                      <object class="GtkLabel" id="label103">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
+                        <property name="can_focus">False</property>
                         <property name="xalign">0</property>
-                        <property name="image_position">top</property>
-                        <property name="draw_indicator">True</property>
+                        <property name="label" translatable="yes">Proxy server settings (optional):</property>
                       </object>
                       <packing>
-                        <property name="left_attach">1</property>
+                        <property name="left_attach">0</property>
                         <property name="top_attach">1</property>
                         <property name="width">1</property>
                         <property name="height">1</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkRadioButton" id="version_check_weekly_radiobutton">
-                        <property name="label" translatable="yes">weekly</property>
+                      <object class="GtkComboBoxText" id="version_check_period_comboboxtext">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="entry_text_column">0</property>
+                        <property name="id_column">1</property>
+                        <items>
+                          <item translatable="yes">daily</item>
+                          <item translatable="yes">weekly</item>
+                          <item translatable="yes">monthly</item>
+                          <item translatable="yes">sometimes</item>
+                          <item translatable="yes">never</item>
+                        </items>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">0</property>
+                        <property name="width">1</property>
+                        <property name="height">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="version_check_proxy_manual_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="xalign">0</property>
-                        <property name="image_position">top</property>
-                        <property name="draw_indicator">True</property>
-                        <property name="group">version_check_daily_radiobutton</property>
+                        <property name="has_tooltip">True</property>
+                        <property name="tooltip_markup" translatable="yes">HTTP proxy server name with port, e.g. http://proxy.mynet.com:8080</property>
+                        <property name="tooltip_text" translatable="yes">HTTP proxy server name with port, e.g. http://proxy.mynet.com:8080</property>
+                        <property name="invisible_char">●</property>
+                        <property name="invisible_char_set">True</property>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
@@ -3124,76 +3143,36 @@ from the Tools submenu.</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkRadioButton" id="version_check_monthly_radiobutton">
-                        <property name="label" translatable="yes">monthly</property>
+                      <object class="GtkFixed" id="fixed11">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="xalign">0</property>
-                        <property name="image_position">top</property>
-                        <property name="draw_indicator">True</property>
-                        <property name="group">version_check_daily_radiobutton</property>
+                        <property name="can_focus">False</property>
                       </object>
                       <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">3</property>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">2</property>
                         <property name="width">1</property>
                         <property name="height">1</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkRadioButton" id="version_check_sometimes_radiobutton">
-                        <property name="label" translatable="yes">sometimes</property>
+                      <object class="GtkComboBoxText" id="version_check_proxy_comboboxtext">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="xalign">0</property>
-                        <property name="image_position">top</property>
-                        <property name="draw_indicator">True</property>
-                        <property name="group">version_check_daily_radiobutton</property>
+                        <property name="can_focus">False</property>
+                        <property name="entry_text_column">0</property>
+                        <property name="id_column">1</property>
+                        <items>
+                          <item translatable="yes">none</item>
+                          <item translatable="yes">from system enviroment</item>
+                          <item translatable="yes">manual</item>
+                        </items>
+                        <signal name="changed" handler="on_version_check_proxy_comboboxtext_changed" swapped="no"/>
                       </object>
                       <packing>
                         <property name="left_attach">1</property>
-                        <property name="top_attach">4</property>
+                        <property name="top_attach">1</property>
                         <property name="width">1</property>
                         <property name="height">1</property>
                       </packing>
-                    </child>
-                    <child>
-                      <object class="GtkRadioButton" id="version_check_never_radiobutton">
-                        <property name="label" translatable="yes">never</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="xalign">0</property>
-                        <property name="image_position">top</property>
-                        <property name="draw_indicator">True</property>
-                        <property name="group">version_check_daily_radiobutton</property>
-                      </object>
-                      <packing>
-                        <property name="left_attach">1</property>
-                        <property name="top_attach">5</property>
-                        <property name="width">1</property>
-                        <property name="height">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
                     </child>
                   </object>
                   <packing>

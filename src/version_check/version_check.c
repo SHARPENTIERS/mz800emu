@@ -50,6 +50,8 @@ typedef struct st_VERSION_CHECK {
     CFGELM *elm_ignore_running_tag;
     CFGELM *elm_ignore_running_version;
     CFGELM *elm_ignore_running_revision;
+    CFGELM *elm_proxy_settings;
+    CFGELM *elm_proxy_server;
 
     GThread *thread;
     SoupSession *session;
@@ -221,6 +223,26 @@ void version_check_set_ignored ( char *tag, uint32_t version, uint32_t revision 
 }
 
 
+en_VERSION_CHECK_PROXY version_check_get_proxy_settings ( void ) {
+    return cfgelement_get_keyword_value ( g_version_check.elm_proxy_settings );
+}
+
+
+void version_check_set_proxy_settings ( en_VERSION_CHECK_PROXY use_proxy ) {
+    cfgelement_set_keyword_value ( g_version_check.elm_proxy_settings, use_proxy );
+}
+
+
+const char* version_check_get_proxy_server ( void ) {
+    return cfgelement_get_text_value ( g_version_check.elm_proxy_server );
+}
+
+
+void version_check_set_proxy_server ( const char *proxy_server ) {
+    cfgelement_set_text_value ( g_version_check.elm_proxy_server, proxy_server );
+}
+
+
 static void version_check_get_url ( const char *url ) {
 
     const char *name;
@@ -375,6 +397,33 @@ static void version_check_make_http_test ( void ) {
         soup_session_add_feature ( g_version_check.session, SOUP_SESSION_FEATURE ( logger ) );
         g_object_unref ( logger );
     }
+
+    en_VERSION_CHECK_PROXY use_proxy = version_check_get_proxy_settings ( );
+
+    if ( use_proxy == VERSION_CHECK_PROXY_SYSTEM ) {
+#ifdef VERSION_CHECK_USE_HTTPS
+        char *http_proxy, *https_proxy;
+        http_proxy = getenv ( "HTTP_PROXY" );
+        https_proxy = getenv ( "HTTPS_PROXY" );
+        proxy = ( https_proxy ) ? https_proxy : http_proxy;
+#else
+        proxy = getenv ( "HTTP_PROXY" );
+#endif
+        if ( proxy ) {
+            printf ( "VERSION_CHECK: using system HTTP proxy %s\n", proxy );
+        } else {
+            printf ( "VERSION_CHECK: HTTP proxy is not defined in enviroment\n" );
+        };
+    } else if ( use_proxy == VERSION_CHECK_PROXY_MANUAL ) {
+        char *manual_proxy = (char*) version_check_get_proxy_server ( );
+        if ( strlen ( manual_proxy ) ) {
+            proxy = manual_proxy;
+            printf ( "VERSION_CHECK: using manual HTTP proxy %s\n", proxy );
+        } else {
+            printf ( "VERSION_CHECK: manual HTTP proxy is not set\n" );
+        };
+    }
+
 
     if ( proxy ) {
         proxy_uri = soup_uri_new ( proxy );
@@ -588,6 +637,15 @@ void version_check_init ( void ) {
     g_version_check.elm_ignore_running_tag = cfgmodule_register_new_element ( cmod, "ignore_running_tag", CFGENTYPE_TEXT, "" );
     g_version_check.elm_ignore_running_version = cfgmodule_register_new_element ( cmod, "ignore_running_version", CFGENTYPE_UNSIGNED, 0, 0, 0xffffffff );
     g_version_check.elm_ignore_running_revision = cfgmodule_register_new_element ( cmod, "ignore_running_revision", CFGENTYPE_UNSIGNED, 0, 0, 0xffffffff );
+
+
+    g_version_check.elm_proxy_settings = cfgmodule_register_new_element ( cmod, "use_proxy", CFGENTYPE_KEYWORD, VERSION_CHECK_PROXY_SYSTEM,
+                                                                          VERSION_CHECK_PROXY_NONE, "NONE",
+                                                                          VERSION_CHECK_PROXY_SYSTEM, "SYSTEM",
+                                                                          VERSION_CHECK_PROXY_MANUAL, "MANUAL",
+                                                                          -1 );
+
+    g_version_check.elm_proxy_server = cfgmodule_register_new_element ( cmod, "proxy_server", CFGENTYPE_TEXT, "" );
 
     cfgmodule_parse ( cmod );
 

@@ -117,7 +117,7 @@ extern "C" {
     extern void cfgelement_reset ( st_CFGELEMENT *e );
 
     extern void cfgelement_set_unsigned_value ( st_CFGELEMENT *e, unsigned unsigned_value );
-    extern void cfgelement_set_text_value ( st_CFGELEMENT *e, char *text_value );
+    extern void cfgelement_set_text_value ( st_CFGELEMENT *e, const char *text_value );
     extern void cfgelement_set_bool_value ( st_CFGELEMENT *e, int bool_value );
     extern void cfgelement_set_keyword_value ( st_CFGELEMENT *e, int key_value );
 

@@ -225,7 +225,7 @@ void cfgelement_set_unsigned_value ( st_CFGELEMENT *e, unsigned unsigned_value )
 }
 
 
-void cfgelement_set_text_value ( st_CFGELEMENT *e, char *text_value ) {
+void cfgelement_set_text_value ( st_CFGELEMENT *e, const char *text_value ) {
     assert ( e != NULL );
     assert ( e->type == CFGENTYPE_TEXT );
     cfgelement_set_variable ( e, CFGELVAR_VALUE, (void *) &text_value );
