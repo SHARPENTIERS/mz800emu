@@ -76,6 +76,20 @@ static const char* ui_version_check_get_url_by_tag ( char *tag ) {
 }
 
 
+G_MODULE_EXPORT void on_version_check_proxy_comboboxtext_changed ( GtkComboBox *widget, gpointer data ) {
+    (void) widget;
+    (void) data;
+
+    int active = gtk_combo_box_get_active ( ui_get_combo_box ( "version_check_proxy_comboboxtext" ) );
+    gboolean state = ( active == 2 ) ? TRUE : FALSE;
+    if ( state ) {
+        gtk_widget_show ( ui_get_widget ( "version_check_proxy_manual_entry" ) );
+    } else {
+        gtk_widget_hide ( ui_get_widget ( "version_check_proxy_manual_entry" ) );
+    };
+}
+
+
 void ui_version_check_show_setup_window ( void ) {
     GtkWidget *window = ui_get_widget ( "version_check_setup_window" );
     if ( gtk_widget_is_visible ( window ) ) return;
@@ -85,19 +99,37 @@ void ui_version_check_show_setup_window ( void ) {
     if ( period == VERSION_CHECK_PERIOD_UNKNOWN ) period = VERSION_CHECK_DEFAULT_PERIOD;
 
     if ( period == VERSION_CHECK_PERIOD_DAILY ) {
-        gtk_toggle_button_set_active ( ui_get_toggle ( "version_check_daily_radiobutton" ), TRUE );
+        gtk_combo_box_set_active ( ui_get_combo_box ( "version_check_period_comboboxtext" ), 0 );
     } else if ( period == VERSION_CHECK_PERIOD_WEEKLY ) {
-        gtk_toggle_button_set_active ( ui_get_toggle ( "version_check_weekly_radiobutton" ), TRUE );
+        gtk_combo_box_set_active ( ui_get_combo_box ( "version_check_period_comboboxtext" ), 1 );
     } else if ( period == VERSION_CHECK_PERIOD_MONTHLY ) {
-        gtk_toggle_button_set_active ( ui_get_toggle ( "version_check_monthly_radiobutton" ), TRUE );
+        gtk_combo_box_set_active ( ui_get_combo_box ( "version_check_period_comboboxtext" ), 2 );
     } else if ( period == VERSION_CHECK_PERIOD_SOMETIMES ) {
-        gtk_toggle_button_set_active ( ui_get_toggle ( "version_check_sometimes_radiobutton" ), TRUE );
+        gtk_combo_box_set_active ( ui_get_combo_box ( "version_check_period_comboboxtext" ), 3 );
     } else if ( period == VERSION_CHECK_PERIOD_NEVER ) {
-        gtk_toggle_button_set_active ( ui_get_toggle ( "version_check_never_radiobutton" ), TRUE );
+        gtk_combo_box_set_active ( ui_get_combo_box ( "version_check_period_comboboxtext" ), 4 );
     } else {
         fprintf ( stderr, "%s():%d - Unknown check period '%d'\n", __func__, __LINE__, period );
-        gtk_toggle_button_set_active ( ui_get_toggle ( "version_check_monthly_radiobutton" ), TRUE );
+        gtk_combo_box_set_active ( ui_get_combo_box ( "version_check_period_comboboxtext" ), 2 );
     };
+
+
+    en_VERSION_CHECK_PROXY use_proxy = version_check_get_proxy_settings ( );
+    if ( use_proxy == VERSION_CHECK_PROXY_NONE ) {
+        gtk_combo_box_set_active ( ui_get_combo_box ( "version_check_proxy_comboboxtext" ), 0 );
+    } else if ( use_proxy == VERSION_CHECK_PROXY_SYSTEM ) {
+        gtk_combo_box_set_active ( ui_get_combo_box ( "version_check_proxy_comboboxtext" ), 1 );
+    } else if ( use_proxy == VERSION_CHECK_PROXY_MANUAL ) {
+        gtk_combo_box_set_active ( ui_get_combo_box ( "version_check_proxy_comboboxtext" ), 2 );
+    } else {
+        fprintf ( stderr, "%s():%d - Unknown proxy settings '%d'\n", __func__, __LINE__, use_proxy );
+        gtk_combo_box_set_active ( ui_get_combo_box ( "version_check_proxy_comboboxtext" ), 1 );
+    };
+
+    on_version_check_proxy_comboboxtext_changed ( NULL, NULL );
+
+    gtk_entry_set_text ( ui_get_entry ( "version_check_proxy_manual_entry" ), version_check_get_proxy_server ( ) );
+
     gtk_widget_show ( window );
 }
 
@@ -112,20 +144,51 @@ G_MODULE_EXPORT void on_version_check_ok_button_clicked ( GtkButton *button, gpo
 
     en_VERSION_CHECK_PERIOD new_period;
 
-    if ( gtk_toggle_button_get_active ( ui_get_toggle ( "version_check_daily_radiobutton" ) ) ) {
-        new_period = VERSION_CHECK_PERIOD_DAILY;
-    } else if ( gtk_toggle_button_get_active ( ui_get_toggle ( "version_check_weekly_radiobutton" ) ) ) {
-        new_period = VERSION_CHECK_PERIOD_WEEKLY;
-    } else if ( gtk_toggle_button_get_active ( ui_get_toggle ( "version_check_monthly_radiobutton" ) ) ) {
-        new_period = VERSION_CHECK_PERIOD_MONTHLY;
-    } else if ( gtk_toggle_button_get_active ( ui_get_toggle ( "version_check_sometimes_radiobutton" ) ) ) {
-        new_period = VERSION_CHECK_PERIOD_SOMETIMES;
-    } else if ( gtk_toggle_button_get_active ( ui_get_toggle ( "version_check_never_radiobutton" ) ) ) {
-        new_period = VERSION_CHECK_PERIOD_NEVER;
-    } else {
-        fprintf ( stderr, "%s():%d - Unknown check period\n", __func__, __LINE__ );
-        return;
+    int period_combo_state = gtk_combo_box_get_active ( ui_get_combo_box ( "version_check_period_comboboxtext" ) );
+    switch ( period_combo_state ) {
+        case 0:
+            new_period = VERSION_CHECK_PERIOD_DAILY;
+            break;
+        case 1:
+            new_period = VERSION_CHECK_PERIOD_WEEKLY;
+            break;
+        case 2:
+            new_period = VERSION_CHECK_PERIOD_MONTHLY;
+            break;
+        case 3:
+            new_period = VERSION_CHECK_PERIOD_SOMETIMES;
+            break;
+        case 4:
+            new_period = VERSION_CHECK_PERIOD_NEVER;
+            break;
+        default:
+            fprintf ( stderr, "%s():%d - Unknown check period option '%d'\n", __func__, __LINE__, period_combo_state );
+            new_period = VERSION_CHECK_PERIOD_MONTHLY;
+            break;
     };
+
+    en_VERSION_CHECK_PROXY new_proxy_settings;
+
+    int proxy_combo_state = gtk_combo_box_get_active ( ui_get_combo_box ( "version_check_proxy_comboboxtext" ) );
+    switch ( proxy_combo_state ) {
+        case 0:
+            new_proxy_settings = VERSION_CHECK_PROXY_NONE;
+            break;
+        case 1:
+            new_proxy_settings = VERSION_CHECK_PROXY_SYSTEM;
+            break;
+        case 2:
+            new_proxy_settings = VERSION_CHECK_PROXY_MANUAL;
+            break;
+        default:
+            fprintf ( stderr, "%s():%d - Unknown proxy_server option '%d'\n", __func__, __LINE__, proxy_combo_state );
+            new_period = VERSION_CHECK_PERIOD_MONTHLY;
+            break;
+    };
+
+    version_check_set_proxy_settings ( new_proxy_settings );
+
+    version_check_set_proxy_server ( gtk_entry_get_text ( ui_get_entry ( "version_check_proxy_manual_entry" ) ) );
 
     if ( old_period == new_period ) return;
 

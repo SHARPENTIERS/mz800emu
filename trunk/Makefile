@@ -50,7 +50,7 @@ MKDIR=mkdir
 CP=cp
 CCADMIN=CCadmin
 
-PKG_OBJECTS		:= gtk+-3.0 gmodule-export-2.0 libsoup-2.4 libxml-2.0
+PKG_OBJECTS		:= gtk+-3.0 gmodule-export-2.0 libsoup-2.4
 
 BUILD_HOST_OS		:= ${shell uname -o }
 
@@ -78,7 +78,7 @@ WINDRES			:= windres
 endif
 
 
-SDL2_CONFIG_LINUX=/usr/local/bin/sdl2-config
+SDL2_CONFIG_LINUX=sdl2-config
 SDL2_CONFIG_MINGW32=/usr/local/cross-tools/i686-w64-mingw32/bin/sdl2-config
 SDL2_CONFIG_MINGW64=/usr/local/cross-tools/x86_64-w64-mingw32/bin/sdl2-config
 
@@ -94,7 +94,8 @@ build: .build-post
 	@echo "Actual platform:          ${CND_PLATFORM_${CONF}}"
 	@echo "Build host OS:            ${BUILD_HOST_OS}"
 	@echo -e "\n\n"
-	./tools/create_buildtime.sh > src/build_time.c
+	./tools/check_pkgs.sh "exec:" "${PKGCONFIG}" "packages:" ${PKG_OBJECTS}
+	./tools/create_buildtime.sh
 
 
 .build-post: .build-impl

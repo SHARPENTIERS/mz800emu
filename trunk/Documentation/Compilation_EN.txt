@@ -20,6 +20,7 @@ For compilation you need:
 	- mingw32 ( is need only for WIN32 target )
 	- Development libraries SDL2 , ( mingw for WIN32 ! ) https://www.libsdl.org/download-2.0.php
 	- GTK3 development libraries
+	- libsoup-2.4
 	- pkg-config
 
 
