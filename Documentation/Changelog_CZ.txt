@@ -1,4 +1,8 @@
 
+2018-09-16
+
+Verze 1.0.4
+
 Novinky a zmeny v emulaci:
 
 	- CMT: kliknutim na "hodiny" se prepina zobrazeni mezi "play time" a 
@@ -48,7 +52,7 @@ Novinky a zmeny v emulaci:
 	- novy nastroj pro vytvoreni DSK souboru
 
 	- pridana zjednodusena emulace Unicard. Implicitni adresar pro SD
-	  root je "./SD". Zmenu adresare SD root lze provest pouze tehdy,
+-	  root je "./SD". Zmenu adresare SD root lze provest pouze tehdy,
 	  pokud je zarizeni odpojeno. S pripojenim Unicard, provede emulator
 	  inicializaci SD root adresare na ulozi do nej soubory, ktere jsou potrebne
 	  pro spusteni SD managera. Pokud je pripojen Quickdisk a je zapnuty

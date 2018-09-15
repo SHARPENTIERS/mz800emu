@@ -34,7 +34,7 @@ extern "C" {
 #include "cfgfile/cfgroot.h"
 
     // Povolena konvence a.b.c, nebo a.b.c.d
-#define CFGMAIN_EMULATOR_VERSION_NUM_STRING "1.0.3"
+#define CFGMAIN_EMULATOR_VERSION_NUM_STRING "1.0.4"
 
 
     /*
