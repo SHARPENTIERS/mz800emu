@@ -1,0 +1,94 @@
+
+2018-09-16
+
+	Released version 1.0.4
+
+	In this released emulator version is integrated a huge amount of bugfixes,
+	improvements, features and new bugs, which I gradually collected over the last 
+	two years.
+	Thanks to some improvements was the emulation be significantly accelerated and  
+	this achieved performance was instantly used for the new features, which this 
+	slows down a bit :)
+	Some peripherals have revealed new secrets and all of that has been integrated 
+	into emulation.
+
+	Just in the short:
+	
+	- virtual CMT now supports a multiple file formats (MZF, MZT, TAP, WAV) and allows 
+	  the save into WAV
+
+	- added a virtual keyboard and creation tools for DSK and QD images
+
+	- added a simple simulation of the "Unicard" and IDE8 (supported by NIPOPS cp/m)
+
+	- implemented both types of MemExt (supported by MZIX - Unix)
+
+	- many many improvements in the debugger..., added new memory browser / editor, 
+	  memory dissassembler, etc...
+
+	- better synchronisation in the Linux, some changes about ROMs, and lots of other 
+	  little things in the different places
+
+	- added online check for new versions
+	  Emulator sometimes at the startup checks the my web site and if they discover 
+	  a new version of the emulator, then show the information window - this feature 
+	  can be turned off and version checks can be performed manually.
+
+	If you want to ask about some emulator features or peripherals of the MZ-800, 
+	do not hesitate and ask me on the SourceForge, or by email.
+
+
+2016-03-01
+
+	Released version 1.0.3
+
+	- bugfix: in the Pezik ramdisk
+	- added breakpoints and memory dump viewer
+	- added Quick Disk emulation
+
+	- added an additional Sharp ROM's, possible to switch between:
+
+		Standard MZ-800 ROM
+		JSS v1.08C - for MR-1R18 compatibile ramdisk
+		JSS v1.06A - for the Pezik (0x0e8 - 0x0ef) ramdisk
+		WILLY English
+		WILLY German
+		WILLY Japanese
+
+	- many litle improvements and bugfixes
+
+
+2015-09-23
+
+	Released version 1.0.2
+
+	- trivial bugfix: locale encoded errors and warning messages in console
+        - trivial bugxix: step mode in debugger sometime stepped over multiple lines
+	- a little improved emulation speed
+        - inline assembler bugfix: fixed instructions with relative
+        - inline assembler bug fixed of generating instruction with relative
+        - value (JR %, DJNZ %, etc.)
+
+
+
+2015-09-20
+	
+	Released version 1.0.1
+
+
+	Bugfix:
+		- trivial bugfix in memory allocation
+		- added loging into error.log
+ 		- localized file names and paths are now fully supported
+
+        This is tested only in my Czech localization of Windows 7.
+
+        Does it work in other codepages? For example in the Japanese localization of Windows?
+
+
+
+2015-09-17
+
+	Released version 1.0
+
+
