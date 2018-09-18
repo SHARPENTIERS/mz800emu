@@ -90,6 +90,26 @@ G_MODULE_EXPORT void on_menuitem_display_window_size_bigger_activate ( GtkCheckM
 }
 
 
+G_MODULE_EXPORT void on_menuitem_display_fix_aspect_ratio_by_width_activate ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+    iface_sdl_fix_window_aspect_ratio ( 'W' );
+}
+
+
+G_MODULE_EXPORT void on_menuitem_display_fix_aspect_ratio_by_height_activate ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+    iface_sdl_fix_window_aspect_ratio ( 'H' );
+}
+
+
 G_MODULE_EXPORT void on_checkmenuitem_display_forced_redrawing_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
@@ -117,10 +137,28 @@ void ui_display_update_menu ( void ) {
             break;
     };
 
+#ifdef WINDOWS
+    gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "checkmenuitem_display_window_size_lock_aspect_ratio" ), ( g_display.locked_window_aspect_ratio ) ? TRUE : FALSE );
+    gtk_widget_show ( ui_get_widget ( "checkmenuitem_display_window_size_lock_aspect_ratio" ) );
+#else
+    gtk_widget_hide ( ui_get_widget ( "checkmenuitem_display_window_size_lock_aspect_ratio" ) );
+#endif
     gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "checkmenuitem_display_forced_redrawing" ), ( g_display.forced_full_screen_redrawing ) ? TRUE : FALSE );
 
     UNLOCK_UICALLBACKS ( );
 }
 
 
+G_MODULE_EXPORT void on_checkmenuitem_display_window_size_lock_aspect_ratio_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+    g_display.locked_window_aspect_ratio = gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "checkmenuitem_display_window_size_lock_aspect_ratio" ) );
+
+    if ( g_display.locked_window_aspect_ratio ) {
+        iface_sdl_set_window_size ( 1 );
+    };
+}
 

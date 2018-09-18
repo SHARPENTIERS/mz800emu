@@ -1,4 +1,11 @@
 
+
+
+	- display: pridano uzamknuti pomeru stran (implicitne vypnuto, navic
+	  funkcni jen ve Windows)
+	- display: Alt+W, Alt+H - opravi pomer stran podle sirky, nebo podle vysky
+
+
 2018-09-16
 
 Verze 1.0.4

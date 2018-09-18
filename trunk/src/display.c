@@ -92,6 +92,9 @@ void display_init ( void ) {
     elm = cfgmodule_register_new_element ( cmod, "forced_full_screen_redrawing", CFGENTYPE_BOOL, 0 );
     cfgelement_set_handlers ( elm, (void*) &g_display.forced_full_screen_redrawing, (void*) &g_display.forced_full_screen_redrawing );
 
+    elm = cfgmodule_register_new_element ( cmod, "locked_window_aspect_ratio", CFGENTYPE_BOOL, 0 );
+    cfgelement_set_handlers ( elm, (void*) &g_display.locked_window_aspect_ratio, (void*) &g_display.locked_window_aspect_ratio );
+
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );
 

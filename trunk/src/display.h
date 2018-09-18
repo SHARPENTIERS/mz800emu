@@ -48,6 +48,7 @@ extern "C" {
         en_DISPLAY_COLOR_SCHEMA color_schema;
         uint32_t *color_predef [ DISPLAY_COLORS_COUNT ];
         int forced_full_screen_redrawing;
+        int locked_window_aspect_ratio;
     } st_DISPLAY;
 
     extern st_DISPLAY g_display;

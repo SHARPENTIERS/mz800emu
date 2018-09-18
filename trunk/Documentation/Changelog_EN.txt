@@ -1,4 +1,8 @@
 
+
+	- display: added "Lock window aspect ratio" (default off, working only in Windows)
+	- display: Alt+W, Alt + H - fix window aspect ratio by width, or by height
+
 2018-09-16
 
 	Released version 1.0.4
