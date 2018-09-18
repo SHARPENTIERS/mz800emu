@@ -55,7 +55,7 @@
 
 #define IFACE_WINDOW_WIDTH                    VIDEO_DISPLAY_WIDTH
 #define IFACE_WINDOW_HEIGHT                   ( ( VIDEO_DISPLAY_HEIGHT * 2 ) + IFACE_STATUS_LINE_HEIGHT )
-
+#define IFACE_WINDOW_ASPECT_RATIO             ( (float) IFACE_WINDOW_WIDTH / IFACE_WINDOW_HEIGHT )
 
 SDL_Rect mzdisplay_rect = { 0, 0, VIDEO_DISPLAY_WIDTH, VIDEO_DISPLAY_HEIGHT };
 #if 0
@@ -312,11 +312,37 @@ void iface_sdl_set_colors ( uint32_t *colormap ) {
 }
 
 
+void iface_sdl_fix_window_aspect_ratio ( char correction_by ) {
+
+    Sint32 wsizeX, wsizeY;
+    SDL_GetWindowSize ( g_iface_sdl.window, &wsizeX, &wsizeY );
+
+    if ( correction_by == 'W' ) {
+        wsizeY = ( 1.f / IFACE_WINDOW_ASPECT_RATIO ) * wsizeX;
+    } else {
+        wsizeX = IFACE_WINDOW_ASPECT_RATIO * wsizeY;
+    };
+
+    g_iface_sdl.last_wsizeX = wsizeX;
+    g_iface_sdl.last_wsizeY = wsizeY;
+
+    SDL_SetWindowSize ( g_iface_sdl.window, wsizeX, wsizeY );
+
+    if ( SDL_RenderSetScale ( g_iface_sdl.renderer, (float) wsizeX / VIDEO_DISPLAY_WIDTH, (float) ( wsizeY - IFACE_STATUS_LINE_HEIGHT ) / VIDEO_DISPLAY_HEIGHT ) ) {
+        fprintf ( stderr, "Could not set render scale: %s\n", SDL_GetError ( ) );
+        main_app_quit ( EXIT_FAILURE );
+    };
+    g_iface_sdl.redraw_full_screen_request = 1;
+}
+
+
 void iface_sdl_set_window_size ( float scale ) {
 
     unsigned w = IFACE_WINDOW_WIDTH * scale;
     unsigned h = IFACE_WINDOW_HEIGHT * scale;
 
+    g_iface_sdl.last_wsizeX = w;
+    g_iface_sdl.last_wsizeY = h;
     SDL_SetWindowSize ( g_iface_sdl.window, w, h );
 
     if ( SDL_RenderSetScale ( g_iface_sdl.renderer, (float) w / VIDEO_DISPLAY_WIDTH, (float) ( h - IFACE_STATUS_LINE_HEIGHT ) / VIDEO_DISPLAY_HEIGHT ) ) {
@@ -357,7 +383,9 @@ void iface_sdl_init ( void ) {
 
 
     /* Inicializace okna */
-    g_iface_sdl.window = SDL_CreateWindow ( "MZ-800", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, IFACE_WINDOW_WIDTH, IFACE_WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE );
+    g_iface_sdl.last_wsizeX = IFACE_WINDOW_WIDTH;
+    g_iface_sdl.last_wsizeY = IFACE_WINDOW_HEIGHT;
+    g_iface_sdl.window = SDL_CreateWindow ( "MZ-800", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, g_iface_sdl.last_wsizeX, g_iface_sdl.last_wsizeY, SDL_WINDOW_RESIZABLE );
 
     if ( NULL == g_iface_sdl.window ) {
         fprintf ( stderr, "Could not create window: %s\n", SDL_GetError ( ) );
@@ -376,7 +404,6 @@ void iface_sdl_init ( void ) {
         fprintf ( stderr, "Could not set render scale: %s\n", SDL_GetError ( ) );
         main_app_quit ( EXIT_FAILURE );
     };
-
 
     /* Inicializace surface s 8 bitovou barevnou hloubkou (4 bitova hloubka neni podporovana) */
     g_iface_sdl.active_surface = SDL_CreateRGBSurface ( 0, VIDEO_DISPLAY_WIDTH, VIDEO_DISPLAY_HEIGHT, 8, 0, 0, 0, 0 );
@@ -464,14 +491,54 @@ void iface_sdl_pool_all_events ( void ) {
                 if ( event.window.event == SDL_WINDOWEVENT_CLOSE ) {
                     main_app_quit ( EXIT_SUCCESS );
 
-                    /*
-                } else if ( event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED ) {
-                    printf ( "SIZE CHANGED - X = %d, Y = %d\n", event.window.data1, event.window.data2 );
-                     */
+
+                    //} else if ( event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED ) {
+                    //printf ( "SIZE CHANGED - X = %d, Y = %d\n", event.window.data1, event.window.data2 );
                 } else if ( event.window.event == SDL_WINDOWEVENT_RESIZED ) {
-                    //                    printf ( "RESIZED - X = %d, Y = %d\n", event.window.data1, event.window.data2 );
+
+                    Sint32 w, h;
+                    SDL_GetWindowSize ( g_iface_sdl.window, &w, &h );
+
+                    //printf ( "RESIZED - X = %d (%d), Y = %d (%d)\n", event.window.data1, w, event.window.data2, h );
                     //printf ( "RESIZED - New scale: %f x %f\n", (float) event.window.data1 / DISPLAY_VISIBLE_WIDTH, (float) event.window.data2 / DISPLAY_VISIBLE_HEIGHT );
-                    if ( SDL_RenderSetScale ( g_iface_sdl.renderer, (float) event.window.data1 / VIDEO_DISPLAY_WIDTH, (float) ( event.window.data2 - IFACE_STATUS_LINE_HEIGHT ) / VIDEO_DISPLAY_HEIGHT ) ) {
+
+                    Sint32 wsizeX = event.window.data1;
+                    Sint32 wsizeY = event.window.data2;
+
+#ifdef WINDOWS
+                    // Tohle proste funguje jen ve windows :(
+                    if ( g_display.locked_window_aspect_ratio ) {
+                        float aspect_ratio = (float) wsizeX / (float) wsizeY;
+
+                        if ( aspect_ratio != IFACE_WINDOW_ASPECT_RATIO ) {
+                            if ( ( wsizeX < g_iface_sdl.last_wsizeX ) && ( wsizeY == g_iface_sdl.last_wsizeY ) ) {
+                                wsizeY = ( 1.f / IFACE_WINDOW_ASPECT_RATIO ) * wsizeX;
+                            } else if ( ( wsizeY < g_iface_sdl.last_wsizeY ) && ( wsizeX == g_iface_sdl.last_wsizeX ) ) {
+                                wsizeX = IFACE_WINDOW_ASPECT_RATIO * wsizeY;
+                            } else {
+                                if ( aspect_ratio > IFACE_WINDOW_ASPECT_RATIO ) {
+                                    wsizeY = ( 1.f / IFACE_WINDOW_ASPECT_RATIO ) * wsizeX;
+                                } else {
+                                    wsizeX = IFACE_WINDOW_ASPECT_RATIO * wsizeY;
+                                };
+                            };
+                            g_iface_sdl.last_wsizeX = wsizeX;
+                            g_iface_sdl.last_wsizeY = wsizeY;
+                            //printf ( "\tNEW RESIZE: %d, %d\n", wsizeX, wsizeY );
+                            SDL_SetWindowSize ( g_iface_sdl.window, wsizeX, wsizeY );
+                        };
+                    };
+#endif
+                    g_iface_sdl.last_wsizeX = wsizeX;
+                    g_iface_sdl.last_wsizeY = wsizeY;
+
+                    float width, height;
+                    width = (float) wsizeX / VIDEO_DISPLAY_WIDTH;
+                    height = (float) wsizeY / VIDEO_DISPLAY_HEIGHT;
+
+                    //printf ( "\tNEW SIZE: %d, %d\n", wsizeX, wsizeY );
+
+                    if ( SDL_RenderSetScale ( g_iface_sdl.renderer, width, height ) ) {
                         fprintf ( stderr, "Could not set render scale: %s\n", SDL_GetError ( ) );
                         main_app_quit ( EXIT_FAILURE );
                     };
@@ -505,13 +572,11 @@ void iface_sdl_pool_all_events ( void ) {
                 };
                 break;
         };
-
     };
 
     if ( keyboard_events != 0 ) {
         iface_sdl_full_keyboard_scan ( );
     }
-
 }
 
 #if 0

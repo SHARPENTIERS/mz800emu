@@ -1763,6 +1763,47 @@ fixed ROM for the Luftner´s model of MemExt.</property>
                           </object>
                         </child>
                         <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem33">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_display_fix_aspect_ratio_by_width">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Fix Window Aspect Ratio by _Width</property>
+                            <property name="use_underline">True</property>
+                            <accelerator key="w" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                            <signal name="activate" handler="on_menuitem_display_fix_aspect_ratio_by_width_activate" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuItem" id="menuitem_display_fix_aspect_ratio_by_height">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Fix Window Aspect Ratio by _Height</property>
+                            <property name="use_underline">True</property>
+                            <accelerator key="h" signal="activate" modifiers="GDK_MOD1_MASK"/>
+                            <signal name="activate" handler="on_menuitem_display_fix_aspect_ratio_by_height_activate" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkCheckMenuItem" id="checkmenuitem_display_window_size_lock_aspect_ratio">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Lock Aspect Ratio</property>
+                            <property name="use_underline">True</property>
+                            <signal name="toggled" handler="on_checkmenuitem_display_window_size_lock_aspect_ratio_toggled" swapped="no"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkSeparatorMenuItem" id="separatormenuitem34">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                          </object>
+                        </child>
+                        <child>
                           <object class="GtkMenuItem" id="menuitem_display_color_schema">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
@@ -2273,11 +2314,6 @@ fixed ROM for the Luftner´s model of MemExt.</property>
       </object>
     </child>
   </object>
-  <object class="GtkRadioMenuItem" id="radiogrp_rom">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="draw_as_radio">True</property>
-  </object>
   <object class="GtkRadioMenuItem" id="radiogrp_cmt_speed">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -2304,6 +2340,11 @@ fixed ROM for the Luftner´s model of MemExt.</property>
     <property name="draw_as_radio">True</property>
   </object>
   <object class="GtkRadioMenuItem" id="radiogrp_ramdisk_type">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="draw_as_radio">True</property>
+  </object>
+  <object class="GtkRadioMenuItem" id="radiogrp_rom">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="draw_as_radio">True</property>

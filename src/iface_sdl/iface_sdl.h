@@ -42,6 +42,8 @@ extern "C" {
         SDL_Surface *active_surface;
         //SDL_Surface *old_surface;
         int redraw_full_screen_request;
+        Sint32 last_wsizeX;
+        Sint32 last_wsizeY;
     } st_iface_sdl;
 
     extern struct st_iface_sdl g_iface_sdl;
@@ -56,6 +58,7 @@ extern "C" {
     extern void iface_sdl_set_colors ( uint32_t *colormap );
     extern void iface_sdl_set_window_size ( float scale );
     extern void iface_sdl_set_main_window_focus ( void );
+    extern void iface_sdl_fix_window_aspect_ratio ( char correction_by );
 
 #ifdef __cplusplus
 }

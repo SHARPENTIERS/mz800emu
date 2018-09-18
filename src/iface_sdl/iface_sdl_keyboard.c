@@ -458,6 +458,18 @@ static inline void iface_sdl_keydown_hotkeys ( SDL_Event *event ) {
              * Virtual keyboard: Alt + K
              */
             ui_vkbd_show_hide ( );
+
+        } else if ( event->key.keysym.scancode == SDL_SCANCODE_W ) {
+            /*
+             * Virtual keyboard: Alt + W
+             */
+            iface_sdl_fix_window_aspect_ratio ( 'W' );
+
+        } else if ( event->key.keysym.scancode == SDL_SCANCODE_H ) {
+            /*
+             * Virtual keyboard: Alt + H
+             */
+            iface_sdl_fix_window_aspect_ratio ( 'H' );
 #if 0
         } else if ( event->key.keysym.scancode == SDL_SCANCODE_1 ) {
             /*
