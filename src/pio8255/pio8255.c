@@ -112,9 +112,11 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
             DBGPRINTF ( DBGINF, "addr = %d (PORT_A), value = 0x%02x )\n", addr, value );
             g_pio8255.signal_PA = value;
 
+            // TODO: overit na skutecnem HW
+
             // 0. - 3. bit vzorkovani klavesnice - aktivni pri H
             int pahalf = value & 0x0f;
-            g_pio8255.signal_PA_keybord_column = ( pahalf < 0x0a ) ? pahalf : ( pahalf - 0x0a );
+            g_pio8255.signal_PA_keybord_column = ( pahalf <= 9 ) ? pahalf : 10;
 
             // 4. bit Joystick-1 strobe - aktivni pri L
             g_pio8255.signal_PA_joy1_enabled = ( !( value & 0x20 ) ) ? 1 : 0;
@@ -234,7 +236,8 @@ Z80EX_BYTE pio8255_read ( int addr ) {
     switch ( addr ) {
 
         case DEF_PIO8255_PORTA:
-            return g_pio8255.signal_PA;
+            if ( g_pio8255.signal_PA_keybord_column < 10 ) return g_pio8255.signal_PA;
+            return 0xff;
             break;
 
         case DEF_PIO8255_PORTB:
