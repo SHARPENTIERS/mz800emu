@@ -325,7 +325,7 @@ static inline void mz800_event_screen_done ( void ) {
         };
 
         iface_sdl_pool_all_events ( );
-        
+
         if ( TEST_VERSION_CHECK_THREAD_DONE ) {
             version_check_parse_thread_response ( );
         };
@@ -847,6 +847,17 @@ void mz800_main ( void ) {
 #if 0
     g_memory.map = MEMORY_MAP_FLAG_ROM_0000 | MEMORY_MAP_FLAG_ROM_E000;
     z80ex_set_reg ( g_mz800.cpu, regHL, 0x10f0 );
+    cmthack_load_mzf_filename ( "./madonna2.mzf" );
+    z80ex_set_reg ( g_mz800.cpu, regHL, 0x3000 );
+    z80ex_set_reg ( g_mz800.cpu, regBC, 0x074f );
+    cmthack_read_mzf_body ( );
+    z80ex_set_reg ( g_mz800.cpu, regSP, 0x10f0 );
+    z80ex_set_reg ( g_mz800.cpu, regPC, 0x3304 );
+#endif
+
+#if 0
+    g_memory.map = MEMORY_MAP_FLAG_ROM_0000 | MEMORY_MAP_FLAG_ROM_E000;
+    z80ex_set_reg ( g_mz800.cpu, regHL, 0x10f0 );
     cmthack_load_mzf_filename ( "./interkarate/interkarate_plus.mzf" );
     z80ex_set_reg ( g_mz800.cpu, regHL, 0x1200 );
     z80ex_set_reg ( g_mz800.cpu, regBC, 0x0382 );
@@ -863,6 +874,20 @@ void mz800_main ( void ) {
 
         g_mz800.instruction_addr = z80ex_get_reg ( g_mz800.cpu, regPC );
 
+#if 0
+        static int dbg = 0;
+        if ( g_mz800.instruction_addr == 0x3304 ) {
+            dbg = 1;
+        }
+
+        if ( dbg ) {
+            char mnemonic [ 200 ];
+            int t_states, t_states2;
+            unsigned bytecode_length = z80ex_dasm ( mnemonic, 200 - 1, 0, &t_states, &t_states2, debugger_dasm_read_cb, g_mz800.instruction_addr, NULL );
+            printf ( "0x%04x\t%s\n", g_mz800.instruction_addr, mnemonic );
+        }
+#endif
+        
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
         /*
          * 

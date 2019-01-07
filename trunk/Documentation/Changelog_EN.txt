@@ -1,5 +1,7 @@
 
 
+	- bugfix: in "fast" version of CTC0 on MODE2 (Madonna2 demo did not work)
+	- bugfix: changed initialization of virtual CMT output sig. (ESC key in Turbo Copy now works)
 	- display: added "Lock window aspect ratio" (default off, working only in Windows)
 	- display: Alt+W, Alt + H - fix window aspect ratio by width, or by height
 

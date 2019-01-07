@@ -74,6 +74,9 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/libs/cmt_stream/cmt_bitstream.o \
 	${OBJECTDIR}/src/libs/cmt_stream/cmt_stream.o \
 	${OBJECTDIR}/src/libs/cmt_stream/cmt_vstream.o \
+	${OBJECTDIR}/src/libs/cmttool/cmttool.o \
+	${OBJECTDIR}/src/libs/cmttool/cmttool_fastipl.o \
+	${OBJECTDIR}/src/libs/cmttool/cmttool_turbo.o \
 	${OBJECTDIR}/src/libs/dsk/dsk.o \
 	${OBJECTDIR}/src/libs/dsk/dsk_tools.o \
 	${OBJECTDIR}/src/libs/endianity/endianity.o \
@@ -381,6 +384,21 @@ ${OBJECTDIR}/src/libs/cmt_stream/cmt_vstream.o: src/libs/cmt_stream/cmt_vstream.
 	${MKDIR} -p ${OBJECTDIR}/src/libs/cmt_stream
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/cmt_stream/cmt_vstream.o src/libs/cmt_stream/cmt_vstream.c
+
+${OBJECTDIR}/src/libs/cmttool/cmttool.o: src/libs/cmttool/cmttool.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/cmttool
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/cmttool/cmttool.o src/libs/cmttool/cmttool.c
+
+${OBJECTDIR}/src/libs/cmttool/cmttool_fastipl.o: src/libs/cmttool/cmttool_fastipl.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/cmttool
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/cmttool/cmttool_fastipl.o src/libs/cmttool/cmttool_fastipl.c
+
+${OBJECTDIR}/src/libs/cmttool/cmttool_turbo.o: src/libs/cmttool/cmttool_turbo.c 
+	${MKDIR} -p ${OBJECTDIR}/src/libs/cmttool
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/libs/cmttool/cmttool_turbo.o src/libs/cmttool/cmttool_turbo.c
 
 ${OBJECTDIR}/src/libs/dsk/dsk.o: src/libs/dsk/dsk.c 
 	${MKDIR} -p ${OBJECTDIR}/src/libs/dsk

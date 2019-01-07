@@ -60,6 +60,7 @@ void cmt_stop ( void ) {
 
     g_cmt.state = CMT_STATE_STOP;
     g_cmt.playsts = CMTEXT_BLOCK_PLAYSTS_STOP;
+    g_cmt.output = 0;
 
     if ( g_cmt.cpu_boost == CMT_CPU_BOOST_ENABLED ) {
         mz800_switch_emulation_speed ( 0 );
