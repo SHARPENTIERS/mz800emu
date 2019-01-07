@@ -31,7 +31,8 @@ extern "C" {
 #endif
 
 #include <stdio.h>
-#include <gtk/gtk.h>
+#include <glib.h>
+//#include <gtk/gtk.h>
 
 
     /*

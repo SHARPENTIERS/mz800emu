@@ -1,6 +1,8 @@
 
 
 
+	- oprava: "rychla" verze CTC0 v rezimu M2 (bylo nefunkcni demo Madonna2)
+	- oprava: zmena inicializace signalu z virtual CMT (nyni funguje ESC v TurboCopy)
 	- display: pridano uzamknuti pomeru stran (implicitne vypnuto, navic
 	  funkcni jen ve Windows)
 	- display: Alt+W, Alt+H - opravi pomer stran podle sirky, nebo podle vysky

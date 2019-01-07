@@ -229,6 +229,7 @@ void ctc8253_write_byte ( unsigned addr, Z80EX_BYTE value ) {
     addr = addr & 0x03;
 
     //printf ( "WR 8253 - addr: %d, value: 0x%02x, PC: 0x%04x\n", addr, value, z80ex_get_reg ( g_mz800.cpu, regPC ) );
+    DBGPRINTF ( DBGINF, "WR 8253 - addr: %d, value: 0x%02x, PC: 0x%04x\n", addr, value, g_mz800.instruction_addr );
 
 
     if ( addr == CTCADDR_CWREG ) {
@@ -691,6 +692,7 @@ void ctc8253_ctc1m1_event ( unsigned event_ticks ) {
         }
     };
 
+    en_CTC_STATE old_state = ctc0->state;
     ctc8253_clkfall ( CTC_CS0, event_ticks );
     ctc0->clk1m1_last_event_total_ticks = event_total_ticks;
 
@@ -714,7 +716,7 @@ void ctc8253_ctc1m1_event ( unsigned event_ticks ) {
                 break;
 
             case CTC_MODE2:
-                destination_clk1m1_falls = ctc0->value;
+                destination_clk1m1_falls = ctc0->value - 1;
                 break;
 
             case CTC_MODE3:
@@ -734,6 +736,9 @@ void ctc8253_ctc1m1_event ( unsigned event_ticks ) {
             ctc0->clk1m1_event.ticks = -1;
         }
 
+    } else if (( old_state == CTC_STATE_COUNTDOWN ) && ( ctc0->state == CTC_STATE_PRESET )) {
+        /* M2 - skoncil COUNTDOWN */
+        ctc0->clk1m1_event.ticks = event_ticks + ( 1 * GDGCLK_1M1_DIVIDER );
     } else {
         ctc0->clk1m1_event.ticks = -1;
     };

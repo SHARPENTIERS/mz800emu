@@ -25,6 +25,11 @@
           <itemPath>src/libs/cmt_stream/cmt_stream_all.h</itemPath>
           <itemPath>src/libs/cmt_stream/cmt_vstream.h</itemPath>
         </logicalFolder>
+        <logicalFolder name="f10" displayName="CMT tool" projectFiles="true">
+          <itemPath>src/libs/cmttool/cmttool.h</itemPath>
+          <itemPath>src/libs/cmttool/cmttool_fastipl.h</itemPath>
+          <itemPath>src/libs/cmttool/cmttool_turbo.h</itemPath>
+        </logicalFolder>
         <logicalFolder name="f3" displayName="DSK" projectFiles="true">
           <itemPath>src/libs/dsk/dsk.h</itemPath>
           <itemPath>src/libs/dsk/dsk_tools.h</itemPath>
@@ -214,6 +219,11 @@
           <itemPath>src/libs/cmt_stream/cmt_bitstream.c</itemPath>
           <itemPath>src/libs/cmt_stream/cmt_stream.c</itemPath>
           <itemPath>src/libs/cmt_stream/cmt_vstream.c</itemPath>
+        </logicalFolder>
+        <logicalFolder name="f10" displayName="CMT tool" projectFiles="true">
+          <itemPath>src/libs/cmttool/cmttool.c</itemPath>
+          <itemPath>src/libs/cmttool/cmttool_fastipl.c</itemPath>
+          <itemPath>src/libs/cmttool/cmttool_turbo.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f3" displayName="DSK" projectFiles="true">
           <itemPath>src/libs/dsk/dsk.c</itemPath>
@@ -647,6 +657,18 @@
       <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_vstream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_fastipl.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_fastipl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_turbo.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_turbo.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1285,6 +1307,18 @@
       </item>
       <item path="src/libs/cmt_stream/cmt_vstream.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/libs/cmttool/cmttool.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_fastipl.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_fastipl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_turbo.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_turbo.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.h" ex="false" tool="3" flavor2="0">
@@ -1912,6 +1946,18 @@
       <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_vstream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_fastipl.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_fastipl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_turbo.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_turbo.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2552,6 +2598,18 @@
       <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_vstream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_fastipl.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_fastipl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_turbo.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_turbo.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -3198,6 +3256,18 @@
       </item>
       <item path="src/libs/cmt_stream/cmt_vstream.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/libs/cmttool/cmttool.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_fastipl.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_fastipl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_turbo.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_turbo.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.h" ex="false" tool="3" flavor2="0">
@@ -3843,6 +3913,18 @@
       </item>
       <item path="src/libs/cmt_stream/cmt_vstream.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="src/libs/cmttool/cmttool.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_fastipl.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_fastipl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_turbo.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_turbo.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.h" ex="false" tool="3" flavor2="0">
@@ -4485,6 +4567,18 @@
       <item path="src/libs/cmt_stream/cmt_vstream.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/libs/cmt_stream/cmt_vstream.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_fastipl.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_fastipl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_turbo.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/libs/cmttool/cmttool_turbo.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/libs/dsk/dsk.c" ex="false" tool="0" flavor2="0">
       </item>
