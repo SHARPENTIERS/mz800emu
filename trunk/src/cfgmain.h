@@ -40,8 +40,8 @@ extern "C" {
     /*
      * Hodnota je nacitana take ze scriptu tools/create_package-Release-Win32.sh !
      */
-    //#define CFGMAIN_EMULATOR_VERSION_TAG "devel"
-#define CFGMAIN_EMULATOR_VERSION_TAG "snapshot"
+#define CFGMAIN_EMULATOR_VERSION_TAG "devel"
+    //#define CFGMAIN_EMULATOR_VERSION_TAG "snapshot"
     //#define CFGMAIN_EMULATOR_VERSION_TAG "stable"
 
 #define EMULATOR_VERSION CFGMAIN_EMULATOR_VERSION_NUM_STRING " " CFGMAIN_EMULATOR_VERSION_TAG
