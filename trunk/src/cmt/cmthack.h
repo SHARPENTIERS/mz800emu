@@ -39,6 +39,7 @@ extern "C" {
         st_HANDLER mzf_handler;
         char *last_filename;
         unsigned load_patch_installed;
+        unsigned fix_fname_terminator;
     } st_CMTHACK;
 
     extern st_CMTHACK g_cmthack;

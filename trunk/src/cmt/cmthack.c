@@ -185,12 +185,12 @@ void cmthack_exit ( void ) {
 
 
 #define DEFAULT_CMT_HACK_ENABLE   1
+#define DEFAULT_CMT_HACK_FIX_TERMINATOR   1
 
 
 void cmthack_propagatecfg_load_rom_patch ( void *e, void *data ) {
     cmthack_load_rom_patch ( cfgelement_get_bool_value ( (CFGELM *) e ) );
 }
-
 
 void cmthack_init ( void ) {
 
@@ -198,6 +198,7 @@ void cmthack_init ( void ) {
     generic_driver_set_handler_readonly_status ( &g_cmthack.mzf_handler, 1 );
     g_cmthack.last_filename = ui_utils_mem_alloc0 ( 1 );
     g_cmthack.load_patch_installed = 0;
+    g_cmthack.fix_fname_terminator = 0;
 
     CFGMOD *cmod = cfgroot_register_new_module ( g_cfgmain, "CMTHACK" );
 
@@ -206,8 +207,13 @@ void cmthack_init ( void ) {
     cfgelement_set_propagate_cb ( elm, cmthack_propagatecfg_load_rom_patch, NULL );
     cfgelement_set_handlers ( elm, NULL, (void*) &g_cmthack.load_patch_installed );
 
+    elm = cfgmodule_register_new_element ( cmod, "fix_fname_terminator", CFGENTYPE_BOOL, DEFAULT_CMT_HACK_FIX_TERMINATOR );
+    cfgelement_set_handlers ( elm, (void*) &g_cmthack.fix_fname_terminator, (void*) &g_cmthack.fix_fname_terminator );
+
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );
+    
+    ui_cmt_hack_menu_update ( );
 }
 
 
@@ -290,13 +296,23 @@ void cmthack_load_mzf_filename ( char *filename ) {
     };
     memory_load_block ( buff, reg_hl, sizeof ( st_MZF_HEADER ), MEMORY_LOAD_MAPED );
 
+    int test_fname_term = mzf_header_test_fname_terminator ( &g_cmthack.mzf_handler );
+
     st_MZF_HEADER mzfhdr;
 
     if ( EXIT_SUCCESS == mzf_read_header ( &g_cmthack.mzf_handler, &mzfhdr ) ) {
         char ascii_filename[MZF_FNAME_FULL_LENGTH];
         mzf_tools_get_fname ( &mzfhdr, ascii_filename );
         printf ( "\nCMT hack: load MZF header on 0x%04x.\n\n", reg_hl );
-        printf ( "fname: %s\n", ascii_filename );
+        printf ( "fname: %s", ascii_filename );
+        if ( test_fname_term == EXIT_FAILURE ) {
+            uint8_t buff = MZF_FNAME_TERMINATOR;
+            if ( g_cmthack.fix_fname_terminator ) {
+                memory_load_block ( &buff, ( reg_hl + sizeof ( st_MZF_FILENAME ) - 2 ), 1, MEMORY_LOAD_MAPED );
+            }
+            printf ( " (!mising 0x0d%s)", ( g_cmthack.fix_fname_terminator ) ? " - fixed" : "" );
+        }
+        printf ( "\n" );
         printf ( "ftype: 0x%02x\n", mzfhdr.ftype );
         printf ( "fstrt: 0x%04x\n", mzfhdr.fstrt );
         printf ( "fsize: 0x%04x\n", mzfhdr.fsize );

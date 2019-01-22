@@ -110,6 +110,23 @@ G_MODULE_EXPORT void on_menuitem_cmt_hack ( GtkCheckMenuItem *menuitem, gpointer
 }
 
 
+G_MODULE_EXPORT void on_menuitem_cmt_hack_fix_fname_terminator_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+
+    if ( TEST_UICALLBACKS_LOCKED ) return;
+
+#ifdef UI_TOPMENU_IS_WINDOW
+    ui_hide_main_menu ( );
+#endif
+    if ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_cmt_hack_fix_fname_terminator" ) ) ) {
+        g_cmthack.fix_fname_terminator = 1;
+    } else {
+        g_cmthack.fix_fname_terminator = 0;
+    };
+}
+
+
 G_MODULE_EXPORT void on_menuitem_cmt_speed_1_1_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
     (void) menuitem;
     (void) data;
@@ -262,8 +279,15 @@ void ui_cmt_hack_menu_update ( void ) {
     LOCK_UICALLBACKS ( );
     if ( g_cmthack.load_patch_installed ) {
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_hack" ), TRUE );
+        gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_cmthack_options" ), TRUE );
     } else {
+        gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_cmthack_options" ), FALSE );
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_hack" ), FALSE );
+    };
+    if ( g_cmthack.fix_fname_terminator ) {
+        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_hack_fix_fname_terminator" ), TRUE );
+    } else {
+        gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_hack_fix_fname_terminator" ), FALSE );
     };
     UNLOCK_UICALLBACKS ( );
     gboolean cmth_sensitive = ( TEST_ROM_WILLY ) ? FALSE : TRUE;
