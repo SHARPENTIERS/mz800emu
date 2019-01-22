@@ -74,6 +74,9 @@ extern "C" {
     extern int mzf_write_body_on_offset ( st_HANDLER *h, uint32_t offset, uint8_t *buffer, uint32_t buffer_size );
     extern int mzf_write_body ( st_HANDLER *h, uint8_t *buffer, uint32_t buffer_size );
     extern const char* mzf_error_message ( st_HANDLER *h, st_DRIVER *d );
+    
+    extern int mzf_header_test_fname_terminator_on_offset ( st_HANDLER *h, uint32_t offset );
+    extern int mzf_header_test_fname_terminator ( st_HANDLER *h );
 
 #define MZF_UINT8_FNAME(n) (uint8_t*)&n
 

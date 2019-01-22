@@ -118,3 +118,21 @@ const char* mzf_error_message ( st_HANDLER *h, st_DRIVER *d ) {
     return generic_driver_error_message ( h, d );
 }
 
+
+int mzf_header_test_fname_terminator_on_offset ( st_HANDLER *h, uint32_t offset ) {
+    st_MZF_FILENAME mzffname;
+    uint8_t *d = &mzffname;
+    if ( EXIT_SUCCESS != generic_driver_read ( h, offset, d, sizeof ( mzffname ) ) ) return EXIT_FAILURE;
+    int i;
+    for ( i = 0; i < sizeof ( mzffname ); i++ ) {
+        if ( *d == MZF_FNAME_TERMINATOR ) {
+            return EXIT_SUCCESS;
+        };
+        d++;
+    };
+    return EXIT_FAILURE;
+}
+
+int mzf_header_test_fname_terminator ( st_HANDLER *h ) {
+    return mzf_header_test_fname_terminator_on_offset ( h, 1 );
+}
