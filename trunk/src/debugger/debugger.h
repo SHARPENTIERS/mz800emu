@@ -47,6 +47,8 @@ extern "C" {
         en_DEBUGGER_ANIMATED_UPDATES animated_updates;
         unsigned run_to_temporary_breakpoint;
         unsigned auto_save_breakpoints;
+        unsigned screen_refresh_on_edit;
+        unsigned screen_refresh_at_step;
     } st_DEBUGGER;
 
     extern st_DEBUGGER g_debugger;
@@ -101,6 +103,7 @@ extern "C" {
     extern void debugger_change_gdg_wfr ( Z80EX_BYTE value );
     extern void debugger_change_gdg_rfr ( Z80EX_BYTE value );
     extern uint32_t debuger_hextext_to_uint32 ( const char *txt );
+    extern void debugger_forced_screen_update ( void );
 
 #define debugger_memory_read_byte(addr) debugger_dasm_read_cb ( addr, NULL )
 #define debugger_pure_ram_read_byte(addr) debugger_dasm_pure_ram_read_cb ( addr, NULL )

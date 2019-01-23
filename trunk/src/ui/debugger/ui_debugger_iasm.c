@@ -36,6 +36,8 @@
 #include "debugger/inline_asm.h"
 #include "debugger/inline_asm_opcodes.h"
 
+#include "memory/memory.h"
+
 typedef struct st_UIIASM {
     //st_UIWINPOS main_pos;
     st_UIWINPOS help_pos;
@@ -129,11 +131,19 @@ G_MODULE_EXPORT void dbg_inline_assembler_ok ( GtkButton *button, gpointer user_
         return;
     };
 
+    int vram_changed = 0;
+
     /* ulozime kompilat do pameti */
     int i;
     for ( i = 0; i < compiled.length; i++ ) {
-        //printf ( "compiled output: 0x%04x - 0x%02x\n", addr + i, compiled.byte[ i ] );
-        debugger_memory_write_byte ( addr + i, compiled.byte[ i ] );
+        Z80EX_WORD wr_addr = addr + i;
+        //printf ( "compiled output: 0x%04x - 0x%02x\n", wr_addr, compiled.byte[ i ] );
+        debugger_memory_write_byte ( wr_addr, compiled.byte[ i ] );
+        vram_changed += memory_test_addr_is_vram ( wr_addr );
+    };
+
+    if ( ( g_debugger.screen_refresh_on_edit ) && ( vram_changed ) ) {
+        debugger_forced_screen_update ( );
     };
 
     /* Update debuggeru */
@@ -176,10 +186,10 @@ G_MODULE_EXPORT gboolean on_debugger_iasm_help_window_delete_event ( GtkWidget *
 
 
 G_MODULE_EXPORT void dbg_inline_assembler_help ( GtkButton *button, gpointer user_data ) {
-    
+
     GtkWidget *help_window = ui_get_widget ( "debugger_iasm_help_window" );
     if ( gtk_widget_get_visible ( help_window ) ) return;
-        
+
     /* asm window chceme mit modalni, takze jej radeji zavreme, aby bylo mozne pouzivat napovedu */
     GtkWidget *iasm_window;
     iasm_window = ui_get_widget ( "dbg_inline_assembler_window" );
@@ -217,21 +227,21 @@ G_MODULE_EXPORT void dbg_inline_assembler_help ( GtkButton *button, gpointer use
      */
     /* Change default font throughout the widget */
 
-    
-//    font_desc = pango_font_description_from_string ( "Arial 16" );
-//    gtk_widget_override_font ( view, font_desc );
-//    pango_font_description_free ( font_desc );
-//
-//
-//    GdkRGBA rgba_color;
-//    gdk_rgba_parse ( &rgba_color, "black" );
-//    gtk_widget_override_color ( view, GTK_STATE_NORMAL, &rgba_color );
 
-    
-//    GtkCssProvider *provider = gtk_css_provider_new ();
-//    gtk_css_provider_load_from_data ( provider )
-    
-    
+    //    font_desc = pango_font_description_from_string ( "Arial 16" );
+    //    gtk_widget_override_font ( view, font_desc );
+    //    pango_font_description_free ( font_desc );
+    //
+    //
+    //    GdkRGBA rgba_color;
+    //    gdk_rgba_parse ( &rgba_color, "black" );
+    //    gtk_widget_override_color ( view, GTK_STATE_NORMAL, &rgba_color );
+
+
+    //    GtkCssProvider *provider = gtk_css_provider_new ();
+    //    gtk_css_provider_load_from_data ( provider )
+
+
     /* Change left margin throughout the widget */
     gtk_text_view_set_left_margin ( GTK_TEXT_VIEW ( view ), 30 );
 

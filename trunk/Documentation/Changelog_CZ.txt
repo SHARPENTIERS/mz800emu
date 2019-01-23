@@ -1,5 +1,9 @@
 
 
+	- Debugger: v settings pridany options pro auto forced full screen
+	  refresh (bez ohledu na pozici paprsku)
+	  Lze jej nyni v debuggeru zavolat i manualne pres CTRL+R.
+
 	- Nekolik oprav a drobnych vylepseni v mem. browseru
 	- CMTHACK: pridana volba "Fixing FNAME terminator" 
 	- oprava: "rychla" verze CTC0 v rezimu M2 (bylo nefunkcni demo Madonna2)
@@ -7,7 +11,6 @@
 	- display: pridano uzamknuti pomeru stran (implicitne vypnuto, navic
 	  funkcni jen ve Windows)
 	- display: Alt+W, Alt+H - opravi pomer stran podle sirky, nebo podle vysky
-
 
 2018-09-16
 

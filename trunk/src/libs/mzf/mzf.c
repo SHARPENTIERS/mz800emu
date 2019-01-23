@@ -121,7 +121,7 @@ const char* mzf_error_message ( st_HANDLER *h, st_DRIVER *d ) {
 
 int mzf_header_test_fname_terminator_on_offset ( st_HANDLER *h, uint32_t offset ) {
     st_MZF_FILENAME mzffname;
-    uint8_t *d = &mzffname;
+    uint8_t *d = (uint8_t*) &mzffname;
     if ( EXIT_SUCCESS != generic_driver_read ( h, offset, d, sizeof ( mzffname ) ) ) return EXIT_FAILURE;
     int i;
     for ( i = 0; i < sizeof ( mzffname ); i++ ) {

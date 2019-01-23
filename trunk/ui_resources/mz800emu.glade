@@ -960,7 +960,7 @@ From time when data were real zeros and ones and computers were
                           <object class="GtkMenuItem" id="menuitem_cmthack_options">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">CMT hack options...</property>
+                            <property name="label" translatable="yes">CMT hack options</property>
                             <property name="use_underline">True</property>
                             <child type="submenu">
                               <object class="GtkMenu" id="menu28">

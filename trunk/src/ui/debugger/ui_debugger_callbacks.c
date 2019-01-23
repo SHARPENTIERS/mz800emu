@@ -335,6 +335,11 @@ G_MODULE_EXPORT void on_dbg_stack_edited ( GtkCellRendererText *cell, const gcha
     debugger_memory_write_byte ( addr, (Z80EX_BYTE) ( new_value & 0xff ) );
     debugger_memory_write_byte ( ( addr + 1 ), (Z80EX_BYTE) ( ( new_value >> 8 ) & 0xff ) );
 
+    if ( g_debugger.screen_refresh_on_edit ) {
+        if ( ( memory_test_addr_is_vram ( addr ) ) || ( memory_test_addr_is_vram ( addr + 1 ) ) ) {
+            debugger_forced_screen_update ( );
+        };
+    };
 
     /* TODO: updatnout jen zmeneny radek a zachovat selection */
     ui_debugger_update_stack ( );
@@ -534,6 +539,10 @@ G_MODULE_EXPORT void on_dbg_regdmd ( GtkComboBox *combobox, gpointer user_data )
     int value = gtk_combo_box_get_active ( combobox );
     debugger_change_dmd ( value );
     g_uidebugger.last_dmd = value;
+
+    if ( g_debugger.screen_refresh_on_edit ) {
+        debugger_forced_screen_update ( );
+    };
 }
 
 
@@ -559,6 +568,10 @@ G_MODULE_EXPORT void on_dbg_gdg_reg_border_comboboxtext_changed ( GtkComboBox *c
     int value = gtk_combo_box_get_active ( combobox );
     debugger_change_gdg_reg_border ( value );
     g_uidebugger.last_gdg_reg_border = value;
+
+    if ( g_debugger.screen_refresh_on_edit ) {
+        debugger_forced_screen_update ( );
+    };
 }
 
 
@@ -567,6 +580,10 @@ G_MODULE_EXPORT void on_dbg_gdg_reg_palgrp_comboboxtext_changed ( GtkComboBox *c
     int value = gtk_combo_box_get_active ( combobox );
     debugger_change_gdg_reg_palgrp ( value );
     g_uidebugger.last_gdg_reg_palgrp = value;
+
+    if ( g_debugger.screen_refresh_on_edit ) {
+        debugger_forced_screen_update ( );
+    };
 }
 
 
@@ -575,6 +592,10 @@ G_MODULE_EXPORT void on_dbg_gdg_reg_pal0_comboboxtext_changed ( GtkComboBox *com
     int value = gtk_combo_box_get_active ( combobox );
     debugger_change_gdg_reg_pal ( 0, value );
     g_uidebugger.last_gdg_reg_pal0 = value;
+
+    if ( g_debugger.screen_refresh_on_edit ) {
+        debugger_forced_screen_update ( );
+    };
 }
 
 
@@ -583,6 +604,10 @@ G_MODULE_EXPORT void on_dbg_gdg_reg_pal1_comboboxtext_changed ( GtkComboBox *com
     int value = gtk_combo_box_get_active ( combobox );
     debugger_change_gdg_reg_pal ( 1, value );
     g_uidebugger.last_gdg_reg_pal1 = value;
+
+    if ( g_debugger.screen_refresh_on_edit ) {
+        debugger_forced_screen_update ( );
+    };
 }
 
 
@@ -591,6 +616,10 @@ G_MODULE_EXPORT void on_dbg_gdg_reg_pal2_comboboxtext_changed ( GtkComboBox *com
     int value = gtk_combo_box_get_active ( combobox );
     debugger_change_gdg_reg_pal ( 2, value );
     g_uidebugger.last_gdg_reg_pal2 = value;
+
+    if ( g_debugger.screen_refresh_on_edit ) {
+        debugger_forced_screen_update ( );
+    };
 }
 
 
@@ -599,6 +628,10 @@ G_MODULE_EXPORT void on_dbg_gdg_reg_pal3_comboboxtext_changed ( GtkComboBox *com
     int value = gtk_combo_box_get_active ( combobox );
     debugger_change_gdg_reg_pal ( 3, value );
     g_uidebugger.last_gdg_reg_pal3 = value;
+
+    if ( g_debugger.screen_refresh_on_edit ) {
+        debugger_forced_screen_update ( );
+    };
 }
 
 
@@ -1183,6 +1216,10 @@ G_MODULE_EXPORT void on_dbg_hwscroll_ssa_entry_changed ( GtkEditable *ed, gpoint
 
     gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_ENABLED ) ? "1" : "0" );
     g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_ENABLED;
+
+    if ( g_debugger.screen_refresh_on_edit ) {
+        debugger_forced_screen_update ( );
+    };
 }
 
 
@@ -1220,6 +1257,10 @@ G_MODULE_EXPORT void on_dbg_hwscroll_sea_entry_changed ( GtkEditable *ed, gpoint
 
     gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_ENABLED ) ? "1" : "0" );
     g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_ENABLED;
+
+    if ( g_debugger.screen_refresh_on_edit ) {
+        debugger_forced_screen_update ( );
+    };
 }
 
 
@@ -1256,6 +1297,10 @@ G_MODULE_EXPORT void on_dbg_hwscroll_sw_entry_changed ( GtkEditable *ed, gpointe
 
     gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_ENABLED ) ? "1" : "0" );
     g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_ENABLED;
+
+    if ( g_debugger.screen_refresh_on_edit ) {
+        debugger_forced_screen_update ( );
+    };
 }
 
 
@@ -1292,6 +1337,34 @@ G_MODULE_EXPORT void on_dbg_hwscroll_sof_entry_changed ( GtkEditable *ed, gpoint
 
     gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_ENABLED ) ? "1" : "0" );
     g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_ENABLED;
+
+    if ( g_debugger.screen_refresh_on_edit ) {
+        debugger_forced_screen_update ( );
+    };
+}
+
+
+G_MODULE_EXPORT void on_dbg_screen_forced_refresh_on_edit_checkmenuitem_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+    if ( g_uidebugger.accelerators_locked ) return;
+    g_debugger.screen_refresh_on_edit = ( gtk_check_menu_item_get_active ( menuitem ) ) ? 1 : 0;
+}
+
+
+G_MODULE_EXPORT void on_dbg_screen_forced_refresh_at_step_checkmenuitem_toggled ( GtkCheckMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+    if ( g_uidebugger.accelerators_locked ) return;
+    g_debugger.screen_refresh_at_step = ( gtk_check_menu_item_get_active ( menuitem ) ) ? 1 : 0;
+}
+
+
+G_MODULE_EXPORT void on_dbg_screen_manually_refresh_menuitem_activate ( GtkMenuItem *menuitem, gpointer data ) {
+    (void) menuitem;
+    (void) data;
+    //if ( !TEST_EMULATION_PAUSED ) return;
+    debugger_forced_screen_update ( );
 }
 
 #endif

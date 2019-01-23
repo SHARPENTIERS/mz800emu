@@ -37,9 +37,9 @@ extern "C" {
     extern void framebuffer_update_MZ700_all_rows ( void );
     extern void framebuffer_MZ800_screen_changed ( void );
 
-    extern void framebuffer_border_row_fill ( void );
+    extern void framebuffer_border_current_row_fill ( void );
+    extern void framebuffer_border_all_rows_fill ( void );
     extern void framebuffer_border_changed ( void );
-
 
 #ifdef __cplusplus
 }

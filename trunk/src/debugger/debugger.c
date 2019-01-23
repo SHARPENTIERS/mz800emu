@@ -40,6 +40,8 @@
 #include "memory/memory.h"
 #include "breakpoints.h"
 #include "cfgfile/cfgtools.h"
+#include "gdg/framebuffer.h"
+#include "iface_sdl/iface_sdl.h"
 
 #include "cfgmain.h"
 
@@ -128,6 +130,12 @@ void debugger_init ( void ) {
     cfgelement_set_propagate_cb ( elm, ui_debugger_focus_to_addr_history_propagatecfg_cb, NULL );
     cfgelement_set_save_cb ( elm, ui_debugger_focus_to_addr_history_save_cb, NULL );
 
+    elm = cfgmodule_register_new_element ( cmod, "screen_refresh_on_edit", CFGENTYPE_BOOL, 0 );
+    cfgelement_set_handlers ( elm, (void*) &g_debugger.screen_refresh_on_edit, (void*) &g_debugger.screen_refresh_on_edit );
+
+    elm = cfgmodule_register_new_element ( cmod, "screen_refresh_at_step", CFGENTYPE_BOOL, 0 );
+    cfgelement_set_handlers ( elm, (void*) &g_debugger.screen_refresh_at_step, (void*) &g_debugger.screen_refresh_at_step );
+
     // ui_membrowser
     elm = cfgmodule_register_new_element ( cmod, "membrowser_sharp_ascii", CFGENTYPE_BOOL, 0 );
     cfgelement_set_handlers ( elm, (void*) &g_membrowser.sh_ascii_conversion, (void*) &g_membrowser.sh_ascii_conversion );
@@ -153,14 +161,14 @@ void debugger_init ( void ) {
                                            -1 );
     cfgelement_set_handlers ( elm, (void*) &g_membrowser.memsrc, (void*) &g_membrowser.memsrc );
 
-/*
-    elm = cfgmodule_register_new_element ( cmod, "membrowser_page", CFGENTYPE_UNSIGNED, 0, 0, 0xffffffff );
-    cfgelement_set_handlers ( elm, (void*) &g_membrowser.page, (void*) &g_membrowser.page );
+    /*
+        elm = cfgmodule_register_new_element ( cmod, "membrowser_page", CFGENTYPE_UNSIGNED, 0, 0, 0xffffffff );
+        cfgelement_set_handlers ( elm, (void*) &g_membrowser.page, (void*) &g_membrowser.page );
 
-    elm = cfgmodule_register_new_element ( cmod, "membrowser_selected_addr", CFGENTYPE_TEXT, "0x0000" );
-    cfgelement_set_propagate_cb ( elm, debugger_membrowser_selected_addr_propagatecfg_cb, NULL );
-    cfgelement_set_save_cb ( elm, debugger_membrowser_selected_addr_save_cb, NULL );
-*/
+        elm = cfgmodule_register_new_element ( cmod, "membrowser_selected_addr", CFGENTYPE_TEXT, "0x0000" );
+        cfgelement_set_propagate_cb ( elm, debugger_membrowser_selected_addr_propagatecfg_cb, NULL );
+        cfgelement_set_save_cb ( elm, debugger_membrowser_selected_addr_save_cb, NULL );
+     */
 
     elm = cfgmodule_register_new_element ( cmod, "membrowser_pzik_addressing", CFGENTYPE_KEYWORD, MEMBROWSER_PEZIK_ADDRESSING_BE,
                                            MEMBROWSER_PEZIK_ADDRESSING_BE, "B_ENDIAN",
@@ -441,6 +449,18 @@ uint32_t debuger_hextext_to_uint32 ( const char *txt ) {
     };
 
     return value;
+}
+
+
+void debugger_forced_screen_update ( void ) {
+    g_iface_sdl.redraw_full_screen_request = 1;
+    if ( DMD_TEST_MZ700 ) {
+        framebuffer_update_MZ700_all_rows ( );
+    } else {
+        framebuffer_MZ800_all_screen_rows_fill ( );
+    };
+    framebuffer_border_all_rows_fill ( );
+    iface_sdl_update_window ( );
 }
 
 #endif

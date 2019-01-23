@@ -36,7 +36,6 @@
 #include "debugger/debugger.h"
 #include "ui_membrowser.h"
 #include "gdg/gdg.h"
-#include "gdg/framebuffer.h"
 #include "iface_sdl/iface_sdl.h"
 #include "ui_debugger.h"
 #include "ramdisk/ramdisk.h"
@@ -788,12 +787,7 @@ static void on_dbg_membrowser_textbuffer_changed ( GtkTextBuffer *textbuffer, gp
                 g_iface_sdl.redraw_full_screen_request = 1;
                 // Pokud jsme "paused" a mame nastaven forced srceen refresh, tak udelame screen refresh
                 if ( ( g_mz800.emulation_paused ) && ( g_membrowser.forced_screen_refresh ) ) {
-                    if ( DMD_TEST_MZ700 ) {
-                        framebuffer_update_MZ700_all_rows ( );
-                    } else {
-                        framebuffer_MZ800_all_screen_rows_fill ( );
-                    };
-                    iface_sdl_update_window ( );
+                    debugger_forced_screen_update ( );
                 };
             };
         };
@@ -806,12 +800,7 @@ static void on_dbg_membrowser_textbuffer_changed ( GtkTextBuffer *textbuffer, gp
                 g_iface_sdl.redraw_full_screen_request = 1;
                 // Pokud jsme "paused" a mame nastaven forced srceen refresh, tak udelame screen refresh
                 if ( ( g_mz800.emulation_paused ) && ( g_membrowser.forced_screen_refresh ) ) {
-                    if ( DMD_TEST_MZ700 ) {
-                        framebuffer_update_MZ700_all_rows ( );
-                    } else {
-                        framebuffer_MZ800_all_screen_rows_fill ( );
-                    };
-                    iface_sdl_update_window ( );
+                    debugger_forced_screen_update ( );
                 };
             }
         } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_RAM ) {
@@ -858,19 +847,6 @@ static void ui_membrowser_set_mode ( en_MEMBROWSER_MODE mode ) {
         gtk_text_view_set_editable ( GTK_TEXT_VIEW ( view ), FALSE );
         gtk_text_view_set_overwrite ( GTK_TEXT_VIEW ( view ), FALSE );
         sensitive = TRUE;
-        // Pokud se psalo do VRAM pres "MAPED", tak by se mel provest update obrazu sam, 
-        // ale po primem zapisu do g_memoryVRAM_* je potreba udelat update framebufferu a prekreslit okno.
-        /*
-                if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) {
-                    if ( DMD_TEST_MZ700 ) {
-                        framebuffer_update_MZ700_all_rows ( );
-                    } else {
-                        framebuffer_MZ800_all_screen_rows_fill ( );
-                    };
-                    g_iface_sdl.redraw_full_screen_request = 1;
-                    iface_sdl_update_window ( );
-                };
-         */
 
         if ( gtk_widget_is_visible ( ui_get_widget ( "debugger_main_window" ) ) ) {
             ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
@@ -2138,13 +2114,7 @@ static void ui_membrowser_load_block_cb ( uint32_t addr, uint8_t *data, uint32_t
     // Pokud se psalo do VRAM pres "MAPED", tak by se mel provest update obrazu sam, 
     // ale po primem zapisu do g_memoryVRAM_* je potreba udelat update framebufferu a prekreslit okno.
     if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) || ( g_membrowser.memsrc == MEMBROWSER_SOURCE_CGROM ) ) {
-        if ( DMD_TEST_MZ700 ) {
-            framebuffer_update_MZ700_all_rows ( );
-        } else {
-            framebuffer_MZ800_all_screen_rows_fill ( );
-        };
-        g_iface_sdl.redraw_full_screen_request = 1;
-        iface_sdl_update_window ( );
+        debugger_forced_screen_update ( );
     };
 
     g_free ( data );
