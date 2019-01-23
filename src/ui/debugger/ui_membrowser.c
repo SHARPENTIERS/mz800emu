@@ -319,15 +319,15 @@ static void ui_membrowser_edit_hex_fix_cursor_position_left ( void ) {
     ui_membrowser_get_cursor_position ( &row, &col );
 
     if ( col < 5 ) {
-        if ( row != 0 ) {
-            uint32_t offset = 5 + 52 + ( ( row - 1 ) * MEMBROWSER_ROW_LENGTH );
-            gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
-            gtk_text_buffer_place_cursor ( buffer, &iter );
-        } else {
-            uint32_t offset = 5;
-            gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
-            gtk_text_buffer_place_cursor ( buffer, &iter );
-        };
+        //if ( row != 0 ) {
+        uint32_t offset = 5 + 52 + ( ( row - 1 ) * MEMBROWSER_ROW_LENGTH );
+        gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
+        gtk_text_buffer_place_cursor ( buffer, &iter );
+        //} else {
+        //    uint32_t offset = 5;
+        //    gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
+        //    gtk_text_buffer_place_cursor ( buffer, &iter );
+        //};
         return;
     };
 
@@ -783,20 +783,46 @@ static void on_dbg_membrowser_textbuffer_changed ( GtkTextBuffer *textbuffer, gp
             g_membrowser.MEM[( ( addr & 0xff ) << 8 ) | ( addr >> 8 )] = g_membrowser.data_current[addr];
         } else {
             g_membrowser.MEM[addr] = g_membrowser.data_current[addr];
+            // Pokud jsme psali do VRAM, tak si vyzadame prekresleni obrazu
+            if ( ( g_membrowser.MEM == g_memoryVRAM_I ) || ( g_membrowser.MEM == g_memoryVRAM_II ) || ( g_membrowser.MEM == g_memoryVRAM_III ) || ( g_membrowser.MEM == g_memoryVRAM_IV ) ) {
+                g_iface_sdl.redraw_full_screen_request = 1;
+                // Pokud jsme "paused" a mame nastaven forced srceen refresh, tak udelame screen refresh
+                if ( ( g_mz800.emulation_paused ) && ( g_membrowser.forced_screen_refresh ) ) {
+                    if ( DMD_TEST_MZ700 ) {
+                        framebuffer_update_MZ700_all_rows ( );
+                    } else {
+                        framebuffer_MZ800_all_screen_rows_fill ( );
+                    };
+                    iface_sdl_update_window ( );
+                };
+            };
         };
     } else {
         if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MAPED ) {
             memory_load_block ( &g_membrowser.data_current[addr], addr, 1, MEMORY_LOAD_MAPED );
             g_membrowser.data_current[addr] = debugger_memory_read_byte ( addr );
+            // Pokud jsme psali do VRAM, tak si vyzadame prekresleni obrazu
+            if ( memory_test_addr_is_vram ( addr ) ) {
+                g_iface_sdl.redraw_full_screen_request = 1;
+                // Pokud jsme "paused" a mame nastaven forced srceen refresh, tak udelame screen refresh
+                if ( ( g_mz800.emulation_paused ) && ( g_membrowser.forced_screen_refresh ) ) {
+                    if ( DMD_TEST_MZ700 ) {
+                        framebuffer_update_MZ700_all_rows ( );
+                    } else {
+                        framebuffer_MZ800_all_screen_rows_fill ( );
+                    };
+                    iface_sdl_update_window ( );
+                };
+            }
         } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_RAM ) {
             memory_load_block ( &g_membrowser.data_current[addr], addr, 1, MEMORY_LOAD_RAMONLY );
             g_membrowser.data_current[addr] = debugger_pure_ram_read_byte ( addr ); // muzeme narazit na namapovanou FLASH, ktera je R/O
         } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MEMEXT_LUFTNER ) {
             uint8_t *srcmem;
-            if ( g_membrowser.memext_bank & 0x80 ) {
-                srcmem = &g_memext.FLASH[( ( g_membrowser.memext_bank & 0x7f ) * MEMEXT_LUFTNER_BANK_SIZE )];
+            if ( g_membrowser.memext_luftner_bank & 0x80 ) {
+                srcmem = &g_memext.FLASH[( ( g_membrowser.memext_luftner_bank & 0x7f ) * MEMEXT_LUFTNER_BANK_SIZE )];
             } else {
-                srcmem = &g_memext.RAM[( g_membrowser.memext_bank * MEMEXT_LUFTNER_BANK_SIZE )];
+                srcmem = &g_memext.RAM[( g_membrowser.memext_luftner_bank * MEMEXT_LUFTNER_BANK_SIZE )];
             };
             srcmem[addr] = g_membrowser.data_current[addr];
         } else {
@@ -834,15 +860,17 @@ static void ui_membrowser_set_mode ( en_MEMBROWSER_MODE mode ) {
         sensitive = TRUE;
         // Pokud se psalo do VRAM pres "MAPED", tak by se mel provest update obrazu sam, 
         // ale po primem zapisu do g_memoryVRAM_* je potreba udelat update framebufferu a prekreslit okno.
-        if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) {
-            if ( DMD_TEST_MZ700 ) {
-                framebuffer_update_MZ700_all_rows ( );
-            } else {
-                framebuffer_MZ800_all_screen_rows_fill ( );
-            };
-            g_iface_sdl.redraw_full_screen_request = 1;
-            iface_sdl_update_window ( );
-        };
+        /*
+                if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_VRAM ) {
+                    if ( DMD_TEST_MZ700 ) {
+                        framebuffer_update_MZ700_all_rows ( );
+                    } else {
+                        framebuffer_MZ800_all_screen_rows_fill ( );
+                    };
+                    g_iface_sdl.redraw_full_screen_request = 1;
+                    iface_sdl_update_window ( );
+                };
+         */
 
         if ( gtk_widget_is_visible ( ui_get_widget ( "debugger_main_window" ) ) ) {
             ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
@@ -953,14 +981,25 @@ static void ui_membrowser_init ( void ) {
     if ( g_membrowser_initialised ) return;
 
     ui_main_setpos ( &g_membrowser.main_pos, -1, -1 );
+    // inicializujeme v debugger_init()
+#if 0
     g_membrowser.memsrc = MEMBROWSER_SOURCE_MAPED;
     g_membrowser.show_comparative = FALSE;
     g_membrowser.sh_ascii_conversion = FALSE;
+    g_membrowser.forced_screen_refresh = FALSE;
+    g_membrowser.pezik_addressing = MEMBROWSER_PEZIK_ADDRESSING_BE;
+    g_membrowser.vram_plane = 0;
+    g_membrowser.pezik_bank[0] = 0;
+    g_membrowser.pezik_bank[1] = 0;
+    g_membrowser.mr1z18_bank = 0;
+    g_membrowser.memext_bank = 0;
+#endif
     g_membrowser.selected_addr = 0;
     g_membrowser.page = 0;
 
     gtk_toggle_button_set_active ( ui_get_toggle ( "dbg_membrowser_comparative_mode_checkbutton" ), g_membrowser.show_comparative );
     gtk_combo_box_set_active ( ui_get_combo_box ( "dbg_membrowser_ascii_cnv_comboboxtext" ), ( g_membrowser.sh_ascii_conversion ) ? 1 : 0 );
+    gtk_toggle_button_set_active ( ui_get_toggle ( "dbg_membrowser_force_screen_refresh_checkbutton" ), g_membrowser.forced_screen_refresh );
 
     /* scale vyrobeny pres glade (asi :) nefunguje spravne */
     g_membrowser.page_adjustment = gtk_adjustment_new ( 0, 0, 128, 1, 8, 0 );
@@ -1074,7 +1113,7 @@ static void ui_membrowser_load_data_from_memsrc ( void ) {
 
         case MEMBROWSER_SOURCE_MEMEXT_PEHU:
             if ( EXIT_SUCCESS == ui_membrowser_check_memext_noisily ( ) ) {
-                g_membrowser.MEM = &g_memext.RAM[( g_membrowser.memext_bank * MEMEXT_PEHU_BANK_SIZE )];
+                g_membrowser.MEM = &g_memext.RAM[( g_membrowser.memext_pehu_bank * MEMEXT_PEHU_BANK_SIZE )];
             };
             break;
 
@@ -1156,10 +1195,10 @@ static void ui_membrowser_load_data_from_memsrc ( void ) {
             };
         } else if ( ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MEMEXT_LUFTNER ) && ( memext_luftner_check == EXIT_SUCCESS ) ) {
             uint8_t *srcmem;
-            if ( g_membrowser.memext_bank & 0x80 ) {
-                srcmem = &g_memext.FLASH[( ( g_membrowser.memext_bank & 0x7f ) * MEMEXT_LUFTNER_BANK_SIZE )];
+            if ( g_membrowser.memext_luftner_bank & 0x80 ) {
+                srcmem = &g_memext.FLASH[( ( g_membrowser.memext_luftner_bank & 0x7f ) * MEMEXT_LUFTNER_BANK_SIZE )];
             } else {
-                srcmem = &g_memext.RAM[( g_membrowser.memext_bank * MEMEXT_LUFTNER_BANK_SIZE )];
+                srcmem = &g_memext.RAM[( g_membrowser.memext_luftner_bank * MEMEXT_LUFTNER_BANK_SIZE )];
             };
             memcpy ( g_membrowser.data_current, srcmem, g_membrowser.mem_size );
 
@@ -1263,24 +1302,40 @@ G_MODULE_EXPORT gboolean on_dbg_membrowser_textview_button_press_event ( GtkWidg
     gint row, col;
     ui_membrowser_get_cursor_position ( &row, &col );
 
+    // 57 = posledni znak v HEX, 60 = prvni znak v ASCII
+    if ( ( col > 57 ) && ( col < 60 ) ) {
+        if ( col < 59 ) {
+            col = 56;
+        } else {
+            col = 60;
+        };
+        uint32_t offset = ( row * MEMBROWSER_ROW_LENGTH ) + col;
+        gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
+        gtk_text_buffer_place_cursor ( buffer, &iter );
+    } else if ( col < 5 ) {
+        col = 5;
+        uint32_t offset = ( row * MEMBROWSER_ROW_LENGTH ) + col;
+        gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
+        gtk_text_buffer_place_cursor ( buffer, &iter );
+    } else if ( col > 75 ) {
+        col = 75;
+        uint32_t offset = ( row * MEMBROWSER_ROW_LENGTH ) + col;
+        gtk_text_buffer_get_iter_at_offset ( buffer, &iter, offset );
+        gtk_text_buffer_place_cursor ( buffer, &iter );
+    };
+
     if ( g_membrowser.mode != MEMBROWSER_MODE_VIEW ) {
-        if ( col <= ( 5 + 55 ) ) {
+        if ( col <= 57 ) {
             g_membrowser.mode = MEMBROWSER_MODE_EDIT_HEX;
         } else {
             g_membrowser.mode = MEMBROWSER_MODE_EDIT_ASCII;
         };
+    };
 
-        if ( g_membrowser.mode == MEMBROWSER_MODE_EDIT_HEX ) {
-            ui_membrowser_edit_hex_fix_cursor_position_right ( );
-        } else {
-            ui_membrowser_edit_ascii_fix_cursor_position_right ( TRUE );
-        };
+    if ( col <= 57 ) {
+        ui_membrowser_edit_hex_fix_cursor_position_right ( );
     } else {
-        if ( col <= ( 5 + 55 ) ) {
-            ui_membrowser_edit_hex_fix_cursor_position_right ( );
-        } else {
-            ui_membrowser_edit_ascii_fix_cursor_position_right ( TRUE );
-        };
+        ui_membrowser_edit_ascii_fix_cursor_position_right ( TRUE );
     };
 
     ui_membrowser_update_selected_addr ( );
@@ -1497,7 +1552,10 @@ G_MODULE_EXPORT gboolean on_dbg_membrowser_textview_key_press_event ( GtkWidget 
 
             if ( event->keyval == GDK_KEY_Left ) {
                 if ( g_membrowser.selected_addr != ui_membrowser_get_first_addr_on_page ( g_membrowser.page ) ) return FALSE;
-                if ( g_membrowser.selected_addr != 0x0000 ) {
+                gint row, col;
+                ui_membrowser_get_cursor_position ( &row, &col );
+                if ( ( g_membrowser.mode == MEMBROWSER_MODE_EDIT_HEX ) && ( col > 5 ) ) return FALSE;
+                if ( ( g_membrowser.selected_addr != 0x0000 ) ) {
                     g_membrowser.selected_addr = ui_membrowser_get_last_addr_on_page ( g_membrowser.page );
                     ui_membrowser_show_page ( g_membrowser.page - 1 );
                 };
@@ -1646,6 +1704,12 @@ G_MODULE_EXPORT void on_dbg_membrowser_comparative_mode_checkbutton_toggled ( Gt
 }
 
 
+G_MODULE_EXPORT void on_dbg_membrowser_force_screen_refresh_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+    if ( !g_membrowser_initialised ) return;
+    g_membrowser.forced_screen_refresh = gtk_toggle_button_get_active ( togglebutton );
+}
+
+
 G_MODULE_EXPORT void on_dbg_membrowser_ascii_cnv_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
     if ( !g_membrowser_initialised ) return;
     g_membrowser.sh_ascii_conversion = ( gtk_combo_box_get_active ( combobox ) ) ? TRUE : FALSE;
@@ -1675,6 +1739,7 @@ static int ui_membrowser_source_pezik_is_selected ( int pezik_id ) {
     GtkWidget *bank256_combobox = ui_get_widget ( "dbg_membrowser_bank256_combobox" );
     GtkWidget *bank_combotext = ui_get_widget ( "dbg_membrowser_bank_comboboxtext" );
     GtkWidget *pezik_addr_combotext = ui_get_widget ( "dbg_membrowser_pezik_addressing_comboboxtext" );
+    GtkWidget *forced_scr_refresh = ui_get_widget ( "dbg_membrowser_force_screen_refresh_checkbutton" );
 
     g_membrowser.lock_bank_combotext = TRUE;
     gtk_combo_box_text_remove_all ( GTK_COMBO_BOX_TEXT ( bank_combotext ) );
@@ -1689,18 +1754,20 @@ static int ui_membrowser_source_pezik_is_selected ( int pezik_id ) {
             gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( bank_combotext ), buff );
         };
     };
-    gtk_combo_box_set_active ( GTK_COMBO_BOX ( bank_combotext ), first_bank );
-    g_membrowser.pezik_bank[pezik_id] = first_bank;
+    int set_bank = ( ( g_ramdisk.pezik[pezik_id].portmask >> g_membrowser.pezik_bank[pezik_id] ) & 1 ) ? g_membrowser.pezik_bank[pezik_id] : first_bank;
+    gtk_combo_box_set_active ( GTK_COMBO_BOX ( bank_combotext ), set_bank );
+    g_membrowser.pezik_bank[pezik_id] = set_bank;
     g_membrowser.lock_bank_combotext = FALSE;
 
     g_membrowser.lock_pezik_addr_combotext = TRUE;
-    g_membrowser.pezik_addressing = MEMBROWSER_PEZIK_ADDRESSING_BE;
+    //g_membrowser.pezik_addressing = MEMBROWSER_PEZIK_ADDRESSING_BE;
     gtk_combo_box_set_active ( GTK_COMBO_BOX ( pezik_addr_combotext ), g_membrowser.pezik_addressing );
     g_membrowser.lock_pezik_addr_combotext = FALSE;
 
     gtk_widget_hide ( bank256_combobox );
     gtk_widget_show ( bank_combotext );
     gtk_widget_show ( pezik_addr_combotext );
+    gtk_widget_hide ( forced_scr_refresh );
 
     return EXIT_SUCCESS;
 }
@@ -1714,6 +1781,7 @@ G_MODULE_EXPORT void on_dbg_membrowser_source_comboboxtext_changed ( GtkComboBox
     GtkWidget *bank256_combobox = ui_get_widget ( "dbg_membrowser_bank256_combobox" );
     GtkWidget *bank_combotext = ui_get_widget ( "dbg_membrowser_bank_comboboxtext" );
     GtkWidget *pezik_addr_combotext = ui_get_widget ( "dbg_membrowser_pezik_addressing_comboboxtext" );
+    GtkWidget *forced_scr_refresh = ui_get_widget ( "dbg_membrowser_force_screen_refresh_checkbutton" );
 
     switch ( memsrc ) {
         case MEMBROWSER_SOURCE_MAPED:
@@ -1724,6 +1792,11 @@ G_MODULE_EXPORT void on_dbg_membrowser_source_comboboxtext_changed ( GtkComboBox
             gtk_widget_hide ( bank256_combobox );
             gtk_widget_hide ( bank_combotext );
             gtk_widget_hide ( pezik_addr_combotext );
+            if ( memsrc == MEMBROWSER_SOURCE_MAPED ) {
+                gtk_widget_show ( forced_scr_refresh );
+            } else {
+                gtk_widget_hide ( forced_scr_refresh );
+            };
             break;
 
         case MEMBROWSER_SOURCE_VRAM:
@@ -1733,12 +1806,12 @@ G_MODULE_EXPORT void on_dbg_membrowser_source_comboboxtext_changed ( GtkComboBox
             gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( bank_combotext ), "Plane II" );
             gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( bank_combotext ), "Plane III" );
             gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( bank_combotext ), "Plane IV" );
-            gtk_combo_box_set_active ( GTK_COMBO_BOX ( bank_combotext ), 0 );
+            gtk_combo_box_set_active ( GTK_COMBO_BOX ( bank_combotext ), g_membrowser.vram_plane );
             g_membrowser.lock_bank_combotext = FALSE;
-            g_membrowser.vram_plane = 0;
             gtk_widget_hide ( bank256_combobox );
             gtk_widget_show ( bank_combotext );
             gtk_widget_hide ( pezik_addr_combotext );
+            gtk_widget_show ( forced_scr_refresh );
             break;
 
         case MEMBROWSER_SOURCE_PEZIK_68:
@@ -1767,7 +1840,10 @@ G_MODULE_EXPORT void on_dbg_membrowser_source_comboboxtext_changed ( GtkComboBox
 
                 GtkTreeModel *model = gtk_combo_box_get_model ( GTK_COMBO_BOX ( bank256_combobox ) );
                 GtkTreeIter iter;
-                gtk_tree_model_get_iter_from_string ( model, &iter, "0:0" );
+                char path_txt[20];
+                snprintf ( path_txt, sizeof ( path_txt ), "%d:%d", ( g_membrowser.mr1z18_bank >> 4 ), ( g_membrowser.mr1z18_bank & 0x0f ) );
+                printf ( "PATH=%s\n", path_txt );
+                gtk_tree_model_get_iter_from_string ( model, &iter, path_txt );
                 gtk_combo_box_set_active_iter ( GTK_COMBO_BOX ( bank256_combobox ), &iter );
                 g_membrowser.lock_bank256_combobox = FALSE;
                 gtk_widget_show ( bank256_combobox );
@@ -1781,14 +1857,17 @@ G_MODULE_EXPORT void on_dbg_membrowser_source_comboboxtext_changed ( GtkComboBox
                     snprintf ( buff, sizeof ( buff ), "Bank %d", i );
                     gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( bank_combotext ), buff );
                 };
-                gtk_combo_box_set_active ( GTK_COMBO_BOX ( bank_combotext ), 0 );
+                if ( g_membrowser.mr1z18_bank > g_ramdisk.std.size ) {
+                    g_membrowser.mr1z18_bank = 0;
+                };
+                gtk_combo_box_set_active ( GTK_COMBO_BOX ( bank_combotext ), g_membrowser.mr1z18_bank );
                 g_membrowser.lock_bank_combotext = FALSE;
                 gtk_widget_hide ( bank256_combobox );
                 gtk_widget_show ( bank_combotext );
             };
-            g_membrowser.mr1z18_bank = 0;
 
             gtk_widget_hide ( pezik_addr_combotext );
+            gtk_widget_hide ( forced_scr_refresh );
             break;
 
         case MEMBROWSER_SOURCE_MEMEXT_PEHU:
@@ -1812,7 +1891,9 @@ G_MODULE_EXPORT void on_dbg_membrowser_source_comboboxtext_changed ( GtkComboBox
 
                 GtkTreeModel *model = gtk_combo_box_get_model ( GTK_COMBO_BOX ( bank256_combobox ) );
                 GtkTreeIter iter;
-                gtk_tree_model_get_iter_from_string ( model, &iter, "0:0" );
+                char path_txt[20];
+                snprintf ( path_txt, sizeof ( path_txt ), "%d:%d", ( g_membrowser.memext_luftner_bank >> 4 ), ( g_membrowser.memext_luftner_bank & 0x0f ) );
+                gtk_tree_model_get_iter_from_string ( model, &iter, path_txt );
                 gtk_combo_box_set_active_iter ( GTK_COMBO_BOX ( bank256_combobox ), &iter );
                 g_membrowser.lock_bank256_combobox = FALSE;
                 gtk_widget_show ( bank256_combobox );
@@ -1826,19 +1907,24 @@ G_MODULE_EXPORT void on_dbg_membrowser_source_comboboxtext_changed ( GtkComboBox
                     snprintf ( buff, sizeof ( buff ), "Bank %d", i );
                     gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( bank_combotext ), buff );
                 };
-                gtk_combo_box_set_active ( GTK_COMBO_BOX ( bank_combotext ), 0 );
+                if ( g_membrowser.memext_pehu_bank >= MEMEXT_PEHU_BANKS ) {
+                    g_membrowser.memext_pehu_bank = 0;
+                };
+                gtk_combo_box_set_active ( GTK_COMBO_BOX ( bank_combotext ), g_membrowser.memext_pehu_bank );
                 g_membrowser.lock_bank_combotext = FALSE;
                 gtk_widget_hide ( bank256_combobox );
                 gtk_widget_show ( bank_combotext );
             };
-            g_membrowser.memext_bank = 0;
 
             gtk_widget_hide ( pezik_addr_combotext );
+            gtk_widget_hide ( forced_scr_refresh );
             break;
     };
 
     g_membrowser.memsrc = memsrc;
     memset ( g_membrowser.data_current, 0x00, MEMBROWSER_MEM_MAX );
+    g_membrowser.selected_addr = 0;
+    g_membrowser.page = 0;
     ui_membrowser_load_data_from_memsrc ( );
     ui_membrowser_show_page ( g_membrowser.page );
 }
@@ -1945,7 +2031,7 @@ G_MODULE_EXPORT gboolean on_dbg_mebrowser_goto_addr_hex_entry_key_press_event ( 
 
 
 G_MODULE_EXPORT gboolean on_dbg_mebrowser_goto_addr_dec_entry_key_press_event ( GtkWidget *widget, GdkEventKey *event, gpointer user_data ) {
-    printf ( "k: 0x%04x\n", event->keyval );
+    //printf ( "k: 0x%04x\n", event->keyval );
     if ( ( event->keyval == GDK_KEY_Return ) || ( event->keyval == GDK_KEY_KP_Enter ) ) {
         ui_membrowser_goto_addr_action ( );
     };
@@ -1966,7 +2052,7 @@ G_MODULE_EXPORT void on_dbg_membrowser_bank_comboboxtext_changed ( GtkComboBox *
     } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MZ1R18 ) {
         g_membrowser.mr1z18_bank = bank;
     } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MEMEXT_PEHU ) {
-        g_membrowser.memext_bank = bank;
+        g_membrowser.memext_pehu_bank = bank;
     } else {
         fprintf ( stderr, "%s():%d - Unknown memsrc 0x%02x\n", __func__, __LINE__, g_membrowser.memsrc );
     };
@@ -1988,7 +2074,7 @@ G_MODULE_EXPORT void on_dbg_membrowser_bank256_combobox_changed ( GtkComboBox *w
     if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MZ1R18 ) {
         g_membrowser.mr1z18_bank = g_value_get_uint ( &gv_bank );
     } else if ( g_membrowser.memsrc == MEMBROWSER_SOURCE_MEMEXT_LUFTNER ) {
-        g_membrowser.memext_bank = g_value_get_uint ( &gv_bank );
+        g_membrowser.memext_luftner_bank = g_value_get_uint ( &gv_bank );
     } else {
         fprintf ( stderr, "%s():%d - Unknown memsrc 0x%02x\n", __func__, __LINE__, g_membrowser.memsrc );
     };

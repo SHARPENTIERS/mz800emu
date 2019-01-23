@@ -194,6 +194,20 @@ extern "C" {
         return ( g_memory.memram_read[( addr >> 12 )] ) [ ( addr & 0x0fff ) ];
     }
 
+
+    static inline int memory_test_addr_is_vram ( Z80EX_WORD addr ) {
+        int a = addr >> 12;
+        if (
+             ( ( MEMORY_MAP_TEST_CGRAM ) && ( a == 0x0c ) ) ||
+             ( ( MEMORY_MAP_TEST_VRAM_D000 ) && ( a == 0x0d ) ) ||
+             ( ( MEMORY_MAP_TEST_VRAM_8000 ) && ( a == 0x08 ) ) ||
+             ( ( MEMORY_MAP_TEST_VRAM_A000 ) && ( a == 0x0a ) )
+             ) {
+            return 1;
+        };
+        return 0;
+    }
+
 #ifdef MEMORY_MAKE_STATISTICS
     void memory_write_memory_statistics ( void );
 #endif

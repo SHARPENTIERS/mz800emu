@@ -1,5 +1,6 @@
 
 
+	- several improvements and bugfixes in the memory browser
 	- CMTHACK: added option "Fixing FNAME terminator"
 	- bugfix: in "fast" version of CTC0 on MODE2 (Madonna2 demo did not work)
 	- bugfix: changed initialization of virtual CMT output sig. (ESC key in Turbo Copy now works)

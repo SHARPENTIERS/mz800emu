@@ -61,7 +61,7 @@ long int cfgtools_strtol ( char *str, int *retcode ) {
 }
 
 
-int cfgtool_strtol_array ( char *encoded_txt, long int *output_numbers_array, int max_elements, char *separators, int *retcode ) {
+int cfgtools_strtol_array ( char *encoded_txt, long int *output_numbers_array, int max_elements, char *separators, int *retcode ) {
 
     if ( separators == NULL ) separators = " ,";
 
