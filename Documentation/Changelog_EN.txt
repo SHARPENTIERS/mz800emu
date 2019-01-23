@@ -1,5 +1,9 @@
 
 
+	- Debugger settings: added options for auto forced full screen refresh
+	  (without dependency on beam position)
+	  May by called manually by CTRL+R from debugger window.
+
 	- several improvements and bugfixes in the memory browser
 	- CMTHACK: added option "Fixing FNAME terminator"
 	- bugfix: in "fast" version of CTC0 on MODE2 (Madonna2 demo did not work)

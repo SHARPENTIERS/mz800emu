@@ -479,7 +479,7 @@ static inline void mz800_sync ( void ) {
                 /* Jsme skutecne jeste ve viditelne casti obrazu? */
                 if ( g_gdg.beam_row < VIDEO_DISPLAY_HEIGHT ) {
                     if ( g_gdg.border_changes ) {
-                        framebuffer_border_row_fill ( );
+                        framebuffer_border_current_row_fill ( );
                     };
                     g_gdg.last_updated_border_pixel = VIDEO_BEAM_DISPLAY_LAST_COLUMN + 1;
 
@@ -688,7 +688,11 @@ static inline void mz800_do_emulation_paused ( void ) {
         framebuffer_MZ800_screen_changed ( );
     };
     unsigned screen_elapsed_ticks = g_gdg.total_elapsed.ticks;
-    iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos, screen_elapsed_ticks );
+    if ( g_debugger.screen_refresh_at_step ) {
+        debugger_forced_screen_update ( );
+    } else {
+        iface_sdl_update_window_in_beam_interval ( g_gdg.screen_is_already_rendered_at_beam_pos, screen_elapsed_ticks );
+    };
     g_gdg.screen_is_already_rendered_at_beam_pos = screen_elapsed_ticks;
 
     while ( TEST_EMULATION_PAUSED && ( !TEST_DEBUGGER_STEP_CALL ) ) {
@@ -887,7 +891,7 @@ void mz800_main ( void ) {
             printf ( "0x%04x\t%s\n", g_mz800.instruction_addr, mnemonic );
         }
 #endif
-        
+
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
         /*
          * 
@@ -963,7 +967,7 @@ void mz800_flush_full_screen ( void ) {
 
             if ( g_gdg.border_changes ) {
                 if ( g_gdg.beam_row <= VIDEO_BEAM_DISPLAY_LAST_ROW ) {
-                    framebuffer_border_row_fill ( );
+                    framebuffer_border_current_row_fill ( );
                     g_gdg.last_updated_border_pixel = 0;
                 };
             };

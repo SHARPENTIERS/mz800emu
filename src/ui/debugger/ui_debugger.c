@@ -1572,6 +1572,9 @@ void ui_debugger_show_main_window ( void ) {
         fprintf ( stderr, "%s():%d - Unknown animation state '%d'\n", __func__, __LINE__, g_debugger.animated_updates );
     };
 
+    gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "dbg_screen_forced_refresh_on_edit_checkmenuitem" ), ( g_debugger.screen_refresh_on_edit ) ? TRUE : FALSE );
+    gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "dbg_screen_forced_refresh_at_step_checkmenuitem" ), ( g_debugger.screen_refresh_at_step ) ? TRUE : FALSE );
+
     g_uidebugger.accelerators_locked = 0;
 
 

@@ -142,7 +142,7 @@ void framebuffer_update_MZ700_all_rows ( void ) {
  * Na konci viditelneho radku zaktualizujeme aktualni radek borderu ve framebufferu.
  * 
  */
-void framebuffer_border_row_fill ( void ) {
+void framebuffer_border_current_row_fill ( void ) {
 
     /* Pokud uz je radek ve framebufferu hotov, tak jdeme pryc */
     if ( g_gdg.last_updated_border_pixel == VIDEO_BEAM_DISPLAY_LAST_COLUMN + 1 ) return;
@@ -610,5 +610,31 @@ void framebuffer_MZ800_all_screen_rows_fill ( void ) {
     g_gdg.screen_need_update_from = 0;
     for ( i = VIDEO_BEAM_CANVAS_FIRST_ROW; i <= VIDEO_BEAM_CANVAS_LAST_ROW; i++ ) {
         framebuffer_MZ800_screen_row_fill ( i, VIDEO_CANVAS_WIDTH );
+    };
+}
+
+
+void framebuffer_border_all_rows_fill ( void ) {
+
+    int i;
+
+    for ( i = 0; i < VIDEO_BORDER_TOP_HEIGHT; i++ ) {
+        uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + ( i * VIDEO_DISPLAY_WIDTH );
+        memset ( p, g_gdg.regBOR, VIDEO_DISPLAY_WIDTH );
+    };
+
+    for ( i = VIDEO_BORDER_TOP_HEIGHT; i < ( VIDEO_BORDER_TOP_HEIGHT + VIDEO_BORDER_LEFT_HEIGHT ); i++ ) {
+        uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + ( i * VIDEO_DISPLAY_WIDTH );
+        memset ( p, g_gdg.regBOR, VIDEO_BORDER_LEFT_WIDTH );
+    };
+
+    for ( i = VIDEO_BORDER_TOP_HEIGHT; i < ( VIDEO_BORDER_TOP_HEIGHT + VIDEO_BORDER_RIGHT_HEIGHT ); i++ ) {
+        uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + ( i * VIDEO_DISPLAY_WIDTH ) + ( VIDEO_BORDER_LEFT_WIDTH + VIDEO_CANVAS_WIDTH );
+        memset ( p, g_gdg.regBOR, VIDEO_BORDER_RIGHT_WIDTH );
+    };
+
+    for ( i = ( VIDEO_BORDER_TOP_HEIGHT + VIDEO_BORDER_RIGHT_HEIGHT ); i < VIDEO_DISPLAY_HEIGHT; i++ ) {
+        uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + ( i * VIDEO_DISPLAY_WIDTH );
+        memset ( p, g_gdg.regBOR, VIDEO_DISPLAY_WIDTH );
     };
 }
