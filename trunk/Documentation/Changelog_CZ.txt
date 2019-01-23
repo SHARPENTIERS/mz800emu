@@ -1,5 +1,6 @@
 
 
+	- Nekolik oprav a drobnych vylepseni v mem. browseru
 	- CMTHACK: pridana volba "Fixing FNAME terminator" 
 	- oprava: "rychla" verze CTC0 v rezimu M2 (bylo nefunkcni demo Madonna2)
 	- oprava: zmena inicializace signalu z virtual CMT (nyni funguje ESC v TurboCopy)

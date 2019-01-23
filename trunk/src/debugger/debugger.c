@@ -34,10 +34,12 @@
 #include "debugger.h"
 #include "ui/debugger/ui_debugger.h"
 #include "ui/debugger/ui_breakpoints.h"
+#include "ui/debugger/ui_membrowser.h"
 #include "mz800.h"
 #include "z80ex/include/z80ex.h"
 #include "memory/memory.h"
 #include "breakpoints.h"
+#include "cfgfile/cfgtools.h"
 
 #include "cfgmain.h"
 
@@ -81,6 +83,27 @@ void debugger_reset_history ( void ) {
 }
 
 
+void debugger_membrowser_selected_addr_propagatecfg_cb ( void *e, void *data ) {
+    char *encoded_txt = cfgelement_get_text_value ( (CFGELM *) e );
+
+    int ret = EXIT_FAILURE;
+    int value = cfgtools_strtol ( encoded_txt, &ret );
+
+    if ( ret == EXIT_FAILURE ) {
+        value = 0;
+    };
+
+    g_membrowser.selected_addr = value;
+}
+
+
+void debugger_membrowser_selected_addr_save_cb ( void *e, void *data ) {
+    char value_txt[20];
+    sprintf ( value_txt, "0x%04x", g_membrowser.selected_addr );
+    cfgelement_set_text_value ( (CFGELM *) e, value_txt );
+}
+
+
 void debugger_init ( void ) {
     g_debugger.active = 0;
     g_debugger.memop_call = 0;
@@ -104,6 +127,64 @@ void debugger_init ( void ) {
     elm = cfgmodule_register_new_element ( cmod, "focus_to_addr_history", CFGENTYPE_TEXT, "0x0000" );
     cfgelement_set_propagate_cb ( elm, ui_debugger_focus_to_addr_history_propagatecfg_cb, NULL );
     cfgelement_set_save_cb ( elm, ui_debugger_focus_to_addr_history_save_cb, NULL );
+
+    // ui_membrowser
+    elm = cfgmodule_register_new_element ( cmod, "membrowser_sharp_ascii", CFGENTYPE_BOOL, 0 );
+    cfgelement_set_handlers ( elm, (void*) &g_membrowser.sh_ascii_conversion, (void*) &g_membrowser.sh_ascii_conversion );
+
+    elm = cfgmodule_register_new_element ( cmod, "membrowser_show_comparative", CFGENTYPE_BOOL, 0 );
+    cfgelement_set_handlers ( elm, (void*) &g_membrowser.show_comparative, (void*) &g_membrowser.show_comparative );
+
+    elm = cfgmodule_register_new_element ( cmod, "membrowser_forced_screen_refresh", CFGENTYPE_BOOL, 0 );
+    cfgelement_set_handlers ( elm, (void*) &g_membrowser.forced_screen_refresh, (void*) &g_membrowser.forced_screen_refresh );
+
+    elm = cfgmodule_register_new_element ( cmod, "membrowser_memsrc", CFGENTYPE_KEYWORD, MEMBROWSER_SOURCE_MAPED,
+                                           MEMBROWSER_SOURCE_MAPED, "MAPED",
+                                           MEMBROWSER_SOURCE_RAM, "RAM",
+                                           MEMBROWSER_SOURCE_VRAM, "VRAM",
+                                           MEMBROWSER_SOURCE_MZ700ROM, "MZ700ROM",
+                                           MEMBROWSER_SOURCE_CGROM, "CGROM",
+                                           MEMBROWSER_SOURCE_MZ800ROM, "MZ800ROM",
+                                           MEMBROWSER_SOURCE_PEZIK_E8, "PEZIK_E8",
+                                           MEMBROWSER_SOURCE_PEZIK_68, "PEZIK_68",
+                                           MEMBROWSER_SOURCE_MZ1R18, "MZ1R18",
+                                           MEMBROWSER_SOURCE_MEMEXT_PEHU, "MEMEXT_PEHU",
+                                           MEMBROWSER_SOURCE_MEMEXT_LUFTNER, "MEMEXT_LUFTNER",
+                                           -1 );
+    cfgelement_set_handlers ( elm, (void*) &g_membrowser.memsrc, (void*) &g_membrowser.memsrc );
+
+/*
+    elm = cfgmodule_register_new_element ( cmod, "membrowser_page", CFGENTYPE_UNSIGNED, 0, 0, 0xffffffff );
+    cfgelement_set_handlers ( elm, (void*) &g_membrowser.page, (void*) &g_membrowser.page );
+
+    elm = cfgmodule_register_new_element ( cmod, "membrowser_selected_addr", CFGENTYPE_TEXT, "0x0000" );
+    cfgelement_set_propagate_cb ( elm, debugger_membrowser_selected_addr_propagatecfg_cb, NULL );
+    cfgelement_set_save_cb ( elm, debugger_membrowser_selected_addr_save_cb, NULL );
+*/
+
+    elm = cfgmodule_register_new_element ( cmod, "membrowser_pzik_addressing", CFGENTYPE_KEYWORD, MEMBROWSER_PEZIK_ADDRESSING_BE,
+                                           MEMBROWSER_PEZIK_ADDRESSING_BE, "B_ENDIAN",
+                                           MEMBROWSER_PEZIK_ADDRESSING_LE, "L_ENDIAN",
+                                           -1 );
+    cfgelement_set_handlers ( elm, (void*) &g_membrowser.pezik_addressing, (void*) &g_membrowser.pezik_addressing );
+
+    elm = cfgmodule_register_new_element ( cmod, "membrowser_vram_plane", CFGENTYPE_UNSIGNED, 0, 0, 3 );
+    cfgelement_set_handlers ( elm, (void*) &g_membrowser.vram_plane, (void*) &g_membrowser.vram_plane );
+
+    elm = cfgmodule_register_new_element ( cmod, "membrowser_pezik_e8_bank", CFGENTYPE_UNSIGNED, 0, 0, 0x07 );
+    cfgelement_set_handlers ( elm, (void*) &g_membrowser.pezik_bank[1], (void*) &g_membrowser.pezik_bank[1] );
+
+    elm = cfgmodule_register_new_element ( cmod, "membrowser_pezik_68_bank", CFGENTYPE_UNSIGNED, 0, 0, 0x07 );
+    cfgelement_set_handlers ( elm, (void*) &g_membrowser.pezik_bank[0], (void*) &g_membrowser.pezik_bank[0] );
+
+    elm = cfgmodule_register_new_element ( cmod, "membrowser_mr1z18_bank", CFGENTYPE_UNSIGNED, 0, 0, 0xff );
+    cfgelement_set_handlers ( elm, (void*) &g_membrowser.mr1z18_bank, (void*) &g_membrowser.mr1z18_bank );
+
+    elm = cfgmodule_register_new_element ( cmod, "membrowser_pehu_bank", CFGENTYPE_UNSIGNED, 0, 0, 0x3f );
+    cfgelement_set_handlers ( elm, (void*) &g_membrowser.memext_pehu_bank, (void*) &g_membrowser.memext_pehu_bank );
+
+    elm = cfgmodule_register_new_element ( cmod, "membrowser_memext_luftner_bank", CFGENTYPE_UNSIGNED, 0, 0, 0xff );
+    cfgelement_set_handlers ( elm, (void*) &g_membrowser.memext_luftner_bank, (void*) &g_membrowser.memext_luftner_bank );
 
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );

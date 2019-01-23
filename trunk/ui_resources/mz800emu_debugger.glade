@@ -953,6 +953,7 @@
       <column type="gchararray"/>
     </columns>
   </object>
+  <object class="GtkEntryBuffer" id="dbg_memsave_size_hex_entrybuffer"/>
   <object class="GtkWindow" id="dbg_inline_assembler_window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">inLine Assembler</property>
@@ -1282,10 +1283,11 @@
             </child>
             <child>
               <object class="GtkCheckButton" id="dbg_membrowser_comparative_mode_checkbutton">
-                <property name="label" translatable="yes">Comparative view</property>
+                <property name="label" translatable="yes">Cmp. view</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Comparative view</property>
                 <property name="xalign">0</property>
                 <property name="draw_indicator">True</property>
                 <signal name="toggled" handler="on_dbg_membrowser_comparative_mode_checkbutton_toggled" swapped="no"/>
@@ -1344,6 +1346,23 @@
               </packing>
             </child>
             <child>
+              <object class="GtkCheckButton" id="dbg_membrowser_force_screen_refresh_checkbutton">
+                <property name="label" translatable="yes">Scr. refresh</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Forced full screen refresh when VRAM is changed</property>
+                <property name="xalign">0</property>
+                <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="on_dbg_membrowser_force_screen_refresh_checkbutton_toggled" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkFixed" id="fixed24">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -1352,7 +1371,7 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">4</property>
+                <property name="position">5</property>
               </packing>
             </child>
             <child>
@@ -1396,7 +1415,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">5</property>
+                <property name="position">6</property>
               </packing>
             </child>
           </object>
@@ -4494,7 +4513,6 @@
       </object>
     </child>
   </object>
-  <object class="GtkEntryBuffer" id="dbg_memsave_size_hex_entrybuffer"/>
   <object class="GtkWindow" id="dbg_memsave_window">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Save Data</property>

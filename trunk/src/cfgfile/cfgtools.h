@@ -34,7 +34,7 @@ extern "C" {
 #include <stdlib.h>
 
     extern long int cfgtools_strtol ( char *str, int *retcode );
-    extern int cfgtool_strtol_array ( char *encoded_txt, long int *output_numbers_array, int max_elements, char *separators, int *retcode );
+    extern int cfgtools_strtol_array ( char *encoded_txt, long int *output_numbers_array, int max_elements, char *separators, int *retcode );
 
 
 #ifdef __cplusplus

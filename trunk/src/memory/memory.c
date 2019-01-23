@@ -810,7 +810,7 @@ void memory_load_block ( uint8_t *data, Z80EX_WORD addr, Z80EX_WORD size, en_MEM
             } else if ( addr < 0xe000 ) {
                 load_size = ( total_size < 0xe000 ) ? size : ( 0xe000 - addr );
                 if ( MEMORY_MAP_TEST_VRAM_D000 ) {
-                    dst = &g_memoryVRAM_II[( addr & 0x0fff )];
+                    dst = &g_memoryVRAM_I[( 0x1000 | ( addr & 0x0fff ) )];
                 };
                 memcpy ( dst, src, load_size );
             } else {

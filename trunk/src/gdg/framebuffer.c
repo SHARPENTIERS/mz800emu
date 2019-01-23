@@ -609,6 +609,6 @@ void framebuffer_MZ800_all_screen_rows_fill ( void ) {
     int i;
     g_gdg.screen_need_update_from = 0;
     for ( i = VIDEO_BEAM_CANVAS_FIRST_ROW; i <= VIDEO_BEAM_CANVAS_LAST_ROW; i++ ) {
-        framebuffer_MZ800_screen_row_fill ( i, 0 );
+        framebuffer_MZ800_screen_row_fill ( i, VIDEO_CANVAS_WIDTH );
     };
 }

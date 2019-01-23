@@ -1608,7 +1608,7 @@ void ui_debugger_focus_to_addr_history_propagatecfg_cb ( void *e, void *data ) {
 
     int ret = EXIT_FAILURE;
     long int li_array[DBG_FOCUS_ADDR_HIST_LENGTH];
-    int length = cfgtool_strtol_array ( encoded_txt, li_array, DBG_FOCUS_ADDR_HIST_LENGTH, NULL, &ret );
+    int length = cfgtools_strtol_array ( encoded_txt, li_array, DBG_FOCUS_ADDR_HIST_LENGTH, NULL, &ret );
 
     if ( ( length == 0 ) || ( ret != EXIT_SUCCESS ) ) {
         g_uidebugger.focus_addr_hist_count = 1;
