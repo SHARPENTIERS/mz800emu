@@ -1,5 +1,6 @@
 
 
+	- BUGFIX: added 20ms sleep to the main cycle, when emulator is paused
 	- Debugger settings: added options for auto forced full screen refresh
 	  (without dependency on beam position)
 	  May by called manually by CTRL+R from debugger window.
