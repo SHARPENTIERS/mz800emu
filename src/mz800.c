@@ -702,6 +702,8 @@ static inline void mz800_do_emulation_paused ( void ) {
         if ( g_iface_sdl.redraw_full_screen_request ) {
             iface_sdl_update_window ( );
         };
+        
+        g_usleep ( 20 * 1000 );
     };
 
     if ( TEST_DEBUGGER_STEP_CALL ) {
