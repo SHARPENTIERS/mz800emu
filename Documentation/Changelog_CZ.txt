@@ -1,5 +1,5 @@
 
-
+	- oprava: emulator v pauze mel zbytecne vysokou rezii CPU
 	- Debugger: v settings pridany options pro auto forced full screen
 	  refresh (bez ohledu na pozici paprsku)
 	  Lze jej nyni v debuggeru zavolat i manualne pres CTRL+R.
