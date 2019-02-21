@@ -1,0 +1,8 @@
+
+The operation of this software is need to ensure the following runtime
+libraries:
+
+SDL2 - https://www.libsdl.org/download-2.0.php 
+GTK3 - http://sourceforge.net/projects/gtk3win/
+
+GTK3 X64 - https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer
