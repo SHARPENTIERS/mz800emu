@@ -1,4 +1,8 @@
 
+2019-02-22
+	cp rev-196/trunk branches/mz1500emu
+
+
 	- oprava: emulator v pauze mel zbytecne vysokou rezii CPU
 	- Debugger: v settings pridany options pro auto forced full screen
 	  refresh (bez ohledu na pozici paprsku)

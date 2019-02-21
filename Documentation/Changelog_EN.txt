@@ -1,4 +1,7 @@
 
+2019-02-22
+	cp rev-196/trunk branches/mz1500emu
+
 
 	- BUGFIX: added 20ms sleep to the main cycle, when emulator is paused
 	- Debugger settings: added options for auto forced full screen refresh
