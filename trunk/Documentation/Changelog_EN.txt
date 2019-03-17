@@ -1,5 +1,6 @@
 
 
+	- BUGFIX: vkbd keybord mapping
 	- BUGFIX: added 20ms sleep to the main cycle, when emulator is paused
 	- Debugger settings: added options for auto forced full screen refresh
 	  (without dependency on beam position)
