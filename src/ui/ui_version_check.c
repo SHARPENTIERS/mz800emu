@@ -167,7 +167,7 @@ G_MODULE_EXPORT void on_version_check_ok_button_clicked ( GtkButton *button, gpo
             break;
     };
 
-    en_VERSION_CHECK_PROXY new_proxy_settings;
+    en_VERSION_CHECK_PROXY new_proxy_settings = VERSION_CHECK_PROXY_NONE;
 
     int proxy_combo_state = gtk_combo_box_get_active ( ui_get_combo_box ( "version_check_proxy_comboboxtext" ) );
     switch ( proxy_combo_state ) {
