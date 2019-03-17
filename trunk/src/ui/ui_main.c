@@ -191,6 +191,9 @@ void ui_init ( void ) {
     if ( 0 == gtk_builder_add_from_file ( g_ui.builder, UI_RESOURCES_DIR "mz800emu_debugger.glade", &err ) ) {
         printf ( "GtkBuilder error: %s\n", err->message );
     };
+    if ( 0 == gtk_builder_add_from_file ( g_ui.builder, UI_RESOURCES_DIR "membrowser.glade", &err ) ) {
+        printf ( "GtkBuilder error: %s\n", err->message );
+    };
 #else
     gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_debugger" ), FALSE );
 #endif
