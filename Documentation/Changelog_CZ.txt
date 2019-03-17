@@ -1,4 +1,5 @@
 
+	- oprava: vkbd spatne mapovani jedne klavesy
 	- oprava: emulator v pauze mel zbytecne vysokou rezii CPU
 	- Debugger: v settings pridany options pro auto forced full screen
 	  refresh (bez ohledu na pozici paprsku)
