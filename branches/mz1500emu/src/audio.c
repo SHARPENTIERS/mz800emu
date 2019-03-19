@@ -27,6 +27,7 @@
 #include <stdio.h>
 
 #include "mz800emu_cfg.h"
+
 #include "audio.h"
 #include "psg/psg.h"
 #include "gdg/gdg.h"
@@ -54,8 +55,13 @@ void audio_init ( void ) {
     g_audio.resample_timer = AUDIO_RESAMPLE_PERIOD;
     g_audio.buffer_position = 0;
     g_audio.ctc0_output = 0;
+#ifdef MACHINE_EMU_MZ800
     g_audio.last_value = 0;
-
+#endif
+#ifdef MACHINE_EMU_MZ1500
+    g_audio.last_valueL = 0;
+    g_audio.last_valueR = 0;
+#endif
     int i;
     for ( i = 0; i <= PSG_OUT_OFF; i++ ) {
         g_attenuator_volume_value[i] = AUDIO_MAXVAL_PER_CHANNEL * pow ( 10, -( (float) i / PSG_OUT_OFF ) );
@@ -67,7 +73,12 @@ void audio_ctc0_changed ( unsigned value, unsigned event_ticks ) {
     if ( g_audio.ctc0_output == value ) return;
 
 #ifdef AUDIO_FILLBUFF_v1
-    audio_fill_buffer_v1 ( event_ticks );
+#ifdef MACHINE_EMU_MZ800
+    audio_mz800_fill_buffer_v1 ( event_ticks );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+    audio_mz1500_fill_buffer_v1 ( event_ticks );
+#endif
 #endif
 
     g_audio.ctc0_output = value;
@@ -81,7 +92,10 @@ void audio_ctc0_changed ( unsigned value, unsigned event_ticks ) {
 }
 
 
-static inline AUDIO_BUF_t psg_audio_scan ( void ) {
+#ifdef MACHINE_EMU_MZ800
+
+
+static inline AUDIO_BUF_t psg_mz800_audio_scan ( void ) {
 
     AUDIO_BUF_t scan_value = 0;
 
@@ -100,11 +114,54 @@ static inline AUDIO_BUF_t psg_audio_scan ( void ) {
 
     return scan_value;
 }
+#endif
+
+#ifdef MACHINE_EMU_MZ1500
+
+
+static AUDIO_BUF_t g_scan_valueL = 0;
+static AUDIO_BUF_t g_scan_valueR = 0;
+
+
+static inline void psg_mz1500_audio_scan ( void ) {
+
+    g_scan_valueL = 0;
+    g_scan_valueR = 0;
+
+    unsigned channel;
+
+    for ( channel = 0; channel < PSG_CHANNELS_COUNT; channel++ ) {
+        if ( g_psgL.channel [ channel ].attn != PSG_OUT_OFF ) {
+            if ( g_psgL.channel [ channel ].output_signal ) {
+                if ( g_psgL.channel [ channel ].attn == PSG_OUT_MAX ) {
+                    g_scan_valueL += AUDIO_MAXVAL_PER_CHANNEL;
+                } else {
+                    g_scan_valueL += g_attenuator_volume_value[g_psgL.channel[channel].attn];
+                };
+            };
+        };
+    };
+
+    for ( channel = 0; channel < PSG_CHANNELS_COUNT; channel++ ) {
+        if ( g_psgR.channel [ channel ].attn != PSG_OUT_OFF ) {
+            if ( g_psgR.channel [ channel ].output_signal ) {
+                if ( g_psgR.channel [ channel ].attn == PSG_OUT_MAX ) {
+                    g_scan_valueR += AUDIO_MAXVAL_PER_CHANNEL;
+                } else {
+                    g_scan_valueR += g_attenuator_volume_value[g_psgR.channel[channel].attn];
+                };
+            };
+        };
+    };
+}
+#endif
 
 #ifdef AUDIO_FILLBUFF_v1
 
+#ifdef MACHINE_EMU_MZ800
 
-void audio_fill_buffer_v1 ( unsigned event_ticks ) {
+
+void audio_mz800_fill_buffer_v1 ( unsigned event_ticks ) {
 
     //printf ( "fill: %d, %d, %d\n", event_ticks, g_audio.last_update, g_audio.buffer_position );
 
@@ -120,7 +177,7 @@ void audio_fill_buffer_v1 ( unsigned event_ticks ) {
 
         //printf ( "step: %d\n", gdg_compute_total_ticks ( g_audio.last_update ) );
 
-        psg_step ( );
+        psg_step ( &g_psg );
 
         /*
          * IIR filtr:
@@ -130,12 +187,12 @@ void audio_fill_buffer_v1 ( unsigned event_ticks ) {
          * x = vzorkovaci_frq / ( 2 * pi * delici_frq )
          * 
          */
-        AUDIO_BUF_t scan_value = psg_audio_scan ( ) + g_audio.ctc0_output * AUDIO_MAXVAL_PER_CHANNEL;
+        AUDIO_BUF_t scan_value = psg_mz800_audio_scan ( ) + g_audio.ctc0_output * AUDIO_MAXVAL_PER_CHANNEL;
         g_audio.last_value = g_audio.last_value + ( scan_value - g_audio.last_value ) / 16;
 
 
         if ( g_audio.resample_timer <= PSG_DIVIDER ) {
-            if ( g_audio.buffer_position < IFACE_AUDIO_20MS_SAMPLES ) {
+            if ( g_audio.buffer_position < IFACE_AUDIO_WINDOW_SAMPLES ) {
                 //printf ( "res: %d = %d\n", g_audio.buffer_position, last_value );
                 if ( !TEST_EMULATION_PAUSED ) {
                     g_audio.buffer [ g_audio.buffer_position ] = g_audio.last_value;
@@ -150,6 +207,65 @@ void audio_fill_buffer_v1 ( unsigned event_ticks ) {
 
     } while ( g_audio.last_update < event_ticks );
 }
+#endif
+#ifdef MACHINE_EMU_MZ1500
+
+
+void audio_mz1500_fill_buffer_v1 ( unsigned event_ticks ) {
+
+    //printf ( "fill: %d, %d, %d\n", event_ticks, g_audio.last_update, g_audio.buffer_position );
+
+    //static AUDIO_BUF_t last_value = 0;
+
+    if ( event_ticks > ( VIDEO_SCREEN_TICKS ) ) {
+        event_ticks = ( VIDEO_SCREEN_TICKS );
+    };
+
+    if ( ( event_ticks - g_audio.last_update ) < PSG_DIVIDER ) return;
+
+    do {
+
+        //printf ( "step: %d\n", gdg_compute_total_ticks ( g_audio.last_update ) );
+
+        psg_step ( &g_psgL );
+        psg_step ( &g_psgR );
+
+        /*
+         * IIR filtr:
+         * 
+         *  OUT [ i + 1] = OUT [ i ] + ( IN [ i + 1] - OUT [ i ]) / x
+         * 
+         * x = vzorkovaci_frq / ( 2 * pi * delici_frq )
+         * 
+         */
+        psg_mz1500_audio_scan ( );
+
+        g_scan_valueL += g_audio.ctc0_output * AUDIO_MAXVAL_PER_CHANNEL;
+        g_scan_valueR += g_audio.ctc0_output * AUDIO_MAXVAL_PER_CHANNEL;
+
+        g_audio.last_valueL = g_audio.last_valueL + ( g_scan_valueL - g_audio.last_valueL ) / 16;
+        g_audio.last_valueR = g_audio.last_valueR + ( g_scan_valueR - g_audio.last_valueR ) / 16;
+
+        if ( g_audio.resample_timer <= PSG_DIVIDER ) {
+            if ( g_audio.buffer_position < IFACE_AUDIO_WINDOW_SAMPLES ) {
+                //printf ( "res: %d = %d\n", g_audio.buffer_position, last_value );
+                if ( !TEST_EMULATION_PAUSED ) {
+                    int real_position = g_audio.buffer_position * IFACE_AUDIO_CHANNELS;
+                    g_audio.buffer [real_position++] = g_audio.last_valueL;
+                    g_audio.buffer [real_position] = g_audio.last_valueR;
+                };
+                g_audio.buffer_position++;
+            };
+            g_audio.resample_timer += AUDIO_RESAMPLE_PERIOD;
+        };
+
+        g_audio.resample_timer -= PSG_DIVIDER;
+        g_audio.last_update += PSG_DIVIDER;
+
+    } while ( g_audio.last_update < event_ticks );
+}
+#endif
+
 #endif
 
 
@@ -190,7 +306,7 @@ void audio_fill_buffer_v2 ( unsigned now_total_ticks ) {
 
     static AUDIO_BUF_t audio_last_value = 0;
 
-    unsigned resample_width = samples_width / IFACE_AUDIO_20MS_SAMPLES;
+    unsigned resample_width = samples_width / IFACE_AUDIO_WINDOW_SAMPLES;
 
     int ctc0_current_state_width = g_audio_ctc.samples[ctc0_buf_pos + 1].timestamp - current_scan_time;
     AUDIO_BUF_t ctc0_current_value = g_audio_ctc.samples[0].state;
@@ -216,7 +332,7 @@ void audio_fill_buffer_v2 ( unsigned now_total_ticks ) {
 
         psg_step ( );
 
-        audio_last_value = audio_last_value + ( ( psg_audio_scan ( ) + ctc0_current_value ) - audio_last_value ) / 16;
+        audio_last_value = audio_last_value + ( ( psg_mz800_audio_scan ( ) + ctc0_current_value ) - audio_last_value ) / 16;
 
         if ( ctc0_buf_pos < g_audio_ctc.count ) {
             if ( ctc0_current_state_width <= AUDIO_SCAN_PERIOD ) {
@@ -238,7 +354,7 @@ void audio_fill_buffer_v2 ( unsigned now_total_ticks ) {
         if ( already_scaned >= resample_width ) {
             //          printf ( "res: %d = %d\n", dst_sample_pos, audio_last_value );
             g_audio.buffer [ dst_sample_pos ] = audio_last_value;
-            if ( dst_sample_pos < IFACE_AUDIO_20MS_SAMPLES ) dst_sample_pos++;
+            if ( dst_sample_pos < IFACE_AUDIO_WINDOW_SAMPLES ) dst_sample_pos++;
             already_scaned -= resample_width;
             last_scan_end = current_scan_time;
         };

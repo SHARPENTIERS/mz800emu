@@ -22,9 +22,13 @@
  * 
  * ---------------------------------------------------------------------------
  */
+#include "mz800emu_cfg.h"
 
 #include <stdio.h>
 #include <string.h>
+
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+
 #include "ui/ui_main.h"
 #include "ui/ui_file_chooser.h"
 #include "ui/ui_hexeditable.h"
@@ -189,3 +193,4 @@ G_MODULE_EXPORT gboolean on_dissassembler_to_entry_key_press_event ( GtkWidget *
     };
     return FALSE;
 }
+#endif

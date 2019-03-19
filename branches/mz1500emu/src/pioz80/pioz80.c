@@ -401,7 +401,7 @@ static inline Z80EX_BYTE pioz80_port_get_raw_input ( st_PIOZ80_PORT *port ) {
     Z80EX_BYTE retval = g_pioz80_port_input[port->port_id];
     if ( port->port_id == PIOZ80_PORT_A ) {
         retval |= ( CTC8253_OUT ( 0 ) == 1 ) ? 0 : 1 << 4; /* invertovany CTC0 */
-        retval |= SIGNAL_GDG_VBLNK ? 1 << 5 : 0x00;
+        retval |= GDG_SIGNAL_VBLNK ? 1 << 5 : 0x00;
     };
     return retval;
 }

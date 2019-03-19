@@ -432,7 +432,7 @@ static st_CMTTOOL_FILE* cmttool_search_file ( st_CMTTOOL *cmttool, uint32_t posi
         if ( cmttool->debug ) printf ( "BSD data header detected!\n" );
 
         uint16_t chunk_id;
-        uint16_t last_chunk_id;
+        uint16_t last_chunk_id = 0;
         int bsd_chunks_count = 0;
         uint32_t chunk_baud_rate = 0;
         uint32_t chunk_shortTm = 0;

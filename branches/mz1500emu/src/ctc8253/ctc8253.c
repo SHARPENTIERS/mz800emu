@@ -119,9 +119,9 @@ void ctc8253_init ( void ) {
 
 static inline void ctc8253_update_ctc0_by_totalticks ( unsigned event_total_ticks ) {
     unsigned elapsed_ticks = event_total_ticks - g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks;
-    unsigned decremented = elapsed_ticks / GDGCLK_1M1_DIVIDER;
+    unsigned decremented = elapsed_ticks / GDG_CTC0CLK_DIVIDER;
     g_ctc8253[CTC_CS0].value -= decremented;
-    g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks += decremented * GDGCLK_1M1_DIVIDER;
+    g_ctc8253[CTC_CS0].clk1m1_last_event_total_ticks += decremented * GDG_CTC0CLK_DIVIDER;
 }
 
 
@@ -670,8 +670,8 @@ void ctc8253_ctc1m1_event ( unsigned event_ticks ) {
     if ( ctc0->state >= CTC_STATE_COUNTDOWN ) {
         int elapsed_ticks = event_total_ticks - ctc0->clk1m1_last_event_total_ticks;
         if ( elapsed_ticks > 0 ) {
-            elapsed_ticks -= GDGCLK_1M1_DIVIDER;
-            ctc0->value -= elapsed_ticks / GDGCLK_1M1_DIVIDER;
+            elapsed_ticks -= GDG_CTC0CLK_DIVIDER;
+            ctc0->value -= elapsed_ticks / GDG_CTC0CLK_DIVIDER;
         } else {
             /* pokus o bugfix - pokud se kratce pred eventem cetlo z CTC, tak value uz muze mit destinacni hodnotu - deje se u Galao, kde to zpusobuje vypadek zvuku */
             switch ( ctc0->mode ) {
@@ -731,14 +731,14 @@ void ctc8253_ctc1m1_event ( unsigned event_ticks ) {
         };
 
         if ( destination_clk1m1_falls != -1 ) {
-            ctc0->clk1m1_event.ticks = event_ticks + ( destination_clk1m1_falls * GDGCLK_1M1_DIVIDER );
+            ctc0->clk1m1_event.ticks = event_ticks + ( destination_clk1m1_falls * GDG_CTC0CLK_DIVIDER );
         } else {
             ctc0->clk1m1_event.ticks = -1;
         }
 
     } else if (( old_state == CTC_STATE_COUNTDOWN ) && ( ctc0->state == CTC_STATE_PRESET )) {
         /* M2 - skoncil COUNTDOWN */
-        ctc0->clk1m1_event.ticks = event_ticks + ( 1 * GDGCLK_1M1_DIVIDER );
+        ctc0->clk1m1_event.ticks = event_ticks + ( 1 * GDG_CTC0CLK_DIVIDER );
     } else {
         ctc0->clk1m1_event.ticks = -1;
     };

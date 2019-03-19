@@ -127,7 +127,9 @@ int main ( int argc, char** argv ) {
     printf ( "   Alt + K - virtual keyboard\n" );
     printf ( "   Alt + D - debugger\n" );
     printf ( "   Alt + B - breakpoints\n" );
+#ifdef MZ800EMU_CFG_DEBUGGER_MEMBROWSER_ENABLED
     printf ( "   Alt + E - memory browser\n" );
+#endif
     printf ( "   Alt + M - switch max / normal speed\n" );
     printf ( "   Alt + P - switch pause / play\n" );
     printf ( "   F12     - reset\n" );

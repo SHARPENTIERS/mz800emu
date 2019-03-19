@@ -35,6 +35,10 @@ extern "C" {
     /* celkovy pocet emulovanych barev */
 #define DISPLAY_MZCOLORS   16
 
+    extern uint32_t g_display_predef_colors [ DISPLAY_MZCOLORS ];
+    extern uint32_t g_display_predef_grays [ DISPLAY_MZCOLORS ];
+    extern uint32_t g_display_predef_greens [ DISPLAY_MZCOLORS ];
+
 
     typedef enum en_DISPLAY_COLOR_SCHEMA {
         DISPLAY_NORMAL = 0,

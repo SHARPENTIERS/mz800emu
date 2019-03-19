@@ -23,6 +23,8 @@
  * ---------------------------------------------------------------------------
  */
 
+#include "mz800emu_cfg.h"
+
 #include <gtk/gtk.h>
 #include <stdio.h>
 #include <math.h>
@@ -103,9 +105,9 @@ G_MODULE_EXPORT void on_menuitem_cmt_hack ( GtkCheckMenuItem *menuitem, gpointer
     ui_hide_main_menu ( );
 #endif
     if ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_cmt_hack" ) ) ) {
-        cmthack_load_rom_patch ( 1 );
+        cmthack_mz800_load_rom_patch ( 1 );
     } else {
-        cmthack_load_rom_patch ( 0 );
+        cmthack_mz800_load_rom_patch ( 0 );
     };
 }
 
@@ -290,7 +292,12 @@ void ui_cmt_hack_menu_update ( void ) {
         gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_cmt_hack_fix_fname_terminator" ), FALSE );
     };
     UNLOCK_UICALLBACKS ( );
+#ifdef MACHINE_EMU_MZ800
     gboolean cmth_sensitive = ( TEST_ROM_WILLY ) ? FALSE : TRUE;
+#endif
+#ifdef MACHINE_EMU_MZ1500
+    gboolean cmth_sensitive = FALSE;
+#endif
     if ( TEST_ROM_USER_DEFINED ) {
         cmth_sensitive = ( g_rom.user_defined_cmthack_type == ROM_CMTHACK_DISABLED ) ? FALSE : TRUE;
     };

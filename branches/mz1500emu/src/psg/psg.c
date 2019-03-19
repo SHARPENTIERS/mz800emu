@@ -35,12 +35,33 @@
 //#define DBGLEVEL (DBGNON | DBGERR | DBGWAR | DBGINF )
 #include "debug.h"
 
-
+#ifdef MACHINE_EMU_MZ800
 st_PSG g_psg;
+#endif
+#ifdef MACHINE_EMU_MZ1500
+st_PSG g_psgL;
+st_PSG g_psgR;
+#endif
+
 
 #ifdef AUDIO_FILLBUFF_v2
 st_PSG_SAMPLES g_psg_audio;
 #endif
+
+
+static void psg_init_chip ( st_PSG *psg ) {
+    psg->channel [ PSG_CHANNEL_0 ].type = PSG_CHTYPE_TONE;
+    psg->channel [ PSG_CHANNEL_1 ].type = PSG_CHTYPE_TONE;
+    psg->channel [ PSG_CHANNEL_2 ].type = PSG_CHTYPE_TONE;
+
+    psg->channel [ PSG_CHANNEL_3 ].type = PSG_CHTYPE_NOISE;
+    psg->channel [ PSG_CHANNEL_3 ].noise.shiftregister = 1 << 15;
+
+    unsigned i;
+    for ( i = 0; i < PSG_CHANNELS_COUNT; i++ ) {
+        psg->channel [ i ].attn = PSG_OUT_OFF;
+    };
+}
 
 
 void psg_init ( void ) {
@@ -51,21 +72,17 @@ void psg_init ( void ) {
     g_psg_audio.count = 0;
 #endif
 
-    g_psg.channel [ PSG_CHANNEL_0 ].type = PSG_CHTYPE_TONE;
-    g_psg.channel [ PSG_CHANNEL_1 ].type = PSG_CHTYPE_TONE;
-    g_psg.channel [ PSG_CHANNEL_2 ].type = PSG_CHTYPE_TONE;
-
-    g_psg.channel [ PSG_CHANNEL_3 ].type = PSG_CHTYPE_NOISE;
-    g_psg.channel [ PSG_CHANNEL_3 ].noise.shiftregister = 1 << 15;
-
-    unsigned i;
-    for ( i = 0; i < PSG_CHANNELS_COUNT; i++ ) {
-        g_psg.channel [ i ].attn = PSG_OUT_OFF;
-    };
+#ifdef MACHINE_EMU_MZ800
+    psg_init_chip ( &g_psg );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+    psg_init_chip ( &g_psgL );
+    psg_init_chip ( &g_psgR );
+#endif
 }
 
 
-void psg_real_write_byte ( Z80EX_BYTE value ) {
+void psg_real_write_byte ( st_PSG *psg, Z80EX_BYTE value ) {
 
     unsigned latch, attn, cs;
 
@@ -74,20 +91,25 @@ void psg_real_write_byte ( Z80EX_BYTE value ) {
     if ( latch ) {
         cs = ( value >> 5 ) & 0x03;
         attn = value & ( 1 << 4 );
-        g_psg.latch_cs = cs;
-        g_psg.latch_attn = attn;
+        psg->latch_cs = cs;
+        psg->latch_attn = attn;
     } else {
-        cs = g_psg.latch_cs;
-        attn = g_psg.latch_attn;
+        cs = psg->latch_cs;
+        attn = psg->latch_attn;
     };
 
-    st_PSG_CHANNEL *channel = &g_psg.channel [ cs ];
+    st_PSG_CHANNEL *channel = &psg->channel [ cs ];
 
     if ( attn ) {
         en_ATTENUATOR new_attn = value & 0x0f;
         if ( new_attn != channel->attn ) {
 #ifdef AUDIO_FILLBUFF_v1
-            audio_fill_buffer_v1 ( g_gdg.total_elapsed.ticks );
+#ifdef MACHINE_EMU_MZ800
+            audio_mz800_fill_buffer_v1 ( g_gdg.total_elapsed.ticks );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+            audio_mz1500_fill_buffer_v1 ( g_gdg.total_elapsed.ticks );
+#endif
 #endif
             channel->attn = new_attn;
         };
@@ -98,7 +120,12 @@ void psg_real_write_byte ( Z80EX_BYTE value ) {
             unsigned new_divider = ( value << 4 ) | channel->tone.latch_divider;
             if ( new_divider != channel->tone.divider ) {
 #ifdef AUDIO_FILLBUFF_v1
-                audio_fill_buffer_v1 ( g_gdg.total_elapsed.ticks );
+#ifdef MACHINE_EMU_MZ800
+                audio_mz800_fill_buffer_v1 ( g_gdg.total_elapsed.ticks );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+                audio_mz1500_fill_buffer_v1 ( g_gdg.total_elapsed.ticks );
+#endif
 #endif
                 channel->tone.divider = new_divider;
             };
@@ -107,7 +134,12 @@ void psg_real_write_byte ( Z80EX_BYTE value ) {
             en_NOISE_TYPE new_type = ( value >> 2 ) & 1;
             if ( ( new_div_type != channel->noise.div_type ) || ( new_type != channel->noise.type ) ) {
 #ifdef AUDIO_FILLBUFF_v1
-                audio_fill_buffer_v1 ( g_gdg.total_elapsed.ticks );
+#ifdef MACHINE_EMU_MZ800
+                audio_mz800_fill_buffer_v1 ( g_gdg.total_elapsed.ticks );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+                audio_mz1500_fill_buffer_v1 ( g_gdg.total_elapsed.ticks );
+#endif
 #endif
                 channel->noise.div_type = new_div_type;
                 channel->noise.type = new_type;
@@ -117,14 +149,14 @@ void psg_real_write_byte ( Z80EX_BYTE value ) {
 }
 
 
-void psg_write_byte ( Z80EX_BYTE value ) {
+void psg_write_byte ( st_PSG *psg, Z80EX_BYTE value ) {
 
     DBGPRINTF ( DBGINF, "value = 0x%02x, PC = 0x%04x\n", value, g_mz800.instruction_addr );
 
     mz800_sync_insideop_iorq_psg_write ( );
 
 #ifdef AUDIO_FILLBUFF_v1
-    psg_real_write_byte ( value );
+    psg_real_write_byte ( psg, value );
     //    printf ( "REAL WRITE: %d - %d: 0x%02x\n", gdg_compute_total_ticks ( g_gdg.total_elapsed.ticks ), gdg_compute_total_ticks ( g_gdg.total_elapsed.ticks ), value );
     //    printf ( "REAL WRITE: %d: 0x%02x\n", gdg_compute_total_ticks ( g_gdg.total_elapsed.ticks ), value );
 #endif
@@ -138,12 +170,12 @@ void psg_write_byte ( Z80EX_BYTE value ) {
 }
 
 
-void psg_step ( void ) {
+void psg_step ( st_PSG *psg ) {
 
     unsigned cs;
 
     for ( cs = 0; cs < PSG_CHANNELS_COUNT; cs++ ) {
-        st_PSG_CHANNEL *channel = &g_psg.channel [ cs ];
+        st_PSG_CHANNEL *channel = &psg->channel [ cs ];
 
 
         if ( channel->attn != PSG_OUT_OFF ) {
@@ -168,13 +200,13 @@ void psg_step ( void ) {
                 /* noise */
                 unsigned bit0, bit3;
                 st_PSG_NOISE *noise = &channel->noise;
-                if ( ( noise->div_type == 0x03 ) && ( g_psg.channel [ PSG_CHANNEL_2 ].tone.divider < 2 ) ) {
+                if ( ( noise->div_type == 0x03 ) && ( psg->channel [ PSG_CHANNEL_2 ].tone.divider < 2 ) ) {
                     channel->output_signal = 1;
 
                 } else if ( 0 == channel->timer-- ) {
 
                     if ( noise->div_type == NOISE_DIV_TYPE3 ) {
-                        channel->timer = g_psg.channel [ PSG_CHANNEL_2 ].tone.divider - 1;
+                        channel->timer = psg->channel [ PSG_CHANNEL_2 ].tone.divider - 1;
                     } else {
                         channel->timer = ( 0x10 << noise->div_type ) - 1;
                     };

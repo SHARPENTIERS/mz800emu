@@ -129,7 +129,21 @@ extern "C" {
      * Tato volba vytvori aditivni soubor se statistikou pro cteni a zapis pameti.
      * 
      */
-//#define MEMORY_MAKE_STATISTICS
+    //#define MEMORY_MAKE_STATISTICS
+
+    /*
+     * 
+     * Experimentujeme s MZ-1500
+     * 
+     */
+    //#define MACHINE_EMU_MZ800
+#define MACHINE_EMU_MZ1500
+
+#ifdef MACHINE_EMU_MZ800
+#ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
+#define MZ800EMU_CFG_DEBUGGER_MEMBROWSER_ENABLED
+#endif
+#endif
 
 #ifdef __cplusplus
 }

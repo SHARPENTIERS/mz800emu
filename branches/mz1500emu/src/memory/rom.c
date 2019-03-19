@@ -23,6 +23,8 @@
  * ---------------------------------------------------------------------------
  */
 
+#include "mz800emu_cfg.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,6 +36,7 @@
 #include "rom.h"
 #include "memory.h"
 #include "cmt/cmthack.h"
+#include "mz800.h"
 
 #include "cfgmain.h"
 
@@ -47,16 +50,16 @@ st_ROM g_rom;
 static void rom_install_predefined ( const Z80EX_BYTE *mz700rom, const Z80EX_BYTE *cgrom, const Z80EX_BYTE *mz800rom ) {
     Z80EX_BYTE *ROM;
 
-    ROM = g_memory.ROM;
-    memcpy ( ROM, mz700rom, ROM_SIZE_MZ700 );
+    ROM = g_memory_ROM;
+    memcpy ( ROM, mz700rom, ROM_0000_SIZE );
     g_rom.mz700rom = mz700rom;
 
-    ROM += sizeof (Z80EX_BYTE ) * ROM_SIZE_CGROM;
-    memcpy ( ROM, cgrom, ROM_SIZE_CGROM );
+    ROM += sizeof (Z80EX_BYTE ) * ROM_CGROM_SIZE;
+    memcpy ( ROM, cgrom, ROM_CGROM_SIZE );
     g_rom.cgrom = cgrom;
 
-    ROM += sizeof (Z80EX_BYTE ) * ROM_SIZE_CGROM;
-    memcpy ( ROM, mz800rom, ROM_SIZE_MZ800 );
+    ROM += sizeof (Z80EX_BYTE ) * ROM_CGROM_SIZE;
+    memcpy ( ROM, mz800rom, ROM_E000_SIZE );
     g_rom.mz800rom = mz800rom;
 }
 
@@ -85,16 +88,16 @@ static int rom_user_defined_load_file ( void *dst, char *filepath, uint32_t size
 
 int rom_user_defined_rom_area_load ( st_ROM_AREA *dst, en_ROM_BOOL allinone, char *allinone_fp, char *mz700_fp, char *cgrom_fp, char *mz800_fp ) {
     if ( allinone == ROM_BOOL_YES ) return rom_user_defined_load_file ( dst, allinone_fp, ROM_SIZE_TOTAL );
-    if ( EXIT_SUCCESS != rom_user_defined_load_file ( &dst->mz700rom, mz700_fp, ROM_SIZE_MZ700 ) ) return EXIT_FAILURE;
-    if ( EXIT_SUCCESS != rom_user_defined_load_file ( &dst->cgrom, cgrom_fp, ROM_SIZE_CGROM ) ) return EXIT_FAILURE;
-    return rom_user_defined_load_file ( &dst->mz800rom, mz800_fp, ROM_SIZE_MZ800 );
+    if ( EXIT_SUCCESS != rom_user_defined_load_file ( &dst->rom_0000, mz700_fp, ROM_0000_SIZE ) ) return EXIT_FAILURE;
+    if ( EXIT_SUCCESS != rom_user_defined_load_file ( &dst->cgrom, cgrom_fp, ROM_CGROM_SIZE ) ) return EXIT_FAILURE;
+    return rom_user_defined_load_file ( &dst->rom_E000, mz800_fp, ROM_E000_SIZE );
 }
 
 
 static void rom_cmthack_is_not_compatibile ( void ) {
     if ( TEST_CMTHACK_INSTALLED ) {
         printf ( "CMTHACK is not compatibile with selected ROM - CMTHACK DISABLED\n" );
-        cmthack_load_rom_patch ( 0 );
+        cmthack_mz800_load_rom_patch ( 0 );
     };
 }
 
@@ -106,9 +109,15 @@ static void rom_install ( en_ROMTYPE romtype ) {
     switch ( romtype ) {
 
         case ROMTYPE_STANDARD:
+#ifdef MACHINE_EMU_MZ800
             rom_install_predefined ( c_ROM_MZ700, c_ROM_CGROM, c_ROM_MZ800 );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+            rom_install_predefined ( c_ROM_MZ1500_0000, c_ROM_MZ1500_CGROM, c_ROM_MZ1500_E000 );
+#endif
             break;
 
+#ifdef MACHINE_EMU_MZ800
         case ROMTYPE_JSS103:
             rom_install_predefined ( c_ROM_JSS103_MZ700, c_ROM_JSS103_CGROM, c_ROM_JSS103_MZ800 );
             break;
@@ -139,6 +148,7 @@ static void rom_install ( en_ROMTYPE romtype ) {
             rom_cmthack_is_not_compatibile ( );
             rom_install_predefined ( c_ROM_WILLY_MZ700, c_ROM_WILLY_jap_CGROM, c_ROM_WILLY_jap_MZ800 );
             break;
+#endif
 
         case ROMTYPE_USER_DEFINED:
             if ( g_rom.user_defined_rom_loaded != ROM_BOOL_YES ) {
@@ -169,21 +179,31 @@ static void rom_install ( en_ROMTYPE romtype ) {
             };
 
             if ( g_cmthack.load_patch_installed ) {
-                rom_install_predefined ( g_rom.rom_user_defined_cmthack.mz700rom, g_rom.rom_user_defined_cmthack.cgrom, g_rom.rom_user_defined_cmthack.mz800rom );
+                rom_install_predefined ( g_rom.rom_user_defined_cmthack.rom_0000, g_rom.rom_user_defined_cmthack.cgrom, g_rom.rom_user_defined_cmthack.rom_E000 );
             } else {
-                rom_install_predefined ( g_rom.rom_user_defined.mz700rom, g_rom.rom_user_defined.cgrom, g_rom.rom_user_defined.mz800rom );
+                rom_install_predefined ( g_rom.rom_user_defined.rom_0000, g_rom.rom_user_defined.cgrom, g_rom.rom_user_defined.rom_E000 );
             };
             break;
 
         default:
             printf ( "Unsupported ROM type! %d\n", romtype );
+#ifdef MACHINE_EMU_MZ800
             rom_install_predefined ( c_ROM_MZ700, c_ROM_CGROM, c_ROM_MZ800 );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+            rom_install_predefined ( c_ROM_MZ1500_0000, c_ROM_MZ1500_CGROM, c_ROM_MZ1500_E000 );
+#endif
             romtype = ROMTYPE_STANDARD;
             break;
     };
 
     if ( custom_rom_error ) {
+#ifdef MACHINE_EMU_MZ800
         rom_install_predefined ( c_ROM_MZ700, c_ROM_CGROM, c_ROM_MZ800 );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+        rom_install_predefined ( c_ROM_MZ1500_0000, c_ROM_MZ1500_CGROM, c_ROM_MZ1500_E000 );
+#endif
         g_rom.type = ROMTYPE_STANDARD;
         ui_rom_menu_update ( );
         ui_rom_settings_open_window ( );
@@ -259,24 +279,28 @@ void rom_init ( void ) {
     if ( g_mz800.development_mode == DEVELMODE_YES ) {
         elm_rom_type = cfgmodule_register_new_element ( cmod, "rom_type", CFGENTYPE_KEYWORD, ROMTYPE_STANDARD,
                                                         ROMTYPE_STANDARD, "STANDARD",
-                                                        ROMTYPE_JSS103, "JSS103",
+#ifdef MACHINE_EMU_MZ800
+                ROMTYPE_JSS103, "JSS103",
                                                         ROMTYPE_JSS105C, "JSS105C",
                                                         ROMTYPE_JSS106A, "JSS106A",
                                                         ROMTYPE_JSS108C, "JSS108C",
                                                         ROMTYPE_WILLY_EN, "WILLY_EN",
                                                         ROMTYPE_WILLY_GE, "WILLY_GE",
                                                         ROMTYPE_WILLY_JAP, "WILLY_JAP",
-                                                        ROMTYPE_USER_DEFINED, "USER_DEFINED",
+#endif
+                ROMTYPE_USER_DEFINED, "USER_DEFINED",
                                                         -1 );
     } else {
         elm_rom_type = cfgmodule_register_new_element ( cmod, "rom_type", CFGENTYPE_KEYWORD, ROMTYPE_STANDARD,
                                                         ROMTYPE_STANDARD, "STANDARD",
-                                                        ROMTYPE_JSS106A, "JSS106A",
+#ifdef MACHINE_EMU_MZ800
+                ROMTYPE_JSS106A, "JSS106A",
                                                         ROMTYPE_JSS108C, "JSS108C",
                                                         ROMTYPE_WILLY_EN, "WILLY_EN",
                                                         ROMTYPE_WILLY_GE, "WILLY_GE",
                                                         ROMTYPE_WILLY_JAP, "WILLY_JAP",
-                                                        ROMTYPE_USER_DEFINED, "USER_DEFINED",
+#endif
+                ROMTYPE_USER_DEFINED, "USER_DEFINED",
                                                         -1 );
     };
 

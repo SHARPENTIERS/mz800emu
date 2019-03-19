@@ -1,5 +1,5 @@
 /* 
- * File:   hwscroll.c
+ * File:   hwscroll_mz800.c
  * Author: Michal Hucik <hucik@ordoz.com>
  *
  * Created on 18. června 2015, 19:44
@@ -58,9 +58,15 @@
  * 
  */
 
+#include "mz800emu_cfg.h"
+
+#include <stdio.h>
+
+#ifdef MACHINE_EMU_MZ800
+
 #include "z80ex/include/z80ex.h"
 
-#include "hwscroll.h"
+#include "hwscroll_mz800.h"
 #include "gdg.h"
 #include "framebuffer.h"
 
@@ -68,78 +74,78 @@
 //#define DBGLEVEL (DBGNON | DBGERR | DBGWAR | DBGINF )
 #include "debug.h"
 
-st_HWSCROLL g_hwscroll;
+st_HWSCROLL_MZ800 g_hwscroll_mz800;
 
 
-void hwscroll_init ( void ) {
-    g_hwscroll.enabled = 0;
+void hwscroll_mz800_init ( void ) {
+    g_hwscroll_mz800.enabled = 0;
 }
 
 
-void hwscroll_reset ( void ) {
-    g_hwscroll.regSSA = 0;
-    g_hwscroll.regSEA = 125 << 6;
-    g_hwscroll.regSW = 125 << 6;
-    g_hwscroll.regSOF = 0;
-    g_hwscroll.enabled = 0;
+void hwscroll_mz800_reset ( void ) {
+    g_hwscroll_mz800.regSSA = 0;
+    g_hwscroll_mz800.regSEA = 125 << 6;
+    g_hwscroll_mz800.regSW = 125 << 6;
+    g_hwscroll_mz800.regSOF = 0;
+    g_hwscroll_mz800.enabled = 0;
 }
 
 
 static void hwscroll_regs_changed ( void ) {
 
-    int last_hwscroll_enabled = g_hwscroll.enabled;
+    int last_hwscroll_enabled = g_hwscroll_mz800.enabled;
 
     /* jsou splneny vsechny podminky pro scroll? */
-    if ( ( g_hwscroll.regSOF > 0 ) &&
+    if ( ( g_hwscroll_mz800.regSOF > 0 ) &&
          //( g_hwscroll.regSOF <= 0x1f40 ) &&
-         ( g_hwscroll.regSSA <= 0x1e00 ) &&
-         ( g_hwscroll.regSEA >= 0x0140 ) &&
+         ( g_hwscroll_mz800.regSSA <= 0x1e00 ) &&
+         ( g_hwscroll_mz800.regSEA >= 0x0140 ) &&
          //( g_hwscroll.regSEA <= 0x1f40 ) &&
-         ( g_hwscroll.regSW > g_hwscroll.regSOF ) &&
-         ( g_hwscroll.regSEA > g_hwscroll.regSSA ) &&
-         ( g_hwscroll.regSW == ( g_hwscroll.regSEA - g_hwscroll.regSSA ) ) ) {
+         ( g_hwscroll_mz800.regSW > g_hwscroll_mz800.regSOF ) &&
+         ( g_hwscroll_mz800.regSEA > g_hwscroll_mz800.regSSA ) &&
+         ( g_hwscroll_mz800.regSW == ( g_hwscroll_mz800.regSEA - g_hwscroll_mz800.regSSA ) ) ) {
 
-        g_hwscroll.enabled = 1;
-        DBGPRINTF ( DBGINF, "SOF: 0x%04x, SSA: 0x%04x, SEA: 0x%04x, SW: 0x%04x, HW scroll is ENABLED\n", g_hwscroll.regSOF, g_hwscroll.regSSA, g_hwscroll.regSEA, g_hwscroll.regSW );
+        g_hwscroll_mz800.enabled = 1;
+        DBGPRINTF ( DBGINF, "SOF: 0x%04x, SSA: 0x%04x, SEA: 0x%04x, SW: 0x%04x, HW scroll is ENABLED\n", g_hwscroll_mz800.regSOF, g_hwscroll_mz800.regSSA, g_hwscroll_mz800.regSEA, g_hwscroll_mz800.regSW );
 
     } else {
-        g_hwscroll.enabled = 0;
-        DBGPRINTF ( DBGINF, "SOF: 0x%04x, SSA: 0x%04x, SEA: 0x%04x, SW: 0x%04x, HW scroll is DISABLED\n", g_hwscroll.regSOF, g_hwscroll.regSSA, g_hwscroll.regSEA, g_hwscroll.regSW );
+        g_hwscroll_mz800.enabled = 0;
+        DBGPRINTF ( DBGINF, "SOF: 0x%04x, SSA: 0x%04x, SEA: 0x%04x, SW: 0x%04x, HW scroll is DISABLED\n", g_hwscroll_mz800.regSOF, g_hwscroll_mz800.regSSA, g_hwscroll_mz800.regSEA, g_hwscroll_mz800.regSW );
 #if ( DBGLEVEL & DBGINF )
-        if ( !( g_hwscroll.regSOF > 0 ) ) {
+        if ( !( g_hwscroll_mz800.regSOF > 0 ) ) {
             printf ( "\t! regSOF > 0\n" );
         };
         //        if ( ! ( g_hwscroll.regSOF <= 0x1f40 ) ) {
         //            printf ( "\t! regSOF <= 0x1f40\n" );
         //        };
-        if ( !( g_hwscroll.regSSA <= 0x1e00 ) ) {
+        if ( !( g_hwscroll_mz800.regSSA <= 0x1e00 ) ) {
             printf ( "\t! regSSA <= 0x1e00\n" );
         };
-        if ( !( g_hwscroll.regSEA >= 0x0140 ) ) {
+        if ( !( g_hwscroll_mz800.regSEA >= 0x0140 ) ) {
             printf ( "\t! regSEA >= 0x0140\n" );
         };
         //        if ( ! ( g_hwscroll.regSEA <= 0x1f40 ) ) {
         //            printf ( "\t! regSEA <= 0x1f40\n" );
         //        };        
-        if ( !( g_hwscroll.regSEA > g_hwscroll.regSSA ) ) {
+        if ( !( g_hwscroll_mz800.regSEA > g_hwscroll_mz800.regSSA ) ) {
             printf ( "\t! regSEA > regSSA\n" );
         };
-        if ( !( g_hwscroll.regSW > g_hwscroll.regSOF ) ) {
+        if ( !( g_hwscroll_mz800.regSW > g_hwscroll_mz800.regSOF ) ) {
             printf ( "\t! regSW > regSOF\n" );
         };
-        if ( !( g_hwscroll.regSW == ( g_hwscroll.regSEA - g_hwscroll.regSSA ) ) ) {
+        if ( !( g_hwscroll_mz800.regSW == ( g_hwscroll_mz800.regSEA - g_hwscroll_mz800.regSSA ) ) ) {
             printf ( "\t! regSW == ( regSEA - regSSA )\n" );
         };
 #endif
     };
 
-    if ( ( !DMD_TEST_MZ700 ) && ( !( last_hwscroll_enabled | g_hwscroll.enabled ) ) ) {
-        framebuffer_MZ800_screen_changed ( );
+    if ( ( !GDG_MZ800_TEST_DMD_MODE700 ) && ( !( last_hwscroll_enabled | g_hwscroll_mz800.enabled ) ) ) {
+        framebuffer_mz800_mode800_screen_changed ( );
     };
 }
 
 
-void hwscroll_set_reg ( int addr, Z80EX_BYTE value ) {
+void hwscroll_mz800_set_reg ( int addr, Z80EX_BYTE value ) {
 
     //DBGPRINTF ( DBGINF, "addr: 0x%02x, value: 0x%02x, PC: 0x%04x\n", addr, value, z80ex_get_reg ( g_mz800.cpu, regPC ) );
 
@@ -147,35 +153,35 @@ void hwscroll_set_reg ( int addr, Z80EX_BYTE value ) {
 
             /* nastaveni SOF_LO: 0x01cf */
         case 0x01:
-            g_hwscroll.regSOF &= 0x03 << 11;
-            g_hwscroll.regSOF |= ( value & 0xff ) << 3;
+            g_hwscroll_mz800.regSOF &= 0x03 << 11;
+            g_hwscroll_mz800.regSOF |= ( value & 0xff ) << 3;
             //printf ( "LO: %d (%d)\n", value, g_hwscroll.regSOF );
             break;
 
 
             /* nastaveni SOF_HI: 0x02cf */
         case 0x02:
-            g_hwscroll.regSOF &= 0xff << 3;
-            g_hwscroll.regSOF |= ( value & 0x03 ) << 11;
+            g_hwscroll_mz800.regSOF &= 0xff << 3;
+            g_hwscroll_mz800.regSOF |= ( value & 0x03 ) << 11;
             //printf ( "HI: %d (%d)\n", value, g_hwscroll.regSOF );
             break;
 
 
             /* nastaveni SW: 0x03cf */
         case 0x03:
-            g_hwscroll.regSW = ( value & 0x7f ) << 6;
+            g_hwscroll_mz800.regSW = ( value & 0x7f ) << 6;
             break;
 
 
             /* nastaveni SSA: 0x04cf */
         case 0x04:
-            g_hwscroll.regSSA = ( value & 0x7f ) << 6;
+            g_hwscroll_mz800.regSSA = ( value & 0x7f ) << 6;
             break;
 
 
             /* nastaveni SEA: 0x05cf */
         case 0x05:
-            g_hwscroll.regSEA = ( value & 0x7f ) << 6;
+            g_hwscroll_mz800.regSEA = ( value & 0x7f ) << 6;
             break;
     };
 
@@ -185,17 +191,17 @@ void hwscroll_set_reg ( int addr, Z80EX_BYTE value ) {
 #if 0
 
 
-unsigned hwscroll_shift_addr ( unsigned addr ) {
+unsigned hwscroll_mz800_shift_addr ( unsigned addr ) {
 
-    if ( g_hwscroll.enabled ) {
+    if ( g_hwscroll_mz800.enabled ) {
 
         /* nachazime se v oblasti, ktera ma byt scrollovana? */
-        if ( ( addr >= g_hwscroll.regSSA ) && ( addr < g_hwscroll.regSEA ) ) {
+        if ( ( addr >= g_hwscroll_mz800.regSSA ) && ( addr < g_hwscroll_mz800.regSEA ) ) {
 
-            if ( addr >= ( g_hwscroll.regSEA - g_hwscroll.regSOF ) ) {
-                return ( addr + g_hwscroll.regSOF - g_hwscroll.regSW );
+            if ( addr >= ( g_hwscroll_mz800.regSEA - g_hwscroll_mz800.regSOF ) ) {
+                return ( addr + g_hwscroll_mz800.regSOF - g_hwscroll_mz800.regSW );
             };
-            return ( addr + g_hwscroll.regSOF );
+            return ( addr + g_hwscroll_mz800.regSOF );
         };
     };
 
@@ -205,45 +211,47 @@ unsigned hwscroll_shift_addr ( unsigned addr ) {
 #endif
 
 
-int hwscroll_get_ssa ( void ) {
-    return g_hwscroll.regSSA;
+int hwscroll_mz800_get_ssa ( void ) {
+    return g_hwscroll_mz800.regSSA;
 }
 
 
-int hwscroll_get_sea ( void ) {
-    return g_hwscroll.regSEA >> 6;
+int hwscroll_mz800_get_sea ( void ) {
+    return g_hwscroll_mz800.regSEA >> 6;
 }
 
 
-int hwscroll_get_sw ( void ) {
-    return g_hwscroll.regSW >> 6;
+int hwscroll_mz800_get_sw ( void ) {
+    return g_hwscroll_mz800.regSW >> 6;
 }
 
 
-int hwscroll_get_sof ( void ) {
-    return g_hwscroll.regSOF >> 3;
+int hwscroll_mz800_get_sof ( void ) {
+    return g_hwscroll_mz800.regSOF >> 3;
 }
 
 
-void hwscroll_set_ssa ( int value ) {
-    g_hwscroll.regSSA = value & 0x7f;
+void hwscroll_mz800_set_ssa ( int value ) {
+    g_hwscroll_mz800.regSSA = value & 0x7f;
     hwscroll_regs_changed ( );
 }
 
 
-void hwscroll_set_sea ( int value ) {
-    g_hwscroll.regSEA = ( value & 0x7f ) << 6;
+void hwscroll_mz800_set_sea ( int value ) {
+    g_hwscroll_mz800.regSEA = ( value & 0x7f ) << 6;
     hwscroll_regs_changed ( );
 }
 
 
-void hwscroll_set_sw ( int value ) {
-    g_hwscroll.regSW = ( value & 0x7f ) << 6;
+void hwscroll_mz800_set_sw ( int value ) {
+    g_hwscroll_mz800.regSW = ( value & 0x7f ) << 6;
     hwscroll_regs_changed ( );
 }
 
 
-void hwscroll_set_sof ( int value ) {
-    g_hwscroll.regSOF = ( value & 0x3ff ) << 3;
+void hwscroll_mz800_set_sof ( int value ) {
+    g_hwscroll_mz800.regSOF = ( value & 0x3ff ) << 3;
     hwscroll_regs_changed ( );
 }
+
+#endif

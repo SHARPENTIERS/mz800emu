@@ -507,13 +507,13 @@ static inline void iface_sdl_keydown_hotkeys ( SDL_Event *event ) {
              * Breakpoints window: Alt + B
              */
             ui_breakpoints_show_hide_window ( );
-
+#ifdef MZ800EMU_CFG_DEBUGGER_MEMBROWSER_ENABLED
         } else if ( event->key.keysym.scancode == SDL_SCANCODE_E ) {
             /*
              * Memory browser window: Alt + E
              */
             ui_membrowser_show_hide ( );
-
+#endif
         } else if ( event->key.keysym.scancode == SDL_SCANCODE_I ) {
             /*
              * Dissassembler window: Alt + I

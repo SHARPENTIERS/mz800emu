@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.cnd.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>mz800emu</name>
+            <name>mz1500emu</name>
             <c-extensions>c</c-extensions>
             <cpp-extensions/>
             <header-extensions>h</header-extensions>
@@ -16,11 +16,11 @@
                     <type>1</type>
                 </confElem>
                 <confElem>
-                    <name>Release-Linux</name>
+                    <name>Debug-Linux</name>
                     <type>1</type>
                 </confElem>
                 <confElem>
-                    <name>Debug-Linux</name>
+                    <name>Release-Linux</name>
                     <type>1</type>
                 </confElem>
                 <confElem>

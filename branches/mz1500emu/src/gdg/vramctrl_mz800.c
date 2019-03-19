@@ -1,5 +1,5 @@
 /* 
- * File:   vramctrl.c
+ * File:   vramctrl_mz800.c
  * Author: Michal Hucik <hucik@ordoz.com>
  *
  * Created on 18. června 2015, 18:49
@@ -108,11 +108,15 @@
 
 #include "mz800emu_cfg.h"
 
+#include <stdio.h>
+
+#ifdef MACHINE_EMU_MZ800
+
 #include "z80ex/include/z80ex.h"
 
 #include "gdg.h"
-#include "vramctrl.h"
-#include "hwscroll.h"
+#include "vramctrl_mz800.h"
+#include "hwscroll_mz800.h"
 #include "video.h"
 #include "framebuffer.h"
 #include "memory/memory.h"
@@ -128,16 +132,16 @@
  * 
  ******************************************************************************/
 
-st_VRAMCTRL g_vramctrl;
+st_VRAMCTRL_MZ800 g_vramctrl_mz800;
 
 
-void vramctrl_reset ( void ) {
-    g_vramctrl.regWF_PLANE = 0x01;
-    g_vramctrl.regWF_MODE = 0x00;
-    g_vramctrl.regRF_PLANE = 0x01;
-    g_vramctrl.regRF_SEARCH = 0;
-    g_vramctrl.regWFRF_VBANK = 0;
-    g_vramctrl.mz700_wr_latch_is_used = 0;
+void vramctrl_mz800_reset ( void ) {
+    g_vramctrl_mz800.regWF_PLANE = 0x01;
+    g_vramctrl_mz800.regWF_MODE = 0x00;
+    g_vramctrl_mz800.regRF_PLANE = 0x01;
+    g_vramctrl_mz800.regRF_SEARCH = 0;
+    g_vramctrl_mz800.regWFRF_VBANK = 0;
+    g_vramctrl_mz800.mode700_wr_latch_is_used = 0;
 }
 
 #if 0
@@ -154,12 +158,12 @@ void vramctrl_reset ( void ) {
  * @param addr
  * @return 
  */
-inline Z80EX_BYTE vramctrl_mz700_memop_read_byte_sync ( Z80EX_WORD addr ) {
+inline Z80EX_BYTE vramctrl_mz800_mode700_memop_read_byte_sync ( Z80EX_WORD addr ) {
     mz800_sync_insideop_mreq ( );
-    if ( SIGNAL_GDG_HBLNK ) {
+    if ( GDG_SIGNAL_HBLNK ) {
         mz800_sync_insideop_mreq_mz700_vramctrl ( );
     };
-    return g_memory.VRAM [ addr ];
+    return g_memory_mz1500.VRAM [ addr ];
 }
 
 
@@ -169,8 +173,8 @@ inline Z80EX_BYTE vramctrl_mz700_memop_read_byte_sync ( Z80EX_WORD addr ) {
  * @param addr
  * @return 
  */
-inline Z80EX_BYTE vramctrl_mz700_memop_read_byte ( Z80EX_WORD addr ) {
-    return g_memory.VRAM [ addr ];
+inline Z80EX_BYTE vramctrl_mz800_mode700_memop_read_byte ( Z80EX_WORD addr ) {
+    return g_memory_mz1500.VRAM [ addr ];
 }
 
 
@@ -180,10 +184,10 @@ inline Z80EX_BYTE vramctrl_mz700_memop_read_byte ( Z80EX_WORD addr ) {
  * @param addr
  * @param value
  */
-static inline void vramctrl_mz700_memop_write_byte_internal ( Z80EX_WORD addr, Z80EX_BYTE value ) {
+static inline void vramctrl_mz800_mode700_memop_write_byte_internal ( Z80EX_WORD addr, Z80EX_BYTE value ) {
     /* TODO: meli by jsme nastavovat jen pokud se zapisuje do CG-RAM, nebo do VRAM, ktera je opravdu videt */
     g_gdg.screen_changes = SCRSTS_THIS_IS_CHANGED;
-    g_memory.VRAM [ addr ] = value;
+    g_memory_mz1500.VRAM [ addr ] = value;
 }
 
 
@@ -193,14 +197,14 @@ static inline void vramctrl_mz700_memop_write_byte_internal ( Z80EX_WORD addr, Z
  * @param addr
  * @param value
  */
-inline void vramctrl_mz700_memop_write_byte_sync ( Z80EX_WORD addr, Z80EX_BYTE value ) {
+inline void vramctrl_mz800_mode700_memop_write_byte_sync ( Z80EX_WORD addr, Z80EX_BYTE value ) {
     mz800_sync_insideop_mreq ( );
-    if ( SIGNAL_GDG_HBLNK ) {
-        if ( g_vramctrl.mz700_wr_latch_is_used++ != 0 ) {
+    if ( GDG_SIGNAL_HBLNK ) {
+        if ( g_vramctrl_mz800.mode700_wr_latch_is_used++ != 0 ) {
             mz800_sync_insideop_mreq_mz700_vramctrl ( );
         };
     };
-    vramctrl_mz700_memop_write_byte_internal ( addr, value );
+    vramctrl_mz800_mode700_memop_write_byte_internal ( addr, value );
 }
 
 
@@ -210,8 +214,8 @@ inline void vramctrl_mz700_memop_write_byte_sync ( Z80EX_WORD addr, Z80EX_BYTE v
  * @param addr
  * @param value
  */
-inline void vramctrl_mz700_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
-    vramctrl_mz700_memop_write_byte_internal ( addr, value );
+inline void vramctrl_mz800_mode700_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
+    vramctrl_mz800_mode700_memop_write_byte_internal ( addr, value );
 }
 
 #endif
@@ -235,21 +239,21 @@ void vramctrl_mz800_set_wf_rf_reg ( int addr, Z80EX_BYTE value ) {
 
         case 0:
             /* nastaveni WF: 0xcc */
-            g_vramctrl.regWF_PLANE = value & 0x0f;
-            g_vramctrl.regWFRF_VBANK = ( value >> 4 ) & 0x01;
+            g_vramctrl_mz800.regWF_PLANE = value & 0x0f;
+            g_vramctrl_mz800.regWFRF_VBANK = ( value >> 4 ) & 0x01;
             if ( value & 0x80 ) {
-                g_vramctrl.regWF_MODE = ( value >> 5 ) & 0x06;
+                g_vramctrl_mz800.regWF_MODE = ( value >> 5 ) & 0x06;
             } else {
-                g_vramctrl.regWF_MODE = ( value >> 5 ) & 0x07;
+                g_vramctrl_mz800.regWF_MODE = ( value >> 5 ) & 0x07;
             };
             return;
 
 
         case 1:
             /* nastaveni RF: 0xcd */
-            g_vramctrl.regRF_PLANE = value & 0x0f;
-            g_vramctrl.regWFRF_VBANK = ( value >> 4 ) & 0x01;
-            g_vramctrl.regRF_SEARCH = ( value >> 7 ) & 0x01;
+            g_vramctrl_mz800.regRF_PLANE = value & 0x0f;
+            g_vramctrl_mz800.regWFRF_VBANK = ( value >> 4 ) & 0x01;
+            g_vramctrl_mz800.regRF_SEARCH = ( value >> 7 ) & 0x01;
             return;
     };
 }
@@ -274,7 +278,7 @@ void vramctrl_mz800_set_wf_rf_reg ( int addr, Z80EX_BYTE value ) {
  * @param addr
  * @return 
  */
-static inline Z80EX_BYTE vramctrl_mz800_memop_read_byte_internal ( Z80EX_WORD addr ) {
+static inline Z80EX_BYTE vramctrl_mz800_mode800_memop_read_byte_internal ( Z80EX_WORD addr ) {
 
     Z80EX_BYTE search = 0xff;
     Z80EX_BYTE notsearch = 0x00;
@@ -284,41 +288,41 @@ static inline Z80EX_BYTE vramctrl_mz800_memop_read_byte_internal ( Z80EX_WORD ad
     Z80EX_WORD phy_vram_addr = addr;
 
     /* v rozliseni 640x200 vydelime adresu 2 */
-    if ( DMD_TEST_SCRW640 ) {
+    if ( GDG_MZ800_TEST_DMD_SCRW640 ) {
         phy_vram_addr = phy_vram_addr >> 1;
     };
 
-    phy_vram_addr = hwscroll_shift_addr ( phy_vram_addr );
+    phy_vram_addr = hwscroll_mz800_shift_addr ( phy_vram_addr );
 
 
-    if ( g_vramctrl.regRF_SEARCH ) {
+    if ( g_vramctrl_mz800.regRF_SEARCH ) {
 
-        if ( DMD_TEST_HICOLOR ) {
+        if ( GDG_MZ800_TEST_DMD_HICOLOR ) {
 
-            if ( DMD_TEST_SCRW640 ) {
+            if ( GDG_MZ800_TEST_DMD_SCRW640 ) {
 
                 /* 640x200 @ 4 */
 
-                if ( g_vramctrl.regRF_PLANE & DEF_PLANE1 ) {
+                if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE1 ) {
                     if ( ADDR_IS_ODD ) {
-                        search = g_memoryVRAM_II [ phy_vram_addr ];
+                        search = g_memory_mz800_VRAM_II [ phy_vram_addr ];
                     } else {
-                        search = g_memoryVRAM_I [ phy_vram_addr ];
+                        search = g_memory_mz800_VRAM_I [ phy_vram_addr ];
                     };
                 } else {
                     if ( ADDR_IS_ODD ) {
-                        notsearch = g_memoryVRAM_II [ phy_vram_addr ];
+                        notsearch = g_memory_mz800_VRAM_II [ phy_vram_addr ];
                     } else {
-                        notsearch = g_memoryVRAM_I [ phy_vram_addr ];
+                        notsearch = g_memory_mz800_VRAM_I [ phy_vram_addr ];
                     };
                 };
 
-                if ( g_vramctrl.regRF_PLANE & DEF_PLANE3 ) {
+                if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE3 ) {
                     if ( DEF_USE_EXTVRAM ) {
                         if ( ADDR_IS_ODD ) {
-                            search &= g_memoryVRAM_IV [ phy_vram_addr ];
+                            search &= g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                         } else {
-                            search &= g_memoryVRAM_III [ phy_vram_addr ];
+                            search &= g_memory_mz800_VRAM_III [ phy_vram_addr ];
                         };
                     } else {
                         /* search &= 0xff; */
@@ -326,9 +330,9 @@ static inline Z80EX_BYTE vramctrl_mz800_memop_read_byte_internal ( Z80EX_WORD ad
                 } else {
                     if ( DEF_USE_EXTVRAM ) {
                         if ( ADDR_IS_ODD ) {
-                            notsearch |= g_memoryVRAM_IV [ phy_vram_addr ];
+                            notsearch |= g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                         } else {
-                            notsearch |= g_memoryVRAM_III [ phy_vram_addr ];
+                            notsearch |= g_memory_mz800_VRAM_III [ phy_vram_addr ];
                         };
                     } else {
                         notsearch |= 0xff;
@@ -339,41 +343,41 @@ static inline Z80EX_BYTE vramctrl_mz800_memop_read_byte_internal ( Z80EX_WORD ad
 
                 /* 320x200 @ 16 */
 
-                if ( g_vramctrl.regRF_PLANE & DEF_PLANE1 ) {
-                    search = g_memoryVRAM_I [ phy_vram_addr ];
+                if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE1 ) {
+                    search = g_memory_mz800_VRAM_I [ phy_vram_addr ];
                 } else {
-                    notsearch = g_memoryVRAM_I [ phy_vram_addr ];
+                    notsearch = g_memory_mz800_VRAM_I [ phy_vram_addr ];
                 };
 
-                if ( g_vramctrl.regRF_PLANE & DEF_PLANE2 ) {
-                    search &= g_memoryVRAM_II [ phy_vram_addr ];
+                if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE2 ) {
+                    search &= g_memory_mz800_VRAM_II [ phy_vram_addr ];
                 } else {
-                    notsearch |= g_memoryVRAM_II [ phy_vram_addr ];
+                    notsearch |= g_memory_mz800_VRAM_II [ phy_vram_addr ];
                 };
 
-                if ( g_vramctrl.regRF_PLANE & DEF_PLANE3 ) {
+                if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE3 ) {
                     if ( DEF_USE_EXTVRAM ) {
-                        search &= g_memoryVRAM_III [ phy_vram_addr ];
+                        search &= g_memory_mz800_VRAM_III [ phy_vram_addr ];
                     } else {
                         /* search &= 0xff; */
                     };
                 } else {
                     if ( DEF_USE_EXTVRAM ) {
-                        notsearch |= g_memoryVRAM_III [ phy_vram_addr ];
+                        notsearch |= g_memory_mz800_VRAM_III [ phy_vram_addr ];
                     } else {
                         notsearch |= 0xff;
                     };
                 };
 
-                if ( g_vramctrl.regRF_PLANE & DEF_PLANE4 ) {
+                if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE4 ) {
                     if ( DEF_USE_EXTVRAM ) {
-                        search &= g_memoryVRAM_IV [ phy_vram_addr ];
+                        search &= g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                     } else {
                         /* search &= 0xff; */
                     };
                 } else {
                     if ( DEF_USE_EXTVRAM ) {
-                        notsearch |= g_memoryVRAM_IV [ phy_vram_addr ];
+                        notsearch |= g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                     } else {
                         notsearch |= 0xff;
                     };
@@ -382,17 +386,17 @@ static inline Z80EX_BYTE vramctrl_mz800_memop_read_byte_internal ( Z80EX_WORD ad
 
 
 
-        } else if ( DMD_TEST_SCRW640 ) {
+        } else if ( GDG_MZ800_TEST_DMD_SCRW640 ) {
 
-            if ( g_vramctrl.regWFRF_VBANK ) {
+            if ( g_vramctrl_mz800.regWFRF_VBANK ) {
 
                 /* 640x200 @ 2 B */
-                if ( g_vramctrl.regRF_PLANE & DEF_PLANE3 ) {
+                if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE3 ) {
                     if ( DEF_USE_EXTVRAM ) {
                         if ( ADDR_IS_ODD ) {
-                            search = g_memoryVRAM_IV [ phy_vram_addr ];
+                            search = g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                         } else {
-                            search = g_memoryVRAM_III [ phy_vram_addr ];
+                            search = g_memory_mz800_VRAM_III [ phy_vram_addr ];
                         };
                     } else {
                         /* search = 0xff */
@@ -400,9 +404,9 @@ static inline Z80EX_BYTE vramctrl_mz800_memop_read_byte_internal ( Z80EX_WORD ad
                 } else {
                     if ( DEF_USE_EXTVRAM ) {
                         if ( ADDR_IS_ODD ) {
-                            notsearch = g_memoryVRAM_IV [ phy_vram_addr ];
+                            notsearch = g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                         } else {
-                            notsearch = g_memoryVRAM_III [ phy_vram_addr ];
+                            notsearch = g_memory_mz800_VRAM_III [ phy_vram_addr ];
                         };
                     } else {
                         notsearch = 0xff;
@@ -412,17 +416,17 @@ static inline Z80EX_BYTE vramctrl_mz800_memop_read_byte_internal ( Z80EX_WORD ad
             } else {
 
                 /* 640x200 @ 2 A */
-                if ( g_vramctrl.regRF_PLANE & DEF_PLANE1 ) {
+                if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE1 ) {
                     if ( ADDR_IS_ODD ) {
-                        search = g_memoryVRAM_II [ phy_vram_addr ];
+                        search = g_memory_mz800_VRAM_II [ phy_vram_addr ];
                     } else {
-                        search = g_memoryVRAM_I [ phy_vram_addr ];
+                        search = g_memory_mz800_VRAM_I [ phy_vram_addr ];
                     };
                 } else {
                     if ( ADDR_IS_ODD ) {
-                        notsearch = g_memoryVRAM_II [ phy_vram_addr ];
+                        notsearch = g_memory_mz800_VRAM_II [ phy_vram_addr ];
                     } else {
-                        notsearch = g_memoryVRAM_I [ phy_vram_addr ];
+                        notsearch = g_memory_mz800_VRAM_I [ phy_vram_addr ];
                     };
                 };
 
@@ -432,32 +436,32 @@ static inline Z80EX_BYTE vramctrl_mz800_memop_read_byte_internal ( Z80EX_WORD ad
 
         } else {
 
-            if ( g_vramctrl.regWFRF_VBANK ) {
+            if ( g_vramctrl_mz800.regWFRF_VBANK ) {
 
                 /* 320x200 @ 4 B */
-                if ( g_vramctrl.regRF_PLANE & DEF_PLANE3 ) {
+                if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE3 ) {
                     if ( DEF_USE_EXTVRAM ) {
-                        search = g_memoryVRAM_III [ phy_vram_addr ];
+                        search = g_memory_mz800_VRAM_III [ phy_vram_addr ];
                     } else {
                         /* search = 0xff */
                     };
                 } else {
                     if ( DEF_USE_EXTVRAM ) {
-                        notsearch = g_memoryVRAM_III [ phy_vram_addr ];
+                        notsearch = g_memory_mz800_VRAM_III [ phy_vram_addr ];
                     } else {
                         notsearch = 0xff;
                     };
                 };
 
-                if ( g_vramctrl.regRF_PLANE & DEF_PLANE4 ) {
+                if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE4 ) {
                     if ( DEF_USE_EXTVRAM ) {
-                        search &= g_memoryVRAM_IV [ phy_vram_addr ];
+                        search &= g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                     } else {
                         /* search = 0xff */
                     };
                 } else {
                     if ( DEF_USE_EXTVRAM ) {
-                        notsearch |= g_memoryVRAM_IV [ phy_vram_addr ];
+                        notsearch |= g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                     } else {
                         notsearch |= 0xff;
                     };
@@ -467,16 +471,16 @@ static inline Z80EX_BYTE vramctrl_mz800_memop_read_byte_internal ( Z80EX_WORD ad
             } else {
 
                 /* 320x200 @ 4 A */
-                if ( g_vramctrl.regRF_PLANE & DEF_PLANE1 ) {
-                    search = g_memoryVRAM_I [ phy_vram_addr ];
+                if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE1 ) {
+                    search = g_memory_mz800_VRAM_I [ phy_vram_addr ];
                 } else {
-                    notsearch = g_memoryVRAM_I [ phy_vram_addr ];
+                    notsearch = g_memory_mz800_VRAM_I [ phy_vram_addr ];
                 };
 
-                if ( g_vramctrl.regRF_PLANE & DEF_PLANE2 ) {
-                    search &= g_memoryVRAM_II [ phy_vram_addr ];
+                if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE2 ) {
+                    search &= g_memory_mz800_VRAM_II [ phy_vram_addr ];
                 } else {
-                    notsearch |= g_memoryVRAM_II [ phy_vram_addr ];
+                    notsearch |= g_memory_mz800_VRAM_II [ phy_vram_addr ];
                 };
             };
 
@@ -489,40 +493,40 @@ static inline Z80EX_BYTE vramctrl_mz800_memop_read_byte_internal ( Z80EX_WORD ad
 
         /* proste cteni rovin */
 
-        if ( 0x00 == g_vramctrl.regRF_PLANE ) {
+        if ( 0x00 == g_vramctrl_mz800.regRF_PLANE ) {
             return 0xff;
         };
 
         retval = 0xff;
 
-        if ( g_vramctrl.regRF_PLANE & DEF_PLANE1 ) {
-            if ( DMD_TEST_SCRW640 && ADDR_IS_ODD ) {
-                retval &= g_memoryVRAM_II [ phy_vram_addr ];
+        if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE1 ) {
+            if ( GDG_MZ800_TEST_DMD_SCRW640 && ADDR_IS_ODD ) {
+                retval &= g_memory_mz800_VRAM_II [ phy_vram_addr ];
             } else {
-                retval &= g_memoryVRAM_I [ phy_vram_addr ];
+                retval &= g_memory_mz800_VRAM_I [ phy_vram_addr ];
             };
         };
 
-        if ( g_vramctrl.regRF_PLANE & DEF_PLANE2 ) {
-            if ( !DMD_TEST_SCRW640 ) {
-                retval &= g_memoryVRAM_II [ phy_vram_addr ];
+        if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE2 ) {
+            if ( !GDG_MZ800_TEST_DMD_SCRW640 ) {
+                retval &= g_memory_mz800_VRAM_II [ phy_vram_addr ];
             };
         };
 
-        if ( g_vramctrl.regRF_PLANE & DEF_PLANE3 ) {
+        if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE3 ) {
             if ( DEF_USE_EXTVRAM ) {
-                if ( DMD_TEST_SCRW640 && ADDR_IS_ODD ) {
-                    retval &= g_memoryVRAM_IV [ phy_vram_addr ];
+                if ( GDG_MZ800_TEST_DMD_SCRW640 && ADDR_IS_ODD ) {
+                    retval &= g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                 } else {
-                    retval &= g_memoryVRAM_III [ phy_vram_addr ];
+                    retval &= g_memory_mz800_VRAM_III [ phy_vram_addr ];
                 };
             };
         };
 
-        if ( g_vramctrl.regRF_PLANE & DEF_PLANE4 ) {
-            if ( !DMD_TEST_SCRW640 ) {
+        if ( g_vramctrl_mz800.regRF_PLANE & DEF_PLANE4 ) {
+            if ( !GDG_MZ800_TEST_DMD_SCRW640 ) {
                 if ( DEF_USE_EXTVRAM ) {
-                    retval &= g_memoryVRAM_IV [ phy_vram_addr ];
+                    retval &= g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                 };
             };
         };
@@ -539,9 +543,9 @@ static inline Z80EX_BYTE vramctrl_mz800_memop_read_byte_internal ( Z80EX_WORD ad
  * @param addr
  * @return 
  */
-inline Z80EX_BYTE vramctrl_mz800_memop_read_byte_sync ( Z80EX_WORD addr ) {
+inline Z80EX_BYTE vramctrl_mz800_mode800_memop_read_byte_sync ( Z80EX_WORD addr ) {
     mz800_sync_insideop_mreq_mz800_vramctrl ( );
-    Z80EX_BYTE byte = vramctrl_mz800_memop_read_byte_internal ( addr );
+    Z80EX_BYTE byte = vramctrl_mz800_mode800_memop_read_byte_internal ( addr );
     return byte;
 }
 
@@ -552,8 +556,8 @@ inline Z80EX_BYTE vramctrl_mz800_memop_read_byte_sync ( Z80EX_WORD addr ) {
  * @param addr
  * @return 
  */
-inline Z80EX_BYTE vramctrl_mz800_memop_read_byte ( Z80EX_WORD addr ) {
-    Z80EX_BYTE byte = vramctrl_mz800_memop_read_byte_internal ( addr );
+inline Z80EX_BYTE vramctrl_mz800_mode800_memop_read_byte ( Z80EX_WORD addr ) {
+    Z80EX_BYTE byte = vramctrl_mz800_mode800_memop_read_byte_internal ( addr );
     return byte;
 }
 
@@ -566,10 +570,10 @@ inline Z80EX_BYTE vramctrl_mz800_memop_read_byte ( Z80EX_WORD addr ) {
  * @param addr
  * @param value
  */
-inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
+inline void vramctrl_mz800_mode800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
 
     /* TODO: meli by jsme volat asi jen pokud se pise do viditelne VRAM */
-    framebuffer_MZ800_screen_changed ( );
+    framebuffer_mz800_mode800_screen_changed ( );
 
     /* Obecna dostupnost jednotlivych rovin */
     int avlb_plane;
@@ -590,11 +594,11 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
 
 
     /* v rozliseni 640x200 vydelime adresu 2 */
-    if ( DMD_TEST_SCRW640 ) {
+    if ( GDG_MZ800_TEST_DMD_SCRW640 ) {
         phy_vram_addr = phy_vram_addr >> 1;
     };
 
-    phy_vram_addr = hwscroll_shift_addr ( phy_vram_addr );
+    phy_vram_addr = hwscroll_mz800_shift_addr ( phy_vram_addr );
 
     addr_is_odd = addr & 0x01;
 
@@ -603,16 +607,16 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
     /******************************************************************************/
 
     /* v HICOLOR rezimech pozuivame vsechny roviny */
-    avlb_plane = DMD_TEST_HICOLOR ? ( DEF_PLANE1 | DEF_PLANE2 | DEF_PLANE3 | DEF_PLANE4 ) : 0x00;
+    avlb_plane = GDG_MZ800_TEST_DMD_HICOLOR ? ( DEF_PLANE1 | DEF_PLANE2 | DEF_PLANE3 | DEF_PLANE4 ) : 0x00;
 
     /* bude se pracovat jen s jednou bankou? */
-    avlb_plane |= g_vramctrl.regWFRF_VBANK ? ( DEF_PLANE3 | DEF_PLANE4 ) : ( DEF_PLANE1 | DEF_PLANE2 );
+    avlb_plane |= g_vramctrl_mz800.regWFRF_VBANK ? ( DEF_PLANE3 | DEF_PLANE4 ) : ( DEF_PLANE1 | DEF_PLANE2 );
 
     /* zaverecne rozhodnuti udelime podle rozliseni */
-    avlb_plane &= DMD_TEST_SCRW640 ? ( DEF_PLANE1 | DEF_PLANE3 ) : ( DEF_PLANE1 | DEF_PLANE2 | DEF_PLANE3 | DEF_PLANE4 );
+    avlb_plane &= GDG_MZ800_TEST_DMD_SCRW640 ? ( DEF_PLANE1 | DEF_PLANE3 ) : ( DEF_PLANE1 | DEF_PLANE2 | DEF_PLANE3 | DEF_PLANE4 );
 
     /* dostupnost rovin pro operace typu SINGLE */
-    avlb_plane_s = DMD_TEST_SCRW640 ? ( DEF_PLANE1 | DEF_PLANE3 ) : ( DEF_PLANE1 | DEF_PLANE2 | DEF_PLANE3 | DEF_PLANE4 );
+    avlb_plane_s = GDG_MZ800_TEST_DMD_SCRW640 ? ( DEF_PLANE1 | DEF_PLANE3 ) : ( DEF_PLANE1 | DEF_PLANE2 | DEF_PLANE3 | DEF_PLANE4 );
 
 
 
@@ -623,10 +627,10 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
 
     WE = 0;
 
-    if ( !( DMD_TEST_SCRW640 && addr_is_odd ) ) {
+    if ( !( GDG_MZ800_TEST_DMD_SCRW640 && addr_is_odd ) ) {
 
-        if ( !( g_vramctrl.regWF_MODE & ( 1 << 2 ) ) ) {
-            if ( g_vramctrl.regWF_PLANE & DEF_PLANE1 & avlb_plane_s ) {
+        if ( !( g_vramctrl_mz800.regWF_MODE & ( 1 << 2 ) ) ) {
+            if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE1 & avlb_plane_s ) {
 
                 /* SINGLE operace - vybrano I. */
                 WE |= DEF_PLANE1;
@@ -635,11 +639,11 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
         } else if ( avlb_plane & DEF_PLANE1 ) {
 
             /* REPLACE, PSET - vybrano I. */
-            if ( g_vramctrl.regWF_PLANE & DEF_PLANE1 ) {
+            if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE1 ) {
                 WE |= DEF_PLANE1;
 
                 /* REPLACE, PSET - NEvybrano I. */
-            } else if ( g_vramctrl.regWF_MODE & ( GDG_WF_MODE_REPLACE | GDG_WF_MODE_PSET ) ) {
+            } else if ( g_vramctrl_mz800.regWF_MODE & ( GDG_WF_MODE_REPLACE | GDG_WF_MODE_PSET ) ) {
                 WE |= DEF_PLANE1;
             };
 
@@ -648,12 +652,12 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
 
 
 
-    if ( DMD_TEST_SCRW640 ) {
+    if ( GDG_MZ800_TEST_DMD_SCRW640 ) {
         /* 640x200, lichy bajt? */
         if ( addr_is_odd ) {
 
-            if ( !( g_vramctrl.regWF_MODE & ( 1 << 2 ) ) ) {
-                if ( g_vramctrl.regWF_PLANE & DEF_PLANE1 & avlb_plane_s ) {
+            if ( !( g_vramctrl_mz800.regWF_MODE & ( 1 << 2 ) ) ) {
+                if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE1 & avlb_plane_s ) {
 
                     /* SINGLE operace - vybrano I. */
                     WE |= DEF_PLANE2;
@@ -663,11 +667,11 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
             } else if ( avlb_plane & DEF_PLANE1 ) {
 
                 /* REPLACE, PSET - vybrano I. */
-                if ( g_vramctrl.regWF_PLANE & DEF_PLANE1 ) {
+                if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE1 ) {
                     WE |= DEF_PLANE2;
 
                     /* REPLACE, PSET - NEvybrano I. */
-                } else if ( g_vramctrl.regWF_MODE & ( GDG_WF_MODE_REPLACE | GDG_WF_MODE_PSET ) ) {
+                } else if ( g_vramctrl_mz800.regWF_MODE & ( GDG_WF_MODE_REPLACE | GDG_WF_MODE_PSET ) ) {
                     WE |= DEF_PLANE2;
                 };
             };
@@ -675,8 +679,8 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
 
     } else {
         /* 320x200 */
-        if ( !( g_vramctrl.regWF_MODE & ( 1 << 2 ) ) ) {
-            if ( g_vramctrl.regWF_PLANE & DEF_PLANE2 & avlb_plane_s ) {
+        if ( !( g_vramctrl_mz800.regWF_MODE & ( 1 << 2 ) ) ) {
+            if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE2 & avlb_plane_s ) {
 
                 /* SINGLE operace - vybrano II. */
                 WE |= DEF_PLANE2;
@@ -686,16 +690,16 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
         } else if ( avlb_plane & DEF_PLANE2 ) {
 
             /* REPLACE, PSET - vybrano II. */
-            if ( g_vramctrl.regWF_PLANE & DEF_PLANE2 ) {
+            if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE2 ) {
                 WE |= DEF_PLANE2;
 
                 /* REPLACE, PSET - NEvybrano II. */
-            } else if ( g_vramctrl.regWF_MODE & ( GDG_WF_MODE_REPLACE | GDG_WF_MODE_PSET ) ) {
+            } else if ( g_vramctrl_mz800.regWF_MODE & ( GDG_WF_MODE_REPLACE | GDG_WF_MODE_PSET ) ) {
                 WE |= DEF_PLANE2;
 
 
                 /* 640x200, lichy bajt? */
-            } else if ( DMD_TEST_SCRW640 ) {
+            } else if ( GDG_MZ800_TEST_DMD_SCRW640 ) {
                 /* TODO: nejak si uz nevybavuju proc je to tady prazdne :( 
                  *
                  * 
@@ -710,10 +714,10 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
 
 
     if ( DEF_USE_EXTVRAM ) {
-        if ( !( DMD_TEST_SCRW640 && addr_is_odd ) ) {
+        if ( !( GDG_MZ800_TEST_DMD_SCRW640 && addr_is_odd ) ) {
 
-            if ( !( g_vramctrl.regWF_MODE & ( 1 << 2 ) ) ) {
-                if ( g_vramctrl.regWF_PLANE & DEF_PLANE3 & avlb_plane_s ) {
+            if ( !( g_vramctrl_mz800.regWF_MODE & ( 1 << 2 ) ) ) {
+                if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE3 & avlb_plane_s ) {
 
                     /* SINGLE operace - vybrano III. */
                     WE |= DEF_PLANE3;
@@ -722,11 +726,11 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
             } else if ( avlb_plane & DEF_PLANE3 ) {
 
                 /* REPLACE, PSET - vybrano III. */
-                if ( g_vramctrl.regWF_PLANE & DEF_PLANE3 ) {
+                if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE3 ) {
                     WE |= DEF_PLANE3;
 
                     /* REPLACE, PSET - NEvybrano III. */
-                } else if ( g_vramctrl.regWF_MODE & ( GDG_WF_MODE_REPLACE | GDG_WF_MODE_PSET ) ) {
+                } else if ( g_vramctrl_mz800.regWF_MODE & ( GDG_WF_MODE_REPLACE | GDG_WF_MODE_PSET ) ) {
                     WE |= DEF_PLANE3;
                 };
 
@@ -734,12 +738,12 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
         };
 
 
-        if ( DMD_TEST_SCRW640 ) {
+        if ( GDG_MZ800_TEST_DMD_SCRW640 ) {
             /* 640x200, lichy bajt? */
             if ( addr_is_odd ) {
 
-                if ( !( g_vramctrl.regWF_MODE & ( 1 << 2 ) ) ) {
-                    if ( g_vramctrl.regWF_PLANE & DEF_PLANE3 & avlb_plane_s ) {
+                if ( !( g_vramctrl_mz800.regWF_MODE & ( 1 << 2 ) ) ) {
+                    if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE3 & avlb_plane_s ) {
 
                         /* SINGLE operace - vybrano I. */
                         WE |= DEF_PLANE4;
@@ -749,11 +753,11 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
                 } else if ( avlb_plane & DEF_PLANE3 ) {
 
                     /* REPLACE, PSET - vybrano III. */
-                    if ( g_vramctrl.regWF_PLANE & DEF_PLANE3 ) {
+                    if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE3 ) {
                         WE |= DEF_PLANE4;
 
                         /* REPLACE, PSET - NEvybrano III. */
-                    } else if ( g_vramctrl.regWF_MODE & ( GDG_WF_MODE_REPLACE | GDG_WF_MODE_PSET ) ) {
+                    } else if ( g_vramctrl_mz800.regWF_MODE & ( GDG_WF_MODE_REPLACE | GDG_WF_MODE_PSET ) ) {
                         WE |= DEF_PLANE4;
                     };
                 };
@@ -761,8 +765,8 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
 
         } else {
             /* 320x200 */
-            if ( !( g_vramctrl.regWF_MODE & ( 1 << 2 ) ) ) {
-                if ( g_vramctrl.regWF_PLANE & DEF_PLANE4 & avlb_plane_s ) {
+            if ( !( g_vramctrl_mz800.regWF_MODE & ( 1 << 2 ) ) ) {
+                if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE4 & avlb_plane_s ) {
 
                     /* SINGLE operace - vybrano IV. */
                     WE |= DEF_PLANE4;
@@ -772,11 +776,11 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
             } else if ( avlb_plane & DEF_PLANE4 ) {
 
                 /* REPLACE, PSET - vybrano IV. */
-                if ( g_vramctrl.regWF_PLANE & DEF_PLANE4 ) {
+                if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE4 ) {
                     WE |= DEF_PLANE4;
 
                     /* REPLACE, PSET - NEvybrano IV. */
-                } else if ( g_vramctrl.regWF_MODE & ( GDG_WF_MODE_REPLACE | GDG_WF_MODE_PSET ) ) {
+                } else if ( g_vramctrl_mz800.regWF_MODE & ( GDG_WF_MODE_REPLACE | GDG_WF_MODE_PSET ) ) {
                     WE |= DEF_PLANE4;
 
                 };
@@ -792,26 +796,26 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
 
     if ( WE & DEF_PLANE1 ) {
 
-        switch ( g_vramctrl.regWF_MODE ) {
+        switch ( g_vramctrl_mz800.regWF_MODE ) {
 
             case GDG_WF_MODE_SINGLE:
                 wrvalue = value;
                 break;
 
             case GDG_WF_MODE_EXOR:
-                wrvalue = value ^ g_memoryVRAM_I [ phy_vram_addr ];
+                wrvalue = value ^ g_memory_mz800_VRAM_I [ phy_vram_addr ];
                 break;
 
             case GDG_WF_MODE_OR:
-                wrvalue = value | g_memoryVRAM_I [ phy_vram_addr ];
+                wrvalue = value | g_memory_mz800_VRAM_I [ phy_vram_addr ];
                 break;
 
             case GDG_WF_MODE_RESET:
-                wrvalue = ( ~value ) & g_memoryVRAM_I [ phy_vram_addr ];
+                wrvalue = ( ~value ) & g_memory_mz800_VRAM_I [ phy_vram_addr ];
                 break;
 
             case GDG_WF_MODE_REPLACE:
-                if ( g_vramctrl.regWF_PLANE & DEF_PLANE1 ) {
+                if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE1 ) {
                     wrvalue = value;
                 } else {
                     wrvalue = 0x00;
@@ -819,47 +823,47 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
                 break;
 
             case GDG_WF_MODE_PSET:
-                if ( g_vramctrl.regWF_PLANE & DEF_PLANE1 ) {
-                    wrvalue = value | g_memoryVRAM_I [ phy_vram_addr ];
+                if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE1 ) {
+                    wrvalue = value | g_memory_mz800_VRAM_I [ phy_vram_addr ];
                 } else {
-                    wrvalue = ( ~value ) & g_memoryVRAM_I [ phy_vram_addr ];
+                    wrvalue = ( ~value ) & g_memory_mz800_VRAM_I [ phy_vram_addr ];
                 };
                 break;
         };
 
-        g_memoryVRAM_I [ phy_vram_addr ] = wrvalue;
+        g_memory_mz800_VRAM_I [ phy_vram_addr ] = wrvalue;
     };
 
 
     if ( WE & DEF_PLANE2 ) {
 
-        switch ( g_vramctrl.regWF_MODE ) {
+        switch ( g_vramctrl_mz800.regWF_MODE ) {
 
             case GDG_WF_MODE_SINGLE:
                 wrvalue = value;
                 break;
 
             case GDG_WF_MODE_EXOR:
-                wrvalue = value ^ g_memoryVRAM_II [ phy_vram_addr ];
+                wrvalue = value ^ g_memory_mz800_VRAM_II [ phy_vram_addr ];
                 break;
 
             case GDG_WF_MODE_OR:
-                wrvalue = value | g_memoryVRAM_II [ phy_vram_addr ];
+                wrvalue = value | g_memory_mz800_VRAM_II [ phy_vram_addr ];
                 break;
 
             case GDG_WF_MODE_RESET:
-                wrvalue = ( ~value ) & g_memoryVRAM_II [ phy_vram_addr ];
+                wrvalue = ( ~value ) & g_memory_mz800_VRAM_II [ phy_vram_addr ];
                 break;
 
             case GDG_WF_MODE_REPLACE:
-                if ( DMD_TEST_SCRW640 ) {
-                    if ( g_vramctrl.regWF_PLANE & DEF_PLANE1 ) {
+                if ( GDG_MZ800_TEST_DMD_SCRW640 ) {
+                    if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE1 ) {
                         wrvalue = value;
                     } else {
                         wrvalue = 0x00;
                     };
                 } else {
-                    if ( g_vramctrl.regWF_PLANE & DEF_PLANE2 ) {
+                    if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE2 ) {
                         wrvalue = value;
                     } else {
                         wrvalue = 0x00;
@@ -868,47 +872,47 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
                 break;
 
             case GDG_WF_MODE_PSET:
-                if ( DMD_TEST_SCRW640 ) {
-                    if ( g_vramctrl.regWF_PLANE & DEF_PLANE1 ) {
-                        wrvalue = value | g_memoryVRAM_II [ phy_vram_addr ];
+                if ( GDG_MZ800_TEST_DMD_SCRW640 ) {
+                    if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE1 ) {
+                        wrvalue = value | g_memory_mz800_VRAM_II [ phy_vram_addr ];
                     } else {
-                        wrvalue = ( ~value ) & g_memoryVRAM_II [ phy_vram_addr ];
+                        wrvalue = ( ~value ) & g_memory_mz800_VRAM_II [ phy_vram_addr ];
                     };
                 } else {
-                    if ( g_vramctrl.regWF_PLANE & DEF_PLANE2 ) {
-                        wrvalue = value | g_memoryVRAM_II [ phy_vram_addr ];
+                    if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE2 ) {
+                        wrvalue = value | g_memory_mz800_VRAM_II [ phy_vram_addr ];
                     } else {
-                        wrvalue = ( ~value ) & g_memoryVRAM_II [ phy_vram_addr ];
+                        wrvalue = ( ~value ) & g_memory_mz800_VRAM_II [ phy_vram_addr ];
                     };
                 };
                 break;
         };
-        g_memoryVRAM_II [ phy_vram_addr ] = wrvalue;
+        g_memory_mz800_VRAM_II [ phy_vram_addr ] = wrvalue;
     };
 
 
     if ( WE & DEF_PLANE3 ) {
 
-        switch ( g_vramctrl.regWF_MODE ) {
+        switch ( g_vramctrl_mz800.regWF_MODE ) {
 
             case GDG_WF_MODE_SINGLE:
                 wrvalue = value;
                 break;
 
             case GDG_WF_MODE_EXOR:
-                wrvalue = value ^ g_memoryVRAM_III [ phy_vram_addr ];
+                wrvalue = value ^ g_memory_mz800_VRAM_III [ phy_vram_addr ];
                 break;
 
             case GDG_WF_MODE_OR:
-                wrvalue = value | g_memoryVRAM_III [ phy_vram_addr ];
+                wrvalue = value | g_memory_mz800_VRAM_III [ phy_vram_addr ];
                 break;
 
             case GDG_WF_MODE_RESET:
-                wrvalue = ( ~value ) & g_memoryVRAM_III [ phy_vram_addr ];
+                wrvalue = ( ~value ) & g_memory_mz800_VRAM_III [ phy_vram_addr ];
                 break;
 
             case GDG_WF_MODE_REPLACE:
-                if ( g_vramctrl.regWF_PLANE & DEF_PLANE3 ) {
+                if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE3 ) {
                     wrvalue = value;
                 } else {
                     wrvalue = 0x00;
@@ -916,46 +920,46 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
                 break;
 
             case GDG_WF_MODE_PSET:
-                if ( g_vramctrl.regWF_PLANE & DEF_PLANE3 ) {
-                    wrvalue = value | g_memoryVRAM_III [ phy_vram_addr ];
+                if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE3 ) {
+                    wrvalue = value | g_memory_mz800_VRAM_III [ phy_vram_addr ];
                 } else {
-                    wrvalue = ( ~value ) & g_memoryVRAM_III [ phy_vram_addr ];
+                    wrvalue = ( ~value ) & g_memory_mz800_VRAM_III [ phy_vram_addr ];
                 };
                 break;
         };
-        g_memoryVRAM_III [ phy_vram_addr ] = wrvalue;
+        g_memory_mz800_VRAM_III [ phy_vram_addr ] = wrvalue;
     };
 
 
     if ( WE & DEF_PLANE4 ) {
 
-        switch ( g_vramctrl.regWF_MODE ) {
+        switch ( g_vramctrl_mz800.regWF_MODE ) {
 
             case GDG_WF_MODE_SINGLE:
                 wrvalue = value;
                 break;
 
             case GDG_WF_MODE_EXOR:
-                wrvalue = value ^ g_memoryVRAM_IV [ phy_vram_addr ];
+                wrvalue = value ^ g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                 break;
 
             case GDG_WF_MODE_OR:
-                wrvalue = value | g_memoryVRAM_IV [ phy_vram_addr ];
+                wrvalue = value | g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                 break;
 
             case GDG_WF_MODE_RESET:
-                wrvalue = ( ~value ) & g_memoryVRAM_IV [ phy_vram_addr ];
+                wrvalue = ( ~value ) & g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                 break;
 
             case GDG_WF_MODE_REPLACE:
-                if ( DMD_TEST_SCRW640 ) {
-                    if ( g_vramctrl.regWF_PLANE & DEF_PLANE3 ) {
+                if ( GDG_MZ800_TEST_DMD_SCRW640 ) {
+                    if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE3 ) {
                         wrvalue = value;
                     } else {
                         wrvalue = 0x00;
                     };
                 } else {
-                    if ( g_vramctrl.regWF_PLANE & DEF_PLANE4 ) {
+                    if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE4 ) {
                         wrvalue = value;
                     } else {
                         wrvalue = 0x00;
@@ -964,23 +968,24 @@ inline void vramctrl_mz800_memop_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value 
                 break;
 
             case GDG_WF_MODE_PSET:
-                if ( DMD_TEST_SCRW640 ) {
-                    if ( g_vramctrl.regWF_PLANE & DEF_PLANE3 ) {
-                        wrvalue = value | g_memoryVRAM_IV [ phy_vram_addr ];
+                if ( GDG_MZ800_TEST_DMD_SCRW640 ) {
+                    if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE3 ) {
+                        wrvalue = value | g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                     } else {
-                        wrvalue = ( ~value ) & g_memoryVRAM_IV [ phy_vram_addr ];
+                        wrvalue = ( ~value ) & g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                     };
                 } else {
-                    if ( g_vramctrl.regWF_PLANE & DEF_PLANE4 ) {
-                        wrvalue = value | g_memoryVRAM_IV [ phy_vram_addr ];
+                    if ( g_vramctrl_mz800.regWF_PLANE & DEF_PLANE4 ) {
+                        wrvalue = value | g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                     } else {
-                        wrvalue = ( ~value ) & g_memoryVRAM_IV [ phy_vram_addr ];
+                        wrvalue = ( ~value ) & g_memory_mz800_VRAM_IV [ phy_vram_addr ];
                     };
                 };
                 break;
         };
-        g_memoryVRAM_IV [ phy_vram_addr ] = wrvalue;
+        g_memory_mz800_VRAM_IV [ phy_vram_addr ] = wrvalue;
     };
 
     return;
 }
+#endif

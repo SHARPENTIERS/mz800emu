@@ -38,6 +38,7 @@
 
 #include "memory/memory.h"
 
+
 typedef struct st_UIIASM {
     //st_UIWINPOS main_pos;
     st_UIWINPOS help_pos;
@@ -139,7 +140,12 @@ G_MODULE_EXPORT void dbg_inline_assembler_ok ( GtkButton *button, gpointer user_
         Z80EX_WORD wr_addr = addr + i;
         //printf ( "compiled output: 0x%04x - 0x%02x\n", wr_addr, compiled.byte[ i ] );
         debugger_memory_write_byte ( wr_addr, compiled.byte[ i ] );
-        vram_changed += memory_test_addr_is_vram ( wr_addr );
+#ifdef MACHINE_EMU_MZ800
+        vram_changed += memory_mz800_test_addr_is_vram ( wr_addr );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+        vram_changed += memory_mz1500_test_addr_is_vram ( wr_addr );
+#endif
     };
 
     if ( ( g_debugger.screen_refresh_on_edit ) && ( vram_changed ) ) {

@@ -40,6 +40,7 @@
 #include "ui_debugger.h"
 #include "ui_debugger_iasm.h"
 #include "memory/memory.h"
+#include "memory/memory_mz800.h"
 #include "memory/memext.h"
 #include "ui_dbg_memext.h"
 #include "ui_breakpoints.h"
@@ -56,7 +57,11 @@
 #include "libs/generic_driver/generic_driver.h"
 #include "ui/generic_driver/ui_memory_driver.h"
 
-#include "gdg/hwscroll.h"
+#include "gdg/hwscroll_mz800.h"
+
+#include "ui_dbg_color_selection_dialog.h"
+#include "gdg/framebuffer_mz1500.h"
+#include "display.h"
 
 gboolean g_ui_debugger_callbacks_hwscroll_entry_lock = FALSE;
 
@@ -336,9 +341,16 @@ G_MODULE_EXPORT void on_dbg_stack_edited ( GtkCellRendererText *cell, const gcha
     debugger_memory_write_byte ( ( addr + 1 ), (Z80EX_BYTE) ( ( new_value >> 8 ) & 0xff ) );
 
     if ( g_debugger.screen_refresh_on_edit ) {
-        if ( ( memory_test_addr_is_vram ( addr ) ) || ( memory_test_addr_is_vram ( addr + 1 ) ) ) {
+#ifdef MACHINE_EMU_MZ800
+        if ( ( memory_mz800_test_addr_is_vram ( addr ) ) || ( memory_mz800_test_addr_is_vram ( addr + 1 ) ) ) {
             debugger_forced_screen_update ( );
         };
+#endif
+#ifdef MACHINE_EMU_MZ1500
+        if ( ( memory_mz1500_test_addr_is_vram ( addr ) ) || ( memory_mz1500_test_addr_is_vram ( addr + 1 ) ) ) {
+            debugger_forced_screen_update ( );
+        };
+#endif
     };
 
     /* TODO: updatnout jen zmeneny radek a zachovat selection */
@@ -392,52 +404,133 @@ G_MODULE_EXPORT gboolean on_dbg_mmap ( GtkWidget *widget, GdkEventButton *event,
 
 
 G_MODULE_EXPORT void on_dbg_mmap0_mount ( GtkMenuItem *menuitem, gpointer user_data ) {
-    debugger_mmap_mount ( MEMORY_MAP_FLAG_ROM_0000 );
+#ifdef MACHINE_EMU_MZ800
+    debugger_mz800_mmap_mount ( MEMORY_MZ800_MAP_FLAG_ROM_0000 );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+    debugger_mz1500_mmap_mount ( MEMORY_MZ1500_MAP_FLAG_ROM_0000 );
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_mmap0_umount ( GtkMenuItem *menuitem, gpointer user_data ) {
-    debugger_mmap_umount ( MEMORY_MAP_FLAG_ROM_0000 );
+#ifdef MACHINE_EMU_MZ800
+    debugger_mz800_mmap_umount ( MEMORY_MZ800_MAP_FLAG_ROM_0000 );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+    debugger_mz1500_mmap_umount ( MEMORY_MZ1500_MAP_FLAG_ROM_0000 );
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_mmap1_mount ( GtkMenuItem *menuitem, gpointer user_data ) {
-    debugger_mmap_mount ( MEMORY_MAP_FLAG_ROM_1000 );
+#ifdef MACHINE_EMU_MZ800
+    debugger_mz800_mmap_mount ( MEMORY_MZ800_MAP_FLAG_ROM_1000 );
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_mmap1_umount ( GtkMenuItem *menuitem, gpointer user_data ) {
-    debugger_mmap_umount ( MEMORY_MAP_FLAG_ROM_1000 );
+#ifdef MACHINE_EMU_MZ800
+    debugger_mz800_mmap_umount ( MEMORY_MZ800_MAP_FLAG_ROM_1000 );
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_mmap_vram_mount ( GtkMenuItem *menuitem, gpointer user_data ) {
-    debugger_mmap_mount ( MEMORY_MAP_FLAG_CGRAM_VRAM );
+#ifdef MACHINE_EMU_MZ800
+    debugger_mz800_mmap_mount ( MEMORY_MZ800_MAP_FLAG_CGRAM_VRAM );
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_mmap_vram_umount ( GtkMenuItem *menuitem, gpointer user_data ) {
-    debugger_mmap_umount ( MEMORY_MAP_FLAG_CGRAM_VRAM );
+#ifdef MACHINE_EMU_MZ800
+    debugger_mz800_mmap_umount ( MEMORY_MZ800_MAP_FLAG_CGRAM_VRAM );
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_mmape_mount ( GtkMenuItem *menuitem, gpointer user_data ) {
-    debugger_mmap_mount ( MEMORY_MAP_FLAG_ROM_E000 );
+#ifdef MACHINE_EMU_MZ800
+    debugger_mz800_mmap_mount ( MEMORY_MZ800_MAP_FLAG_ROM_E000 );
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_mmape_umount ( GtkMenuItem *menuitem, gpointer user_data ) {
-    debugger_mmap_umount ( MEMORY_MAP_FLAG_ROM_E000 );
+#ifdef MACHINE_EMU_MZ800
+    debugger_mz800_mmap_umount ( MEMORY_MZ800_MAP_FLAG_ROM_E000 );
+#endif
+}
+
+
+G_MODULE_EXPORT void on_dbg_mmapd_mz1500_mount ( GtkMenuItem *menuitem, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ1500
+    debugger_mz1500_mmap_mount ( MEMORY_MZ1500_MAP_FLAG_ROM_UPPER );
+#endif
+}
+
+
+G_MODULE_EXPORT void on_dbg_mmapd_mz1500_umount ( GtkMenuItem *menuitem, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ1500
+    debugger_mz1500_mmap_mount ( MEMORY_MZ1500_MAP_FLAG_ROM_UPPER );
+#endif
+}
+
+
+G_MODULE_EXPORT void on_dbg_mmapd_mz1500_spec_none ( GtkMenuItem *menuitem, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ1500
+    debugger_mz1500_mmap_spec_set ( MEMORY_MZ1500_MAP_D000_NONE );
+#endif
+}
+
+
+G_MODULE_EXPORT void on_dbg_mmapd_mz1500_spec_cgrom ( GtkMenuItem *menuitem, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ1500
+    debugger_mz1500_mmap_spec_set ( MEMORY_MZ1500_MAP_D000_CGROM );
+#endif
+}
+
+
+G_MODULE_EXPORT void on_dbg_mmapd_mz1500_spec_pcg1 ( GtkMenuItem *menuitem, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ1500
+    debugger_mz1500_mmap_spec_set ( MEMORY_MZ1500_MAP_D000_PCG1 );
+#endif
+}
+
+
+G_MODULE_EXPORT void on_dbg_mmapd_mz1500_spec_pcg2 ( GtkMenuItem *menuitem, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ1500
+    debugger_mz1500_mmap_spec_set ( MEMORY_MZ1500_MAP_D000_PCG2 );
+#endif
+}
+
+
+G_MODULE_EXPORT void on_dbg_mmapd_mz1500_spec_pcg3 ( GtkMenuItem *menuitem, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ1500
+    debugger_mz1500_mmap_spec_set ( MEMORY_MZ1500_MAP_D000_PCG3 );
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_mmap_mount_all ( GtkMenuItem *menuitem, gpointer user_data ) {
-    debugger_mmap_mount ( MEMORY_MAP_FLAG_ROM_0000 | MEMORY_MAP_FLAG_ROM_1000 | MEMORY_MAP_FLAG_CGRAM_VRAM | MEMORY_MAP_FLAG_ROM_E000 );
+#ifdef MACHINE_EMU_MZ800
+    debugger_mz800_mmap_mount ( MEMORY_MZ800_MAP_FLAG_ROM_0000 | MEMORY_MZ800_MAP_FLAG_ROM_1000 | MEMORY_MZ800_MAP_FLAG_CGRAM_VRAM | MEMORY_MZ800_MAP_FLAG_ROM_E000 );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+    debugger_mz1500_mmap_mount ( MEMORY_MZ1500_MAP_FLAG_ROM_0000 | MEMORY_MZ1500_MAP_FLAG_ROM_UPPER );
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_mmap_umount_all ( GtkMenuItem *menuitem, gpointer user_data ) {
-    debugger_mmap_umount ( MEMORY_MAP_FLAG_ROM_0000 | MEMORY_MAP_FLAG_ROM_1000 | MEMORY_MAP_FLAG_CGRAM_VRAM | MEMORY_MAP_FLAG_ROM_E000 );
+#ifdef MACHINE_EMU_MZ800
+    debugger_mz800_mmap_umount ( MEMORY_MZ800_MAP_FLAG_ROM_0000 | MEMORY_MZ800_MAP_FLAG_ROM_1000 | MEMORY_MZ800_MAP_FLAG_CGRAM_VRAM | MEMORY_MZ800_MAP_FLAG_ROM_E000 );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+    debugger_mz1500_mmap_umount ( MEMORY_MZ1500_MAP_FLAG_ROM_0000 | MEMORY_MZ1500_MAP_FLAG_ROM_UPPER );
+#endif
 }
 
 
@@ -537,6 +630,13 @@ G_MODULE_EXPORT void on_dbg_regiff2 ( GtkToggleButton *togglebutton, gpointer us
 G_MODULE_EXPORT void on_dbg_regdmd ( GtkComboBox *combobox, gpointer user_data ) {
     if ( TEST_UICALLBACKS_LOCKED ) return;
     int value = gtk_combo_box_get_active ( combobox );
+
+#ifdef MACHINE_EMU_M1500
+    if ( value == 2 ) {
+        value = 3;
+    };
+#endif
+
     debugger_change_dmd ( value );
     g_uidebugger.last_dmd = value;
 
@@ -564,75 +664,91 @@ G_MODULE_EXPORT void on_dbg_8255_ctc2_mask_checkbutton_toggled ( GtkToggleButton
 
 
 G_MODULE_EXPORT void on_dbg_gdg_reg_border_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
+
     if ( TEST_UICALLBACKS_LOCKED ) return;
     int value = gtk_combo_box_get_active ( combobox );
-    debugger_change_gdg_reg_border ( value );
+    debugger_mz800_change_gdg_reg_border ( value );
     g_uidebugger.last_gdg_reg_border = value;
 
     if ( g_debugger.screen_refresh_on_edit ) {
         debugger_forced_screen_update ( );
     };
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_gdg_reg_palgrp_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     int value = gtk_combo_box_get_active ( combobox );
-    debugger_change_gdg_reg_palgrp ( value );
+    debugger_mz800_change_gdg_reg_palgrp ( value );
     g_uidebugger.last_gdg_reg_palgrp = value;
 
     if ( g_debugger.screen_refresh_on_edit ) {
         debugger_forced_screen_update ( );
     };
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_gdg_reg_pal0_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     int value = gtk_combo_box_get_active ( combobox );
-    debugger_change_gdg_reg_pal ( 0, value );
+    debugger_mz800_change_gdg_reg_pal ( 0, value );
     g_uidebugger.last_gdg_reg_pal0 = value;
 
     if ( g_debugger.screen_refresh_on_edit ) {
         debugger_forced_screen_update ( );
     };
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_gdg_reg_pal1_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     int value = gtk_combo_box_get_active ( combobox );
-    debugger_change_gdg_reg_pal ( 1, value );
+    debugger_mz800_change_gdg_reg_pal ( 1, value );
     g_uidebugger.last_gdg_reg_pal1 = value;
 
     if ( g_debugger.screen_refresh_on_edit ) {
         debugger_forced_screen_update ( );
     };
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_gdg_reg_pal2_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     int value = gtk_combo_box_get_active ( combobox );
-    debugger_change_gdg_reg_pal ( 2, value );
+    debugger_mz800_change_gdg_reg_pal ( 2, value );
     g_uidebugger.last_gdg_reg_pal2 = value;
 
     if ( g_debugger.screen_refresh_on_edit ) {
         debugger_forced_screen_update ( );
     };
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_gdg_reg_pal3_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     int value = gtk_combo_box_get_active ( combobox );
-    debugger_change_gdg_reg_pal ( 3, value );
+    debugger_mz800_change_gdg_reg_pal ( 3, value );
     g_uidebugger.last_gdg_reg_pal3 = value;
 
     if ( g_debugger.screen_refresh_on_edit ) {
         debugger_forced_screen_update ( );
     };
+#endif
 }
+
+
+#ifdef MACHINE_EMU_MZ800
 
 
 static void ui_debugger_change_gdg_rfr ( void ) {
@@ -643,56 +759,73 @@ static void ui_debugger_change_gdg_rfr ( void ) {
     reg_value |= gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_rfr_plane2_checkbutton ) ) << 1;
     reg_value |= gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_rfr_plane3_checkbutton ) ) << 2;
     reg_value |= gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_rfr_plane4_checkbutton ) ) << 3;
-    debugger_change_gdg_rfr ( reg_value );
+    debugger_mz800_change_gdg_rfr ( reg_value );
 }
+#endif
 
 
 G_MODULE_EXPORT void on_dbg_gdg_rfr_mode_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     int value = gtk_combo_box_get_active ( combobox );
     ui_debugger_change_gdg_rfr ( );
     g_uidebugger.last_gdg_rfr_mode = value;
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_gdg_rfr_bank_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
+
     if ( TEST_UICALLBACKS_LOCKED ) return;
     int value = gtk_combo_box_get_active ( combobox );
     ui_debugger_change_gdg_rfr ( );
     g_uidebugger.last_gdg_rfr_bank = value;
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_gdg_rfr_plane1_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     gboolean value = gtk_toggle_button_get_active ( togglebutton );
     ui_debugger_change_gdg_rfr ( );
     g_uidebugger.last_gdg_rfr_plane1 = value;
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_gdg_rfr_plane2_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     gboolean value = gtk_toggle_button_get_active ( togglebutton );
     ui_debugger_change_gdg_rfr ( );
     g_uidebugger.last_gdg_rfr_plane2 = value;
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_gdg_rfr_plane3_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     gboolean value = gtk_toggle_button_get_active ( togglebutton );
     ui_debugger_change_gdg_rfr ( );
     g_uidebugger.last_gdg_rfr_plane3 = value;
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_gdg_rfr_plane4_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     gboolean value = gtk_toggle_button_get_active ( togglebutton );
     ui_debugger_change_gdg_rfr ( );
     g_uidebugger.last_gdg_rfr_plane4 = value;
+#endif
 }
+
+
+#ifdef MACHINE_EMU_MZ800
 
 
 static void ui_debugger_change_gdg_wfr ( void ) {
@@ -707,55 +840,68 @@ static void ui_debugger_change_gdg_wfr ( void ) {
     reg_value |= gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_wfr_plane2_checkbutton ) ) << 1;
     reg_value |= gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_wfr_plane3_checkbutton ) ) << 2;
     reg_value |= gtk_toggle_button_get_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_wfr_plane4_checkbutton ) ) << 3;
-    debugger_change_gdg_wfr ( reg_value );
+    debugger_mz800_change_gdg_wfr ( reg_value );
 }
+#endif
 
 
 G_MODULE_EXPORT void on_dbg_gdg_wfr_mode_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     int value = gtk_combo_box_get_active ( combobox );
     ui_debugger_change_gdg_wfr ( );
     g_uidebugger.last_gdg_wfr_mode = value;
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_gdg_wfr_bank_comboboxtext_changed ( GtkComboBox *combobox, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     int value = gtk_combo_box_get_active ( combobox );
     ui_debugger_change_gdg_wfr ( );
     g_uidebugger.last_gdg_wfr_bank = value;
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_gdg_wfr_plane1_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     gboolean value = gtk_toggle_button_get_active ( togglebutton );
     ui_debugger_change_gdg_wfr ( );
     g_uidebugger.last_gdg_wfr_plane1 = value;
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_gdg_wfr_plane2_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     gboolean value = gtk_toggle_button_get_active ( togglebutton );
     ui_debugger_change_gdg_wfr ( );
     g_uidebugger.last_gdg_wfr_plane2 = value;
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_gdg_wfr_plane3_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     gboolean value = gtk_toggle_button_get_active ( togglebutton );
     ui_debugger_change_gdg_wfr ( );
     g_uidebugger.last_gdg_wfr_plane3 = value;
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_gdg_wfr_plane4_checkbutton_toggled ( GtkToggleButton *togglebutton, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( TEST_UICALLBACKS_LOCKED ) return;
     gboolean value = gtk_toggle_button_get_active ( togglebutton );
     ui_debugger_change_gdg_wfr ( );
     g_uidebugger.last_gdg_wfr_plane4 = value;
+#endif
 }
 
 
@@ -858,7 +1004,9 @@ G_MODULE_EXPORT void on_dbg_breakpoints_toolbutton_clicked ( GtkToolButton *tool
 
 
 G_MODULE_EXPORT void on_dbg_membrowser_toolbutton_clicked ( GtkToolButton *toolbutton, gpointer user_data ) {
+#ifdef MZ800EMU_CFG_DEBUGGER_MEMBROWSER_ENABLED
     ui_membrowser_show_hide ( );
+#endif
 }
 
 
@@ -1064,7 +1212,7 @@ G_MODULE_EXPORT void on_dbg_set_as_pc_menuitem_activate ( GtkMenuItem *menuitem,
 }
 
 
-static void fill_combo_entry ( GtkWidget *combo ) {
+static void fill_combo_entry ( GtkWidget * combo ) {
     gtk_combo_box_text_remove_all ( GTK_COMBO_BOX_TEXT ( combo ) );
     int i;
     for ( i = 0; i < g_uidebugger.focus_addr_hist_count; i++ ) {
@@ -1133,8 +1281,6 @@ G_MODULE_EXPORT void on_dbg_edit_row_menuitem_activate ( GtkMenuItem *menuitem, 
 
 
 G_MODULE_EXPORT gboolean on_dbg_focus_to_window_delete_event ( GtkWidget *widget, GdkEvent *event, gpointer user_data ) {
-
-
     GtkWidget *window = ui_get_widget ( "dbg_focus_to_window" );
     gtk_widget_hide ( window );
     return TRUE;
@@ -1142,8 +1288,6 @@ G_MODULE_EXPORT gboolean on_dbg_focus_to_window_delete_event ( GtkWidget *widget
 
 
 G_MODULE_EXPORT void on_dbg_focus_to_cancel_button_clicked ( GtkButton *button, gpointer user_data ) {
-
-
     GtkWidget *window = ui_get_widget ( "dbg_focus_to_window" );
     gtk_widget_hide ( window );
 }
@@ -1184,6 +1328,7 @@ G_MODULE_EXPORT gboolean on_dbg_spinner_window_press_event ( GtkWidget *widget, 
 
 
 G_MODULE_EXPORT void on_dbg_hwscroll_ssa_entry_changed ( GtkEditable *ed, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( g_ui_debugger_callbacks_hwscroll_entry_lock ) return;
 
 
@@ -1212,18 +1357,20 @@ G_MODULE_EXPORT void on_dbg_hwscroll_ssa_entry_changed ( GtkEditable *ed, gpoint
 
     g_ui_debugger_callbacks_hwscroll_entry_lock = FALSE;
 
-    hwscroll_set_ssa ( value );
+    hwscroll_mz800_set_ssa ( value );
 
-    gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_ENABLED ) ? "1" : "0" );
-    g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_ENABLED;
+    gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_MZ800_ENABLED ) ? "1" : "0" );
+    g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_MZ800_ENABLED;
 
     if ( g_debugger.screen_refresh_on_edit ) {
         debugger_forced_screen_update ( );
     };
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_hwscroll_sea_entry_changed ( GtkEditable *ed, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( g_ui_debugger_callbacks_hwscroll_entry_lock ) return;
 
 
@@ -1253,18 +1400,20 @@ G_MODULE_EXPORT void on_dbg_hwscroll_sea_entry_changed ( GtkEditable *ed, gpoint
 
     g_ui_debugger_callbacks_hwscroll_entry_lock = FALSE;
 
-    hwscroll_set_sea ( value );
+    hwscroll_mz800_set_sea ( value );
 
-    gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_ENABLED ) ? "1" : "0" );
-    g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_ENABLED;
+    gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_MZ800_ENABLED ) ? "1" : "0" );
+    g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_MZ800_ENABLED;
 
     if ( g_debugger.screen_refresh_on_edit ) {
         debugger_forced_screen_update ( );
     };
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_hwscroll_sw_entry_changed ( GtkEditable *ed, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( g_ui_debugger_callbacks_hwscroll_entry_lock ) return;
 
     if ( !TEST_EMULATION_PAUSED ) {
@@ -1293,18 +1442,20 @@ G_MODULE_EXPORT void on_dbg_hwscroll_sw_entry_changed ( GtkEditable *ed, gpointe
 
     g_ui_debugger_callbacks_hwscroll_entry_lock = FALSE;
 
-    hwscroll_set_sw ( value );
+    hwscroll_mz800_set_sw ( value );
 
-    gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_ENABLED ) ? "1" : "0" );
-    g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_ENABLED;
+    gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_MZ800_ENABLED ) ? "1" : "0" );
+    g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_MZ800_ENABLED;
 
     if ( g_debugger.screen_refresh_on_edit ) {
         debugger_forced_screen_update ( );
     };
+#endif
 }
 
 
 G_MODULE_EXPORT void on_dbg_hwscroll_sof_entry_changed ( GtkEditable *ed, gpointer user_data ) {
+#ifdef MACHINE_EMU_MZ800
     if ( g_ui_debugger_callbacks_hwscroll_entry_lock ) return;
 
     if ( !TEST_EMULATION_PAUSED ) {
@@ -1333,14 +1484,15 @@ G_MODULE_EXPORT void on_dbg_hwscroll_sof_entry_changed ( GtkEditable *ed, gpoint
 
     g_ui_debugger_callbacks_hwscroll_entry_lock = FALSE;
 
-    hwscroll_set_sof ( value );
+    hwscroll_mz800_set_sof ( value );
 
-    gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_ENABLED ) ? "1" : "0" );
-    g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_ENABLED;
+    gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_MZ800_ENABLED ) ? "1" : "0" );
+    g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_MZ800_ENABLED;
 
     if ( g_debugger.screen_refresh_on_edit ) {
         debugger_forced_screen_update ( );
     };
+#endif
 }
 
 
@@ -1367,4 +1519,78 @@ G_MODULE_EXPORT void on_dbg_screen_manually_refresh_menuitem_activate ( GtkMenuI
     debugger_forced_screen_update ( );
 }
 
+
+static void dbg_gdg_mz1500_color_set ( int palette ) {
+#ifdef MACHINE_EMU_MZ1500
+
+    if ( !TEST_EMULATION_PAUSED ) {
+        ui_debugger_pause_emulation ( );
+        return;
+    };
+
+    GdkRGBA rgba[G_N_ELEMENTS ( c_MZ1500_COLORMAP )];
+
+    int i;
+    for ( i = 0; i < G_N_ELEMENTS ( rgba ); i++ ) {
+        uint32_t color = g_display_predef_colors[c_MZ1500_COLORMAP[i]];
+        GString *s = g_string_new ( "" );
+        g_string_append_printf ( s, "#%02x%02x%02x", ( color >> 16 ), ( ( color >> 8 ) & 0xff ), ( color & 0xff ) );
+        gdk_rgba_parse ( &rgba[i], s->str );
+        g_string_free ( s, TRUE );
+    };
+
+    GString *s = g_string_new ( "" );
+    g_string_append_printf ( s, "Select PAL%d color", palette );
+    int color = ui_dbg_color_selection_dialog ( s->str, rgba, G_N_ELEMENTS ( rgba ), ui_get_window ( "main_window" ) );
+    g_string_free ( s, TRUE );
+
+    if ( color != -1 ) {
+        ui_debugger_set_colbutton1500 ( &g_uidebugger.gdg_mz1500_color[palette], color );
+        gdg_mz1500_write_byte_raw ( 0xf1, ( palette << 4 ) | color );
+    };
 #endif
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_mz1500_col0_button_clicked ( GtkButton *button, gpointer user_data ) {
+    dbg_gdg_mz1500_color_set ( 0 );
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_mz1500_col1_button_clicked ( GtkButton *button, gpointer user_data ) {
+    dbg_gdg_mz1500_color_set ( 1 );
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_mz1500_col2_button_clicked ( GtkButton *button, gpointer user_data ) {
+    dbg_gdg_mz1500_color_set ( 2 );
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_mz1500_col3_button_clicked ( GtkButton *button, gpointer user_data ) {
+    dbg_gdg_mz1500_color_set ( 3 );
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_mz1500_col4_button_clicked ( GtkButton *button, gpointer user_data ) {
+    dbg_gdg_mz1500_color_set ( 4 );
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_mz1500_col5_button_clicked ( GtkButton *button, gpointer user_data ) {
+    dbg_gdg_mz1500_color_set ( 5 );
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_mz1500_col6_button_clicked ( GtkButton *button, gpointer user_data ) {
+    dbg_gdg_mz1500_color_set ( 6 );
+}
+
+
+G_MODULE_EXPORT void on_dbg_gdg_mz1500_col7_button_clicked ( GtkButton *button, gpointer user_data ) {
+    dbg_gdg_mz1500_color_set ( 7 );
+}
+
+#endif
+
+

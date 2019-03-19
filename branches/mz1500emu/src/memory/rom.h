@@ -30,29 +30,28 @@
 extern "C" {
 #endif
 
+#include "mz800emu_cfg.h"
+    
 #include "z80ex/include/z80ex.h"
 
-#define ROM_SIZE_MZ700 0x1000
-#define ROM_SIZE_CGROM 0x1000
-#define ROM_SIZE_MZ800 0x2000
+#define ROM_0000_SIZE 0x1000
+#define ROM_CGROM_SIZE 0x1000
+#define ROM_E000_SIZE 0x2000
 
-#define ROM_SIZE_TOTAL  ROM_SIZE_MZ700 + ROM_SIZE_CGROM + ROM_SIZE_MZ800
+#define ROM_SIZE_TOTAL  ROM_0000_SIZE + ROM_CGROM_SIZE + ROM_E000_SIZE
 
-
+#ifdef MACHINE_EMU_MZ800
     extern const Z80EX_BYTE c_ROM_MZ700 [];
     extern const Z80EX_BYTE c_ROM_CGROM [];
     extern const Z80EX_BYTE c_ROM_MZ800 [];
-
 
     extern const Z80EX_BYTE c_ROM_JSS103_MZ700 [];
     extern const Z80EX_BYTE c_ROM_JSS103_CGROM [];
     extern const Z80EX_BYTE c_ROM_JSS103_MZ800 [];
 
-
     extern const Z80EX_BYTE c_ROM_JSS105C_MZ700 [];
     extern const Z80EX_BYTE c_ROM_JSS105C_CGROM [];
     extern const Z80EX_BYTE c_ROM_JSS105C_MZ800 [];
-
 
     extern const Z80EX_BYTE c_ROM_JSS106A_MZ700 [];
     extern const Z80EX_BYTE c_ROM_JSS106A_CGROM [];
@@ -72,10 +71,18 @@ extern "C" {
 
     extern const Z80EX_BYTE c_ROM_WILLY_jap_CGROM [];
     extern const Z80EX_BYTE c_ROM_WILLY_jap_MZ800 [];
+#endif
+
+#ifdef MACHINE_EMU_MZ1500
+    extern const Z80EX_BYTE c_ROM_MZ1500_0000 [];
+    extern const Z80EX_BYTE c_ROM_MZ1500_CGROM [];
+    extern const Z80EX_BYTE c_ROM_MZ1500_E000 [];
+#endif
 
 
     typedef enum en_ROMTYPE {
         ROMTYPE_STANDARD = 0,
+#ifdef MACHINE_EMU_MZ800
         ROMTYPE_JSS103,
         ROMTYPE_JSS105C,
         ROMTYPE_JSS106A,
@@ -83,6 +90,7 @@ extern "C" {
         ROMTYPE_WILLY_EN,
         ROMTYPE_WILLY_GE,
         ROMTYPE_WILLY_JAP,
+#endif
         ROMTYPE_USER_DEFINED,
     } en_ROMTYPE;
 
@@ -101,9 +109,9 @@ extern "C" {
 
 
     typedef struct st_ROM_AREA {
-        const Z80EX_BYTE mz700rom[ROM_SIZE_MZ700];
-        const Z80EX_BYTE cgrom[ROM_SIZE_CGROM];
-        const Z80EX_BYTE mz800rom[ROM_SIZE_MZ800];
+        const Z80EX_BYTE rom_0000[ROM_0000_SIZE];
+        const Z80EX_BYTE cgrom[ROM_CGROM_SIZE];
+        const Z80EX_BYTE rom_E000[ROM_E000_SIZE];
     } st_ROM_AREA;
 
 
@@ -137,7 +145,9 @@ extern "C" {
     extern void rom_set_user_defined_filepath ( char **dst, char *src );
     extern int rom_user_defined_rom_area_load ( st_ROM_AREA *dst, en_ROM_BOOL allinone, char *allinone_fp, char *mz700_fp, char *cgrom_fp, char *mz800_fp );
 
+#ifdef MACHINE_EMU_MZ800
 #define TEST_ROM_WILLY ( ( g_rom.type >= ROMTYPE_WILLY_EN ) && ( g_rom.type <= ROMTYPE_WILLY_JAP ) )
+#endif
 #define TEST_ROM_USER_DEFINED ( g_rom.type == ROMTYPE_USER_DEFINED )
 
 #ifdef __cplusplus

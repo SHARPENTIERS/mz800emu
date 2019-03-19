@@ -57,10 +57,14 @@
 #include "pio8255/pio8255.h"
 #include "pioz80/pioz80.h"
 #include "ctc8253/ctc8253.h"
-#include "gdg/vramctrl.h"
-#include "gdg/hwscroll.h"
+#include "gdg/vramctrl_mz800.h"
+#include "gdg/hwscroll_mz800.h"
 #include "ui_debugger_callbacks.h"
+#include "display.h"
 
+#ifdef MACHINE_EMU_MZ1500
+#include "gdg/framebuffer_mz1500.h"
+#endif
 
 static const uint32_t g_mmap_color[MMBSTATE_COUNT] = {
                                                       0x008000, /* RAM - green */
@@ -69,6 +73,11 @@ static const uint32_t g_mmap_color[MMBSTATE_COUNT] = {
                                                       0xffffff, /* CGRAM - white */
                                                       0xffc0cb, /* VRAM - ping */
                                                       0x0000ff, /* PORTS - blue */
+                                                      /* MZ-1500 */
+                                                      0xffffff, /* PCG1 - white */
+                                                      0xa0ffa0, /* PCG2 -  */
+                                                      0xa0a0ff, /* PCG3 -  */
+                                                      0x000000, /* FF - black */
 };
 
 
@@ -148,11 +157,35 @@ void ui_debugger_update_cpu_ticks ( void ) {
     gtk_entry_set_text ( GTK_ENTRY ( g_uidebugger.cpu_ticks_entry ), cpu_ticks_buff );
 }
 
+#ifdef MACHINE_EMU_MZ1500
+
+
+static void ui_debugger_set_colbutton1500_forced ( st_UICOLORBUTTON *colarea, int value ) {
+    ui_tool_pixbuf_fill ( colarea->pixbuf, g_display_predef_colors[c_MZ1500_COLORMAP[value]] );
+    colarea->value = value;
+    GString *str = g_string_new ( "" );
+    g_string_append_printf ( str, "%d", value );
+    gtk_label_set_text ( GTK_LABEL ( colarea->label ), str->str );
+    g_string_free ( str, TRUE );
+    gtk_widget_queue_draw ( colarea->drawing_area );
+}
+
+
+void ui_debugger_set_colbutton1500 ( st_UICOLORBUTTON *colbutton, int value ) {
+    if ( colbutton->value != value ) {
+        ui_debugger_set_colbutton1500_forced ( colbutton, value );
+    };
+}
+
+#endif
+
 
 void ui_debugger_update_internals ( void ) {
 
     LOCK_UICALLBACKS ( );
 
+    int i;
+    
     /*
      * Z80 internals 
      */
@@ -183,130 +216,148 @@ void ui_debugger_update_internals ( void ) {
      * GDG registry
      */
 
-
+#ifdef MACHINE_EMU_MZ800
     /* regDMD */
-    if ( g_uidebugger.last_dmd != g_gdg.regDMD ) {
-        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.dmd_comboboxtext ), g_gdg.regDMD );
-        g_uidebugger.last_dmd = g_gdg.regDMD;
+    if ( g_uidebugger.last_dmd != g_gdg_mz800.regDMD ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.dmd_comboboxtext ), g_gdg_mz800.regDMD );
+        g_uidebugger.last_dmd = g_gdg_mz800.regDMD;
     };
 
     /* regBORDER */
-    if ( g_uidebugger.last_gdg_reg_border != g_gdg.regBOR ) {
-        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_border_comboboxtext ), g_gdg.regBOR );
-        g_uidebugger.last_gdg_reg_border = g_gdg.regBOR;
+    if ( g_uidebugger.last_gdg_reg_border != g_gdg_mz800.regBOR ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_border_comboboxtext ), g_gdg_mz800.regBOR );
+        g_uidebugger.last_gdg_reg_border = g_gdg_mz800.regBOR;
     };
 
     /* regPALGRP */
-    if ( g_uidebugger.last_gdg_reg_palgrp != g_gdg.regPALGRP ) {
-        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_palgrp_comboboxtext ), g_gdg.regPALGRP );
-        g_uidebugger.last_gdg_reg_palgrp = g_gdg.regPALGRP;
+    if ( g_uidebugger.last_gdg_reg_palgrp != g_gdg_mz800.regPALGRP ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_palgrp_comboboxtext ), g_gdg_mz800.regPALGRP );
+        g_uidebugger.last_gdg_reg_palgrp = g_gdg_mz800.regPALGRP;
     };
 
     /* regPAL0 */
-    if ( g_uidebugger.last_gdg_reg_pal0 != g_gdg.regPAL0 ) {
-        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_pal0_comboboxtext ), g_gdg.regPAL0 );
-        g_uidebugger.last_gdg_reg_pal0 = g_gdg.regPAL0;
+    if ( g_uidebugger.last_gdg_reg_pal0 != g_gdg_mz800.regPAL0 ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_pal0_comboboxtext ), g_gdg_mz800.regPAL0 );
+        g_uidebugger.last_gdg_reg_pal0 = g_gdg_mz800.regPAL0;
     };
 
     /* regPAL1 */
-    if ( g_uidebugger.last_gdg_reg_pal1 != g_gdg.regPAL1 ) {
-        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_pal1_comboboxtext ), g_gdg.regPAL1 );
-        g_uidebugger.last_gdg_reg_pal1 = g_gdg.regPAL1;
+    if ( g_uidebugger.last_gdg_reg_pal1 != g_gdg_mz800.regPAL1 ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_pal1_comboboxtext ), g_gdg_mz800.regPAL1 );
+        g_uidebugger.last_gdg_reg_pal1 = g_gdg_mz800.regPAL1;
     };
 
     /* regPAL2 */
-    if ( g_uidebugger.last_gdg_reg_pal2 != g_gdg.regPAL2 ) {
-        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_pal2_comboboxtext ), g_gdg.regPAL2 );
-        g_uidebugger.last_gdg_reg_pal2 = g_gdg.regPAL2;
+    if ( g_uidebugger.last_gdg_reg_pal2 != g_gdg_mz800.regPAL2 ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_pal2_comboboxtext ), g_gdg_mz800.regPAL2 );
+        g_uidebugger.last_gdg_reg_pal2 = g_gdg_mz800.regPAL2;
     };
 
     /* regPAL3 */
-    if ( g_uidebugger.last_gdg_reg_pal3 != g_gdg.regPAL3 ) {
-        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_pal3_comboboxtext ), g_gdg.regPAL3 );
-        g_uidebugger.last_gdg_reg_pal3 = g_gdg.regPAL3;
+    if ( g_uidebugger.last_gdg_reg_pal3 != g_gdg_mz800.regPAL3 ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_reg_pal3_comboboxtext ), g_gdg_mz800.regPAL3 );
+        g_uidebugger.last_gdg_reg_pal3 = g_gdg_mz800.regPAL3;
     };
 
     /* regRF mode */
-    if ( g_uidebugger.last_gdg_rfr_mode != g_vramctrl.regRF_SEARCH ) {
-        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_rfr_mode_comboboxtext ), g_vramctrl.regRF_SEARCH );
-        g_uidebugger.last_gdg_rfr_mode = g_vramctrl.regRF_SEARCH;
+    if ( g_uidebugger.last_gdg_rfr_mode != g_vramctrl_mz800.regRF_SEARCH ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_rfr_mode_comboboxtext ), g_vramctrl_mz800.regRF_SEARCH );
+        g_uidebugger.last_gdg_rfr_mode = g_vramctrl_mz800.regRF_SEARCH;
     };
 
     /* regRF bank */
-    if ( g_uidebugger.last_gdg_rfr_bank != g_vramctrl.regWFRF_VBANK ) {
-        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_rfr_bank_comboboxtext ), g_vramctrl.regWFRF_VBANK );
-        g_uidebugger.last_gdg_rfr_bank = g_vramctrl.regWFRF_VBANK;
+    if ( g_uidebugger.last_gdg_rfr_bank != g_vramctrl_mz800.regWFRF_VBANK ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_rfr_bank_comboboxtext ), g_vramctrl_mz800.regWFRF_VBANK );
+        g_uidebugger.last_gdg_rfr_bank = g_vramctrl_mz800.regWFRF_VBANK;
     };
 
     /* regRF plane1 */
-    gboolean rfr_plane1 = ( g_vramctrl.regRF_PLANE & 0x01 );
+    gboolean rfr_plane1 = ( g_vramctrl_mz800.regRF_PLANE & 0x01 );
     if ( g_uidebugger.last_gdg_rfr_plane1 != rfr_plane1 ) {
         gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_rfr_plane1_checkbutton ), rfr_plane1 );
         g_uidebugger.last_gdg_rfr_plane1 = rfr_plane1;
     };
 
     /* regRF plane2 */
-    gboolean rfr_plane2 = ( g_vramctrl.regRF_PLANE & 0x02 );
+    gboolean rfr_plane2 = ( g_vramctrl_mz800.regRF_PLANE & 0x02 );
     if ( g_uidebugger.last_gdg_rfr_plane2 != rfr_plane2 ) {
         gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_rfr_plane2_checkbutton ), rfr_plane2 );
         g_uidebugger.last_gdg_rfr_plane2 = rfr_plane2;
     };
 
     /* regRF plane3 */
-    gboolean rfr_plane3 = ( g_vramctrl.regRF_PLANE & 0x04 );
+    gboolean rfr_plane3 = ( g_vramctrl_mz800.regRF_PLANE & 0x04 );
     if ( g_uidebugger.last_gdg_rfr_plane3 != rfr_plane3 ) {
         gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_rfr_plane3_checkbutton ), rfr_plane3 );
         g_uidebugger.last_gdg_rfr_plane3 = rfr_plane3;
     };
 
     /* regRF plane4 */
-    gboolean rfr_plane4 = ( g_vramctrl.regRF_PLANE & 0x08 );
+    gboolean rfr_plane4 = ( g_vramctrl_mz800.regRF_PLANE & 0x08 );
     if ( g_uidebugger.last_gdg_rfr_plane4 != rfr_plane4 ) {
         gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_rfr_plane4_checkbutton ), rfr_plane4 );
         g_uidebugger.last_gdg_rfr_plane1 = rfr_plane4;
     };
 
     /* regWF mode */
-    if ( g_uidebugger.last_gdg_wfr_mode != g_vramctrl.regWF_MODE ) {
-        int wf_combo_mode = ( g_vramctrl.regWF_MODE <= GDG_WF_MODE_REPLACE ) ? g_vramctrl.regWF_MODE : GDG_WF_MODE_PSET;
+    if ( g_uidebugger.last_gdg_wfr_mode != g_vramctrl_mz800.regWF_MODE ) {
+        int wf_combo_mode = ( g_vramctrl_mz800.regWF_MODE <= GDG_WF_MODE_REPLACE ) ? g_vramctrl_mz800.regWF_MODE : GDG_WF_MODE_PSET;
         gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_wfr_mode_comboboxtext ), wf_combo_mode );
-        g_uidebugger.last_gdg_wfr_mode = g_vramctrl.regWF_MODE;
+        g_uidebugger.last_gdg_wfr_mode = g_vramctrl_mz800.regWF_MODE;
     };
 
     /* regWF bank */
-    if ( g_uidebugger.last_gdg_wfr_bank != g_vramctrl.regWFRF_VBANK ) {
-        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_wfr_bank_comboboxtext ), g_vramctrl.regWFRF_VBANK );
-        g_uidebugger.last_gdg_wfr_bank = g_vramctrl.regWFRF_VBANK;
+    if ( g_uidebugger.last_gdg_wfr_bank != g_vramctrl_mz800.regWFRF_VBANK ) {
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.gdg_wfr_bank_comboboxtext ), g_vramctrl_mz800.regWFRF_VBANK );
+        g_uidebugger.last_gdg_wfr_bank = g_vramctrl_mz800.regWFRF_VBANK;
     };
 
     /* regWF plane1 */
-    gboolean wfr_plane1 = ( g_vramctrl.regWF_PLANE & 0x01 );
+    gboolean wfr_plane1 = ( g_vramctrl_mz800.regWF_PLANE & 0x01 );
     if ( g_uidebugger.last_gdg_wfr_plane1 != wfr_plane1 ) {
         gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_wfr_plane1_checkbutton ), wfr_plane1 );
         g_uidebugger.last_gdg_wfr_plane1 = wfr_plane1;
     };
 
     /* regWF plane2 */
-    gboolean wfr_plane2 = ( g_vramctrl.regWF_PLANE & 0x02 );
+    gboolean wfr_plane2 = ( g_vramctrl_mz800.regWF_PLANE & 0x02 );
     if ( g_uidebugger.last_gdg_wfr_plane2 != wfr_plane2 ) {
         gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_wfr_plane2_checkbutton ), wfr_plane2 );
         g_uidebugger.last_gdg_wfr_plane2 = wfr_plane2;
     };
 
     /* regWF plane3 */
-    gboolean wfr_plane3 = ( g_vramctrl.regWF_PLANE & 0x04 );
+    gboolean wfr_plane3 = ( g_vramctrl_mz800.regWF_PLANE & 0x04 );
     if ( g_uidebugger.last_gdg_wfr_plane3 != wfr_plane3 ) {
         gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_wfr_plane3_checkbutton ), wfr_plane3 );
         g_uidebugger.last_gdg_wfr_plane3 = wfr_plane3;
     };
 
     /* regWF plane4 */
-    gboolean wfr_plane4 = ( g_vramctrl.regWF_PLANE & 0x08 );
+    gboolean wfr_plane4 = ( g_vramctrl_mz800.regWF_PLANE & 0x08 );
     if ( g_uidebugger.last_gdg_wfr_plane4 != wfr_plane4 ) {
         gtk_toggle_button_set_active ( GTK_TOGGLE_BUTTON ( g_uidebugger.gdg_wfr_plane4_checkbutton ), wfr_plane4 );
         g_uidebugger.last_gdg_wfr_plane1 = wfr_plane4;
     };
+#endif
 
+#ifdef MACHINE_EMU_MZ1500
+    /* MZ-1500 regDMD */
+    if ( g_uidebugger.last_dmd != g_gdg_mz1500.dmd ) {
+        int value;
+        if ( g_gdg_mz1500.dmd & GDG_MZ1500_DMODE_BIT ) {
+            if ( g_gdg_mz1500.dmd & GDG_MZ1500_PMODE_BIT ) {
+                value = 2;
+            } else {
+                value = 1;
+            };
+        } else {
+            value = 0;
+        };
+        gtk_combo_box_set_active ( GTK_COMBO_BOX ( g_uidebugger.dmd_comboboxtext ), value );
+        g_uidebugger.last_dmd = g_gdg_mz1500.dmd;
+    };
+#endif
 
     /*
      * GDG signaly
@@ -324,6 +375,7 @@ void ui_debugger_update_internals ( void ) {
         g_uidebugger.last_gdg_vbln = g_gdg.vbln;
     };
 
+#ifdef MACHINE_EMU_M800
     /* GDG hsync */
     if ( g_gdg.sts_hsync != g_uidebugger.last_gdg_hsync ) {
         gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hsync_label ), ( g_gdg.sts_hsync ) ? "1" : "0" );
@@ -335,6 +387,7 @@ void ui_debugger_update_internals ( void ) {
         gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_vsync_label ), ( g_gdg.sts_vsync ) ? "1" : "0" );
         g_uidebugger.last_gdg_vsync = g_gdg.sts_vsync;
     };
+#endif
 
     /* GDG xpos */
     int gdg_xpos = VIDEO_GET_SCREEN_COL ( g_gdg.total_elapsed.ticks );
@@ -400,12 +453,13 @@ void ui_debugger_update_internals ( void ) {
         g_uidebugger.last_gdg_beam_state = gdg_beam_state;
     };
 
+#ifdef MACHINE_EMU_M800
     /*
      * GDG HW Scroll
      */
 
     /* HW Scroll SSA */
-    int ssa = hwscroll_get_ssa ( );
+    int ssa = hwscroll_mz800_get_ssa ( );
     if ( ssa != g_uidebugger.last_gdg_ssa ) {
         char buff[4];
         snprintf ( buff, sizeof ( buff ), "%d", ssa );
@@ -416,7 +470,7 @@ void ui_debugger_update_internals ( void ) {
     };
 
     /* HW Scroll SEA */
-    int sea = hwscroll_get_sea ( );
+    int sea = hwscroll_mz800_get_sea ( );
     if ( sea != g_uidebugger.last_gdg_sea ) {
         char buff[4];
         snprintf ( buff, sizeof ( buff ), "%d", sea );
@@ -427,7 +481,7 @@ void ui_debugger_update_internals ( void ) {
     };
 
     /* HW Scroll SW */
-    int sw = hwscroll_get_sw ( );
+    int sw = hwscroll_mz800_get_sw ( );
     if ( sw != g_uidebugger.last_gdg_sw ) {
         char buff[4];
         snprintf ( buff, sizeof ( buff ), "%d", sw );
@@ -438,7 +492,7 @@ void ui_debugger_update_internals ( void ) {
     };
 
     /* HW Scroll SOF */
-    int sof = hwscroll_get_sof ( );
+    int sof = hwscroll_mz800_get_sof ( );
     if ( sof != g_uidebugger.last_gdg_sof ) {
         char buff[5];
         snprintf ( buff, sizeof ( buff ), "%d", sof );
@@ -449,10 +503,17 @@ void ui_debugger_update_internals ( void ) {
     };
 
     /* HW Scroll Enabled */
-    if ( TEST_HWSCRL_ENABLED != g_uidebugger.last_gdg_hwscroll_enabled ) {
-        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_ENABLED ) ? "1" : "0" );
-        g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_ENABLED;
+    if ( TEST_HWSCRL_MZ800_ENABLED != g_uidebugger.last_gdg_hwscroll_enabled ) {
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_hwscroll_enabled_label ), ( TEST_HWSCRL_MZ800_ENABLED ) ? "1" : "0" );
+        g_uidebugger.last_gdg_hwscroll_enabled = TEST_HWSCRL_MZ800_ENABLED;
     };
+#endif
+#ifdef MACHINE_EMU_MZ1500
+    for ( i = 0; i < G_N_ELEMENTS ( g_uidebugger.gdg_mz1500_color ); i++ ) {
+        ui_debugger_set_colbutton1500 ( &g_uidebugger.gdg_mz1500_color[i], g_gdg_mz1500.mode1500_color[i] );
+    }
+#endif
+
 
     /*
      * i8255
@@ -596,7 +657,6 @@ void ui_debugger_update_internals ( void ) {
     ctc8253_sync_ctc0 ( );
 #endif
 
-    int i;
     for ( i = 0; i < 3; i++ ) {
 
         /* i8253 mode */
@@ -612,7 +672,12 @@ void ui_debugger_update_internals ( void ) {
         if ( i == 0 ) {
             ctc_input = ( g_gdg.total_elapsed.ticks & 0x08 ) ? 1 : 0;
         } else if ( i == 1 ) {
+#ifdef MACHINE_EMU_MZ800
             ctc_input = g_gdg.sts_hsync;
+#endif
+#ifdef MACHINE_EMU_MZ1500
+            ctc_input = ~g_gdg.hbln;
+#endif
         } else {
             ctc_input = g_ctc8253[1].out;
         };
@@ -663,16 +728,16 @@ void ui_debugger_update_internals ( void ) {
 }
 
 
-void ui_debugger_set_mmap_forced ( st_UIMMAPBANK *mmbank, en_UI_MMBSTATE state ) {
-    ui_tool_pixbuf_fill ( mmbank->pixbuf, g_mmap_color[state] );
-    mmbank->state = state;
-    gtk_widget_queue_draw ( mmbank->drawing_area );
+static void ui_debugger_set_mmap_forced ( st_UICOLORAREA *colarea, int value ) {
+    ui_tool_pixbuf_fill ( colarea->pixbuf, g_mmap_color[value] );
+    colarea->value = value;
+    gtk_widget_queue_draw ( colarea->drawing_area );
 }
 
 
-static inline void ui_debugger_set_mmap ( st_UIMMAPBANK *mmbank, en_UI_MMBSTATE state ) {
-    if ( mmbank->state != state ) {
-        ui_debugger_set_mmap_forced ( mmbank, state );
+static inline void ui_debugger_set_mmap ( st_UICOLORAREA *colarea, en_UI_MMBSTATE state ) {
+    if ( colarea->value != state ) {
+        ui_debugger_set_mmap_forced ( colarea, state );
     };
 }
 
@@ -729,28 +794,29 @@ void ui_debugger_update_mmap ( void ) {
     };
 
 
-    /* Standardni mapovani */
+    /* mapovani MZ-800 */
 
-    if ( ( g_gdg.regDMD == g_uidebugger.last_mmap_dmd ) && ( g_memory.map == g_uidebugger.last_map ) ) {
+#ifdef MACHINE_EMU_MZ800
+    if ( ( g_gdg_mz800.regDMD == g_uidebugger.last_mmap_dmd ) && ( g_memory_mz800.map == g_uidebugger.last_map ) ) {
         return;
     };
 
-    g_uidebugger.last_map = g_memory.map;
-    g_uidebugger.last_mmap_dmd = g_gdg.regDMD;
+    g_uidebugger.last_map = g_memory_mz800.map;
+    g_uidebugger.last_mmap_dmd = g_gdg_mz800.regDMD;
 
-    if ( MEMORY_MAP_TEST_ROM_0000 ) {
+    if ( MEMORY_MZ800_MAP_TEST_ROM_0000 ) {
         ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_0], MMBSTATE_ROM );
     } else {
         ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_0], MMBSTATE_RAM );
     };
 
-    if ( MEMORY_MAP_TEST_ROM_1000 ) {
+    if ( MEMORY_MZ800_MAP_TEST_ROM_1000 ) {
         ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_1], MMBSTATE_CGROM );
     } else {
         ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_1], MMBSTATE_RAM );
     };
 
-    if ( MEMORY_MAP_TEST_VRAM_8000 ) {
+    if ( MEMORY_MZ800_MAP_TEST_VRAM_8000 ) {
         ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_8], MMBSTATE_VRAM );
         ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_9], MMBSTATE_VRAM );
     } else {
@@ -758,7 +824,7 @@ void ui_debugger_update_mmap ( void ) {
         ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_9], MMBSTATE_RAM );
     };
 
-    if ( MEMORY_MAP_TEST_VRAM_A000 ) {
+    if ( MEMORY_MZ800_MAP_TEST_VRAM_A000 ) {
         ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_A], MMBSTATE_VRAM );
         ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_B], MMBSTATE_VRAM );
     } else {
@@ -766,14 +832,14 @@ void ui_debugger_update_mmap ( void ) {
         ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_B], MMBSTATE_RAM );
     };
 
-    if ( MEMORY_MAP_TEST_CGRAM ) {
+    if ( MEMORY_MZ800_MAP_TEST_CGRAM ) {
         ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_C], MMBSTATE_CGRAM );
     } else {
         ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_C], MMBSTATE_RAM );
     };
 
-    if ( DMD_TEST_MZ700 ) {
-        if ( MEMORY_MAP_TEST_ROM_E000 ) {
+    if ( GDG_MZ800_TEST_DMD_MODE700 ) {
+        if ( MEMORY_MZ800_MAP_TEST_ROM_E000 ) {
             ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_D], MMBSTATE_VRAM );
             ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E_PORTS], MMBSTATE_PORTS );
             ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E], MMBSTATE_ROM );
@@ -788,7 +854,7 @@ void ui_debugger_update_mmap ( void ) {
 
         ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_D], MMBSTATE_RAM );
 
-        if ( MEMORY_MAP_TEST_ROM_E000 ) {
+        if ( MEMORY_MZ800_MAP_TEST_ROM_E000 ) {
             ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E_PORTS], MMBSTATE_ROM );
             ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E], MMBSTATE_ROM );
             ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_F], MMBSTATE_ROM );
@@ -798,6 +864,71 @@ void ui_debugger_update_mmap ( void ) {
             ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_F], MMBSTATE_RAM );
         };
     };
+#endif
+    /* mapovani MZ-800 */
+
+#ifdef MACHINE_EMU_MZ1500
+    if ( g_memory_mz1500.map == g_uidebugger.last_map ) {
+        return;
+    };
+
+    g_uidebugger.last_map = g_memory_mz1500.map;
+
+    if ( MEMORY_MZ1500_MAP_TEST_ROM_0000 ) {
+        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_0], MMBSTATE_ROM );
+    } else {
+        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_0], MMBSTATE_RAM );
+    };
+
+    if ( MEMORY_MZ1500_MAP_TEST_ROM_UPPER ) {
+        int spec_id = MEMORY_MZ1500_SPEC_ID;
+        switch ( spec_id ) {
+            case 0:
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_D], MMBSTATE_VRAM );
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E_PORTS], MMBSTATE_PORTS );
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E], MMBSTATE_ROM );
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_F], MMBSTATE_ROM );
+                break;
+
+            case 1:
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_D], MMBSTATE_ROM );
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E_PORTS], MMBSTATE_ROM );
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E], MMBSTATE_ROM );
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_F], MMBSTATE_FF );
+                break;
+
+            case 2:
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_D], MMBSTATE_PCG1 );
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E_PORTS], MMBSTATE_PCG1 );
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E], MMBSTATE_PCG1 );
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_F], MMBSTATE_FF );
+                break;
+
+            case 3:
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_D], MMBSTATE_PCG2 );
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E_PORTS], MMBSTATE_PCG2 );
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E], MMBSTATE_PCG2 );
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_F], MMBSTATE_FF );
+                break;
+
+            case 4:
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_D], MMBSTATE_PCG3 );
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E_PORTS], MMBSTATE_PCG3 );
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E], MMBSTATE_PCG3 );
+                ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_F], MMBSTATE_FF );
+                break;
+        };
+        char buff[] = "0";
+        buff[0] += spec_id;
+        gtk_label_set_text ( GTK_LABEL ( g_uidebugger.gdg_mmap_spec_label ), buff );
+        g_uidebugger.last_gdg_mmap_spec = spec_id;
+    } else {
+        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_D], MMBSTATE_RAM );
+        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E_PORTS], MMBSTATE_RAM );
+        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_E], MMBSTATE_RAM );
+        ui_debugger_set_mmap ( &g_uidebugger.mmapbank[MMBANK_F], MMBSTATE_RAM );
+    };
+#endif
 }
 
 
@@ -1229,30 +1360,53 @@ void ui_debugger_hide_spinner_window ( void ) {
 }
 
 
-static gboolean on_mmap_drawing_area_draw ( GtkWidget *widget, cairo_t *cr, gpointer user_data ) {
-    st_UIMMAPBANK *mmbank = (st_UIMMAPBANK *) user_data;
-    gdk_cairo_set_source_pixbuf ( cr, mmbank->pixbuf, 0, 0 );
+static gboolean on_colorarea_draw ( GtkWidget *widget, cairo_t *cr, gpointer user_data ) {
+    st_UICOLORAREA *colarea = (st_UICOLORAREA *) user_data;
+    gdk_cairo_set_source_pixbuf ( cr, colarea->pixbuf, 0, 0 );
     cairo_paint ( cr );
     return TRUE;
 }
 
 
-void ui_debugger_create_mmap_pixbuf ( GtkWidget *widget, st_UIMMAPBANK *mmbank ) {
+static void ui_debugger_create_mmap_pixbuf ( GtkWidget *widget, st_UICOLORAREA *colarea ) {
 
-    mmbank->drawing_area = widget;
+    colarea->drawing_area = widget;
 
     GtkAllocation *alloc = g_new ( GtkAllocation, 1 );
-    gtk_widget_get_allocation ( mmbank->drawing_area, alloc );
+    gtk_widget_get_allocation ( colarea->drawing_area, alloc );
 
-    mmbank->pixbuf = gdk_pixbuf_new ( GDK_COLORSPACE_RGB, FALSE, 8, alloc->width, alloc->height );
+    colarea->pixbuf = gdk_pixbuf_new ( GDK_COLORSPACE_RGB, FALSE, 8, alloc->width, alloc->height );
 
-    g_signal_connect ( G_OBJECT ( mmbank->drawing_area ), "draw",
-                       G_CALLBACK ( on_mmap_drawing_area_draw ), mmbank );
+    g_signal_connect ( G_OBJECT ( colarea->drawing_area ), "draw",
+                       G_CALLBACK ( on_colorarea_draw ), colarea );
 
-    ui_debugger_set_mmap_forced ( mmbank, MMBSTATE_RAM );
+    ui_debugger_set_mmap_forced ( colarea, MMBSTATE_RAM );
 
     g_free ( alloc );
 }
+
+
+#ifdef MACHINE_EMU_MZ1500
+
+
+static void ui_debugger_create_colbutton1500_pixbuf ( GtkWidget *dw_widget, GtkWidget *lb_widget, st_UICOLORBUTTON *colarea ) {
+
+    colarea->drawing_area = dw_widget;
+    colarea->label = lb_widget;
+
+    GtkAllocation *alloc = g_new ( GtkAllocation, 1 );
+    gtk_widget_get_allocation ( colarea->drawing_area, alloc );
+
+    colarea->pixbuf = gdk_pixbuf_new ( GDK_COLORSPACE_RGB, FALSE, 8, alloc->width, alloc->height );
+
+    g_signal_connect ( G_OBJECT ( colarea->drawing_area ), "draw",
+                       G_CALLBACK ( on_colorarea_draw ), colarea );
+
+    ui_debugger_set_colbutton1500_forced ( colarea, 0 );
+
+    g_free ( alloc );
+}
+#endif
 
 
 void ui_debugger_initialize_mmap ( void ) {
@@ -1336,6 +1490,34 @@ static void ui_debugger_create_toolbar_icons ( void ) {
 
 void ui_debugger_cpu_tick_counter_reset ( void ) {
     g_uidebugger.cpu_ticks_start = gdg_get_total_ticks ( );
+}
+
+
+static void ui_debugger_init_dmd_comboboxtext ( void ) {
+
+    LOCK_UICALLBACKS ( );
+
+    GtkWidget *cmbt = g_uidebugger.dmd_comboboxtext;
+    gtk_combo_box_text_remove_all ( GTK_COMBO_BOX_TEXT ( cmbt ) );
+
+#ifdef MACHINE_EMU_MZ800
+    gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( cmbt ), "MZ-800 320x200 @ 4 / A" );
+    gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( cmbt ), "MZ-800 320x200 @ 4 / B" );
+    gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( cmbt ), "MZ-800 320x200 @ 16" );
+    gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( cmbt ), "MZ-800 320x200 @ 16 / U" );
+    gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( cmbt ), "MZ-800 640x200 @ 2 / A" );
+    gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( cmbt ), "MZ-800 640x200 @ 2 / B" );
+    gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( cmbt ), "MZ-800 640x200 @ 4" );
+    gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( cmbt ), "MZ-800 640x200 @ 4 / U" );
+    gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( cmbt ), "MZ-700" );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+    gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( cmbt ), "MZ-700" );
+    gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( cmbt ), "MZ-1500 - BPF" );
+    gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT ( cmbt ), "MZ-1500 - BFP" );
+#endif
+
+    UNLOCK_UICALLBACKS ( );
 }
 
 
@@ -1529,6 +1711,7 @@ void ui_debugger_show_main_window ( void ) {
         g_uidebugger.gdg_tempo_label = ui_get_widget ( "dbg_gdg_tempo_label" );
         g_uidebugger.gdg_cnt_label = ui_get_widget ( "dbg_gdg_cnt_label" );
         g_uidebugger.gdg_beam_label = ui_get_widget ( "dbg_gdg_beam_label" );
+        g_uidebugger.gdg_mmap_spec_label = ui_get_widget ( "dbg_gdg_mmap_spec_label" );
         g_uidebugger.last_gdg_hbln = 0;
         g_uidebugger.last_gdg_vbln = 0;
         g_uidebugger.last_gdg_hsync = 0;
@@ -1536,6 +1719,7 @@ void ui_debugger_show_main_window ( void ) {
         g_uidebugger.last_gdg_ypos = 0;
         g_uidebugger.last_gdg_tempo = 0;
         g_uidebugger.last_gdg_beam_state = NULL;
+        g_uidebugger.last_gdg_mmap_spec = 0;
 
         // GDG HW Scroll
         g_uidebugger.gdg_ssa_entry = ui_get_widget ( "dbg_hwscroll_ssa_entry" );
@@ -1552,6 +1736,67 @@ void ui_debugger_show_main_window ( void ) {
         // CPU ticks
         g_uidebugger.cpu_ticks_entry = ui_get_widget ( "dbg_cpu_ticks_entry" );
         ui_debugger_cpu_tick_counter_reset ( );
+
+        /* rozdily mezi MZ-800 a MZ-1500 */
+        GtkWidget *dbg_mmap1 = ui_get_widget ( "dbg_mmap1" );
+        GtkWidget *dbg_mmap_vram = ui_get_widget ( "dbg_mmap_vram" );
+        GtkWidget *dbg_mmape = ui_get_widget ( "dbg_mmape" );
+        GtkWidget *dbg_mmapd_mz1500 = ui_get_widget ( "dbg_mmapd_mz1500" );
+        GtkWidget *dbg_mz800_vram_reg_frame = ui_get_widget ( "dbg_mz800_vram_reg_frame" );
+        GtkWidget *dbg_gdg_notebook = ui_get_widget ( "dbg_gdg_notebook" );
+        GtkWidget *dbg_gdg_mz1500_colors_frame = ui_get_widget ( "dbg_gdg_mz1500_colors_frame" );
+
+        GtkWidget *dbg_gdg_mmap_spec_pre_label = ui_get_widget ( "dbg_gdg_mmap_spec_pre_label" );
+        GtkWidget *dbg_gdg_mmap_spec_colon_label = ui_get_widget ( "dbg_gdg_mmap_spec_colon_label" );
+        GtkWidget *dbg_gdg_mmap_spec_label = ui_get_widget ( "dbg_gdg_mmap_spec_label" );
+
+#ifdef MACHINE_EMU_MZ800
+        gtk_widget_show ( dbg_mmap1 );
+        gtk_widget_show ( dbg_mmap_vram );
+        gtk_widget_show ( dbg_mmape );
+        gtk_widget_hide ( dbg_mmapd_mz1500 );
+        gtk_widget_show ( dbg_mz800_vram_reg_frame );
+        gtk_widget_show ( dbg_gdg_notebook );
+        gtk_widget_hide ( dbg_gdg_mz1500_colors_frame );
+        gtk_widget_hide ( dbg_gdg_mmap_spec_pre_label );
+        gtk_widget_hide ( dbg_gdg_mmap_spec_colon_label );
+        gtk_widget_hide ( dbg_gdg_mmap_spec_label );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+        gtk_widget_hide ( dbg_mmap1 );
+        gtk_widget_hide ( dbg_mmap_vram );
+        gtk_widget_hide ( dbg_mmape );
+        gtk_widget_show ( dbg_mmapd_mz1500 );
+        gtk_widget_hide ( dbg_mz800_vram_reg_frame );
+        gtk_widget_hide ( dbg_gdg_notebook );
+        gtk_widget_show ( dbg_gdg_mz1500_colors_frame );
+        gtk_widget_show ( dbg_gdg_mmap_spec_pre_label );
+        gtk_widget_show ( dbg_gdg_mmap_spec_colon_label );
+        gtk_widget_show ( dbg_gdg_mmap_spec_label );
+
+        for ( i = 0; i < G_N_ELEMENTS ( g_uidebugger.gdg_mz1500_color ); i++ ) {
+            GString *str = g_string_new ( "" );
+            g_string_append_printf ( str, "dbg_gdg_mz1500_col%d_drawingarea", i );
+            GtkWidget *dw_widget = ui_get_widget ( str->str );
+            g_string_free ( str, TRUE );
+            str = g_string_new ( "" );
+            g_string_append_printf ( str, "dbg_gdg_mz1500_col%d_label", i );
+            GtkWidget *lb_widget = ui_get_widget ( str->str );
+            g_string_free ( str, TRUE );
+            ui_debugger_create_colbutton1500_pixbuf ( dw_widget, lb_widget, &g_uidebugger.gdg_mz1500_color[i] );
+        };
+#endif
+        ui_debugger_init_dmd_comboboxtext ( );
+
+        GtkWidget *dbg_membrowser_toolbutton = ui_get_widget ( "dbg_membrowser_toolbutton" );
+#ifdef MZ800EMU_CFG_DEBUGGER_MEMBROWSER_ENABLED
+        gtk_widget_show ( dbg_membrowser_toolbutton );
+#else
+        gtk_widget_hide ( dbg_membrowser_toolbutton );
+#endif        
+
+        // smrskneme okno
+        gtk_window_resize ( GTK_WINDOW ( window ), 1, 1 );
     };
 
     g_uidebugger.accelerators_locked = 1;

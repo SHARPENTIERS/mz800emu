@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+#include "mz800emu_cfg.h"
+
 #include "z80ex/include/z80ex.h"
 
 
@@ -92,16 +94,28 @@ extern "C" {
     extern Z80EX_BYTE debugger_dasm_pure_ram_read_cb ( Z80EX_WORD addr, void *user_data );
     extern Z80EX_BYTE debugger_dasm_history_read_cb ( Z80EX_WORD addr, void *user_data );
     extern void debugger_memory_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value );
-    extern void debugger_mmap_mount ( unsigned value );
-    extern void debugger_mmap_umount ( unsigned value );
+
+#ifdef MACHINE_EMU_MZ800
+    extern void debugger_mz800_mmap_mount ( unsigned value );
+    extern void debugger_mz800_mmap_umount ( unsigned value );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+    extern void debugger_mz1500_mmap_mount ( unsigned value );
+    extern void debugger_mz1500_mmap_umount ( unsigned value );
+    extern void debugger_mz1500_mmap_spec_set ( unsigned value );
+#endif
+
     extern void debugger_change_z80_flagbit ( unsigned flagbit, unsigned value );
     extern void debugger_change_z80_register ( Z80_REG_T reg, Z80EX_WORD value );
+    
     extern void debugger_change_dmd ( Z80EX_BYTE value );
-    extern void debugger_change_gdg_reg_border ( Z80EX_BYTE value );
-    extern void debugger_change_gdg_reg_palgrp ( Z80EX_BYTE value );
-    extern void debugger_change_gdg_reg_pal ( Z80EX_BYTE pal, Z80EX_BYTE value );
-    extern void debugger_change_gdg_wfr ( Z80EX_BYTE value );
-    extern void debugger_change_gdg_rfr ( Z80EX_BYTE value );
+#ifdef MACHINE_EMU_MZ800
+    extern void debugger_mz800_change_gdg_reg_border ( Z80EX_BYTE value );
+    extern void debugger_mz800_change_gdg_reg_palgrp ( Z80EX_BYTE value );
+    extern void debugger_mz800_change_gdg_reg_pal ( Z80EX_BYTE pal, Z80EX_BYTE value );
+    extern void debugger_mz800_change_gdg_wfr ( Z80EX_BYTE value );
+    extern void debugger_mz800_change_gdg_rfr ( Z80EX_BYTE value );
+#endif
     extern uint32_t debuger_hextext_to_uint32 ( const char *txt );
     extern void debugger_forced_screen_update ( void );
 

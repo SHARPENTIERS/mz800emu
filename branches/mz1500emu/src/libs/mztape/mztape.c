@@ -93,6 +93,8 @@
  * 
  */
 
+#include "mz800emu_cfg.h"
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -176,6 +178,7 @@ const st_MZTAPE_PULSES_LENGTH g_mztape_pulses_800 = {
 };
  */
 
+#ifdef MACHINE_EMU_MZ800
 // pulzy podle Intercopy 10.2
 st_MZTAPE_PULSES_GDGTICS g_mztape_pulses_gdgticks_800_intercopy = {
     { 8335, 8760 },
@@ -187,6 +190,21 @@ st_MZTAPE_PULSES_GDGTICS g_mztape_pulses_gdgticks_800_cmtcom = {
     { 9300, 8660 },
     { 5400, 4660 },
 };
+#endif
+#ifdef MACHINE_EMU_MZ1500
+/* Prepocitano na GDG pulzy MZ-1500 */
+// pulzy podle Intercopy 10.2
+st_MZTAPE_PULSES_GDGTICS g_mztape_pulses_gdgticks_800_intercopy = {
+    { 6729, 7072 },
+    { 3517, 3980 },
+};
+
+// pulzy podle cmt.com v cp/m
+st_MZTAPE_PULSES_GDGTICS g_mztape_pulses_gdgticks_800_cmtcom = {
+    { 7508, 6992 },
+    { 4360, 3762 },
+};
+#endif
 
 const st_MZTAPE_PULSES_LENGTH g_mztape_pulses_80B = {
     { 0.000333, 0.000334, 0.000667 }, // LONG PULSE

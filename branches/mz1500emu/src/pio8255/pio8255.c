@@ -263,7 +263,7 @@ Z80EX_BYTE pio8255_read ( int addr ) {
              */
 
             retval = 0x00;
-            retval |= SIGNAL_GDG_VBLNK ? 1 << 7 : 0;
+            retval |= GDG_SIGNAL_VBLNK ? 1 << 7 : 0;
             retval |= mz800_get_cursor_timer_state ( ) << 6;
 #if 1
             retval |= ( cmt_read_data ( ) & 1 ) << 5;

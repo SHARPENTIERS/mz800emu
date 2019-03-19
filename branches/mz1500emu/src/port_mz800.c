@@ -1,5 +1,5 @@
 /* 
- * File:   iorq.c
+ * File:   port_mz800.c
  * Author: Michal Hucik <hucik@ordoz.com>
  *
  * Created on 18. června 2015, 12:33
@@ -23,10 +23,15 @@
  * ---------------------------------------------------------------------------
  */
 
+#include "mz800emu_cfg.h"
+
+#include <stdio.h>
+
+#ifdef MACHINE_EMU_MZ800
 
 #include "z80ex/include/z80ex.h"
 
-#include "port.h"
+#include "port_mz800.h"
 #include "mz800.h"
 #include "memory/memory.h"
 #include "memory/memext.h"
@@ -52,7 +57,7 @@
 #include "debug.h"
 
 
-Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data ) {
+Z80EX_BYTE port_mz800_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data ) {
 
     Z80EX_BYTE port_lsb = port & 0xff;
 
@@ -108,16 +113,15 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
             /* cteme DMD status: 0xce */
             //            printf ("sts: 0x%02x\n", z80ex_get_reg ( g_mz800.cpu, regPC) );
             /* TODO: lze cist 0xce i v 700 modu? */
-            retval = gdg_read_dmd_status ( );
+            retval = gdg_mz800_read_dmd_status ( );
             break;
-
 
         case 0xd0:
         case 0xd1:
         case 0xd2:
         case 0xd3:
             /* cteme z PIO8255: 0xd0 - 0xd3  */
-            if ( !DMD_TEST_MZ700 ) {
+            if ( !GDG_MZ800_TEST_DMD_MODE700 ) {
                 retval = pio8255_read ( port_lsb & 0x03 );
             } else {
                 retval = g_mz800.regDBUS_latch;
@@ -129,7 +133,7 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
         case 0xd5:
         case 0xd6:
             /* cteme z CTC8253: 0xd4 - 0xd6, 0xd7 cist nelze */
-            if ( !DMD_TEST_MZ700 ) {
+            if ( !GDG_MZ800_TEST_DMD_MODE700 ) {
                 retval = ctc8253_read_byte ( port_lsb & 0x03 );
             } else {
                 retval = g_mz800.regDBUS_latch;
@@ -149,7 +153,7 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
         case 0xe0:
         case 0xe1:
             /* cteme memory mapper: 0xe0 - 0xe1 */
-            memory_map_pread ( port_lsb );
+            memory_mz800_map_pread ( port_lsb );
             retval = g_mz800.regDBUS_latch;
             break;
 
@@ -229,6 +233,7 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
 
         default:
             // pri cteni neobsazeneho portu vracime posledni byte, ktery byl na sbernici
+            printf ( "unknown pread: 0x%02x, 0x%04x, addr: 0x%04x\n", port_lsb, port, g_mz800.instruction_addr );
             retval = g_mz800.regDBUS_latch;
             break;
     };
@@ -242,7 +247,7 @@ Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data )
 
 
 /* z80ex_pwrite_cb */
-void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void *user_data ) {
+void port_mz800_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void *user_data ) {
 
     Z80EX_BYTE port_lsb = port & 0xff;
 
@@ -300,16 +305,15 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
         case 0xcf:
         case 0xf0:
             /* zapisujeme do GDG: 0xcc - 0xcf, 0xf0 */
-            gdg_write_byte ( port, value );
+            gdg_mz800_write_byte ( port, value );
             break;
-
 
         case 0xd0:
         case 0xd1:
         case 0xd2:
         case 0xd3:
             /* zapisujeme do PIO8255: 0xd0 - 0xd3 */
-            if ( !DMD_TEST_MZ700 ) {
+            if ( !GDG_MZ800_TEST_DMD_MODE700 ) {
                 pio8255_write ( port_lsb & 0x03, value );
             };
             break;
@@ -320,7 +324,7 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
         case 0xd6:
         case 0xd7:
             /* zapisujeme do CTC8253: 0xd4 - 0xd7 */
-            if ( !DMD_TEST_MZ700 ) {
+            if ( !GDG_MZ800_TEST_DMD_MODE700 ) {
                 ctc8253_write_byte ( port_lsb & 0x03, value );
             };
             break;
@@ -347,7 +351,7 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
         case 0xe5:
         case 0xe6:
             /* zapisujeme na memory mapper: 0xe0 - 0xe6 */
-            memory_map_pwrite ( port_lsb );
+            memory_mz800_map_pwrite ( port_lsb );
             break;
 
         case 0xe7:
@@ -370,7 +374,7 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
             break;
 
         case 0xf2:
-            psg_write_byte ( value );
+            psg_write_byte ( &g_psg, value );
             break;
 
         case 0xf4:
@@ -410,5 +414,11 @@ void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void
                 ramdisk_std_write_byte ( port, value );
             };
             break;
+
+        default:
+            printf ( "unknown pwrite: 0x%02x, 0x%04x, Value: 0x%02x, addr: 0x%04x\n", port_lsb, port, value, g_mz800.instruction_addr );
+
     };
 }
+
+#endif

@@ -142,7 +142,7 @@ static const st_VKBD_KEYDEF vk_row3_def[] = {
     { VKBD_SCANCODE_G, 4, 1, "row3/g.bmp" },
     { VKBD_SCANCODE_H, 4, 0, "row3/h.bmp" },
     { VKBD_SCANCODE_J, 3, 6, "row3/j.bmp" },
-    { VKBD_SCANCODE_K, 5, 5, "row3/k.bmp" },
+    { VKBD_SCANCODE_K, 3, 5, "row3/k.bmp" },
     { VKBD_SCANCODE_L, 3, 4, "row3/l.bmp" },
     { VKBD_SCANCODE_SEMICOLON, 0, 2, "row3/semicolon.bmp" },
     { VKBD_SCANCODE_APOSTROPHE, 0, 1, "row3/colon.bmp" },
@@ -570,7 +570,9 @@ static en_VKBD_SCANCODE ui_vkbd_KeycodeToScancode ( guint16 hardware_keycode ) {
     en_VKBD_SCANCODE scancode = VKBD_SCANCODE_UNKNOWN;
 
 #ifdef LINUX    
-    GdkKeymap *km = gdk_keymap_get_default ( );
+    //GdkKeymap *km = gdk_keymap_get_default ( );
+    GdkDisplay *disp = gdk_display_get_default ( );
+    GdkKeymap *km = gdk_keymap_get_for_display ( disp );
     GdkKeymapKey *keys = NULL;
     guint *keyvals = NULL;
     gint entries = 0;
