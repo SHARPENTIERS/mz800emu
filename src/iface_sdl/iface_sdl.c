@@ -64,6 +64,13 @@ SDL_Rect statusline_rect = { 0, 0 + VIDEO_DISPLAY_HEIGHT, VIDEO_DISPLAY_WIDTH, I
 
 struct st_iface_sdl g_iface_sdl;
 
+#ifdef MACHINE_EMU_MZ800
+const char c_machine_name[] = "MZ-800";
+#endif
+#ifdef MACHINE_EMU_MZ1500
+const char c_machine_name[] = "MZ-1500";
+#endif
+
 #define DEBUG_EVENTS 0
 
 #if DEBUG_EVENTS
@@ -385,7 +392,7 @@ void iface_sdl_init ( void ) {
     /* Inicializace okna */
     g_iface_sdl.last_wsizeX = IFACE_WINDOW_WIDTH;
     g_iface_sdl.last_wsizeY = IFACE_WINDOW_HEIGHT;
-    g_iface_sdl.window = SDL_CreateWindow ( "MZ-800", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, g_iface_sdl.last_wsizeX, g_iface_sdl.last_wsizeY, SDL_WINDOW_RESIZABLE );
+    g_iface_sdl.window = SDL_CreateWindow ( c_machine_name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, g_iface_sdl.last_wsizeX, g_iface_sdl.last_wsizeY, SDL_WINDOW_RESIZABLE );
 
     if ( NULL == g_iface_sdl.window ) {
         fprintf ( stderr, "Could not create window: %s\n", SDL_GetError ( ) );
@@ -851,7 +858,7 @@ void iface_sdl_render_status_line ( void ) {
     SDL_RenderPresent ( g_iface_sdl.renderer );
 #endif
     char txt [100];
-    strcpy ( txt, "MZ-800 - " );
+    snprintf ( txt, sizeof ( txt ), "%s - ", c_machine_name );
     if ( TEST_EMULATION_PAUSED ) {
         strcat ( txt, "PAUSED" );
     } else {

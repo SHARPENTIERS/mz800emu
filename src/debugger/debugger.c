@@ -40,6 +40,7 @@
 #include "memory/memory.h"
 #include "breakpoints.h"
 #include "cfgfile/cfgtools.h"
+#include "gdg/gdg.h"
 #include "gdg/framebuffer.h"
 #include "iface_sdl/iface_sdl.h"
 
@@ -84,8 +85,10 @@ void debugger_reset_history ( void ) {
     memset ( &g_debugger_history, 0x00, sizeof (g_debugger_history ) );
 }
 
+#ifdef MZ800EMU_CFG_DEBUGGER_MEMBROWSER_ENABLED
 
-void debugger_membrowser_selected_addr_propagatecfg_cb ( void *e, void *data ) {
+/*
+static void debugger_membrowser_selected_addr_propagatecfg_cb ( void *e, void *data ) {
     char *encoded_txt = cfgelement_get_text_value ( (CFGELM *) e );
 
     int ret = EXIT_FAILURE;
@@ -98,12 +101,13 @@ void debugger_membrowser_selected_addr_propagatecfg_cb ( void *e, void *data ) {
     g_membrowser.selected_addr = value;
 }
 
-
-void debugger_membrowser_selected_addr_save_cb ( void *e, void *data ) {
+static void debugger_membrowser_selected_addr_save_cb ( void *e, void *data ) {
     char value_txt[20];
     sprintf ( value_txt, "0x%04x", g_membrowser.selected_addr );
     cfgelement_set_text_value ( (CFGELM *) e, value_txt );
 }
+ */
+#endif
 
 
 void debugger_init ( void ) {
@@ -136,6 +140,7 @@ void debugger_init ( void ) {
     elm = cfgmodule_register_new_element ( cmod, "screen_refresh_at_step", CFGENTYPE_BOOL, 0 );
     cfgelement_set_handlers ( elm, (void*) &g_debugger.screen_refresh_at_step, (void*) &g_debugger.screen_refresh_at_step );
 
+#ifdef MZ800EMU_CFG_DEBUGGER_MEMBROWSER_ENABLED
     // ui_membrowser
     elm = cfgmodule_register_new_element ( cmod, "membrowser_sharp_ascii", CFGENTYPE_BOOL, 0 );
     cfgelement_set_handlers ( elm, (void*) &g_membrowser.sh_ascii_conversion, (void*) &g_membrowser.sh_ascii_conversion );
@@ -193,6 +198,7 @@ void debugger_init ( void ) {
 
     elm = cfgmodule_register_new_element ( cmod, "membrowser_memext_luftner_bank", CFGENTYPE_UNSIGNED, 0, 0, 0xff );
     cfgelement_set_handlers ( elm, (void*) &g_membrowser.memext_luftner_bank, (void*) &g_membrowser.memext_luftner_bank );
+#endif
 
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );
@@ -260,9 +266,32 @@ void debugger_memory_write_byte ( Z80EX_WORD addr, Z80EX_BYTE value ) {
     g_debugger.memop_call = 0;
 }
 
+#ifdef MACHINE_EMU_MZ800
 
-void debugger_mmap_mount ( unsigned value ) {
-    g_memory.map |= value;
+
+void debugger_mz800_mmap_mount ( unsigned value ) {
+    g_memory_mz800.map |= value;
+
+    ui_debugger_update_mmap ( );
+    ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
+    ui_debugger_update_stack ( );
+}
+
+
+void debugger_mz800_mmap_umount ( unsigned value ) {
+    g_memory_mz800.map &= ( ~value ) & 0x0f;
+
+    ui_debugger_update_mmap ( );
+    ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
+    ui_debugger_update_stack ( );
+}
+#endif
+
+#ifdef MACHINE_EMU_MZ1500
+
+
+void debugger_mz1500_mmap_mount ( unsigned value ) {
+    g_memory_mz1500.map |= value;
 
     ui_debugger_update_mmap ( );
     ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
@@ -270,13 +299,26 @@ void debugger_mmap_mount ( unsigned value ) {
 }
 
 
-void debugger_mmap_umount ( unsigned value ) {
-    g_memory.map &= ( ~value ) & 0x0f;
+void debugger_mz1500_mmap_umount ( unsigned value ) {
+    g_memory_mz1500.map &= ( ~value ) & MEMORY_MZ1500_MAP_FLAG_ROM_MASK;
 
     ui_debugger_update_mmap ( );
     ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
     ui_debugger_update_stack ( );
 }
+
+
+void debugger_mz1500_mmap_spec_set ( unsigned value ) {
+    g_memory_mz1500.map &= ~( MEMORY_MZ1500_MAP_D000_MASK );
+    g_memory_mz1500.map |= value;
+    g_memory_mz1500.map |= MEMORY_MZ1500_MAP_FLAG_ROM_UPPER;
+
+    ui_debugger_update_mmap ( );
+    ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
+    ui_debugger_update_stack ( );
+}
+
+#endif
 
 
 void debugger_change_z80_flagbit ( unsigned flagbit, unsigned value ) {
@@ -335,15 +377,22 @@ void debugger_change_dmd ( Z80EX_BYTE value ) {
         return;
     };
 
-    gdg_write_byte ( 0xce, value );
+#ifdef MACHINE_EMU_MZ800
+    gdg_mz800_write_byte ( 0xce, value );
 
     ui_debugger_update_mmap ( );
     ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
     ui_debugger_update_stack ( );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+    gdg_mz1500_write_byte_raw ( 0xf0, value );
+#endif
 }
 
+#ifdef MACHINE_EMU_MZ800
 
-void debugger_change_gdg_reg_border ( Z80EX_BYTE value ) {
+
+void debugger_mz800_change_gdg_reg_border ( Z80EX_BYTE value ) {
 
     if ( !TEST_EMULATION_PAUSED ) {
         /* Hodnotu comboboxu neni potreba nastavovat zpet, protoze po pauze dojde k update */
@@ -351,11 +400,11 @@ void debugger_change_gdg_reg_border ( Z80EX_BYTE value ) {
         return;
     };
 
-    gdg_write_byte ( 0x06cf, value );
+    gdg_mz800_write_byte ( 0x06cf, value );
 }
 
 
-void debugger_change_gdg_reg_palgrp ( Z80EX_BYTE value ) {
+void debugger_mz800_change_gdg_reg_palgrp ( Z80EX_BYTE value ) {
 
     if ( !TEST_EMULATION_PAUSED ) {
         /* Hodnotu comboboxu neni potreba nastavovat zpet, protoze po pauze dojde k update */
@@ -363,11 +412,11 @@ void debugger_change_gdg_reg_palgrp ( Z80EX_BYTE value ) {
         return;
     };
 
-    gdg_write_byte ( 0xf0, value | 0x40 );
+    gdg_mz800_write_byte ( 0xf0, value | 0x40 );
 }
 
 
-void debugger_change_gdg_reg_pal ( Z80EX_BYTE pal, Z80EX_BYTE value ) {
+void debugger_mz800_change_gdg_reg_pal ( Z80EX_BYTE pal, Z80EX_BYTE value ) {
 
     if ( !TEST_EMULATION_PAUSED ) {
         /* Hodnotu comboboxu neni potreba nastavovat zpet, protoze po pauze dojde k update */
@@ -375,11 +424,11 @@ void debugger_change_gdg_reg_pal ( Z80EX_BYTE pal, Z80EX_BYTE value ) {
         return;
     };
 
-    gdg_write_byte ( 0xf0, value | ( pal << 4 ) );
+    gdg_mz800_write_byte ( 0xf0, value | ( pal << 4 ) );
 }
 
 
-void debugger_change_gdg_rfr ( Z80EX_BYTE value ) {
+void debugger_mz800_change_gdg_rfr ( Z80EX_BYTE value ) {
 
     if ( !TEST_EMULATION_PAUSED ) {
         /* Hodnotu comboboxu neni potreba nastavovat zpet, protoze po pauze dojde k update */
@@ -387,14 +436,14 @@ void debugger_change_gdg_rfr ( Z80EX_BYTE value ) {
         return;
     };
 
-    gdg_write_byte ( 0xcd, value );
+    gdg_mz800_write_byte ( 0xcd, value );
 
     ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
     ui_debugger_update_stack ( );
 }
 
 
-void debugger_change_gdg_wfr ( Z80EX_BYTE value ) {
+void debugger_mz800_change_gdg_wfr ( Z80EX_BYTE value ) {
 
     if ( !TEST_EMULATION_PAUSED ) {
         /* Hodnotu comboboxu neni potreba nastavovat zpet, protoze po pauze dojde k update */
@@ -402,13 +451,14 @@ void debugger_change_gdg_wfr ( Z80EX_BYTE value ) {
         return;
     };
 
-    gdg_write_byte ( 0xcc, value );
+    gdg_mz800_write_byte ( 0xcc, value );
 
     // pokud se nahodou zmenila i banka A/B, tak ta je pro WF a RF spolecna, takze musime udelat aktualizaci kvili cteni z pameti
     // TODO: fakt? :)
     ui_debugger_update_disassembled ( ui_debugger_dissassembled_get_first_addr ( ), -1 );
     ui_debugger_update_stack ( );
 }
+#endif
 
 
 static Z80EX_WORD debugger_a2hex ( char c ) {
@@ -454,12 +504,17 @@ uint32_t debuger_hextext_to_uint32 ( const char *txt ) {
 
 void debugger_forced_screen_update ( void ) {
     g_iface_sdl.redraw_full_screen_request = 1;
-    if ( DMD_TEST_MZ700 ) {
-        framebuffer_update_MZ700_all_rows ( );
+#ifdef MACHINE_EMU_MZ800
+    if ( GDG_MZ800_TEST_DMD_MODE700 ) {
+        framebuffer_mz700_update_all_rows ( );
     } else {
-        framebuffer_MZ800_all_screen_rows_fill ( );
+        framebuffer_mz800_mode800_all_screen_rows_fill ( );
     };
-    framebuffer_border_all_rows_fill ( );
+    framebuffer_mz800_border_all_rows_fill ( );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+    framebuffer_mz1500_update_all_rows ( );
+#endif
     iface_sdl_update_window ( );
 }
 

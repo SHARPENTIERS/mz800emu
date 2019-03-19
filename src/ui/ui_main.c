@@ -151,6 +151,19 @@ void ui_propagatecfg_disable_hotkeys ( void *e, void *data ) {
 }
 
 
+gboolean ui_main_load_gbuilder_resource ( const char *fname ) {
+    gboolean ret = TRUE;
+    char *filepath = g_build_filename ( UI_RESOURCES_DIR, fname, NULL );
+    GError *err = NULL;
+    if ( 0 == gtk_builder_add_from_file ( g_ui.builder, filepath, &err ) ) {
+        printf ( "GtkBuilder load '%s' error: %s\n", filepath, err->message );
+        ret = FALSE;
+    };
+    g_free ( filepath );
+    return ret;
+}
+
+
 void ui_init ( void ) {
 
     setlocale ( LC_ALL, "" );
@@ -175,22 +188,17 @@ void ui_init ( void ) {
     g_ui.builder = NULL;
 
     g_ui.builder = gtk_builder_new ( );
-    GError *err = NULL;
-    if ( 0 == gtk_builder_add_from_file ( g_ui.builder, UI_RESOURCES_DIR "mz800emu.glade", &err ) ) {
-        printf ( "GtkBuilder error: %s\n", err->message );
-    };
-    if ( 0 == gtk_builder_add_from_file ( g_ui.builder, UI_RESOURCES_DIR "mz800emu_cmt.glade", &err ) ) {
-        printf ( "GtkBuilder error: %s\n", err->message );
-    };
-    if ( 0 == gtk_builder_add_from_file ( g_ui.builder, UI_RESOURCES_DIR "dsk_tool.glade", &err ) ) {
-        printf ( "GtkBuilder error: %s\n", err->message );
-    };
+
+    ui_main_load_gbuilder_resource ( "mz800emu.glade" );
+    ui_main_load_gbuilder_resource ( "mz800emu_cmt.glade" );
+    ui_main_load_gbuilder_resource ( "dsk_tool.glade" );
 
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
     /* TODO: prozkoumat GtkCssProvider - nastavit rules hint pro disassembled a stack treeview */
-    if ( 0 == gtk_builder_add_from_file ( g_ui.builder, UI_RESOURCES_DIR "mz800emu_debugger.glade", &err ) ) {
-        printf ( "GtkBuilder error: %s\n", err->message );
-    };
+    ui_main_load_gbuilder_resource ( "mz800emu_debugger.glade" );
+#ifdef MZ800EMU_CFG_DEBUGGER_MEMBROWSER_ENABLED
+    ui_main_load_gbuilder_resource ( "membrowser.glade" );
+#endif
 #else
     gtk_widget_set_sensitive ( ui_get_widget ( "menuitem_debugger" ), FALSE );
 #endif
@@ -236,7 +244,9 @@ void ui_init ( void ) {
                                       "   background-color: shade(blue, 1.0);\n"
                                       "}\n", -1, NULL );
 #endif
-
+    
+    GError *err = NULL;
+    
     gtk_css_provider_load_from_path ( GTK_CSS_PROVIDER ( provider ), UI_RESOURCES_DIR "mz800emu.css", &err );
 
     if ( err ) {
@@ -626,7 +636,9 @@ G_MODULE_EXPORT void on_menuitem_open_membrowser_activate ( GtkMenuItem *menuite
 #ifdef UI_TOPMENU_IS_WINDOW
     ui_hide_main_menu ( );
 #endif
+#ifdef MZ800EMU_CFG_DEBUGGER_MEMBROWSER_ENABLED
     ui_membrowser_show_hide ( );
+#endif
 }
 
 

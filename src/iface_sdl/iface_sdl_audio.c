@@ -34,7 +34,7 @@ typedef struct st_IFACE_AUDIO {
     SDL_AudioSpec spec_want;
     SDL_AudioSpec spec_have;
 
-    uint16_t buffer[IFACE_AUDIO_20MS_SAMPLES];
+    uint16_t buffer[( IFACE_AUDIO_WINDOW_SAMPLES * IFACE_AUDIO_CHANNELS )];
     en_IFACE_AUDIO_BUFFER_STATE state;
 
     SDL_mutex *write_lock;
@@ -47,7 +47,7 @@ typedef struct st_IFACE_AUDIO {
     uint32_t last_writed_sample;
 
 #if LINUX
-    uint32_t last_20ms_sync;
+    uint32_t last_screen_sync;
 #endif
 } st_IFACE_AUDIO;
 
@@ -222,7 +222,7 @@ int iface_sdl_audio_init ( const char *preferedAudioDriverName, int preferedAudi
     spec_want->freq = IFACE_AUDIO_SAMPLE_RATE;
     spec_want->format = AUDIO_U16SYS;
     spec_want->channels = IFACE_AUDIO_CHANNELS;
-    spec_want->samples = IFACE_AUDIO_20MS_SAMPLES;
+    spec_want->samples = IFACE_AUDIO_WINDOW_SAMPLES;
     spec_want->callback = iface_sdl_audio_callback;
 
     int attempts = 0;
@@ -313,7 +313,7 @@ int iface_sdl_audio_init ( const char *preferedAudioDriverName, int preferedAudi
     iface_audio_buffer_init ( );
 
 #if LINUX
-    g_iface_audio.last_20ms_sync = SDL_GetTicks ( );
+    g_iface_audio.last_screen_sync = SDL_GetTicks ( );
 #endif
 
     SDL_PauseAudioDevice ( g_iface_audio.dev, 0 );
@@ -360,7 +360,7 @@ void iface_sdl_audio_quit ( void ) {
 
 void iface_sdl_audio_sync_20ms_cycle ( void ) {
 
-    memcpy ( g_iface_audio.buffer, g_audio.buffer, sizeof (AUDIO_BUF_t ) * IFACE_AUDIO_20MS_SAMPLES );
+    memcpy ( g_iface_audio.buffer, g_audio.buffer, sizeof ( AUDIO_BUF_t ) * IFACE_AUDIO_WINDOW_SAMPLES * IFACE_AUDIO_CHANNELS );
 
     SDL_LockMutex ( g_iface_audio.write_lock );
     g_iface_audio.last_writed_sample++;
@@ -376,9 +376,15 @@ void iface_sdl_audio_sync_20ms_cycle ( void ) {
         SDL_UnlockMutex ( g_iface_audio.play_lock );
 
 #if LINUX
-        while ( ( SDL_GetTicks ( ) - g_iface_audio.last_20ms_sync ) < 19 ) {
+#ifdef MACHINE_EMU_MZ800
+        while ( ( SDL_GetTicks ( ) - g_iface_audio.last_screen_sync ) < 19 ) {
         };
-        g_iface_audio.last_20ms_sync = SDL_GetTicks ( );
+#endif
+#ifdef MACHINE_EMU_MZ1500
+        while ( ( SDL_GetTicks ( ) - g_iface_audio.last_screen_sync ) < 16 ) {
+        };
+#endif
+        g_iface_audio.last_screen_sync = SDL_GetTicks ( );
 #endif
     };
 

@@ -33,6 +33,8 @@ extern "C" {
 
 #include "mz800emu_cfg.h"
 
+#ifdef MZ800EMU_CFG_DEBUGGER_MEMBROWSER_ENABLED
+
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 
 #include "ui/ui_main.h"
@@ -131,6 +133,7 @@ extern "C" {
 
 #ifdef __cplusplus
 }
+#endif
 #endif
 
 #endif /* UI_MEMBROWSER_H */

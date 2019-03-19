@@ -49,12 +49,14 @@ extern "C" {
         //        EVENT_GDG_STS_HSYNC_END,
         EVENT_GDG_HBLN_END,
         EVENT_GDG_HBLN_START,
+#ifdef MACHINE_EMU_MZ800
         EVENT_GDG_STS_VSYNC_END,
         EVENT_GDG_STS_VSYNC_START,
         EVENT_GDG_AFTER_LAST_SCREEN_PIXEL,
         //        EVENT_GDG_STS_HSYNC_START,
         EVENT_GDG_AFTER_LAST_VISIBLE_PIXEL,
         EVENT_GDG_REAL_HSYNC_START,
+#endif
         EVENT_GDG_SCREEN_ROW_END,
 
         // jine, nez GDG eventy
@@ -157,7 +159,10 @@ extern "C" {
     extern void mz800_init ( void );
     extern void mz800_main ( void );
     extern void mz800_exit ( void );
+
+#ifdef MACHINE_EMU_MZ800
     extern void mz800_set_display_mode ( Z80EX_BYTE dmd_mode, unsigned event_ticks );
+#endif
 
     extern void mz800_sync_insideop_iorq ( void );
     extern void mz800_sync_insideop_mreq ( void );

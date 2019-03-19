@@ -1,5 +1,5 @@
 /* 
- * File:   framebuffer.c
+ * File:   framebuffer_mz800.c
  * Author: Michal Hucik <hucik@ordoz.com>
  *
  * Created on 5. července 2015, 8:40
@@ -23,15 +23,18 @@
  * ---------------------------------------------------------------------------
  */
 
+#include "mz800emu_cfg.h"
 
 #include <string.h>
 #include <stdint.h>
 
+#ifdef MACHINE_EMU_MZ800
+
 #include "z80ex/include/z80ex.h"
 
-#include "framebuffer.h"
+#include "framebuffer_mz800.h"
 #include "gdg.h"
-#include "hwscroll.h"
+#include "hwscroll_mz800.h"
 #include "video.h"
 #include "memory/memory.h"
 
@@ -40,109 +43,12 @@
 #define BIT0POS( val, pos ) ( ( val & 1 ) << pos )
 
 
-/* Definice barev pro MZ700 */
-const static int c_MZ700_COLORMAP [] = { 0, 9, 10, 11, 12, 13, 14, 15 };
-
-
-static inline void framebuffer_update_MZ700_screen_row ( unsigned beam_row ) {
-    unsigned mz700_mask = 0;
-    unsigned mz700_attr_fgc = 0;
-    unsigned mz700_attr_bgc = 0;
-    unsigned mz700_attr_grp;
-    unsigned mz700_cgram_addr = 0;
-
-    Z80EX_BYTE *CGRAM = &g_memoryVRAM[0];
-    Z80EX_BYTE *VRAM_CHAR = &g_memoryVRAM [ 0x1000 ];
-    Z80EX_BYTE *VRAM_ATTR = &g_memoryVRAM [ 0x1800 ];
-
-    uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + ( beam_row * VIDEO_DISPLAY_WIDTH + VIDEO_BORDER_LEFT_WIDTH ) * sizeof ( uint8_t );
-
-    unsigned pos_Y = beam_row - VIDEO_BEAM_CANVAS_FIRST_ROW;
-
-    unsigned vram_addr = ( ( pos_Y / 8 ) * 40 );
-
-    Z80EX_BYTE *vram_data = &VRAM_CHAR [ vram_addr ];
-    Z80EX_BYTE *vram_attr = &VRAM_ATTR [ vram_addr ];
-
-    unsigned pos_X;
-
-    for ( pos_X = 0; pos_X < VIDEO_CANVAS_WIDTH; pos_X += 16 ) {
-
-        mz700_attr_fgc = ( *vram_attr >> 4 ) & 0x07;
-        mz700_attr_bgc = *vram_attr & 0x07;
-        mz700_attr_grp = ( ( *vram_attr << 4 ) & 0x0800 );
-
-        mz700_cgram_addr = mz700_attr_grp | ( *vram_data * 8 );
-
-        mz700_mask = CGRAM [ mz700_cgram_addr + pos_Y % 8 ];
-        mz700_mask = mz700_mask >> ( ( pos_X & 0x0f ) / 2 );
-
-        vram_data++;
-        vram_attr++;
-
-        /* 0. pixel */
-        p[0] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[1] = p[0];
-        mz700_mask = mz700_mask >> 1;
-
-        /* 1. pixel */
-        p[2] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[3] = p[2];
-        mz700_mask = mz700_mask >> 1;
-
-        /* 2. pixel */
-        p[4] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[5] = p[4];
-        mz700_mask = mz700_mask >> 1;
-
-        /* 3. pixel */
-        p[6] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[7] = p[6];
-        mz700_mask = mz700_mask >> 1;
-
-        /* 4. pixel */
-        p[8] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[9] = p[8];
-        mz700_mask = mz700_mask >> 1;
-
-        /* 5. pixel */
-        p[10] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[11] = p[10];
-        mz700_mask = mz700_mask >> 1;
-
-        /* 6. pixel */
-        p[12] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[13] = p[12];
-        mz700_mask = mz700_mask >> 1;
-
-        /* 7. pixel */
-        p[14] = ( mz700_mask & 1 ) ? c_MZ700_COLORMAP [ mz700_attr_fgc ] : c_MZ700_COLORMAP [ mz700_attr_bgc ];
-        p[15] = p[14];
-
-        p += 16;
-    };
-}
-
-
-void framebuffer_update_MZ700_current_screen_row ( void ) {
-    framebuffer_update_MZ700_screen_row ( g_gdg.beam_row );
-}
-
-
-void framebuffer_update_MZ700_all_rows ( void ) {
-    int i;
-    for ( i = VIDEO_BEAM_CANVAS_FIRST_ROW; i <= VIDEO_BEAM_CANVAS_LAST_ROW; i++ ) {
-        framebuffer_update_MZ700_screen_row ( i );
-    };
-}
-
-
 /* 
  * 
  * Na konci viditelneho radku zaktualizujeme aktualni radek borderu ve framebufferu.
  * 
  */
-void framebuffer_border_current_row_fill ( void ) {
+void framebuffer_mz800_border_current_row_fill ( void ) {
 
     /* Pokud uz je radek ve framebufferu hotov, tak jdeme pryc */
     if ( g_gdg.last_updated_border_pixel == VIDEO_BEAM_DISPLAY_LAST_COLUMN + 1 ) return;
@@ -151,13 +57,13 @@ void framebuffer_border_current_row_fill ( void ) {
     uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + beam_row * VIDEO_DISPLAY_WIDTH;
 
     if ( ( beam_row < VIDEO_BORDER_TOP_HEIGHT ) || ( beam_row > VIDEO_BORDER_TOP_HEIGHT + VIDEO_CANVAS_HEIGHT - 1 ) ) {
-        memset ( &p [ g_gdg.last_updated_border_pixel ], g_gdg.regBOR, VIDEO_DISPLAY_WIDTH - g_gdg.last_updated_border_pixel );
+        memset ( &p [ g_gdg.last_updated_border_pixel ], g_gdg_mz800.regBOR, VIDEO_DISPLAY_WIDTH - g_gdg.last_updated_border_pixel );
     } else {
         if ( g_gdg.last_updated_border_pixel < VIDEO_BORDER_LEFT_WIDTH ) {
-            memset ( &p [ g_gdg.last_updated_border_pixel ], g_gdg.regBOR, VIDEO_BORDER_LEFT_WIDTH - g_gdg.last_updated_border_pixel );
+            memset ( &p [ g_gdg.last_updated_border_pixel ], g_gdg_mz800.regBOR, VIDEO_BORDER_LEFT_WIDTH - g_gdg.last_updated_border_pixel );
         };
         unsigned pos_x = ( g_gdg.last_updated_border_pixel >= VIDEO_BORDER_LEFT_WIDTH + VIDEO_CANVAS_WIDTH ) ? g_gdg.last_updated_border_pixel : VIDEO_BORDER_LEFT_WIDTH + VIDEO_CANVAS_WIDTH;
-        memset ( &p [ pos_x ], g_gdg.regBOR, VIDEO_DISPLAY_WIDTH - pos_x );
+        memset ( &p [ pos_x ], g_gdg_mz800.regBOR, VIDEO_DISPLAY_WIDTH - pos_x );
     };
 }
 
@@ -167,7 +73,7 @@ void framebuffer_border_current_row_fill ( void ) {
  *  Prave doslo ke zmene borderu. Nez provedeme zmenu, tak zaktualizujeme aktualni radek az po misto, kde nastala zmena.
  *
  */
-void framebuffer_border_changed ( void ) {
+void framebuffer_mz800_border_changed ( void ) {
 
     g_gdg.border_changes = SCRSTS_THIS_IS_CHANGED;
 
@@ -206,7 +112,7 @@ void framebuffer_border_changed ( void ) {
 
     /* Jsme v hornim, nebo dolnim borderu? */
     if ( ( beam_row <= VIDEO_BEAM_BORDER_TOP_LAST_ROW ) || ( beam_row >= VIDEO_BEAM_BORDER_BOTOM_FIRST_ROW ) ) {
-        memset ( &p [ g_gdg.last_updated_border_pixel ], g_gdg.regBOR, beam_col - g_gdg.last_updated_border_pixel );
+        memset ( &p [ g_gdg.last_updated_border_pixel ], g_gdg_mz800.regBOR, beam_col - g_gdg.last_updated_border_pixel );
 
         g_gdg.last_updated_border_pixel = beam_col;
 
@@ -216,7 +122,7 @@ void framebuffer_border_changed ( void ) {
         if ( g_gdg.last_updated_border_pixel <= VIDEO_BEAM_BORDER_LEFT_LAST_COLUMN ) {
 
             unsigned last_pixel = ( beam_col < VIDEO_BEAM_BORDER_LEFT_LAST_COLUMN ) ? beam_col : VIDEO_BEAM_BORDER_LEFT_LAST_COLUMN + 1;
-            memset ( &p [ g_gdg.last_updated_border_pixel ], g_gdg.regBOR, last_pixel - g_gdg.last_updated_border_pixel );
+            memset ( &p [ g_gdg.last_updated_border_pixel ], g_gdg_mz800.regBOR, last_pixel - g_gdg.last_updated_border_pixel );
 
             g_gdg.last_updated_border_pixel = last_pixel;
         };
@@ -225,7 +131,7 @@ void framebuffer_border_changed ( void ) {
         if ( beam_col >= VIDEO_BEAM_BORDER_RIGHT_FIRST_COLUMN ) {
 
             unsigned start_pixel = ( g_gdg.last_updated_border_pixel >= VIDEO_BEAM_BORDER_RIGHT_FIRST_COLUMN ) ? g_gdg.last_updated_border_pixel : VIDEO_BEAM_BORDER_RIGHT_FIRST_COLUMN;
-            memset ( &p [ start_pixel ], g_gdg.regBOR, beam_col - start_pixel );
+            memset ( &p [ start_pixel ], g_gdg_mz800.regBOR, beam_col - start_pixel );
 
             g_gdg.last_updated_border_pixel = beam_col;
         };
@@ -233,15 +139,15 @@ void framebuffer_border_changed ( void ) {
 }
 
 
-void framebuffer_MZ800_screen_changed ( void ) {
+void framebuffer_mz800_mode800_screen_changed ( void ) {
     g_gdg.screen_changes = SCRSTS_THIS_IS_CHANGED;
     unsigned column = VIDEO_GET_SCREEN_COL ( g_gdg.total_elapsed.ticks );
     if ( ( column < VIDEO_BEAM_CANVAS_FIRST_COLUMN + 3 ) || ( column > VIDEO_BEAM_CANVAS_LAST_COLUMN ) || ( g_gdg.beam_row < VIDEO_BEAM_CANVAS_FIRST_ROW ) || ( g_gdg.beam_row > VIDEO_BEAM_CANVAS_LAST_ROW ) ) return;
-    framebuffer_MZ800_current_screen_row_fill ( column - VIDEO_BEAM_CANVAS_FIRST_COLUMN );
+    framebuffer_mz800_mode800_current_screen_row_fill ( column - VIDEO_BEAM_CANVAS_FIRST_COLUMN );
 }
 
 
-static inline unsigned framebuffer_MZ800_screen_row_fill ( unsigned beam_row, unsigned last_pixel ) {
+static inline unsigned framebuffer_mz800__mode800_screen_row_fill ( unsigned beam_row, unsigned last_pixel ) {
     static unsigned vram_data1 = 0;
     static unsigned vram_data2 = 0;
     static unsigned vram_data3 = 0;
@@ -261,32 +167,32 @@ static inline unsigned framebuffer_MZ800_screen_row_fill ( unsigned beam_row, un
 
     /* TODO: z nepripojenych EXVRAM budeme cist 0xff */
 
-    switch ( g_gdg.regDMD & 0x07 ) {
+    switch ( g_gdg_mz800.regDMD & 0x07 ) {
 
             /* 320x200 @ 4/A */
         case 0x00:
             while ( pos_X < last_pixel ) {
 
                 if ( 0 == ( pos_X & 0x0f ) ) {
-                    unsigned real_vram_addr = hwscroll_shift_addr ( vram_addr++ );
-                    vram_data1 = g_memoryVRAM_I [ real_vram_addr ];
-                    vram_data2 = g_memoryVRAM_II [ real_vram_addr ];
+                    unsigned real_vram_addr = hwscroll_mz800_shift_addr ( vram_addr++ );
+                    vram_data1 = g_memory_mz800_VRAM_I [ real_vram_addr ];
+                    vram_data2 = g_memory_mz800_VRAM_II [ real_vram_addr ];
                 };
 
                 plt_code = BIT0POS ( vram_data2, 1 ) | BIT0POS ( vram_data1, 0 );
 
                 switch ( plt_code ) {
                     case 0:
-                        IGRB_output = g_gdg.regPAL0;
+                        IGRB_output = g_gdg_mz800.regPAL0;
                         break;
                     case 1:
-                        IGRB_output = g_gdg.regPAL1;
+                        IGRB_output = g_gdg_mz800.regPAL1;
                         break;
                     case 2:
-                        IGRB_output = g_gdg.regPAL2;
+                        IGRB_output = g_gdg_mz800.regPAL2;
                         break;
                     case 3:
-                        IGRB_output = g_gdg.regPAL3;
+                        IGRB_output = g_gdg_mz800.regPAL3;
                         break;
                 };
 
@@ -306,25 +212,25 @@ static inline unsigned framebuffer_MZ800_screen_row_fill ( unsigned beam_row, un
             while ( pos_X < last_pixel ) {
 
                 if ( 0 == ( pos_X & 0x0f ) ) {
-                    unsigned real_vram_addr = hwscroll_shift_addr ( vram_addr++ );
-                    vram_data3 = g_memoryVRAM_III [ real_vram_addr ];
-                    vram_data4 = g_memoryVRAM_IV [ real_vram_addr ];
+                    unsigned real_vram_addr = hwscroll_mz800_shift_addr ( vram_addr++ );
+                    vram_data3 = g_memory_mz800_VRAM_III [ real_vram_addr ];
+                    vram_data4 = g_memory_mz800_VRAM_IV [ real_vram_addr ];
                 };
 
                 plt_code = BIT0POS ( vram_data4, 1 ) | BIT0POS ( vram_data3, 0 );
 
                 switch ( plt_code ) {
                     case 0:
-                        IGRB_output = g_gdg.regPAL0;
+                        IGRB_output = g_gdg_mz800.regPAL0;
                         break;
                     case 1:
-                        IGRB_output = g_gdg.regPAL1;
+                        IGRB_output = g_gdg_mz800.regPAL1;
                         break;
                     case 2:
-                        IGRB_output = g_gdg.regPAL2;
+                        IGRB_output = g_gdg_mz800.regPAL2;
                         break;
                     case 3:
-                        IGRB_output = g_gdg.regPAL3;
+                        IGRB_output = g_gdg_mz800.regPAL3;
                         break;
                 };
 
@@ -343,28 +249,28 @@ static inline unsigned framebuffer_MZ800_screen_row_fill ( unsigned beam_row, un
         case 0x02:
             while ( pos_X < last_pixel ) {
                 if ( 0 == ( pos_X & 0x0f ) ) {
-                    unsigned real_vram_addr = hwscroll_shift_addr ( vram_addr++ );
-                    vram_data1 = g_memoryVRAM_I [ real_vram_addr ];
-                    vram_data2 = g_memoryVRAM_II [ real_vram_addr ];
-                    vram_data3 = g_memoryVRAM_III [ real_vram_addr ];
-                    vram_data4 = g_memoryVRAM_IV [ real_vram_addr ];
+                    unsigned real_vram_addr = hwscroll_mz800_shift_addr ( vram_addr++ );
+                    vram_data1 = g_memory_mz800_VRAM_I [ real_vram_addr ];
+                    vram_data2 = g_memory_mz800_VRAM_II [ real_vram_addr ];
+                    vram_data3 = g_memory_mz800_VRAM_III [ real_vram_addr ];
+                    vram_data4 = g_memory_mz800_VRAM_IV [ real_vram_addr ];
                 };
 
                 plt_code = BIT0POS ( vram_data4, 3 ) | BIT0POS ( vram_data3, 2 ) | BIT0POS ( vram_data2, 1 ) | BIT0POS ( vram_data1, 0 );
 
-                if ( g_gdg.regPALGRP == ( ( plt_code >> 2 ) & 0x03 ) ) {
+                if ( g_gdg_mz800.regPALGRP == ( ( plt_code >> 2 ) & 0x03 ) ) {
                     switch ( plt_code & 0x03 ) {
                         case 0:
-                            IGRB_output = g_gdg.regPAL0;
+                            IGRB_output = g_gdg_mz800.regPAL0;
                             break;
                         case 1:
-                            IGRB_output = g_gdg.regPAL1;
+                            IGRB_output = g_gdg_mz800.regPAL1;
                             break;
                         case 2:
-                            IGRB_output = g_gdg.regPAL2;
+                            IGRB_output = g_gdg_mz800.regPAL2;
                             break;
                         case 3:
-                            IGRB_output = g_gdg.regPAL3;
+                            IGRB_output = g_gdg_mz800.regPAL3;
                             break;
                     };
                 } else {
@@ -389,32 +295,32 @@ static inline unsigned framebuffer_MZ800_screen_row_fill ( unsigned beam_row, un
             while ( pos_X < last_pixel ) {
 
                 if ( 0 == ( pos_X & 0x0f ) ) {
-                    unsigned real_vram_addr = hwscroll_shift_addr ( vram_addr++ );
-                    vram_data1 = g_memoryVRAM_I [ real_vram_addr ];
-                    vram_data2 = g_memoryVRAM_II [ real_vram_addr ];
-                    vram_data3 = g_memoryVRAM_III [ real_vram_addr ];
-                    vram_data4 = g_memoryVRAM_IV [ real_vram_addr ];
+                    unsigned real_vram_addr = hwscroll_mz800_shift_addr ( vram_addr++ );
+                    vram_data1 = g_memory_mz800_VRAM_I [ real_vram_addr ];
+                    vram_data2 = g_memory_mz800_VRAM_II [ real_vram_addr ];
+                    vram_data3 = g_memory_mz800_VRAM_III [ real_vram_addr ];
+                    vram_data4 = g_memory_mz800_VRAM_IV [ real_vram_addr ];
                 };
 
-                if ( g_gdg.regPALGRP == ( BIT0POS ( vram_data4, 1 ) | BIT0POS ( vram_data3, 0 ) ) ) {
+                if ( g_gdg_mz800.regPALGRP == ( BIT0POS ( vram_data4, 1 ) | BIT0POS ( vram_data3, 0 ) ) ) {
                     plt_code = BIT0POS ( vram_data4, 3 ) | BIT0POS ( vram_data3, 2 ) | BIT0POS ( vram_data4, 1 ) | BIT0POS ( vram_data3, 0 );
                 } else {
                     plt_code = BIT0POS ( vram_data4, 3 ) | BIT0POS ( vram_data3, 2 ) | BIT0POS ( vram_data2, 1 ) | BIT0POS ( vram_data1, 0 );
                 };
 
-                if ( g_gdg.regPALGRP == ( ( plt_code >> 2 ) & 0x03 ) ) {
+                if ( g_gdg_mz800.regPALGRP == ( ( plt_code >> 2 ) & 0x03 ) ) {
                     switch ( plt_code & 0x03 ) {
                         case 0:
-                            IGRB_output = g_gdg.regPAL0;
+                            IGRB_output = g_gdg_mz800.regPAL0;
                             break;
                         case 1:
-                            IGRB_output = g_gdg.regPAL1;
+                            IGRB_output = g_gdg_mz800.regPAL1;
                             break;
                         case 2:
-                            IGRB_output = g_gdg.regPAL2;
+                            IGRB_output = g_gdg_mz800.regPAL2;
                             break;
                         case 3:
-                            IGRB_output = g_gdg.regPAL3;
+                            IGRB_output = g_gdg_mz800.regPAL3;
                             break;
                     };
                 } else {
@@ -439,9 +345,9 @@ static inline unsigned framebuffer_MZ800_screen_row_fill ( unsigned beam_row, un
             while ( pos_X < last_pixel ) {
 
                 if ( 0 == ( pos_X & 0x0f ) ) {
-                    unsigned real_vram_addr = hwscroll_shift_addr ( vram_addr++ );
-                    vram_data1 = g_memoryVRAM_I [ real_vram_addr ];
-                    vram_data2 = g_memoryVRAM_II [ real_vram_addr ];
+                    unsigned real_vram_addr = hwscroll_mz800_shift_addr ( vram_addr++ );
+                    vram_data1 = g_memory_mz800_VRAM_I [ real_vram_addr ];
+                    vram_data2 = g_memory_mz800_VRAM_II [ real_vram_addr ];
                 };
 
                 if ( 0x00 == ( pos_X & 0x08 ) ) {
@@ -456,10 +362,10 @@ static inline unsigned framebuffer_MZ800_screen_row_fill ( unsigned beam_row, un
 
                 switch ( plt_code ) {
                     case 0:
-                        IGRB_output = g_gdg.regPAL0;
+                        IGRB_output = g_gdg_mz800.regPAL0;
                         break;
                     case 1:
-                        IGRB_output = g_gdg.regPAL1;
+                        IGRB_output = g_gdg_mz800.regPAL1;
                         break;
                 };
 
@@ -475,9 +381,9 @@ static inline unsigned framebuffer_MZ800_screen_row_fill ( unsigned beam_row, un
             while ( pos_X < last_pixel ) {
 
                 if ( 0 == ( pos_X & 0x0f ) ) {
-                    unsigned real_vram_addr = hwscroll_shift_addr ( vram_addr++ );
-                    vram_data3 = g_memoryVRAM_III [ real_vram_addr ];
-                    vram_data4 = g_memoryVRAM_IV [ real_vram_addr ];
+                    unsigned real_vram_addr = hwscroll_mz800_shift_addr ( vram_addr++ );
+                    vram_data3 = g_memory_mz800_VRAM_III [ real_vram_addr ];
+                    vram_data4 = g_memory_mz800_VRAM_IV [ real_vram_addr ];
                 };
 
                 if ( 0x00 == ( pos_X & 0x08 ) ) {
@@ -492,10 +398,10 @@ static inline unsigned framebuffer_MZ800_screen_row_fill ( unsigned beam_row, un
 
                 switch ( plt_code ) {
                     case 0:
-                        IGRB_output = g_gdg.regPAL0;
+                        IGRB_output = g_gdg_mz800.regPAL0;
                         break;
                     case 1:
-                        IGRB_output = g_gdg.regPAL1;
+                        IGRB_output = g_gdg_mz800.regPAL1;
                         break;
                 };
 
@@ -511,11 +417,11 @@ static inline unsigned framebuffer_MZ800_screen_row_fill ( unsigned beam_row, un
             while ( pos_X < last_pixel ) {
 
                 if ( 0 == ( pos_X & 0x0f ) ) {
-                    unsigned real_vram_addr = hwscroll_shift_addr ( vram_addr++ );
-                    vram_data1 = g_memoryVRAM_I [ real_vram_addr ];
-                    vram_data2 = g_memoryVRAM_II [ real_vram_addr ];
-                    vram_data3 = g_memoryVRAM_III [ real_vram_addr ];
-                    vram_data4 = g_memoryVRAM_IV [ real_vram_addr ];
+                    unsigned real_vram_addr = hwscroll_mz800_shift_addr ( vram_addr++ );
+                    vram_data1 = g_memory_mz800_VRAM_I [ real_vram_addr ];
+                    vram_data2 = g_memory_mz800_VRAM_II [ real_vram_addr ];
+                    vram_data3 = g_memory_mz800_VRAM_III [ real_vram_addr ];
+                    vram_data4 = g_memory_mz800_VRAM_IV [ real_vram_addr ];
                 };
 
                 if ( 0x00 == ( pos_X & 0x08 ) ) {
@@ -532,16 +438,16 @@ static inline unsigned framebuffer_MZ800_screen_row_fill ( unsigned beam_row, un
 
                 switch ( plt_code ) {
                     case 0:
-                        IGRB_output = g_gdg.regPAL0;
+                        IGRB_output = g_gdg_mz800.regPAL0;
                         break;
                     case 1:
-                        IGRB_output = g_gdg.regPAL1;
+                        IGRB_output = g_gdg_mz800.regPAL1;
                         break;
                     case 2:
-                        IGRB_output = g_gdg.regPAL2;
+                        IGRB_output = g_gdg_mz800.regPAL2;
                         break;
                     case 3:
-                        IGRB_output = g_gdg.regPAL3;
+                        IGRB_output = g_gdg_mz800.regPAL3;
                         break;
                 };
 
@@ -557,9 +463,9 @@ static inline unsigned framebuffer_MZ800_screen_row_fill ( unsigned beam_row, un
             while ( pos_X < last_pixel ) {
 
                 if ( 0 == ( pos_X & 0x0f ) ) {
-                    unsigned real_vram_addr = hwscroll_shift_addr ( vram_addr++ );
-                    vram_data3 = g_memoryVRAM_III [ real_vram_addr ];
-                    vram_data4 = g_memoryVRAM_IV [ real_vram_addr ];
+                    unsigned real_vram_addr = hwscroll_mz800_shift_addr ( vram_addr++ );
+                    vram_data3 = g_memory_mz800_VRAM_III [ real_vram_addr ];
+                    vram_data4 = g_memory_mz800_VRAM_IV [ real_vram_addr ];
                 };
 
                 if ( 0x00 == ( pos_X & 0x08 ) ) {
@@ -574,16 +480,16 @@ static inline unsigned framebuffer_MZ800_screen_row_fill ( unsigned beam_row, un
 
                 switch ( plt_code ) {
                     case 0:
-                        IGRB_output = g_gdg.regPAL0;
+                        IGRB_output = g_gdg_mz800.regPAL0;
                         break;
                     case 1:
-                        IGRB_output = g_gdg.regPAL1;
+                        IGRB_output = g_gdg_mz800.regPAL1;
                         break;
                     case 2:
-                        IGRB_output = g_gdg.regPAL2;
+                        IGRB_output = g_gdg_mz800.regPAL2;
                         break;
                     case 3:
-                        IGRB_output = g_gdg.regPAL3;
+                        IGRB_output = g_gdg_mz800.regPAL3;
                         break;
                 };
 
@@ -594,47 +500,49 @@ static inline unsigned framebuffer_MZ800_screen_row_fill ( unsigned beam_row, un
             break;
     };
     return pos_X;
+
 }
 
 
-void framebuffer_MZ800_current_screen_row_fill ( unsigned last_pixel ) {
+void framebuffer_mz800_mode800_current_screen_row_fill ( unsigned last_pixel ) {
     last_pixel -= last_pixel % 2;
     if ( g_gdg.screen_need_update_from >= last_pixel ) return;
     unsigned beam_row = g_gdg.beam_row;
-    g_gdg.screen_need_update_from = framebuffer_MZ800_screen_row_fill ( beam_row, last_pixel );
+    g_gdg.screen_need_update_from = framebuffer_mz800__mode800_screen_row_fill ( beam_row, last_pixel );
 }
 
 
-void framebuffer_MZ800_all_screen_rows_fill ( void ) {
+void framebuffer_mz800_mode800_all_screen_rows_fill ( void ) {
     int i;
     g_gdg.screen_need_update_from = 0;
     for ( i = VIDEO_BEAM_CANVAS_FIRST_ROW; i <= VIDEO_BEAM_CANVAS_LAST_ROW; i++ ) {
-        framebuffer_MZ800_screen_row_fill ( i, VIDEO_CANVAS_WIDTH );
+        framebuffer_mz800__mode800_screen_row_fill ( i, VIDEO_CANVAS_WIDTH );
     };
 }
 
 
-void framebuffer_border_all_rows_fill ( void ) {
+void framebuffer_mz800_border_all_rows_fill ( void ) {
 
     int i;
 
     for ( i = 0; i < VIDEO_BORDER_TOP_HEIGHT; i++ ) {
         uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + ( i * VIDEO_DISPLAY_WIDTH );
-        memset ( p, g_gdg.regBOR, VIDEO_DISPLAY_WIDTH );
+        memset ( p, g_gdg_mz800.regBOR, VIDEO_DISPLAY_WIDTH );
     };
 
     for ( i = VIDEO_BORDER_TOP_HEIGHT; i < ( VIDEO_BORDER_TOP_HEIGHT + VIDEO_BORDER_LEFT_HEIGHT ); i++ ) {
         uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + ( i * VIDEO_DISPLAY_WIDTH );
-        memset ( p, g_gdg.regBOR, VIDEO_BORDER_LEFT_WIDTH );
+        memset ( p, g_gdg_mz800.regBOR, VIDEO_BORDER_LEFT_WIDTH );
     };
 
     for ( i = VIDEO_BORDER_TOP_HEIGHT; i < ( VIDEO_BORDER_TOP_HEIGHT + VIDEO_BORDER_RIGHT_HEIGHT ); i++ ) {
         uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + ( i * VIDEO_DISPLAY_WIDTH ) + ( VIDEO_BORDER_LEFT_WIDTH + VIDEO_CANVAS_WIDTH );
-        memset ( p, g_gdg.regBOR, VIDEO_BORDER_RIGHT_WIDTH );
+        memset ( p, g_gdg_mz800.regBOR, VIDEO_BORDER_RIGHT_WIDTH );
     };
 
     for ( i = ( VIDEO_BORDER_TOP_HEIGHT + VIDEO_BORDER_RIGHT_HEIGHT ); i < VIDEO_DISPLAY_HEIGHT; i++ ) {
         uint8_t *p = (uint8_t*) g_iface_sdl.active_surface->pixels + ( i * VIDEO_DISPLAY_WIDTH );
-        memset ( p, g_gdg.regBOR, VIDEO_DISPLAY_WIDTH );
+        memset ( p, g_gdg_mz800.regBOR, VIDEO_DISPLAY_WIDTH );
     };
 }
+#endif

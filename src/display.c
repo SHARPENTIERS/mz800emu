@@ -29,7 +29,7 @@
 
 
 
-uint32_t display_predef_colors [ DISPLAY_MZCOLORS ] = {
+uint32_t g_display_predef_colors [ DISPLAY_MZCOLORS ] = {
                                                        0x000000, 0x4040ac, 0xd03400, 0xb40c8c,
                                                        0x406c00, 0x24ccff, 0xe8d430, 0xd0d0d0,
                                                        0x848484, 0x008ce8, 0xff0000, 0xf054cc,
@@ -37,7 +37,7 @@ uint32_t display_predef_colors [ DISPLAY_MZCOLORS ] = {
 };
 
 
-uint32_t display_predef_grays [ DISPLAY_MZCOLORS ] = {
+uint32_t g_display_predef_grays [ DISPLAY_MZCOLORS ] = {
                                                       0x000000, 0x545454, 0x606060, 0x6c6c6c,
                                                       0x909090, 0x9c9c9c, 0xc0c0c0, 0xcccccc,
                                                       0x787878, 0x848484, 0xa8a8a8, 0xb4b4b4,
@@ -45,7 +45,7 @@ uint32_t display_predef_grays [ DISPLAY_MZCOLORS ] = {
 };
 
 
-uint32_t display_predef_greens [ DISPLAY_MZCOLORS ] = {
+uint32_t g_display_predef_greens [ DISPLAY_MZCOLORS ] = {
                                                        0x000000, 0x005400, 0x006000, 0x006c00,
                                                        0x009000, 0x009c00, 0x00c000, 0x00cc00,
                                                        0x007800, 0x008400, 0x00a800, 0x00b400,
@@ -65,13 +65,13 @@ void display_init ( void ) {
     for ( i = 0; i < DISPLAY_COLORS_COUNT; i++ ) {
         switch ( i ) {
             case DISPLAY_NORMAL:
-                g_display.color_predef[i] = display_predef_colors;
+                g_display.color_predef[i] = g_display_predef_colors;
                 break;
             case DISPLAY_GRAYSCALE:
-                g_display.color_predef[i] = display_predef_grays;
+                g_display.color_predef[i] = g_display_predef_grays;
                 break;
             case DISPLAY_GREEN:
-                g_display.color_predef[i] = display_predef_greens;
+                g_display.color_predef[i] = g_display_predef_greens;
                 break;
             case DISPLAY_COLORS_COUNT:
                 break;

@@ -23,6 +23,8 @@
  * ---------------------------------------------------------------------------
  */
 
+#include "mz800emu_cfg.h"
+
 #include <gtk/gtk.h>
 #include <string.h>
 #include <stdlib.h>
@@ -69,6 +71,7 @@ void ui_rom_menu_update ( void ) {
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_standard" ), TRUE );
             break;
 
+#ifdef MACHINE_EMU_MZ800
         case ROMTYPE_JSS103:
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_jss103" ), TRUE );
             break;
@@ -96,7 +99,7 @@ void ui_rom_menu_update ( void ) {
         case ROMTYPE_WILLY_JAP:
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_willy_jap" ), TRUE );
             break;
-
+#endif
         case ROMTYPE_USER_DEFINED:
             gtk_check_menu_item_set_active ( ui_get_check_menu_item ( "menuitem_rom_user_defined" ), TRUE );
             break;
@@ -122,6 +125,7 @@ G_MODULE_EXPORT void on_rom_changed ( GtkCheckMenuItem *menuitem, gpointer data 
 
     if ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_rom_standard" ) ) ) {
         rom_reinstall ( ROMTYPE_STANDARD );
+#ifdef MACHINE_EMU_MZ800
     } else if ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_rom_jss103" ) ) ) {
         rom_reinstall ( ROMTYPE_JSS103 );
     } else if ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_rom_jss105c" ) ) ) {
@@ -136,6 +140,7 @@ G_MODULE_EXPORT void on_rom_changed ( GtkCheckMenuItem *menuitem, gpointer data 
         rom_reinstall ( ROMTYPE_WILLY_GE );
     } else if ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_rom_willy_jap" ) ) ) {
         rom_reinstall ( ROMTYPE_WILLY_JAP );
+#endif
     } else if ( gtk_check_menu_item_get_active ( ui_get_check_menu_item ( "menuitem_rom_user_defined" ) ) ) {
         rom_reinstall ( ROMTYPE_USER_DEFINED );
     };
@@ -457,17 +462,17 @@ G_MODULE_EXPORT void on_filechooserbutton_rom_allinone_file_set ( GtkFileChooser
 
 
 G_MODULE_EXPORT void on_filechooserbutton_rom_mz700_file_set ( GtkFileChooserButton *widget, gpointer user_data ) {
-    ui_rom_check_filepath_and_sensitivity ( widget, &g_rom.user_defined_mz700_fp, ROM_SIZE_MZ700 );
+    ui_rom_check_filepath_and_sensitivity ( widget, &g_rom.user_defined_mz700_fp, ROM_0000_SIZE );
 }
 
 
 G_MODULE_EXPORT void on_filechooserbutton_rom_cgrom_file_set ( GtkFileChooserButton *widget, gpointer user_data ) {
-    ui_rom_check_filepath_and_sensitivity ( widget, &g_rom.user_defined_cgrom_fp, ROM_SIZE_CGROM );
+    ui_rom_check_filepath_and_sensitivity ( widget, &g_rom.user_defined_cgrom_fp, ROM_CGROM_SIZE );
 }
 
 
 G_MODULE_EXPORT void on_filechooserbutton_rom_mz800_file_set ( GtkFileChooserButton *widget, gpointer user_data ) {
-    ui_rom_check_filepath_and_sensitivity ( widget, &g_rom.user_defined_mz800_fp, ROM_SIZE_MZ800 );
+    ui_rom_check_filepath_and_sensitivity ( widget, &g_rom.user_defined_mz800_fp, ROM_E000_SIZE );
 }
 
 
@@ -477,16 +482,16 @@ G_MODULE_EXPORT void on_filechooserbutton_rom_cmthack_allinone_file_set ( GtkFil
 
 
 G_MODULE_EXPORT void on_filechooserbutton_rom_cmthack_mz700_file_set ( GtkFileChooserButton *widget, gpointer user_data ) {
-    ui_rom_check_filepath_and_sensitivity ( widget, &g_rom.user_defined_cmthack_mz700_fp, ROM_SIZE_MZ700 );
+    ui_rom_check_filepath_and_sensitivity ( widget, &g_rom.user_defined_cmthack_mz700_fp, ROM_0000_SIZE );
 }
 
 
 G_MODULE_EXPORT void on_filechooserbutton_rom_cmthack_cgrom_file_set ( GtkFileChooserButton *widget, gpointer user_data ) {
-    ui_rom_check_filepath_and_sensitivity ( widget, &g_rom.user_defined_cmthack_cgrom_fp, ROM_SIZE_CGROM );
+    ui_rom_check_filepath_and_sensitivity ( widget, &g_rom.user_defined_cmthack_cgrom_fp, ROM_CGROM_SIZE );
 }
 
 
 G_MODULE_EXPORT void on_filechooserbutton_rom_cmthack_mz800_file_set ( GtkFileChooserButton *widget, gpointer user_data ) {
-    ui_rom_check_filepath_and_sensitivity ( widget, &g_rom.user_defined_cmthack_mz800_fp, ROM_SIZE_MZ800 );
+    ui_rom_check_filepath_and_sensitivity ( widget, &g_rom.user_defined_cmthack_mz800_fp, ROM_E000_SIZE );
 }
 

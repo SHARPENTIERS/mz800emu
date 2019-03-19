@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+#include "mz800emu_cfg.h"
+
 #include <stdint.h>
 #include "cfgfile/cfgroot.h"
 
@@ -40,13 +42,19 @@ extern "C" {
     /*
      * Hodnota je nacitana take ze scriptu tools/create_package-Release-Win32.sh !
      */
-#define CFGMAIN_EMULATOR_VERSION_TAG "devel"
+    //#define CFGMAIN_EMULATOR_VERSION_TAG "devel"
     //#define CFGMAIN_EMULATOR_VERSION_TAG "snapshot"
+#define CFGMAIN_EMULATOR_VERSION_TAG "snapshot-mz1500"
     //#define CFGMAIN_EMULATOR_VERSION_TAG "stable"
 
 #define EMULATOR_VERSION CFGMAIN_EMULATOR_VERSION_NUM_STRING " " CFGMAIN_EMULATOR_VERSION_TAG
 
+#ifdef MACHINE_EMU_MZ800
 #define CFGFILE_INI_FILENAME    "mz800emu.ini"
+#endif
+#ifdef MACHINE_EMU_MZ1500
+#define CFGFILE_INI_FILENAME    "mz1500emu.ini"
+#endif
 
 #ifdef EMULATOR_VERSION
 #define CFGMAIN_EMULATOR_VERSION EMULATOR_VERSION

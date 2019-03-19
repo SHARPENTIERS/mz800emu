@@ -58,7 +58,7 @@
           <itemPath>src/libs/zxtape/zxtape.h</itemPath>
         </logicalFolder>
       </logicalFolder>
-      <logicalFolder name="f2" displayName="MZ-800" projectFiles="true">
+      <logicalFolder name="f2" displayName="MZ-1500" projectFiles="true">
         <logicalFolder name="f2" displayName="CMT" projectFiles="true">
           <itemPath>src/cmt/cmt.h</itemPath>
           <itemPath>src/cmt/cmt_mzf.h</itemPath>
@@ -85,10 +85,19 @@
         </logicalFolder>
         <logicalFolder name="f5" displayName="GDG" projectFiles="true">
           <itemPath>src/gdg/framebuffer.h</itemPath>
+          <itemPath>src/gdg/framebuffer_mz1500.h</itemPath>
+          <itemPath>src/gdg/framebuffer_mz700.h</itemPath>
+          <itemPath>src/gdg/framebuffer_mz800.h</itemPath>
           <itemPath>src/gdg/gdg.h</itemPath>
-          <itemPath>src/gdg/hwscroll.h</itemPath>
+          <itemPath>src/gdg/gdg_mz1500.h</itemPath>
+          <itemPath>src/gdg/gdg_mz800.h</itemPath>
+          <itemPath>src/gdg/hwscroll_mz800.h</itemPath>
           <itemPath>src/gdg/video.h</itemPath>
+          <itemPath>src/gdg/video_mz1500.h</itemPath>
+          <itemPath>src/gdg/video_mz800.h</itemPath>
           <itemPath>src/gdg/vramctrl.h</itemPath>
+          <itemPath>src/gdg/vramctrl_mz1500.h</itemPath>
+          <itemPath>src/gdg/vramctrl_mz800.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f15" displayName="IDE8" projectFiles="true">
           <itemPath>src/ide8/ide8.h</itemPath>
@@ -99,6 +108,8 @@
         <logicalFolder name="f6" displayName="Memory" projectFiles="true">
           <itemPath>src/memory/memext.h</itemPath>
           <itemPath>src/memory/memory.h</itemPath>
+          <itemPath>src/memory/memory_mz1500.h</itemPath>
+          <itemPath>src/memory/memory_mz800.h</itemPath>
           <itemPath>src/memory/rom.h</itemPath>
         </logicalFolder>
         <logicalFolder name="f11" displayName="MZ-800 Debugger" projectFiles="true">
@@ -133,7 +144,8 @@
         </logicalFolder>
         <itemPath>src/audio.h</itemPath>
         <itemPath>src/mz800.h</itemPath>
-        <itemPath>src/port.h</itemPath>
+        <itemPath>src/port_mz1500.h</itemPath>
+        <itemPath>src/port_mz800.h</itemPath>
       </logicalFolder>
       <logicalFolder name="f3" displayName="User Interface" projectFiles="true">
         <logicalFolder name="f4" displayName="DSK tool" projectFiles="true">
@@ -145,6 +157,7 @@
         </logicalFolder>
         <logicalFolder name="f1" displayName="MZ-800 Debugger" projectFiles="true">
           <itemPath>src/ui/debugger/ui_breakpoints.h</itemPath>
+          <itemPath>src/ui/debugger/ui_dbg_color_selection_dialog.h</itemPath>
           <itemPath>src/ui/debugger/ui_dbg_memext.h</itemPath>
           <itemPath>src/ui/debugger/ui_debugger.h</itemPath>
           <itemPath>src/ui/debugger/ui_debugger_callbacks.h</itemPath>
@@ -253,7 +266,7 @@
           <itemPath>src/libs/zxtape/zxtape.c</itemPath>
         </logicalFolder>
       </logicalFolder>
-      <logicalFolder name="f3" displayName="MZ-800" projectFiles="true">
+      <logicalFolder name="f3" displayName="MZ-1500" projectFiles="true">
         <logicalFolder name="f1" displayName="CMT" projectFiles="true">
           <itemPath>src/cmt/cmt.c</itemPath>
           <itemPath>src/cmt/cmt_mzf.c</itemPath>
@@ -278,10 +291,15 @@
           <itemPath>src/fdc/wd279x.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f5" displayName="GDG" projectFiles="true">
-          <itemPath>src/gdg/framebuffer.c</itemPath>
+          <itemPath>src/gdg/framebuffer_mz1500.c</itemPath>
+          <itemPath>src/gdg/framebuffer_mz700.c</itemPath>
+          <itemPath>src/gdg/framebuffer_mz800.c</itemPath>
           <itemPath>src/gdg/gdg.c</itemPath>
-          <itemPath>src/gdg/hwscroll.c</itemPath>
-          <itemPath>src/gdg/vramctrl.c</itemPath>
+          <itemPath>src/gdg/gdg_mz1500.c</itemPath>
+          <itemPath>src/gdg/gdg_mz800.c</itemPath>
+          <itemPath>src/gdg/hwscroll_mz800.c</itemPath>
+          <itemPath>src/gdg/vramctrl_mz1500.c</itemPath>
+          <itemPath>src/gdg/vramctrl_mz800.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f15" displayName="IDE8" projectFiles="true">
           <itemPath>src/ide8/ide8.c</itemPath>
@@ -324,8 +342,15 @@
             <itemPath>src/memory/ROM/ROM_MZ700.c</itemPath>
             <itemPath>src/memory/ROM/ROM_MZ800.c</itemPath>
           </logicalFolder>
+          <logicalFolder name="f2" displayName="ROM MZ-1500" projectFiles="true">
+            <itemPath>src/memory/ROM_MZ1500/ROM_MZ1500_0000.c</itemPath>
+            <itemPath>src/memory/ROM_MZ1500/ROM_MZ1500_CGROM.c</itemPath>
+            <itemPath>src/memory/ROM_MZ1500/ROM_MZ1500_E000.c</itemPath>
+          </logicalFolder>
           <itemPath>src/memory/memext.c</itemPath>
           <itemPath>src/memory/memory.c</itemPath>
+          <itemPath>src/memory/memory_mz1500.c</itemPath>
+          <itemPath>src/memory/memory_mz800.c</itemPath>
           <itemPath>src/memory/rom.c</itemPath>
         </logicalFolder>
         <logicalFolder name="f11" displayName="MZ-800 Debugger" projectFiles="true">
@@ -356,7 +381,8 @@
         </logicalFolder>
         <itemPath>src/audio.c</itemPath>
         <itemPath>src/mz800.c</itemPath>
-        <itemPath>src/port.c</itemPath>
+        <itemPath>src/port_mz1500.c</itemPath>
+        <itemPath>src/port_mz800.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f2" displayName="User Interface" projectFiles="true">
         <logicalFolder name="f3" displayName="DSK tool" projectFiles="true">
@@ -368,6 +394,7 @@
         </logicalFolder>
         <logicalFolder name="f1" displayName="MZ-800 Debugger" projectFiles="true">
           <itemPath>src/ui/debugger/ui_breakpoints.c</itemPath>
+          <itemPath>src/ui/debugger/ui_dbg_color_selection_dialog.c</itemPath>
           <itemPath>src/ui/debugger/ui_dbg_memext.c</itemPath>
           <itemPath>src/ui/debugger/ui_debugger.c</itemPath>
           <itemPath>src/ui/debugger/ui_debugger_callbacks.c</itemPath>
@@ -586,23 +613,51 @@
       </item>
       <item path="src/fs_layer.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/framebuffer.c" ex="false" tool="0" flavor2="10">
-      </item>
       <item path="src/gdg/framebuffer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz1500.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/framebuffer_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz700.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/framebuffer_mz700.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/framebuffer_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/gdg.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/gdg/gdg.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/hwscroll.c" ex="false" tool="0" flavor2="10">
+      <item path="src/gdg/gdg_mz1500.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/gdg/hwscroll.h" ex="false" tool="3" flavor2="0">
+      <item path="src/gdg/gdg_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/gdg_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/gdg_mz800.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/hwscroll_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/hwscroll_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/video.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/vramctrl.c" ex="false" tool="0" flavor2="10">
+      <item path="src/gdg/video_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/video_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz1500.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/vramctrl_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/vramctrl_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ide8/ide8.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -825,6 +880,21 @@
             tool="0"
             flavor2="0">
       </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_0000.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_E000.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/memext.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/memory/memext.h" ex="false" tool="3" flavor2="0">
@@ -832,6 +902,14 @@
       <item path="src/memory/memory.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/memory/memory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz1500.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/memory/rom.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -851,9 +929,13 @@
       </item>
       <item path="src/pioz80/pioz80.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/port.c" ex="false" tool="0" flavor2="10">
+      <item path="src/port_mz1500.c" ex="false" tool="0" flavor2="10">
       </item>
-      <item path="src/port.h" ex="false" tool="3" flavor2="0">
+      <item path="src/port_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/port_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/port_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/psg/psg.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -874,6 +956,16 @@
       <item path="src/ui/debugger/ui_breakpoints.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_color_selection_dialog.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_color_selection_dialog.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_dbg_memext.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1090,7 +1182,7 @@
       <item path="tools/search_dll.sh" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
-    <conf name="Release-Linux" type="1">
+    <conf name="Debug-Linux" type="1">
       <toolsSet>
         <compilerSet>default</compilerSet>
         <dependencyChecking>true</dependencyChecking>
@@ -1098,13 +1190,11 @@
       </toolsSet>
       <compileType>
         <cTool>
-          <developmentMode>5</developmentMode>
           <standard>10</standard>
-          <commandlineTool>gcc</commandlineTool>
           <incDir>
             <pElem>.</pElem>
             <pElem>src</pElem>
-            <pElem>src/z80ex</pElem>
+            <pElem>src/z80ex/</pElem>
             <pElem>src/z80ex/include</pElem>
           </incDir>
           <commandLine>-pedantic -pipe -Wl,--export-dynamic ${PROJECT_CFLAGS}</commandLine>
@@ -1116,15 +1206,8 @@
           <warningLevel>2</warningLevel>
         </cTool>
         <ccTool>
-          <developmentMode>5</developmentMode>
           <warningLevel>3</warningLevel>
         </ccTool>
-        <fortranCompilerTool>
-          <developmentMode>5</developmentMode>
-        </fortranCompilerTool>
-        <asmTool>
-          <developmentMode>5</developmentMode>
-        </asmTool>
         <linkerTool>
           <commandlineTool>gcc</commandlineTool>
           <commandLine>${PROJECT_LIBS}</commandLine>
@@ -1238,23 +1321,51 @@
       </item>
       <item path="src/fs_layer.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/framebuffer.c" ex="false" tool="0" flavor2="0">
-      </item>
       <item path="src/gdg/framebuffer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz1500.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz700.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz700.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/gdg.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/gdg/gdg.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/hwscroll.c" ex="false" tool="0" flavor2="0">
+      <item path="src/gdg/gdg_mz1500.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/gdg/hwscroll.h" ex="false" tool="3" flavor2="0">
+      <item path="src/gdg/gdg_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/gdg_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/gdg_mz800.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/hwscroll_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/hwscroll_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/video.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/vramctrl.c" ex="false" tool="0" flavor2="0">
+      <item path="src/gdg/video_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/video_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz1500.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ide8/ide8.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1474,6 +1585,21 @@
             tool="0"
             flavor2="0">
       </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_0000.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_E000.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/memext.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/memory/memext.h" ex="false" tool="3" flavor2="0">
@@ -1481,6 +1607,14 @@
       <item path="src/memory/memory.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/memory/memory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz1500.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/memory/rom.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1500,9 +1634,13 @@
       </item>
       <item path="src/pioz80/pioz80.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/port.c" ex="false" tool="0" flavor2="0">
+      <item path="src/port_mz1500.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/port.h" ex="false" tool="3" flavor2="0">
+      <item path="src/port_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/port_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/port_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/psg/psg.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1523,6 +1661,16 @@
       <item path="src/ui/debugger/ui_breakpoints.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_color_selection_dialog.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_color_selection_dialog.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_dbg_memext.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -1739,7 +1887,7 @@
       <item path="tools/search_dll.sh" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
-    <conf name="Debug-Linux" type="1">
+    <conf name="Release-Linux" type="1">
       <toolsSet>
         <compilerSet>default</compilerSet>
         <dependencyChecking>true</dependencyChecking>
@@ -1747,11 +1895,13 @@
       </toolsSet>
       <compileType>
         <cTool>
+          <developmentMode>5</developmentMode>
           <standard>10</standard>
+          <commandlineTool>gcc</commandlineTool>
           <incDir>
             <pElem>.</pElem>
             <pElem>src</pElem>
-            <pElem>src/z80ex/</pElem>
+            <pElem>src/z80ex</pElem>
             <pElem>src/z80ex/include</pElem>
           </incDir>
           <commandLine>-pedantic -pipe -Wl,--export-dynamic ${PROJECT_CFLAGS}</commandLine>
@@ -1763,8 +1913,15 @@
           <warningLevel>2</warningLevel>
         </cTool>
         <ccTool>
+          <developmentMode>5</developmentMode>
           <warningLevel>3</warningLevel>
         </ccTool>
+        <fortranCompilerTool>
+          <developmentMode>5</developmentMode>
+        </fortranCompilerTool>
+        <asmTool>
+          <developmentMode>5</developmentMode>
+        </asmTool>
         <linkerTool>
           <commandlineTool>gcc</commandlineTool>
           <commandLine>${PROJECT_LIBS}</commandLine>
@@ -1878,23 +2035,51 @@
       </item>
       <item path="src/fs_layer.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/framebuffer.c" ex="false" tool="0" flavor2="0">
-      </item>
       <item path="src/gdg/framebuffer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz1500.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz700.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz700.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/gdg.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/gdg/gdg.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/hwscroll.c" ex="false" tool="0" flavor2="0">
+      <item path="src/gdg/gdg_mz1500.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/gdg/hwscroll.h" ex="false" tool="3" flavor2="0">
+      <item path="src/gdg/gdg_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/gdg_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/gdg_mz800.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/hwscroll_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/hwscroll_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/video.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/vramctrl.c" ex="false" tool="0" flavor2="0">
+      <item path="src/gdg/video_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/video_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz1500.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ide8/ide8.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2114,6 +2299,21 @@
             tool="0"
             flavor2="0">
       </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_0000.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_E000.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/memext.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/memory/memext.h" ex="false" tool="3" flavor2="0">
@@ -2121,6 +2321,14 @@
       <item path="src/memory/memory.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/memory/memory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz1500.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/memory/rom.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2140,9 +2348,13 @@
       </item>
       <item path="src/pioz80/pioz80.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/port.c" ex="false" tool="0" flavor2="0">
+      <item path="src/port_mz1500.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/port.h" ex="false" tool="3" flavor2="0">
+      <item path="src/port_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/port_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/port_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/psg/psg.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2163,6 +2375,16 @@
       <item path="src/ui/debugger/ui_breakpoints.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_color_selection_dialog.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_color_selection_dialog.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_dbg_memext.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2527,23 +2749,51 @@
       </item>
       <item path="src/fs_layer.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/framebuffer.c" ex="false" tool="0" flavor2="10">
-      </item>
       <item path="src/gdg/framebuffer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz1500.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/framebuffer_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz700.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/framebuffer_mz700.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/framebuffer_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/gdg.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/gdg/gdg.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/hwscroll.c" ex="false" tool="0" flavor2="10">
+      <item path="src/gdg/gdg_mz1500.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/gdg/hwscroll.h" ex="false" tool="3" flavor2="0">
+      <item path="src/gdg/gdg_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/gdg_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/gdg_mz800.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/hwscroll_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/hwscroll_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/video.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/vramctrl.c" ex="false" tool="0" flavor2="10">
+      <item path="src/gdg/video_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/video_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz1500.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/vramctrl_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/vramctrl_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ide8/ide8.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -2766,6 +3016,21 @@
             tool="0"
             flavor2="10">
       </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_0000.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_E000.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/memext.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/memory/memext.h" ex="false" tool="3" flavor2="0">
@@ -2773,6 +3038,14 @@
       <item path="src/memory/memory.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/memory/memory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz1500.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/memory/rom.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -2792,9 +3065,13 @@
       </item>
       <item path="src/pioz80/pioz80.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/port.c" ex="false" tool="0" flavor2="10">
+      <item path="src/port_mz1500.c" ex="false" tool="0" flavor2="10">
       </item>
-      <item path="src/port.h" ex="false" tool="3" flavor2="0">
+      <item path="src/port_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/port_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/port_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/psg/psg.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -2815,6 +3092,16 @@
       <item path="src/ui/debugger/ui_breakpoints.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_color_selection_dialog.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_color_selection_dialog.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_dbg_memext.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -3184,23 +3471,51 @@
       </item>
       <item path="src/fs_layer.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/framebuffer.c" ex="false" tool="0" flavor2="10">
-      </item>
       <item path="src/gdg/framebuffer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz1500.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/framebuffer_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz700.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/framebuffer_mz700.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/framebuffer_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/gdg.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/gdg/gdg.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/hwscroll.c" ex="false" tool="0" flavor2="10">
+      <item path="src/gdg/gdg_mz1500.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/gdg/hwscroll.h" ex="false" tool="3" flavor2="0">
+      <item path="src/gdg/gdg_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/gdg_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/gdg_mz800.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/hwscroll_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/hwscroll_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/video.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/vramctrl.c" ex="false" tool="0" flavor2="10">
+      <item path="src/gdg/video_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/video_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz1500.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/vramctrl_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/vramctrl_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ide8/ide8.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -3423,6 +3738,21 @@
             tool="0"
             flavor2="10">
       </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_0000.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_E000.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/memext.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/memory/memext.h" ex="false" tool="3" flavor2="0">
@@ -3430,6 +3760,14 @@
       <item path="src/memory/memory.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/memory/memory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz1500.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/memory/rom.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -3449,9 +3787,13 @@
       </item>
       <item path="src/pioz80/pioz80.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/port.c" ex="false" tool="0" flavor2="10">
+      <item path="src/port_mz1500.c" ex="false" tool="0" flavor2="10">
       </item>
-      <item path="src/port.h" ex="false" tool="3" flavor2="0">
+      <item path="src/port_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/port_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/port_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/psg/psg.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -3472,6 +3814,16 @@
       <item path="src/ui/debugger/ui_breakpoints.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_color_selection_dialog.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_color_selection_dialog.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_dbg_memext.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -3841,23 +4193,51 @@
       </item>
       <item path="src/fs_layer.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/framebuffer.c" ex="false" tool="0" flavor2="10">
-      </item>
       <item path="src/gdg/framebuffer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz1500.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/framebuffer_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz700.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/framebuffer_mz700.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/framebuffer_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/gdg.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/gdg/gdg.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/hwscroll.c" ex="false" tool="0" flavor2="10">
+      <item path="src/gdg/gdg_mz1500.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/gdg/hwscroll.h" ex="false" tool="3" flavor2="0">
+      <item path="src/gdg/gdg_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/gdg_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/gdg_mz800.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/hwscroll_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/hwscroll_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/video.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/vramctrl.c" ex="false" tool="0" flavor2="10">
+      <item path="src/gdg/video_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/video_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz1500.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/vramctrl_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/vramctrl_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ide8/ide8.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -4080,6 +4460,21 @@
             tool="0"
             flavor2="0">
       </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_0000.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_E000.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/memext.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/memory/memext.h" ex="false" tool="3" flavor2="0">
@@ -4087,6 +4482,14 @@
       <item path="src/memory/memory.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/memory/memory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz1500.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/memory/rom.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -4106,9 +4509,13 @@
       </item>
       <item path="src/pioz80/pioz80.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/port.c" ex="false" tool="0" flavor2="10">
+      <item path="src/port_mz1500.c" ex="false" tool="0" flavor2="10">
       </item>
-      <item path="src/port.h" ex="false" tool="3" flavor2="0">
+      <item path="src/port_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/port_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/port_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/psg/psg.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -4129,6 +4536,16 @@
       <item path="src/ui/debugger/ui_breakpoints.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_color_selection_dialog.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_color_selection_dialog.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_dbg_memext.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -4496,23 +4913,51 @@
       </item>
       <item path="src/fs_layer.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/framebuffer.c" ex="false" tool="0" flavor2="10">
-      </item>
       <item path="src/gdg/framebuffer.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz1500.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/framebuffer_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz700.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/framebuffer_mz700.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/framebuffer_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/framebuffer_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/gdg.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/gdg/gdg.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/hwscroll.c" ex="false" tool="0" flavor2="10">
+      <item path="src/gdg/gdg_mz1500.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/gdg/hwscroll.h" ex="false" tool="3" flavor2="0">
+      <item path="src/gdg/gdg_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/gdg_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/gdg_mz800.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/hwscroll_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/hwscroll_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/video.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/gdg/vramctrl.c" ex="false" tool="0" flavor2="10">
+      <item path="src/gdg/video_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/video_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/gdg/vramctrl.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz1500.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/vramctrl_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/gdg/vramctrl_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/gdg/vramctrl_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ide8/ide8.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -4735,6 +5180,21 @@
             tool="0"
             flavor2="0">
       </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_0000.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_CGROM.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/memory/ROM_MZ1500/ROM_MZ1500_E000.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
       <item path="src/memory/memext.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/memory/memext.h" ex="false" tool="3" flavor2="0">
@@ -4742,6 +5202,14 @@
       <item path="src/memory/memory.c" ex="false" tool="0" flavor2="10">
       </item>
       <item path="src/memory/memory.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz1500.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz800.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/memory/memory_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/memory/rom.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -4761,9 +5229,13 @@
       </item>
       <item path="src/pioz80/pioz80.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/port.c" ex="false" tool="0" flavor2="10">
+      <item path="src/port_mz1500.c" ex="false" tool="0" flavor2="10">
       </item>
-      <item path="src/port.h" ex="false" tool="3" flavor2="0">
+      <item path="src/port_mz1500.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/port_mz800.c" ex="false" tool="0" flavor2="10">
+      </item>
+      <item path="src/port_mz800.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/psg/psg.c" ex="false" tool="0" flavor2="10">
       </item>
@@ -4784,6 +5256,16 @@
       <item path="src/ui/debugger/ui_breakpoints.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_breakpoints.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_color_selection_dialog.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+      </item>
+      <item path="src/ui/debugger/ui_dbg_color_selection_dialog.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
       </item>
       <item path="src/ui/debugger/ui_dbg_memext.c" ex="false" tool="0" flavor2="0">
       </item>

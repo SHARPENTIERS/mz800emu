@@ -83,15 +83,28 @@ extern "C" {
         MMBSTATE_CGRAM,
         MMBSTATE_VRAM,
         MMBSTATE_PORTS,
+        // MZ-1500
+        MMBSTATE_PCG1,
+        MMBSTATE_PCG2,
+        MMBSTATE_PCG3,
+        MMBSTATE_FF,
         MMBSTATE_COUNT
     } en_UI_MMBSTATE;
 
 
-    typedef struct st_UIMMAPBANK {
+    typedef struct st_UICOLORAREA {
         GtkWidget *drawing_area;
         GdkPixbuf *pixbuf;
-        en_UI_MMBSTATE state;
-    } st_UIMMAPBANK;
+        int value;
+    } st_UICOLORAREA;
+
+
+    typedef struct st_UICOLORBUTTON {
+        GtkWidget *drawing_area;
+        GdkPixbuf *pixbuf;
+        GtkWidget *label;
+        int value;
+    } st_UICOLORBUTTON;
 
 
     typedef enum en_MMBANK {
@@ -143,7 +156,7 @@ extern "C" {
         Z80EX_WORD focus_addr_history[DBG_FOCUS_ADDR_HIST_LENGTH];
 
         st_UIWINPOS pos;
-        st_UIMMAPBANK mmapbank[MMBANK_COUNT];
+        st_UICOLORAREA mmapbank[MMBANK_COUNT];
 
         // flag reg
         GtkWidget *flagreg_checkbbutton[8];
@@ -265,6 +278,7 @@ extern "C" {
         GtkWidget *gdg_tempo_label;
         GtkWidget *gdg_cnt_label;
         GtkWidget *gdg_beam_label;
+        GtkWidget *gdg_mmap_spec_label;
         int last_gdg_hbln;
         int last_gdg_vbln;
         int last_gdg_hsync;
@@ -274,6 +288,7 @@ extern "C" {
         int last_gdg_tempo;
         //int last_gdg_cnt; // nema smysl - pokazde bude jiny
         const char *last_gdg_beam_state;
+        int last_gdg_mmap_spec;
 
         // GDG HW Scroll
         GtkWidget *gdg_ssa_entry;
@@ -290,6 +305,8 @@ extern "C" {
         // CPU ticks
         GtkWidget *cpu_ticks_entry;
         uint64_t cpu_ticks_start;
+
+        st_UICOLORBUTTON gdg_mz1500_color[8];
 
     } st_UIDEBUGGER;
 
@@ -317,6 +334,11 @@ extern "C" {
     extern void ui_debugger_cpu_tick_counter_reset ( void );
 
     extern Z80EX_WORD ui_debugger_dissassembled_get_first_addr ( void );
+
+#ifdef MACHINE_EMU_MZ1500
+    extern void ui_debugger_set_colbutton1500 ( st_UICOLORBUTTON *colbutton, int value );
+#endif
+
 #ifdef __cplusplus
 }
 #endif

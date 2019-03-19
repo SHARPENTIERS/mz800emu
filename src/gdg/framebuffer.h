@@ -30,16 +30,14 @@
 extern "C" {
 #endif
 
+#include "mz800emu_cfg.h"
 
-    extern void framebuffer_MZ800_current_screen_row_fill ( unsigned last_pixel );
-    extern void framebuffer_MZ800_all_screen_rows_fill ( void );
-    extern void framebuffer_update_MZ700_current_screen_row ( void );
-    extern void framebuffer_update_MZ700_all_rows ( void );
-    extern void framebuffer_MZ800_screen_changed ( void );
-
-    extern void framebuffer_border_current_row_fill ( void );
-    extern void framebuffer_border_all_rows_fill ( void );
-    extern void framebuffer_border_changed ( void );
+#ifdef MACHINE_EMU_MZ800
+#include "framebuffer_mz800.h"
+#endif
+#ifdef MACHINE_EMU_MZ1500
+#include "framebuffer_mz1500.h"
+#endif
 
 #ifdef __cplusplus
 }

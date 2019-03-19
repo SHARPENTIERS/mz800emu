@@ -31,6 +31,7 @@ extern "C" {
 #endif
 
 #include "mz800emu_cfg.h"
+
 #include "z80ex/include/z80ex.h"
 #include "audio.h"
 #include "gdg/video.h"
@@ -157,14 +158,20 @@ extern "C" {
         st_PSG_CHANNEL channel [ PSG_CHANNELS_COUNT ];
     } st_PSG;
 
-
+#ifdef MACHINE_EMU_MZ800
     extern st_PSG g_psg;
+#endif
+#ifdef MACHINE_EMU_MZ1500
+    extern st_PSG g_psgL;
+    extern st_PSG g_psgR;
+#endif
+
 
     extern void psg_init ( void );
-    extern void psg_real_write_byte ( Z80EX_BYTE value );
-    extern void psg_write_byte ( Z80EX_BYTE value );
-    extern void psg_step ( void );
-    
+    extern void psg_real_write_byte ( st_PSG *psg, Z80EX_BYTE value );
+    extern void psg_write_byte ( st_PSG *psg, Z80EX_BYTE value );
+    extern void psg_step ( st_PSG *psg );
+
 #ifdef __cplusplus
 }
 #endif

@@ -45,7 +45,7 @@ extern "C" {
     extern st_CMTHACK g_cmthack;
 
     extern void cmthack_reinstall_rom_patch ( void );
-    extern void cmthack_load_rom_patch ( unsigned enabled );
+    extern void cmthack_mz800_load_rom_patch ( unsigned enabled );
 
     extern void cmthack_reset ( void );
     extern void cmthack_init ( void );

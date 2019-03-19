@@ -30,11 +30,18 @@
 extern "C" {
 #endif
 
+#include "mz800emu_cfg.h"
+
 
 #define IFACE_AUDIO_SAMPLE_RATE           48000
-#define IFACE_AUDIO_20MS_SAMPLES          (IFACE_AUDIO_SAMPLE_RATE/50)   /* 48000/50 = 960, 44100/50 = 882 */
+#ifdef MACHINE_EMU_MZ800
 #define IFACE_AUDIO_CHANNELS              1   /* 1 - mono, 2 - stereo, 4 - quad, 6 - 5.1 */
-
+#endif
+#ifdef MACHINE_EMU_MZ1500
+#define IFACE_AUDIO_CHANNELS              2   /* 1 - mono, 2 - stereo, 4 - quad, 6 - 5.1 */
+#endif
+    /* MZ800: 48000/50 = 960, 44100/50 = 882 */
+#define IFACE_AUDIO_WINDOW_SAMPLES          ( IFACE_AUDIO_SAMPLE_RATE / VIDEO_SCREENS_PER_SEC )
 
 
     extern int iface_sdl_audio_init ( const char *preferedAudioDriverName, int preferedAudioDeviceId );

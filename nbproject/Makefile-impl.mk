@@ -24,14 +24,14 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 
 
 # Project Name
-PROJECTNAME=mz800emu
+PROJECTNAME=mz1500emu
 
 # Active Configuration
 DEFAULTCONF=Release-Win32
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=Release-Win32 Release-Linux Debug-Linux Gprof-Debug-Linux Release-Win64 Debug-Win32-Native Release-Win32-Native 
+ALLCONFS=Release-Win32 Debug-Linux Release-Linux Gprof-Debug-Linux Release-Win64 Debug-Win32-Native Release-Win32-Native 
 
 
 # build

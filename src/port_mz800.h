@@ -1,5 +1,5 @@
 /* 
- * File:   iorq.h
+ * File:   port_mz800.h
  * Author: Michal Hucik <hucik@ordoz.com>
  *
  * Created on 18. června 2015, 12:34
@@ -23,22 +23,26 @@
  * ---------------------------------------------------------------------------
  */
 
-#ifndef PORT_H
-#define	PORT_H
+#ifndef PORT_MZ800_H
+#define PORT_MZ800_H
 
-#ifdef	__cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
+#include "mz800emu_cfg.h"
+
+#ifdef MACHINE_EMU_MZ800
 #include "z80ex/include/z80ex.h"
-    
-    extern Z80EX_BYTE port_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data );
-    extern void port_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void *user_data );
 
+    extern Z80EX_BYTE port_mz800_read_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, void *user_data );
+    extern void port_mz800_write_cb ( Z80EX_CONTEXT *cpu, Z80EX_WORD port, Z80EX_BYTE value, void *user_data );
 
-#ifdef	__cplusplus
+#endif
+
+#ifdef __cplusplus
 }
 #endif
 
-#endif	/* PORT_H */
+#endif /* PORT_MZ800_H */
 

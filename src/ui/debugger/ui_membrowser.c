@@ -27,6 +27,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef MZ800EMU_CFG_DEBUGGER_MEMBROWSER_ENABLED
+
 #ifdef MZ800EMU_CFG_DEBUGGER_ENABLED
 
 #include "../ui_main.h"
@@ -783,7 +785,7 @@ static void on_dbg_membrowser_textbuffer_changed ( GtkTextBuffer *textbuffer, gp
         } else {
             g_membrowser.MEM[addr] = g_membrowser.data_current[addr];
             // Pokud jsme psali do VRAM, tak si vyzadame prekresleni obrazu
-            if ( ( g_membrowser.MEM == g_memoryVRAM_I ) || ( g_membrowser.MEM == g_memoryVRAM_II ) || ( g_membrowser.MEM == g_memoryVRAM_III ) || ( g_membrowser.MEM == g_memoryVRAM_IV ) ) {
+            if ( ( g_membrowser.MEM == g_memory_mz800_VRAM_I ) || ( g_membrowser.MEM == g_memory_mz800_VRAM_II ) || ( g_membrowser.MEM == g_memory_mz800_VRAM_III ) || ( g_membrowser.MEM == g_memory_mz800_VRAM_IV ) ) {
                 g_iface_sdl.redraw_full_screen_request = 1;
                 // Pokud jsme "paused" a mame nastaven forced srceen refresh, tak udelame screen refresh
                 if ( ( g_mz800.emulation_paused ) && ( g_membrowser.forced_screen_refresh ) ) {
@@ -796,7 +798,7 @@ static void on_dbg_membrowser_textbuffer_changed ( GtkTextBuffer *textbuffer, gp
             memory_load_block ( &g_membrowser.data_current[addr], addr, 1, MEMORY_LOAD_MAPED );
             g_membrowser.data_current[addr] = debugger_memory_read_byte ( addr );
             // Pokud jsme psali do VRAM, tak si vyzadame prekresleni obrazu
-            if ( memory_test_addr_is_vram ( addr ) ) {
+            if ( memory_mz800_test_addr_is_vram ( addr ) ) {
                 g_iface_sdl.redraw_full_screen_request = 1;
                 // Pokud jsme "paused" a mame nastaven forced srceen refresh, tak udelame screen refresh
                 if ( ( g_mz800.emulation_paused ) && ( g_membrowser.forced_screen_refresh ) ) {
@@ -1094,30 +1096,30 @@ static void ui_membrowser_load_data_from_memsrc ( void ) {
             break;
 
         case MEMBROWSER_SOURCE_MZ700ROM:
-            g_membrowser.MEM = g_memory.ROM;
+            g_membrowser.MEM = g_memory_ROM;
             break;
 
         case MEMBROWSER_SOURCE_CGROM:
-            g_membrowser.MEM = g_memory.ROM + ROM_SIZE_MZ700;
+            g_membrowser.MEM = g_memory_ROM + ROM_0000_SIZE;
             break;
 
         case MEMBROWSER_SOURCE_MZ800ROM:
-            g_membrowser.MEM = g_memory.ROM + ROM_SIZE_MZ700 + ROM_SIZE_CGROM;
+            g_membrowser.MEM = g_memory_ROM + ROM_0000_SIZE + ROM_CGROM_SIZE;
             break;
 
         case MEMBROWSER_SOURCE_VRAM:
             switch ( g_membrowser.vram_plane ) {
                 case 0:
-                    g_membrowser.MEM = g_memoryVRAM_I;
+                    g_membrowser.MEM = g_memory_mz800_VRAM_I;
                     break;
                 case 1:
-                    g_membrowser.MEM = g_memoryVRAM_II;
+                    g_membrowser.MEM = g_memory_mz800_VRAM_II;
                     break;
                 case 2:
-                    g_membrowser.MEM = g_memoryVRAM_III;
+                    g_membrowser.MEM = g_memory_mz800_VRAM_III;
                     break;
                 case 3:
-                    g_membrowser.MEM = g_memoryVRAM_IV;
+                    g_membrowser.MEM = g_memory_mz800_VRAM_IV;
                     break;
             };
             break;
@@ -2131,4 +2133,5 @@ G_MODULE_EXPORT void on_dbg_membrowser_load_button_clicked ( GtkButton *button, 
 G_MODULE_EXPORT void on_dbg_membrowser_save_button_clicked ( GtkButton *button, gpointer data ) {
     ui_memsave_window_show ( g_membrowser.data_current, g_membrowser.mem_size, TRUE );
 }
+#endif
 #endif

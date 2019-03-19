@@ -23,6 +23,7 @@
  * ---------------------------------------------------------------------------
  */
 
+#include "mz800emu_cfg.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,7 +39,7 @@
 #include "memory/memory.h"
 #include "memory/rom.h"
 #include "mz800.h"
-#include "gdg/vramctrl.h"
+#include "gdg/vramctrl_mz800.h"
 
 #include "ui/ui_main.h"
 #include "ui/ui_file_chooser.h"
@@ -69,9 +70,11 @@ typedef enum en_LOADRET {
 } en_LOADRET;
 
 
-void cmthack_install_rom_patch ( void ) {
-
+void cmthack_mz800_install_rom_patch ( void ) {
+#ifdef MACHINE_EMU_MZ800
     /* ROM hack */
+
+    Z80EX_BYTE *ROM = g_memory_mz800.ROM;
 
     /* 
      * Precteni hlavicky z CMT
@@ -84,14 +87,14 @@ void cmthack_install_rom_patch ( void ) {
      *		CY = 0  O.K.
      *
      */
-    g_memory.ROM [ 0x04d8 ] = 0xe5; /* push HL */
-    g_memory.ROM [ 0x04d9 ] = 0x21; /* ld HL, 0x10f0 */
-    g_memory.ROM [ 0x04da ] = 0xf0;
-    g_memory.ROM [ 0x04db ] = 0x10;
-    g_memory.ROM [ 0x04dc ] = 0xd3; /* out (0x01), a */
-    g_memory.ROM [ 0x04dd ] = 0x01;
-    g_memory.ROM [ 0x04de ] = 0xe1; /* pop HL */
-    g_memory.ROM [ 0x04df ] = 0xc9; /* ret */
+    ROM [ 0x04d8 ] = 0xe5; /* push HL */
+    ROM [ 0x04d9 ] = 0x21; /* ld HL, 0x10f0 */
+    ROM [ 0x04da ] = 0xf0;
+    ROM [ 0x04db ] = 0x10;
+    ROM [ 0x04dc ] = 0xd3; /* out (0x01), a */
+    ROM [ 0x04dd ] = 0x01;
+    ROM [ 0x04de ] = 0xe1; /* pop HL */
+    ROM [ 0x04df ] = 0xc9; /* ret */
 
 
     /*
@@ -102,20 +105,20 @@ void cmthack_install_rom_patch ( void ) {
      *	vystup:  CY s vyznamem jako u RHEAD
      *
      */
-    g_memory.ROM [ 0x04f8 ] = 0xe5; /* push HL */
-    g_memory.ROM [ 0x04f9 ] = 0xc5; /* push BC */
-    g_memory.ROM [ 0x04fa ] = 0x2a; /* ld HL, (0x1104) */
-    g_memory.ROM [ 0x04fb ] = 0x04;
-    g_memory.ROM [ 0x04fc ] = 0x11;
-    g_memory.ROM [ 0x04fd ] = 0xed; /* ld BC, (0x1102) */
-    g_memory.ROM [ 0x04fe ] = 0x4b;
-    g_memory.ROM [ 0x04ff ] = 0x02;
-    g_memory.ROM [ 0x0500 ] = 0x11;
-    g_memory.ROM [ 0x0501 ] = 0xd3; /* out (0x02), A */
-    g_memory.ROM [ 0x0502 ] = 0x02;
-    g_memory.ROM [ 0x0503 ] = 0xc1; /* pop BC */
-    g_memory.ROM [ 0x0504 ] = 0xe1; /* pop BC */
-    g_memory.ROM [ 0x0505 ] = 0xc9; /* ret */
+    ROM [ 0x04f8 ] = 0xe5; /* push HL */
+    ROM [ 0x04f9 ] = 0xc5; /* push BC */
+    ROM [ 0x04fa ] = 0x2a; /* ld HL, (0x1104) */
+    ROM [ 0x04fb ] = 0x04;
+    ROM [ 0x04fc ] = 0x11;
+    ROM [ 0x04fd ] = 0xed; /* ld BC, (0x1102) */
+    ROM [ 0x04fe ] = 0x4b;
+    ROM [ 0x04ff ] = 0x02;
+    ROM [ 0x0500 ] = 0x11;
+    ROM [ 0x0501 ] = 0xd3; /* out (0x02), A */
+    ROM [ 0x0502 ] = 0x02;
+    ROM [ 0x0503 ] = 0xc1; /* pop BC */
+    ROM [ 0x0504 ] = 0xe1; /* pop BC */
+    ROM [ 0x0505 ] = 0xc9; /* ret */
 
 
     /*
@@ -131,32 +134,39 @@ void cmthack_install_rom_patch ( void ) {
      * 
      */
 
-    g_memory.ROM [ 0x0506 ] = 0x59; /* pokud zde dame 0x00, tak XOR vychazi 0xb4, proto: 0xb4 ^ 0xed = 0x59 */
-
+    ROM [ 0x0506 ] = 0x59; /* pokud zde dame 0x00, tak XOR vychazi 0xb4, proto: 0xb4 ^ 0xed = 0x59 */
+#else
+    printf ( "%s():%d - NOT IMPLEMENTED!\n", __func__, __LINE__ );
+#endif
 }
 
 
 void cmthack_reinstall_rom_patch ( void ) {
+#ifdef MACHINE_EMU_MZ800
     if ( !TEST_ROM_WILLY ) {
         if ( ( g_rom.type != ROMTYPE_USER_DEFINED ) || ( g_rom.user_defined_cmthack_type == ROM_CMTHACK_DEFAULT ) ) {
             if ( g_cmthack.load_patch_installed ) {
-                cmthack_install_rom_patch ( );
+                cmthack_mz800_install_rom_patch ( );
             };
         };
     };
+#endif
     ui_cmt_hack_menu_update ( );
 }
 
 
-void cmthack_load_rom_patch ( unsigned enabled ) {
+void cmthack_mz800_load_rom_patch ( unsigned enabled ) {
+
+#ifdef MACHINE_EMU_MZ800
+    Z80EX_BYTE *ROM = g_memory_mz800.ROM;
 
     if ( !TEST_ROM_WILLY ) {
         if ( ( !TEST_ROM_USER_DEFINED ) || ( g_rom.user_defined_cmthack_type == ROM_CMTHACK_DEFAULT ) ) {
             if ( enabled ) {
-                cmthack_install_rom_patch ( );
+                cmthack_mz800_install_rom_patch ( );
             } else {
-                memcpy ( &g_memory.ROM [ 0x04d8 ], &g_rom.mz700rom [ 0x04d8 ], 8 );
-                memcpy ( &g_memory.ROM [ 0x04f8 ], &g_rom.mz700rom [ 0x04f8 ], 15 );
+                memcpy ( &ROM[0x04d8], &g_rom.mz700rom[0x04d8], 8 );
+                memcpy ( &ROM[0x04f8], &g_rom.mz700rom[0x04f8], 15 );
             };
             g_cmthack.load_patch_installed = enabled & 1;
         } else if ( g_rom.user_defined_cmthack_type == ROM_CMTHACK_CUSTOM ) {
@@ -164,6 +174,9 @@ void cmthack_load_rom_patch ( unsigned enabled ) {
             rom_reinstall ( ROMTYPE_USER_DEFINED );
         };
     };
+#else
+    printf ( "%s():%d - NOT IMPLEMENTED!\n", __func__, __LINE__ );
+#endif
 
     ui_cmt_hack_menu_update ( );
 }
@@ -189,8 +202,9 @@ void cmthack_exit ( void ) {
 
 
 void cmthack_propagatecfg_load_rom_patch ( void *e, void *data ) {
-    cmthack_load_rom_patch ( cfgelement_get_bool_value ( (CFGELM *) e ) );
+    cmthack_mz800_load_rom_patch ( cfgelement_get_bool_value ( (CFGELM *) e ) );
 }
+
 
 void cmthack_init ( void ) {
 
@@ -212,7 +226,7 @@ void cmthack_init ( void ) {
 
     cfgmodule_parse ( cmod );
     cfgmodule_propagate ( cmod );
-    
+
     ui_cmt_hack_menu_update ( );
 }
 
