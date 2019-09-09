@@ -1,9 +1,12 @@
 
 MZ-1500 BRANCH:
 
+2019-09-09
+	- bugfix: memory mapping
+
 2019-03-19
 	- first version 
-	- mising: cmthack and membrowser
+	- missing the cmthack and memory browser tool
 
 	TODO: mount .mzt files into QD
 

@@ -138,6 +138,7 @@ static inline void memory_mz1500_mmap_rom_0000_on ( void ) {
 static inline void memory_mz1500_mmap_rom_upper_on ( void ) {
     DBGPRINTF ( DBGINF, "pwrite = 0xe3 (D000 - FFFF: ROM), PC = 0x%04x\n", g_mz800.instruction_addr );
     g_memory_mz1500.map |= MEMORY_MZ1500_MAP_FLAG_ROM_UPPER;
+    g_memory_mz1500.map &= ~( MEMORY_MZ1500_MAP_D000_MASK );
 }
 
 
@@ -148,7 +149,7 @@ static inline void memory_mz1500_mmap_rom_upper_on ( void ) {
  */
 static inline void memory_mz1500_mmap_all_on ( void ) {
     DBGPRINTF ( DBGINF, "pwrite = 0xe4 (D000 - FFFF: ROM, D000 - FFFF: ROM), PC = 0x%04x\n", g_mz800.instruction_addr );
-    g_memory_mz1500.map |= ( MEMORY_MZ1500_MAP_FLAG_ROM_0000 | MEMORY_MZ1500_MAP_FLAG_ROM_UPPER );
+    g_memory_mz1500.map = ( MEMORY_MZ1500_MAP_FLAG_ROM_0000 | MEMORY_MZ1500_MAP_FLAG_ROM_UPPER );
 }
 
 
@@ -160,6 +161,7 @@ static inline void memory_mz1500_mmap_spec_on ( Z80EX_BYTE value ) {
     DBGPRINTF ( DBGINF, "pwrite = 0xe5, mount SPEC - value: 0x%02x, PC = 0x%04x\n", value, g_mz800.instruction_addr );
     g_memory_mz1500.map &= ~( MEMORY_MZ1500_MAP_D000_MASK );
     g_memory_mz1500.map |= ( value + 1 ) << MEMORY_MZ1500_FLAG_SPEC_BITPOS;
+    g_memory_mz1500.map |= MEMORY_MZ1500_MAP_FLAG_ROM_UPPER;
 }
 
 
