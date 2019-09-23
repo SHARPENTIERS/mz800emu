@@ -30,8 +30,10 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+#include <glib.h>
 #include "z80ex/include/z80ex.h"
-
+#include "gdg/gdg.h"
 
 #define CTC_AUDIO_MASK  ( g_pio8255.signal_pc00 )
 
@@ -39,6 +41,16 @@ extern "C" {
     typedef struct st_PIO8255 {
         Z80EX_BYTE keyboard_matrix [ 10 ];
         Z80EX_BYTE vkbd_matrix [ 10 ];
+        char *vkbd_autotype;
+        int vkbd_autotype_col;
+        Z80EX_BYTE vkbd_autotype_ret;
+        gboolean vkbd_autotype_ret_shift;
+        int vkbd_autotype_keydown;
+        double vkbd_autotype_kd_ms; // key down ms
+        uint64_t vkbd_autotype_kd_ticks; // key down ticks
+        double vkbd_autotype_ku_ms; // key up ms
+        uint64_t vkbd_autotype_ku_ticks; // key up ticks
+        uint64_t vkbd_autotype_start_ticks;
         unsigned signal_PA; /* Vystupni port A */
         unsigned signal_PA_keybord_column; /* vzorkovani klavesnice: 0. - 3. bit (0 - 9) */
         unsigned signal_PA_joy1_enabled; /* vzorkovani JOY1: 4. bit (L) */
@@ -57,6 +69,9 @@ extern "C" {
 
     extern void pio8255_init ( void );
     extern void pio8255_keyboard_matrix_reset ( void );
+    extern void pio8255_autotype_set_key_down_ms ( double ms );
+    extern void pio8255_autotype_set_key_up_ms ( double ms );
+    extern void pio8255_set_autotype ( char *txt );
     extern Z80EX_BYTE pio8255_read ( int addr );
     extern void pio8255_write ( int addr, Z80EX_BYTE value );
 
