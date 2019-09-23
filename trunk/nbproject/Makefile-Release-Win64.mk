@@ -152,6 +152,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/src/ui/ui_utils.o \
 	${OBJECTDIR}/src/ui/ui_version_check.o \
 	${OBJECTDIR}/src/ui/vkbd/ui_vkbd.o \
+	${OBJECTDIR}/src/ui/vkbd/ui_vkbd_autotype.o \
 	${OBJECTDIR}/src/ui/vkbd/ui_vkbd_linux_x11.o \
 	${OBJECTDIR}/src/ui/vkbd/ui_vkbd_windows.o \
 	${OBJECTDIR}/src/unicard/MGR_MZF.o \
@@ -774,6 +775,11 @@ ${OBJECTDIR}/src/ui/vkbd/ui_vkbd.o: src/ui/vkbd/ui_vkbd.c
 	${MKDIR} -p ${OBJECTDIR}/src/ui/vkbd
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/vkbd/ui_vkbd.o src/ui/vkbd/ui_vkbd.c
+
+${OBJECTDIR}/src/ui/vkbd/ui_vkbd_autotype.o: src/ui/vkbd/ui_vkbd_autotype.c 
+	${MKDIR} -p ${OBJECTDIR}/src/ui/vkbd
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -Wall -DWINDOWS -DWINDOWS_X64 -D_XOPEN_SOURCE=500 -Dmain=SDL_main -I. -Isrc -Isrc/z80ex -Isrc/z80ex/include -std=c11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ui/vkbd/ui_vkbd_autotype.o src/ui/vkbd/ui_vkbd_autotype.c
 
 ${OBJECTDIR}/src/ui/vkbd/ui_vkbd_linux_x11.o: src/ui/vkbd/ui_vkbd_linux_x11.c 
 	${MKDIR} -p ${OBJECTDIR}/src/ui/vkbd

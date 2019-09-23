@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <glib.h>
 
 #include "z80ex/include/z80ex.h"
 
@@ -40,6 +41,7 @@
 //#define DBGLEVEL (DBGNON | DBGERR | DBGWAR | DBGINF )
 #include "debug.h"
 #include "ui/vkbd/windows_virtual_key_codes.h"
+#include "ui/vkbd/ui_vkbd_autotype.h"
 
 
 /*
@@ -68,12 +70,32 @@ void pio8255_vkbd_matrix_reset ( void ) {
 }
 
 
+void pio8255_autotype_set_key_down_ms ( double ms ) {
+    g_pio8255.vkbd_autotype_kd_ms = ms;
+    g_pio8255.vkbd_autotype_kd_ticks = ms * ( GDGCLK_BASE / 1000 );
+}
+
+
+void pio8255_autotype_set_key_up_ms ( double ms ) {
+    g_pio8255.vkbd_autotype_ku_ms = ms;
+    g_pio8255.vkbd_autotype_ku_ticks = ms * ( GDGCLK_BASE / 1000 );
+}
+
+
+void pio8255_set_autotype ( char *txt ) {
+    g_pio8255.vkbd_autotype = txt;
+    g_pio8255.vkbd_autotype_col = -1;
+}
+
+
 void pio8255_init ( void ) {
     PIO8255_KEYBOARD_MATRIX_RESET ( );
     memset ( &g_pio8255.vkbd_matrix, 0xff, sizeof ( g_pio8255.vkbd_matrix ) );
     g_pio8255.signal_PA = 0x00;
     g_pio8255.signal_PA_keybord_column = 0x00;
     g_pio8255.signal_PC = 0x00;
+    pio8255_autotype_set_key_down_ms ( 15 );
+    pio8255_autotype_set_key_up_ms ( 1 );
 }
 
 //static unsigned long bdcounter = 0;
@@ -229,6 +251,150 @@ void pio8255_write ( int addr, Z80EX_BYTE value ) {
 }
 
 
+static int pio8255_autotype_get_matrix ( char c, Z80EX_BYTE *ret, gboolean *ret_shift ) {
+
+
+    struct {
+        char c;
+        int col;
+        int row;
+        int shift;
+    } key[] = {
+               // col0
+        { '\t', 0, 3, 0 },
+        { ';', 0, 2, 0 },
+        { '+', 0, 2, 1 },
+        { ':', 0, 1, 0 },
+        { '*', 0, 1, 1 },
+        { '\n', 0, 0, 0 },
+
+               // col1
+        { 'Y', 1, 7, 0 },
+        { 'y', 1, 7, 1 },
+        { 'Z', 1, 6, 0 },
+        { 'z', 1, 6, 1 },
+        { '@', 1, 5, 0 },
+        { '`', 1, 5, 1 },
+        { '[', 1, 4, 0 },
+        { '{', 1, 4, 1 },
+        { ']', 1, 3, 0 },
+        { '}', 1, 3, 1 },
+        { ']', 1, 2, 0 },
+        { '}', 1, 2, 1 },
+
+               // col2
+        { 'Q', 2, 7, 0 },
+        { 'q', 2, 7, 1 },
+        { 'R', 2, 6, 0 },
+        { 'r', 2, 6, 1 },
+        { 'S', 2, 5, 0 },
+        { 's', 2, 5, 1 },
+        { 'T', 2, 4, 0 },
+        { 't', 2, 4, 1 },
+        { 'U', 2, 3, 0 },
+        { 'u', 2, 3, 1 },
+        { 'V', 2, 2, 0 },
+        { 'v', 2, 2, 1 },
+        { 'W', 2, 1, 0 },
+        { 'w', 2, 1, 1 },
+        { 'X', 2, 0, 0 },
+        { 'x', 2, 0, 1 },
+
+               // col3
+        { 'I', 3, 7, 0 },
+        { 'i', 3, 7, 1 },
+        { 'J', 3, 6, 0 },
+        { 'j', 3, 6, 1 },
+        { 'K', 3, 5, 0 },
+        { 'k', 3, 5, 1 },
+        { 'L', 3, 4, 0 },
+        { 'l', 3, 4, 1 },
+        { 'M', 3, 3, 0 },
+        { 'm', 3, 3, 1 },
+        { 'N', 3, 2, 0 },
+        { 'n', 3, 2, 1 },
+        { 'O', 3, 1, 0 },
+        { 'o', 3, 1, 1 },
+        { 'P', 3, 0, 0 },
+        { 'p', 3, 0, 1 },
+
+               // col4
+        { 'A', 4, 7, 0 },
+        { 'a', 4, 7, 1 },
+        { 'B', 4, 6, 0 },
+        { 'b', 4, 6, 1 },
+        { 'C', 4, 5, 0 },
+        { 'c', 4, 5, 1 },
+        { 'D', 4, 4, 0 },
+        { 'd', 4, 4, 1 },
+        { 'E', 4, 3, 0 },
+        { 'e', 4, 3, 1 },
+        { 'F', 4, 2, 0 },
+        { 'f', 4, 2, 1 },
+        { 'G', 4, 1, 0 },
+        { 'g', 4, 1, 1 },
+        { 'H', 4, 0, 0 },
+        { 'h', 4, 0, 1 },
+
+               // col5
+        { '1', 5, 7, 0 },
+        { '!', 5, 7, 1 },
+        { '2', 5, 6, 0 },
+        { '"', 5, 6, 1 },
+        { '3', 5, 5, 0 },
+        { '#', 5, 5, 1 },
+        { '4', 5, 4, 0 },
+        { '$', 5, 4, 1 },
+        { '5', 5, 3, 0 },
+        { '%', 5, 3, 1 },
+        { '6', 5, 2, 0 },
+        { '&', 5, 2, 1 },
+        { '7', 5, 1, 0 },
+        { '\'', 5, 1, 1 },
+        { '8', 5, 0, 0 },
+        { '(', 5, 0, 1 },
+
+               // col6
+        { '\\', 6, 7, 0 },
+        { '|', 6, 7, 1 },
+        { '^', 6, 6, 0 },
+        { '~', 6, 6, 1 },
+        { '-', 6, 5, 0 },
+        { '=', 6, 5, 1 },
+        { ' ', 6, 4, 0 },
+               //{ ' ', 6, 4, 1 },
+        { '0', 6, 3, 0 },
+               //{ '0', 6, 3, 1 },
+        { '9', 6, 2, 0 },
+        { ')', 6, 2, 1 },
+        { ',', 6, 1, 0 },
+        { '<', 6, 1, 1 },
+        { '.', 6, 0, 0 },
+        { '>', 6, 0, 1 },
+
+               // col7
+        { '?', 6, 1, 0 },
+               //{ '?', 6, 1, 1 },
+        { '/', 6, 0, 0 },
+               //{ '/', 6, 0, 1 },
+
+        { 0, 0, 0, 0 },
+    };
+
+    int i = 0;
+    while ( 1 ) {
+        if ( ( key[i].c == c ) || ( key[i].c = 0 ) ) break;
+        i++;
+    };
+
+    if ( !key[i].c ) return -1;
+
+    *ret = 0xff & ~( 1 << key[i].row );
+    *ret_shift = ( key[i].shift ) ? TRUE : FALSE;
+    return key[i].col;
+}
+
+
 Z80EX_BYTE pio8255_read ( int addr ) {
 
     DBGPRINTF ( DBGINF, "addr = 0x%02x, PC = 0x%04x\n", addr, g_mz800.instruction_addr );
@@ -241,6 +407,52 @@ Z80EX_BYTE pio8255_read ( int addr ) {
             break;
 
         case DEF_PIO8255_PORTB:
+
+            if ( g_pio8255.vkbd_autotype ) {
+                if ( g_pio8255.vkbd_autotype_col == -1 ) {
+                    while ( g_pio8255.vkbd_autotype[0] != 0x00 ) {
+                        g_pio8255.vkbd_autotype_col = pio8255_autotype_get_matrix ( g_pio8255.vkbd_autotype[0], &g_pio8255.vkbd_autotype_ret, &g_pio8255.vkbd_autotype_ret_shift );
+                        g_pio8255.vkbd_autotype++;
+                        if ( g_pio8255.vkbd_autotype_col != -1 ) break;
+                    };
+                    g_pio8255.vkbd_autotype_start_ticks = gdg_get_total_ticks ( );
+                    g_pio8255.vkbd_autotype_keydown = ( g_pio8255.vkbd_autotype_ret_shift ) ? 0 : 1;
+                };
+
+                if ( g_pio8255.vkbd_autotype_col == -1 ) {
+                    ui_vkbd_autotype_deactivate ( );
+                } else {
+
+                    Z80EX_BYTE ret = 0xff;
+
+                    if ( g_pio8255.vkbd_autotype_keydown == 0 ) {
+                        if ( ( g_pio8255.vkbd_autotype_ret_shift ) && ( g_pio8255.signal_PA_keybord_column == 8 ) ) {
+                            ret = 0xfe;
+                        };
+                    } else if ( g_pio8255.vkbd_autotype_keydown == 1 ) {
+                        if ( ( g_pio8255.vkbd_autotype_ret_shift ) && ( g_pio8255.signal_PA_keybord_column == 8 ) ) {
+                            ret = 0xfe;
+                        } else if ( g_pio8255.signal_PA_keybord_column == g_pio8255.vkbd_autotype_col ) {
+                            ret = g_pio8255.vkbd_autotype_ret;
+                        };
+                    };
+
+                    uint64_t now_ticks = gdg_get_total_ticks ( );
+
+                    if ( g_pio8255.vkbd_autotype_keydown <= 1 ) {
+                        if ( now_ticks >= ( g_pio8255.vkbd_autotype_start_ticks + g_pio8255.vkbd_autotype_kd_ticks ) ) {
+                            g_pio8255.vkbd_autotype_keydown++;
+                            g_pio8255.vkbd_autotype_start_ticks = now_ticks;
+                        };
+                    } else {
+                        if ( now_ticks >= ( g_pio8255.vkbd_autotype_start_ticks + g_pio8255.vkbd_autotype_ku_ticks ) ) {
+                            g_pio8255.vkbd_autotype_col = -1;
+                        };
+                    };
+
+                    return ret;
+                };
+            };
 
             iface_sdl_pool_keyboard_events ( );
             //g_pio8255.keyboard_matrix [ 2 ] &= 0xdf;
@@ -297,26 +509,36 @@ Z80EX_BYTE pio8255_read ( int addr ) {
 
 
 void pio8255_pc2_set ( int value ) {
+
+
     g_pio8255.signal_pc02 = value & 1;
 }
 
 
 int pio8255_pc1_get ( void ) {
+
+
     return g_pio8255.signal_pc01;
 }
 
 
 int pio8255_pc2_get ( void ) {
+
+
     return g_pio8255.signal_pc02;
 }
 
 
 int pio8255_pa4_get ( void ) {
+
+
     return g_pio8255.signal_PA_joy1_enabled;
 }
 
 
 int pio8255_pa5_get ( void ) {
+
+
     return g_pio8255.signal_PA_joy2_enabled;
 }
 
